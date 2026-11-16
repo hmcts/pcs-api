@@ -31,6 +31,9 @@ public class RentArrearsTabDetails {
     @CCD(label = "Daily rate")
     private String dailyRate;
 
+    @CCD(label = "Day of the month the rent is due")
+    private String rentDueDay;
+
     @CCD(label = "Previous steps taken to recover rent arrears?")
     private String stepsToRecoverArrears;
 
@@ -45,6 +48,18 @@ public class RentArrearsTabDetails {
 
     @CCD(label = "Rent arrears total at the time of claim issue")
     private String arrearsTotal;
+
+    @CCD(label = "Date of the rent arrears total")
+    private String arrearsTotalDate;
+
+    @CCD(label = "Rent arrears on the date notice was served")
+    private String arrearsAtNoticeDate;
+
+    @CCD(label = "Date notice was served")
+    private String arrearsAtNoticeServedDate;
+
+    @CCD(label = "Proof of rent arrears")
+    private String proofType;
 
     @CCD(label = "Judgment requested for the outstanding arrears?")
     private String judgmentRequested;

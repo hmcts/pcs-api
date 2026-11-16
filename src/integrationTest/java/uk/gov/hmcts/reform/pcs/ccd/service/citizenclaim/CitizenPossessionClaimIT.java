@@ -28,9 +28,13 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -39,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -64,6 +69,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +78,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -373,6 +380,71 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         try (InputStream json = getClass().getResourceAsStream(COMPLETE_CLAIM_JSON)) {
             return draftObjectMapper.readValue(json, PCSCase.class).getCitizenPossessionClaim();
         }
+    }
+
+    @Test
+    @DisplayName("A submit records every notice method and the rent answers in their own columns")
+    void shouldWriteTheNoticeMethodsAndRentAnswersToTheirColumns() throws Exception {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS,
+                               CitizenClaimEligibility.builder().claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+
+        CitizenPossessionClaim answers = completeClaim();
+        answers.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.EMAIL,
+                                                    CitizenClaimNoticeMethod.PERSONALLY_HANDED));
+        answers.getNotice().setHandedToName("Tom Tenant");
+        answers.getNotice().setHandedDate(LocalDate.of(2026, 8, 2));
+        answers.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
+        answers.getRentArrears().setRentHistoryLedger(null);
+        answers.getRentArrears().setRentHistoryTable(List.of(ListValue.<CitizenClaimRentPeriodEntry>builder()
+            .value(CitizenClaimRentPeriodEntry.builder()
+                       .periodStart(LocalDate.of(2026, 9, 1))
+                       .dateDue(LocalDate.of(2026, 9, 15))
+                       .amountDue(new BigDecimal("1250.00"))
+                       .build())
+            .build()));
+        answers.getRentArrears().setRentDueDay(15);
+
+        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        submitService.submit(createdCase, answers, applicableAnswers.of(answers));
+        entityManager.flush();
+        entityManager.clear();
+
+        UUID claimId = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow()
+            .getClaims().getFirst().getId();
+        Map<String, Object> notice = jdbcTemplate.queryForMap(
+            "SELECT id, serving_method, notice_date, notice_details FROM notice_of_possession WHERE claim_id = ?",
+            claimId);
+        assertThat(notice.get("serving_method")).isEqualTo("PERSONALLY_HANDED");
+        assertThat(notice.get("notice_date")).hasToString("2026-08-02");
+        assertThat(notice.get("notice_details")).isEqualTo("Tom Tenant");
+
+        List<Map<String, Object>> methods = jdbcTemplate.queryForList(
+            "SELECT method, served_date, details, display_order FROM notice_service_method "
+                + "WHERE notice_of_possession_id = ? ORDER BY display_order", notice.get("id"));
+        assertThat(methods).extracting(row -> row.get("method"), row -> String.valueOf(row.get("served_date")),
+                                       row -> row.get("details"), row -> row.get("display_order"))
+            .containsExactly(
+                tuple("PERSONALLY_HANDED", "2026-08-02", "Tom Tenant", 1),
+                tuple("EMAIL", "2026-08-01", "tom.tenant@example.com", 2));
+
+        Map<String, Object> rentArrears = jdbcTemplate.queryForMap(
+            "SELECT arrears_at_notice_date, total_rent_arrears_date, proof_type FROM rent_arrears WHERE claim_id = ?",
+            claimId);
+        assertThat((BigDecimal) rentArrears.get("arrears_at_notice_date")).isEqualByComparingTo("3750.00");
+        assertThat(rentArrears.get("total_rent_arrears_date")).hasToString("2026-11-01");
+        assertThat(rentArrears.get("proof_type")).isEqualTo("TABLE");
+
+        Integer rentDueDay = jdbcTemplate.queryForObject(
+            "SELECT t.rent_due_day FROM tenancy_licence t JOIN pcs_case c ON c.id = t.case_id "
+                + "WHERE c.case_reference = ?", Integer.class, caseReference);
+        assertThat(rentDueDay).isEqualTo(15);
+
+        PcsCaseEntity reloaded = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
+        assertThat(reloaded.getClaims().getFirst().getNoticeOfPossession().getServiceMethods())
+            .extracting(NoticeServiceMethodEntity::getMethod)
+            .containsExactly(NoticeServiceMethod.PERSONALLY_HANDED, NoticeServiceMethod.EMAIL);
+        assertThat(reloaded.getTenancyLicence().getRentDueDay()).isEqualTo(15);
     }
 
 }

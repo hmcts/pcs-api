@@ -230,4 +230,30 @@ class CitizenPossessionClaimApplicableAnswersTest {
             .build();
     }
 
+    @Test
+    void shouldKeepTheRentDueDayOnlyForMonthlyRentOutsideTheLedgerDesign() {
+        CitizenPossessionClaim table = CitizenPossessionClaimFixtures.completeClaim();
+        table.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
+        table.getRentArrears().setRentDueDay(15);
+        CitizenPossessionClaim ledger = table.toBuilder().build();
+        ledger.setRentArrears(table.getRentArrears().toBuilder().proofType(CitizenClaimRentProofType.LEDGER).build());
+        CitizenPossessionClaim weekly = table.toBuilder().build();
+        weekly.setRentArrears(table.getRentArrears().toBuilder().rentFrequency(RentPaymentFrequency.WEEKLY).build());
+
+        assertThat(underTest.of(table).getRentArrears().getRentDueDay()).isEqualTo(15);
+        assertThat(underTest.of(ledger).getRentArrears().getRentDueDay()).isNull();
+        assertThat(underTest.of(weekly).getRentArrears().getRentDueDay()).isNull();
+    }
+
+    @Test
+    void shouldIgnoreTheArrearsAtTheNoticeDateWhenNoNoticeWasServed() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeServed(VerticalYesNo.NO);
+
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(applicable.getRentArrears().getArrearsAtNoticeDate()).isNull();
+        assertThat(applicable.getRentArrears().getCurrentArrears()).isNotNull();
+    }
+
 }

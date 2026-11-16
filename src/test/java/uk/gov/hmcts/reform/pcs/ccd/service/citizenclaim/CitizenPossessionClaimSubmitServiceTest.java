@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
@@ -46,6 +47,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -713,6 +716,95 @@ class CitizenPossessionClaimSubmitServiceTest {
 
         assertThat(submitted.serviceRequestReference()).isEqualTo("2026-1762441234567");
         assertThat(submitted.feeDetails()).isSameAs(caseIssueFee);
+    }
+
+    @Test
+    void shouldRecordEveryNoticeMethodWithItsOwnDateAndDetailsInOfferedOrder() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.OTHER, CitizenClaimNoticeMethod.EMAIL,
+                                                  CitizenClaimNoticeMethod.PERSONALLY_HANDED,
+                                                  CitizenClaimNoticeMethod.FIRST_CLASS_POST));
+        claim.getNotice().setPostedDate(LocalDate.of(2026, 8, 1));
+        claim.getNotice().setHandedToName("Tom Tenant");
+        claim.getNotice().setHandedDate(LocalDate.of(2026, 8, 2));
+        claim.getNotice().setEmailedDate(LocalDate.of(2026, 8, 3));
+        claim.getNotice().setOtherMethodDetails("Left with the neighbour");
+        claim.getNotice().setOtherMethodDate(LocalDate.of(2026, 8, 4));
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        NoticeOfPossessionEntity notice = claimCaptor.getValue().getNoticeOfPossession();
+        assertThat(notice.getServingMethod()).isEqualTo(NoticeServiceMethod.FIRST_CLASS_POST);
+        assertThat(notice.getNoticeDate()).isEqualTo(LocalDate.of(2026, 8, 1));
+        assertThat(notice.getNoticeDetails()).isNull();
+        assertThat(notice.getServiceMethods())
+            .extracting(NoticeServiceMethodEntity::getMethod, NoticeServiceMethodEntity::getServedDate,
+                        NoticeServiceMethodEntity::getDetails, NoticeServiceMethodEntity::getDisplayOrder)
+            .containsExactly(
+                tuple(NoticeServiceMethod.FIRST_CLASS_POST, LocalDate.of(2026, 8, 1), null, 1),
+                tuple(NoticeServiceMethod.PERSONALLY_HANDED, LocalDate.of(2026, 8, 2), "Tom Tenant", 2),
+                tuple(NoticeServiceMethod.EMAIL, LocalDate.of(2026, 8, 3), "tom.tenant@example.com", 3),
+                tuple(NoticeServiceMethod.OTHER, LocalDate.of(2026, 8, 4), "Left with the neighbour", 4));
+        assertThat(notice.getServiceMethods())
+            .allSatisfy(method -> assertThat(method.getNoticeOfPossession()).isSameAs(notice));
+    }
+
+    @Test
+    void shouldRecordTheDetailsOfASinglePrimaryMethodAsBefore() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.OTHER_ELECTRONIC));
+        claim.getNotice().setOtherElectronicDetails("WhatsApp message");
+        claim.getNotice().setOtherElectronicDate(LocalDate.of(2026, 8, 5));
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        NoticeOfPossessionEntity notice = claimCaptor.getValue().getNoticeOfPossession();
+        assertThat(notice.getServingMethod()).isEqualTo(NoticeServiceMethod.OTHER_ELECTRONIC);
+        assertThat(notice.getNoticeDate()).isEqualTo(LocalDate.of(2026, 8, 5));
+        assertThat(notice.getNoticeDetails()).isEqualTo("WhatsApp message");
+        assertThat(notice.getServiceMethods())
+            .extracting(NoticeServiceMethodEntity::getMethod, NoticeServiceMethodEntity::getDetails)
+            .containsExactly(tuple(NoticeServiceMethod.OTHER_ELECTRONIC, "WhatsApp message"));
+    }
+
+    @Test
+    void shouldRecordWhyNoticeWasNotServedAndNoMethods() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getNotice().setNoticeServed(VerticalYesNo.NO);
+        claim.getNotice().setNoNoticeReason("The tenancy does not need a notice.");
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        NoticeOfPossessionEntity notice = claimCaptor.getValue().getNoticeOfPossession();
+        assertThat(notice.getNoticeStatement()).isEqualTo("The tenancy does not need a notice.");
+        assertThat(notice.getServiceMethods()).isEmpty();
+        assertThat(claimCaptor.getValue().getRentArrears().getArrearsAtNoticeDate()).isNull();
+    }
+
+    @Test
+    void shouldRecordTheArrearsDatesAndProofType() {
+        submit(CitizenPossessionClaimFixtures.completeClaim());
+
+        verify(claimRepository).save(claimCaptor.capture());
+        RentArrearsEntity rentArrears = claimCaptor.getValue().getRentArrears();
+        assertThat(rentArrears.getArrearsAtNoticeDate()).isEqualByComparingTo("3750.00");
+        assertThat(rentArrears.getTotalRentArrearsDate()).isEqualTo(LocalDate.of(2026, 11, 1));
+        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.LEDGER);
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isNull();
+    }
+
+    @Test
+    void shouldRecordTheRentDueDayForMonthlyRentInATable() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
+        claim.getRentArrears().setRentDueDay(15);
+
+        submit(claim);
+
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isEqualTo(15);
     }
 
 }

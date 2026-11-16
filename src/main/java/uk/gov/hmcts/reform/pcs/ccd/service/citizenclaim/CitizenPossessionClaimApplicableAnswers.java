@@ -56,6 +56,7 @@ public class CitizenPossessionClaimApplicableAnswers {
         }
         reduceRentArrears(applicable.getRentArrears());
         applicable.setNotice(reduceNotice(applicable.getNotice()));
+        reduceArrearsAtNoticeDate(applicable);
         reduceCircumstances(applicable.getCircumstances());
         reduceOtherInformation(applicable.getOtherInformation());
 
@@ -177,6 +178,12 @@ public class CitizenPossessionClaimApplicableAnswers {
             rentArrears.setOtherFrequencyDetails(null);
         }
         CitizenClaimRentProofType proofType = rentArrears.getProofType();
+        // The frontend asks for it only in the table design with monthly rent. The design is not sent, but
+        // a ledger can only be chosen in the ledger design.
+        if (rentArrears.getRentFrequency() != RentPaymentFrequency.MONTHLY
+            || proofType == CitizenClaimRentProofType.LEDGER) {
+            rentArrears.setRentDueDay(null);
+        }
         if (proofType != CitizenClaimRentProofType.UPLOAD_STATEMENT) {
             rentArrears.setRentStatementDocuments(null);
         }
@@ -232,6 +239,13 @@ public class CitizenPossessionClaimApplicableAnswers {
             notice.setNoticeUnavailableReason(null);
         }
         return notice;
+    }
+
+    private static void reduceArrearsAtNoticeDate(CitizenPossessionClaim claim) {
+        CitizenClaimNotice notice = claim.getNotice();
+        if (claim.getRentArrears() != null && (notice == null || notice.getNoticeServed() != VerticalYesNo.YES)) {
+            claim.getRentArrears().setArrearsAtNoticeDate(null);
+        }
     }
 
     private static void reduceCircumstances(CitizenClaimCircumstances circumstances) {

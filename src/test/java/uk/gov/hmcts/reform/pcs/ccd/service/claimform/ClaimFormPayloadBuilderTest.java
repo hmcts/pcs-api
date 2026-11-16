@@ -7,11 +7,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -28,8 +31,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormNoticeMethodRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -46,6 +51,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ClaimFormPayloadBuilderTest {
 
@@ -1137,12 +1143,22 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void noticeUploadQuestionHiddenWhileUnsourced() {
-            // R43/R44 has no entity source yet → row hidden, not a blank label.
+        void noticeUploadQuestionHiddenForAnExUiClaim() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimantType(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
             pcsCase.getClaims().getFirst().setNoticeOfPossession(NoticeOfPossessionEntity.builder()
-                .noticeServed(YesOrNo.YES).build());
-            assertThat(builder.build(pcsCase).isShowNoticeUploadQuestion()).isFalse();
+                .noticeServed(YesOrNo.YES)
+                .isAbleToUploadDocument(YesOrNo.NO)
+                .unableToUploadReason("Lost it")
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeUploadQuestion()).isFalse();
+            assertThat(payload.isNoticeUploadedYes()).isFalse();
+            assertThat(payload.isNoticeUploadedNo()).isFalse();
+            assertThat(payload.getNoticeUploadedYesNo()).isNull();
+            assertThat(payload.getNoticeNotUploadedReason()).isNull();
         }
 
         @Test
@@ -1941,18 +1957,33 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void englandJourneyHidesNoticeTypeEvenWhenServed() {
-            // Spec: Notice type is Wales-only — England never renders this row.
+        void englandJourneyHidesNoticeTypeWhenNoneIsRecorded() {
+            // The ExUI England journey never records a notice type.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimEntity claim = pcsCase.getClaims().getFirst();
             claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeType("Section 8")
+                .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                 .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeType()).isFalse();
+        }
+
+        @Test
+        void englandShowsTheNoticeTypeACitizenClaimRecords() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeType("Notice seeking possession")
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeType()).isTrue();
+            assertThat(payload.getNoticeType()).isEqualTo("Notice seeking possession");
         }
 
         @Test
@@ -2125,6 +2156,125 @@ class ClaimFormPayloadBuilderTest {
                 .containsExactly(
                     "Underlessee or mortgagee 1 details",
                     "Additional underlessee or mortgagee 1 details");
+        }
+    }
+
+    @Nested
+    class CitizenClaimAnswers {
+
+        @Test
+        void citizenClaimPrintsEveryNoticeMethodTheUploadAnswerAndTheRentAnswers() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+            NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeType("Notice seeking possession")
+                .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .noticeDate(LocalDate.of(2026, 8, 1))
+                .isAbleToUploadDocument(YesOrNo.NO)
+                .unableToUploadReason("The tenant kept the only copy")
+                .build();
+            notice.addServiceMethod(NoticeServiceMethodEntity.builder()
+                .method(NoticeServiceMethod.EMAIL).servedDate(LocalDate.of(2026, 8, 2))
+                .details("tom@example.com").displayOrder(2).build());
+            notice.addServiceMethod(NoticeServiceMethodEntity.builder()
+                .method(NoticeServiceMethod.FIRST_CLASS_POST).servedDate(LocalDate.of(2026, 8, 1))
+                .displayOrder(1).build());
+            claim.setNoticeOfPossession(notice);
+            claim.setRentArrears(RentArrearsEntity.builder()
+                .totalRentArrears(new BigDecimal("5000.00"))
+                .totalRentArrearsDate(LocalDate.of(2026, 11, 1))
+                .arrearsAtNoticeDate(new BigDecimal("3750.00"))
+                .proofType(CitizenClaimRentProofType.TABLE)
+                .build());
+            TenancyLicenceEntity tenancy = new TenancyLicenceEntity();
+            tenancy.setRentDueDay(15);
+            pcsCase.setTenancyLicence(tenancy);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeServiceMethods()).isTrue();
+            assertThat(payload.getNoticeServiceMethods())
+                .extracting(ClaimFormNoticeMethodRow::getMethodLabel, ClaimFormNoticeMethodRow::getServedOn,
+                            ClaimFormNoticeMethodRow::getDetails, ClaimFormNoticeMethodRow::isHasDetails)
+                .containsExactly(
+                    tuple(NoticeServiceMethod.FIRST_CLASS_POST.getLabel(), "1 August 2026", null, false),
+                    tuple(NoticeServiceMethod.EMAIL.getLabel(), "2 August 2026", "tom@example.com", true));
+            assertThat(payload.isShowNoticeType()).isTrue();
+            assertThat(payload.isShowNoticeUploadQuestion()).isTrue();
+            assertThat(payload.getNoticeUploadedYesNo()).isEqualTo(VerticalYesNo.NO);
+            assertThat(payload.isNoticeUploadedNo()).isTrue();
+            assertThat(payload.isNoticeUploadedYes()).isFalse();
+            assertThat(payload.getNoticeNotUploadedReason()).isEqualTo("The tenant kept the only copy");
+
+            assertThat(payload.isShowRentDueDay()).isTrue();
+            assertThat(payload.getRentDueDay()).isEqualTo("15");
+            assertThat(payload.isShowArrearsAtNoticeDate()).isTrue();
+            assertThat(payload.getArrearsAtNoticeDate()).isEqualTo(FormFieldFormatter.formatGbp(
+                new BigDecimal("3750.00")));
+            assertThat(payload.isShowCurrentArrearsDate()).isTrue();
+            assertThat(payload.getCurrentArrearsDate()).isEqualTo("1 November 2026");
+            assertThat(payload.isShowRentProofType()).isTrue();
+            assertThat(payload.getRentProofTypeLabel()).isEqualTo(CitizenClaimRentProofType.TABLE.getLabel());
+            assertThat(payload.isShowPreActionProtocolFollowed()).isFalse();
+        }
+
+        @Test
+        void citizenClaimPrintsWhyNoticeWasNotServed() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.NO)
+                .noticeStatement("No notice is needed")
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isNoticeNotServedDisplayed()).isTrue();
+            assertThat(payload.getNoticeNotServedReason()).isEqualTo("No notice is needed");
+            assertThat(payload.isShowNoticeServiceMethods()).isFalse();
+            assertThat(payload.isShowNoticeUploadQuestion()).isFalse();
+        }
+
+        @Test
+        void exUiClaimLeavesTheCitizenFieldsEmptyAndHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
+            claim.setPreActionProtocolFollowed(VerticalYesNo.YES);
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .servingMethod(NoticeServiceMethod.EMAIL)
+                .noticeDateTime(LocalDateTime.of(2026, 8, 2, 10, 30))
+                .noticeDetails("tom@example.com")
+                .isAbleToUploadDocument(YesOrNo.YES)
+                .build());
+            claim.setRentArrears(RentArrearsEntity.builder()
+                .totalRentArrears(new BigDecimal("5000.00"))
+                .build());
+            TenancyLicenceEntity tenancy = new TenancyLicenceEntity();
+            tenancy.setRentAmount(new BigDecimal("1250.00"));
+            pcsCase.setTenancyLicence(tenancy);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getNoticeServiceMethods()).isNull();
+            assertThat(payload.isShowNoticeServiceMethods()).isFalse();
+            assertThat(payload.isShowNoticeType()).isFalse();
+            assertThat(payload.isShowNoticeUploadQuestion()).isFalse();
+            assertThat(payload.getNoticeUploadedYesNo()).isNull();
+            assertThat(payload.getNoticeNotUploadedReason()).isNull();
+            assertThat(payload.getRentDueDay()).isNull();
+            assertThat(payload.isShowRentDueDay()).isFalse();
+            assertThat(payload.getArrearsAtNoticeDate()).isNull();
+            assertThat(payload.isShowArrearsAtNoticeDate()).isFalse();
+            assertThat(payload.getCurrentArrearsDate()).isNull();
+            assertThat(payload.isShowCurrentArrearsDate()).isFalse();
+            assertThat(payload.getRentProofTypeLabel()).isNull();
+            assertThat(payload.isShowRentProofType()).isFalse();
+            assertThat(payload.isShowPreActionProtocolFollowed()).isTrue();
         }
     }
 

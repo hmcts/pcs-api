@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
@@ -75,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -287,6 +289,9 @@ public class CitizenPossessionClaimSubmitService {
         boolean recoveryAttempted = StringUtils.isNotBlank(rentArrears.getRecoverySteps());
         return RentArrearsEntity.builder()
             .totalRentArrears(rentArrears.getCurrentArrears())
+            .totalRentArrearsDate(rentArrears.getCurrentArrearsDate())
+            .arrearsAtNoticeDate(rentArrears.getArrearsAtNoticeDate())
+            .proofType(rentArrears.getProofType())
             .arrearsJudgmentWanted(rentArrears.getMoneyJudgmentWanted())
             .recoveryAttempted(VerticalYesNo.from(recoveryAttempted))
             .recoveryAttemptDetails(recoveryAttempted ? rentArrears.getRecoverySteps() : null)
@@ -301,6 +306,7 @@ public class CitizenPossessionClaimSubmitService {
         boolean served = notice.getNoticeServed() == VerticalYesNo.YES;
         entity.setNoticeServed(YesOrNo.from(served));
         if (!served) {
+            entity.setNoticeStatement(blankToNull(notice.getNoNoticeReason()));
             return entity;
         }
 
@@ -311,37 +317,49 @@ public class CitizenPossessionClaimSubmitService {
             entity.setUnableToUploadReason(notice.getNoticeUnavailableReason());
         }
 
-        primaryNoticeMethod(notice).ifPresentOrElse(
-            method -> {
-                entity.setServingMethod(method.getNoticeServiceMethod());
-                switch (method) {
-                    case FIRST_CLASS_POST -> entity.setNoticeDate(notice.getPostedDate());
-                    case PERMITTED_PLACE -> entity.setNoticeDate(notice.getDeliveredDate());
-                    case PERSONALLY_HANDED -> {
-                        entity.setNoticeDate(notice.getHandedDate());
-                        entity.setNoticeDetails(notice.getHandedToName());
-                    }
-                    case EMAIL -> {
-                        entity.setNoticeDate(notice.getEmailedDate());
-                        entity.setNoticeDetails(notice.getEmailedTo());
-                    }
-                    case OTHER_ELECTRONIC -> {
-                        entity.setNoticeDate(notice.getOtherElectronicDate());
-                        entity.setNoticeDetails(notice.getOtherElectronicDetails());
-                    }
-                    case OTHER -> {
-                        entity.setNoticeDate(notice.getOtherMethodDate());
-                        entity.setNoticeDetails(notice.getOtherMethodDetails());
-                    }
-                }
-                if (entity.getNoticeDate() == null) {
-                    entity.setNoticeDate(notice.getNoticeDate());
-                }
-            },
-            () -> entity.setNoticeDate(notice.getNoticeDate())
-        );
+        List<CitizenClaimNoticeMethod> methods = noticeMethodsInOrder(notice);
+        if (methods.isEmpty()) {
+            entity.setNoticeDate(notice.getNoticeDate());
+            return entity;
+        }
+
+        CitizenClaimNoticeMethod primary = methods.getFirst();
+        entity.setServingMethod(primary.getNoticeServiceMethod());
+        entity.setNoticeDate(Optional.ofNullable(noticeMethodDate(notice, primary)).orElse(notice.getNoticeDate()));
+        entity.setNoticeDetails(noticeMethodDetails(notice, primary));
+
+        for (int i = 0; i < methods.size(); i++) {
+            CitizenClaimNoticeMethod method = methods.get(i);
+            entity.addServiceMethod(NoticeServiceMethodEntity.builder()
+                                        .method(method.getNoticeServiceMethod())
+                                        .servedDate(noticeMethodDate(notice, method))
+                                        .details(blankToNull(noticeMethodDetails(notice, method)))
+                                        .displayOrder(i + 1)
+                                        .build());
+        }
 
         return entity;
+    }
+
+    private static LocalDate noticeMethodDate(CitizenClaimNotice notice, CitizenClaimNoticeMethod method) {
+        return switch (method) {
+            case FIRST_CLASS_POST -> notice.getPostedDate();
+            case PERMITTED_PLACE -> notice.getDeliveredDate();
+            case PERSONALLY_HANDED -> notice.getHandedDate();
+            case EMAIL -> notice.getEmailedDate();
+            case OTHER_ELECTRONIC -> notice.getOtherElectronicDate();
+            case OTHER -> notice.getOtherMethodDate();
+        };
+    }
+
+    private static String noticeMethodDetails(CitizenClaimNotice notice, CitizenClaimNoticeMethod method) {
+        return switch (method) {
+            case FIRST_CLASS_POST, PERMITTED_PLACE -> null;
+            case PERSONALLY_HANDED -> notice.getHandedToName();
+            case EMAIL -> notice.getEmailedTo();
+            case OTHER_ELECTRONIC -> notice.getOtherElectronicDetails();
+            case OTHER -> notice.getOtherMethodDetails();
+        };
     }
 
     private static String noticeTypeDescription(CitizenClaimNotice notice) {
@@ -355,12 +373,13 @@ public class CitizenPossessionClaimSubmitService {
         return noticeType.getLabel();
     }
 
-    private static Optional<CitizenClaimNoticeMethod> primaryNoticeMethod(CitizenClaimNotice notice) {
+    // In the order the frontend offers them; the first is the primary method.
+    private static List<CitizenClaimNoticeMethod> noticeMethodsInOrder(CitizenClaimNotice notice) {
         Set<CitizenClaimNoticeMethod> methods = notice.getNoticeMethods();
         if (methods == null) {
-            return Optional.empty();
+            return List.of();
         }
-        return methods.stream().filter(Objects::nonNull).min(Comparator.naturalOrder());
+        return methods.stream().filter(Objects::nonNull).distinct().sorted().toList();
     }
 
     private StatementOfTruthEntity buildStatementOfTruth(CitizenPossessionClaim claim) {
@@ -525,6 +544,7 @@ public class CitizenPossessionClaimSubmitService {
         if (rentArrears != null && rentArrears.getRentFrequency() != null) {
             entity.setRentAmount(rentArrears.getRentAmount());
             entity.setRentFrequency(rentArrears.getRentFrequency());
+            entity.setRentDueDay(rentArrears.getRentDueDay());
             if (rentArrears.getRentFrequency() == RentPaymentFrequency.OTHER) {
                 entity.setOtherRentFrequency(rentArrears.getOtherFrequencyDetails());
             }

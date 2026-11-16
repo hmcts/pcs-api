@@ -28,6 +28,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +42,9 @@ class NoticeDetailsBuilderTest {
 
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
+    private CitizenClaimTabDetailsBuilder citizenClaimTabDetailsBuilder;
 
     @InjectMocks
     private NoticeDetailsBuilder noticeDetailsBuilder;
@@ -405,4 +410,23 @@ class NoticeDetailsBuilderTest {
                 Arguments.of(NoticeServiceMethod.OTHER, NoticeServiceMethod.OTHER.getLabel())
         );
     }
+
+    @Test
+    void shouldAddTheCitizenClaimAnswersToAnEnglandNotice() {
+        PCSCase pcsCase = PCSCase.builder().noticeServed(YesOrNo.NO).build();
+
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
+
+        verify(citizenClaimTabDetailsBuilder).addNoticeDetails(noticeTabDetails, pcsCaseEntity);
+    }
+
+    @Test
+    void shouldNotAddTheCitizenClaimAnswersToAWalesNotice() {
+        PCSCase pcsCase = PCSCase.builder().legislativeCountry(LegislativeCountry.WALES).build();
+
+        noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
+
+        verifyNoInteractions(citizenClaimTabDetailsBuilder);
+    }
+
 }

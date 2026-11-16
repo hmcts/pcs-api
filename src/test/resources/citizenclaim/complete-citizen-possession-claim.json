@@ -125,7 +125,6 @@
     "rentArrears": {
       "rentAmount": "125000",
       "rentFrequency": "MONTHLY",
-      "rentDueDay": 1,
       "arrearsAtNoticeDate": "375000",
       "currentArrears": "500000",
       "currentArrearsDate": "2026-11-01",

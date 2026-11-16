@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.CitizenClaimTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
@@ -91,6 +92,7 @@ public class CaseDetailsTabView {
     private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
     private final UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
+    private final CitizenClaimTabDetailsBuilder citizenClaimTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, boolean isSubmitted) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -100,6 +102,7 @@ public class CaseDetailsTabView {
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails =
             rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, isSubmitted);
+        citizenClaimTabDetailsBuilder.addRentArrearsDetails(rentArrearsTabDetails, pcsCaseEntity);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails =
             reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
