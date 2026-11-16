@@ -10,6 +10,8 @@ buildscript {
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    // Flyway needs Jackson here to parse the PostgreSQL migration-lock setting.
+    classpath('tools.jackson.core:jackson-databind:3.1.6')
   }
 }
 
@@ -587,6 +589,7 @@ bootJar {
 }
 
 flyway {
+  pluginConfiguration = ['postgresql.transactional.lock': 'false']
   url = System.getenv('FLYWAY_URL')
   user = System.getenv('FLYWAY_USER')
   password = System.getenv('FLYWAY_PASSWORD')
