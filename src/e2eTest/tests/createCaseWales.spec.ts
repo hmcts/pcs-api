@@ -11,7 +11,6 @@ import {
   asbQuestionsWales,
   whatAreYourGroundsForPossessionWales,
   checkYourAnswers,
-  propertyDetails,
   home
 } from '@data/page-data';
 import {
@@ -61,7 +60,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales]', async () => {
-  test('Wales - Standard Contract - Rent arrears only @MAC', async () => {
+  test('Wales - Standard Contract - Rent arrears only @MAC @nightly', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,

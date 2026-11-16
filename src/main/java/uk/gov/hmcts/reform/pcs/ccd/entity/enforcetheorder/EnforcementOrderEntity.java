@@ -60,6 +60,9 @@ public class EnforcementOrderEntity {
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantEntity warrantDetails;
 
+    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    private WritEntity writDetails;
+
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
 

@@ -1055,11 +1055,11 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
-       
+
     }
 
     @Test
@@ -1075,7 +1075,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
