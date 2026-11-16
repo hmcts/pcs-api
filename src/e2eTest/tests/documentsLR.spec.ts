@@ -76,9 +76,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     });
 
     await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id });
-
-    // Waits internally until the case reflects the payment
-    await performAction('updatePaymentAPILRCC', { amt: 3500, app: 'Counter Claim' });
+    await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
   }
 
   if (title.includes('MULTI_APP')) {
