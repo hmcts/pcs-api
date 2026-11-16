@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
@@ -24,13 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -48,7 +45,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final HearingService hearingService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseService pcsCaseService;
-    private final HearingSummaryRenderer hearingSummaryRenderer;
     private final ConfirmationBodyRenderer confirmationBodyRenderer;
     private final HearingNoticeScheduler hearingNoticeScheduler;
 
@@ -56,7 +52,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                          HearingService hearingService,
                          LocationReferenceService locationReferenceService,
                          PcsCaseService pcsCaseService,
-                         HearingSummaryRenderer hearingSummaryRenderer,
                          ConfirmationBodyRenderer confirmationBodyRenderer,
                          HearingNoticeScheduler hearingNoticeScheduler) {
 
@@ -64,7 +59,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         this.hearingService = hearingService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseService = pcsCaseService;
-        this.hearingSummaryRenderer = hearingSummaryRenderer;
         this.confirmationBodyRenderer = confirmationBodyRenderer;
         this.hearingNoticeScheduler = hearingNoticeScheduler;
     }
@@ -94,22 +88,12 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         setHearingLocation(eventPayload, pcsCase);
 
         pcsCase.setHearingSelection(hearingService.buildHearingSelection(pcsCaseEntity));
-        Optional<HearingEntity> editableHearing = hearingService.findEditableHearing(pcsCaseEntity);
-
-        if (editableHearing.isEmpty()) {
+        pcsCase.setSelectedHearingId(null);
+        if (pcsCase.getHearingSelection().getListItems().isEmpty()) {
             hearingService.clearHearingForm(pcsCase);
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
-            pcsCase.setSelectedHearingId(null);
         } else {
-            HearingEntity nextHearingEntity = editableHearing.get();
-            String hearingLocation = pcsCase.getHearingLocation();
-            Hearing hearing = pcsCase.getHearing() == null ? Hearing.builder().build() : pcsCase.getHearing();
-            hearing.setHearingId(nextHearingEntity.getId());
-            hearing.setHearingSummaryMarkdown(
-                hearingSummaryRenderer.renderMarkdown(nextHearingEntity, hearingLocation));
-            pcsCase.setHearing(hearing);
-            pcsCase.setSelectedHearingId(null);
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
         }
 

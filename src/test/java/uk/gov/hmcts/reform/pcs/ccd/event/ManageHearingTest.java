@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -28,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -36,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.time.Month.JULY;
@@ -67,8 +67,6 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private HearingSummaryRenderer hearingSummaryRenderer;
-    @Mock
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
     private HearingNoticeScheduler hearingNoticeScheduler;
@@ -81,7 +79,7 @@ public class ManageHearingTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
-                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer,
+                                      pcsCaseService, confirmationBodyRenderer,
                                       hearingNoticeScheduler);
         setEventUnderTest(underTest);
         lenient().when(hearingService.addHearing(anyLong(), any())).thenReturn(HearingEntity.builder().build());
@@ -114,6 +112,8 @@ public class ManageHearingTest extends BaseEventTest {
                 .value(List.of())
                 .listItems(List.of())
                 .build());
+            lenient().when(hearingService.buildHearingSelection(pcsCaseEntity))
+                .thenReturn(DynamicStringList.builder().listItems(List.of()).build());
             when(caseLocation.getBaseLocation()).thenReturn(Integer.toString(BASE_LOCATION_ID));
         }
 
@@ -129,15 +129,10 @@ public class ManageHearingTest extends BaseEventTest {
                 .build();
 
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            if (expectedShowManageHearingPage == VerticalYesNo.YES) {
-                when(hearingService.findEditableHearing(pcsCaseEntity))
-                    .thenReturn(Optional.of(hearingEntities.stream()
-                                        .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
-                                        .findFirst()
-                                        .orElseThrow()));
-            } else {
-                when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.empty());
-            }
+            when(hearingService.buildHearingSelection(pcsCaseEntity)).thenReturn(DynamicStringList.builder()
+                .listItems(hearingEntities.stream().filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+                    .map(hearing -> DynamicStringListElement.builder().code("1").label("Hearing").build()).toList())
+                .build());
 
             // When
             PCSCase response = callStartHandler(pcsCase);
@@ -155,8 +150,8 @@ public class ManageHearingTest extends BaseEventTest {
                     ManageHearingOption.ADD),
                 arguments(
                     List.of(createHearing(FIXED_TEST_TIME.minusSeconds(1))),
-                    VerticalYesNo.NO,
-                    ManageHearingOption.ADD
+                    VerticalYesNo.YES,
+                    null
                 ),
                 arguments(
                     List.of(createCancelledHearing(FIXED_TEST_TIME.plusSeconds(1))),
@@ -197,81 +192,9 @@ public class ManageHearingTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSetNextHearingId() {
-            // Given
-            HearingEntity hearingEntity1 = createHearing(FIXED_TEST_TIME.minusSeconds(1));
-            hearingEntity1.setId(1001);
-
-            HearingEntity hearingEntity2 = createHearing(FIXED_TEST_TIME.plusSeconds(1));
-            hearingEntity2.setId(1002);
-
-            HearingEntity hearingEntity3 = createHearing(FIXED_TEST_TIME.plusSeconds(2));
-            hearingEntity3.setId(1003);
-
-            HearingEntity hearingEntity4 = createHearing(FIXED_TEST_TIME.plusSeconds(3));
-            hearingEntity4.setId(1004);
-
-            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity2));
-
-            PCSCase pcsCase = PCSCase.builder()
-                .caseManagementLocation(caseLocation)
-                .hearing(new Hearing())
-                .build();
-
-            // When
-            PCSCase response = callStartHandler(pcsCase);
-
-            // Then
-            assertThat(response.getHearing().getHearingId()).isEqualTo(1002);
-        }
-
-        @Test
-        void shouldNotSetSelectedHearingIdOnStart() {
-            // Given
-            HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
-            hearingEntity.setId(1002);
-            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
-
-            PCSCase pcsCase = PCSCase.builder()
-                .caseManagementLocation(caseLocation)
-                .selectedHearingId("stale-selected-id")
-                .hearing(new Hearing())
-                .build();
-
-            // When
-            PCSCase response = callStartHandler(pcsCase);
-
-            // Then
-            assertThat(response.getHearing().getHearingId()).isEqualTo(1002);
+        void shouldClearSelectedHearingIdOnStart() {
+            PCSCase response = callStartHandler(PCSCase.builder().selectedHearingId("stale-selected-id").build());
             assertThat(response.getSelectedHearingId()).isNull();
-        }
-
-        @Test
-        void shouldSetHearingSummaryMarkdown() {
-            // Given
-            final String hearingLocation = "Hearing location name";
-            final String expectedHearingSummaryMarkdown = "some hearing summary markdown";
-
-            stubHearingLocation(hearingLocation);
-
-            HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
-
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            hearingEntity.setId(1001);
-            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
-            when(hearingSummaryRenderer.renderMarkdown(hearingEntity, hearingLocation))
-                .thenReturn(expectedHearingSummaryMarkdown);
-
-            PCSCase pcsCase = PCSCase.builder()
-                .caseManagementLocation(caseLocation)
-                .hearing(new Hearing())
-                .build();
-
-            // When
-            PCSCase response = callStartHandler(pcsCase);
-
-            // Then
-            assertThat(response.getHearing().getHearingSummaryMarkdown()).isEqualTo(expectedHearingSummaryMarkdown);
         }
 
         @Test
