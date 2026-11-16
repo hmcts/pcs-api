@@ -28,7 +28,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('getCaseAPI', 'Link Solicitor');
     await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
     await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
-    await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
+    await performAction('updatePaymentAPI');
     await performAction('getAllPartyDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
