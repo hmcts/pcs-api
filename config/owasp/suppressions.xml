@@ -64,19 +64,22 @@
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
   </suppress>
-  <!--End of false positives section -->
-
   <suppress until="2027-01-15">
     <notes><![CDATA[
-    HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
-    published upstream yet. Remove when a patched kotlin-stdlib is available.
+    HDPI-8150: false positive (CPE mismatch). GHSA-r937-wjx7-w2jp scopes CVE-2026-53914 to
+    org.jetbrains.kotlin:kotlin-gradle-plugin < 2.4.20 (fixed in 2.4.20); NVD's
+    kotlin CPE makes dependency-check flag kotlin-stdlib 1.9.25 as well.
     The risk vector (build-cache deserialization) is irrelevant to PCS's runtime —
     PCS ships kotlin-stdlib as a transitive runtime jar but does not run the Kotlin compiler or
-    consume Kotlin build-cache metadata in production
+    consume Kotlin build-cache metadata in production, and does not apply the Kotlin Gradle plugin.
+    https://github.com/advisories/GHSA-r937-wjx7-w2jp
+    Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
   </suppress>
+  <!--End of false positives section -->
+
   <suppress until="2027-01-15">
     <notes><![CDATA[
     CVE-2026-59313/59314: Spring 6.2.20 is Enterprise-only and absent from Maven Central;
