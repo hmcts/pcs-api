@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -35,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 @Service
 @AllArgsConstructor
@@ -134,8 +135,7 @@ public class WritOfPossessionPersistenceService {
 
     private List<EnforcementDefendant> buildDefendants(EnforcementOrderEntity enforcementOrder,
                                                             AddressEntity propertyAddress) {
-        return enforcementOrder.getSelectedDefendants().stream()
-            .map(SelectedDefendantEntity::getParty)
+        return partiesByRole(enforcementOrder.getPcsCase().getMainClaim(), PartyRole.DEFENDANT).stream()
             .map(defendant -> EnforcementDefendant.builder()
                 .name(partyService.getPartyName(defendant))
                 .address(formatAddress(defenceCorrespondenceAddressResolver

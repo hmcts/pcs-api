@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
-import uk.gov.hmcts.reform.pcs.ccd.model.WarrantOfPossessionTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession.WarrantOfPossessionService;
 
@@ -31,8 +31,8 @@ public class WarrantOfPossessionGenerationComponent {
     private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
     private static final String MDC_FAILURE_REASON = "failureReason";
 
-    public static final TaskDescriptor<WarrantOfPossessionTaskData> WARRANT_OF_POSSESSION_TASK_DESCRIPTOR =
-        TaskDescriptor.of(WARRANT_OF_POSSESSION_GENERATION_TASK_NAME, WarrantOfPossessionTaskData.class);
+    public static final TaskDescriptor<EnforcementDocumentTaskData> WARRANT_OF_POSSESSION_TASK_DESCRIPTOR =
+        TaskDescriptor.of(WARRANT_OF_POSSESSION_GENERATION_TASK_NAME, EnforcementDocumentTaskData.class);
 
     private final WarrantOfPossessionService warrantOfPossessionService;
     private final ClaimActivityLogService claimActivityLogService;
@@ -52,13 +52,13 @@ public class WarrantOfPossessionGenerationComponent {
     }
 
     @Bean
-    public CustomTask<WarrantOfPossessionTaskData> warrantOfPossessionGenerationTask() {
+    public CustomTask<EnforcementDocumentTaskData> warrantOfPossessionGenerationTask() {
         return Tasks.custom(WARRANT_OF_POSSESSION_TASK_DESCRIPTOR)
-            .onFailure(FailureHandler.<WarrantOfPossessionTaskData>maxRetries(maxRetries)
+            .onFailure(FailureHandler.<EnforcementDocumentTaskData>maxRetries(maxRetries)
                            .withBackoff(backoffDelay)
                            .thenRemove())
             .execute((taskInstance, executionContext) -> {
-                WarrantOfPossessionTaskData data = taskInstance.getData();
+                EnforcementDocumentTaskData data = taskInstance.getData();
                 UUID enforcementOrderId = data.getEnforcementOrderId();
                 MDC.put(MDC_CASE_REFERENCE, String.valueOf(data.getCaseReference()));
                 MDC.put(MDC_ENFORCEMENT_ORDER_ID, String.valueOf(enforcementOrderId));
@@ -95,7 +95,7 @@ public class WarrantOfPossessionGenerationComponent {
         return attempt > maxRetries;
     }
 
-    private void recordGenerationFailure(WarrantOfPossessionTaskData data, Exception cause, boolean terminal) {
+    private void recordGenerationFailure(EnforcementDocumentTaskData data, Exception cause, boolean terminal) {
         try {
             claimActivityLogService.logGenerationFailure(data.getCaseReference(), null,
                 GenerationDetails.forFailure(DocumentType.WARRANT_OF_POSSESSION, cause, terminal));

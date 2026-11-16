@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
+
 @Service
 @AllArgsConstructor
 public class WarrantOfPossessionPersistenceService {
@@ -124,13 +126,24 @@ public class WarrantOfPossessionPersistenceService {
 
     private List<EnforcementDefendant> buildDefendants(EnforcementOrderEntity enforcementOrder,
                                                        AddressEntity propertyAddress) {
-        return enforcementOrder.getSelectedDefendants().stream()
-            .map(SelectedDefendantEntity::getParty)
+        return defendantsToEvict(enforcementOrder).stream()
             .map(defendant -> EnforcementDefendant.builder()
                 .name(partyService.getPartyName(defendant))
                 .address(formatAddress(defenceCorrespondenceAddressResolver
                                            .resolveCorrespondenceAddress(defendant, propertyAddress)))
                 .build())
+            .toList();
+    }
+
+    /**
+     * Every defendant on the claim when the claimant chose to evict everyone, otherwise the defendants they selected.
+     */
+    private List<PartyEntity> defendantsToEvict(EnforcementOrderEntity enforcementOrder) {
+        if (enforcementOrder.getWarrantDetails().getEvictEveryone() == VerticalYesNo.YES) {
+            return partiesByRole(enforcementOrder.getPcsCase().getMainClaim(), PartyRole.DEFENDANT);
+        }
+        return enforcementOrder.getSelectedDefendants().stream()
+            .map(SelectedDefendantEntity::getParty)
             .toList();
     }
 

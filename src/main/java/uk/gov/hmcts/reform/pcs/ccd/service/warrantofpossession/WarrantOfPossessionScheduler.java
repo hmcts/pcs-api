@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.WarrantOfPossessionTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.WarrantOfPossessionGenerationComponent;
 
 import java.time.Instant;
@@ -23,7 +23,7 @@ public class WarrantOfPossessionScheduler {
      * case still gets its own document.
      */
     public void scheduleWarrantOfPossessionGeneration(long caseReference, UUID enforcementOrderId) {
-        WarrantOfPossessionTaskData taskData = WarrantOfPossessionTaskData.builder()
+        EnforcementDocumentTaskData taskData = EnforcementDocumentTaskData.builder()
             .caseReference(caseReference)
             .enforcementOrderId(enforcementOrderId)
             .build();

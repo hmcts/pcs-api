@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.writofpossession;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.WritOfPossessionTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.WritOfPossessionGenerationComponent;
 
 import java.time.Instant;
@@ -23,7 +23,7 @@ public class WritOfPossessionScheduler {
      * gets its own document.
      */
     public void scheduleWritOfPossessionGeneration(long caseReference, UUID enforcementOrderId) {
-        WritOfPossessionTaskData taskData = WritOfPossessionTaskData.builder()
+        EnforcementDocumentTaskData taskData = EnforcementDocumentTaskData.builder()
             .caseReference(caseReference)
             .enforcementOrderId(enforcementOrderId)
             .build();

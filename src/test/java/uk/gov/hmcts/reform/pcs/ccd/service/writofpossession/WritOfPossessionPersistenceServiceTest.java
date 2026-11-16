@@ -13,13 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
@@ -85,6 +86,7 @@ class WritOfPossessionPersistenceServiceTest {
     private final PartyEntity claimant = party();
     private final PartyEntity defendant1 = party();
     private final PartyEntity defendant2 = party();
+    private final PartyEntity removedDefendant = PartyEntity.builder().id(UUID.randomUUID()).removed(true).build();
     private PcsCaseEntity pcsCase;
 
     @BeforeEach
@@ -94,7 +96,14 @@ class WritOfPossessionPersistenceServiceTest {
             new AddressFormatter(), defenceCorrespondenceAddressResolver, recipientAddressResolver,
             notificationService);
 
-        pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).propertyAddress(propertyAddress).build();
+        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
+            ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+            ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build(),
+            ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
+            ClaimPartyEntity.builder().party(removedDefendant).role(PartyRole.DEFENDANT).rank(3).build()
+        )).build();
+        pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).propertyAddress(propertyAddress)
+            .claims(List.of(claim)).build();
 
         lenient().when(partyService.getPrimaryClaimantPartyEntity(pcsCase)).thenReturn(claimant);
         lenient().when(partyService.getPartyName(claimant)).thenReturn("Acme Ltd");
@@ -178,16 +187,14 @@ class WritOfPossessionPersistenceServiceTest {
     }
 
     @Test
-    void shouldListEachSelectedDefendantWithTheirOwnAddress() {
+    void shouldListEveryActiveDefendantOnTheClaimWithTheirOwnAddress() {
         when(partyService.getPartyName(defendant1)).thenReturn("Bob Tenant");
         when(partyService.getPartyName(defendant2)).thenReturn("Jo Tenant");
         when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant1, propertyAddress))
             .thenReturn(AddressUK.builder().addressLine1("1 Rented Road").postCode("CF10 1AA").build());
         when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant2, propertyAddress))
             .thenReturn(AddressUK.builder().addressLine1("9 Elsewhere Street").postCode("LS1 2BB").build());
-        EnforcementOrderEntity enforcementOrder = enforcementOrder(WritEntity.builder().build());
-        enforcementOrder.addSelectedDefendants(List.of(selectedDefendant(defendant1), selectedDefendant(defendant2)));
-        stubEnforcementOrder(enforcementOrder);
+        stubEnforcementOrder(enforcementOrder(WritEntity.builder().build()));
 
         WritOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
 
@@ -257,10 +264,6 @@ class WritOfPossessionPersistenceServiceTest {
             .selectedDefendants(new ArrayList<>())
             .documents(new ArrayList<>())
             .build();
-    }
-
-    private static SelectedDefendantEntity selectedDefendant(PartyEntity party) {
-        return SelectedDefendantEntity.builder().party(party).build();
     }
 
     private static PartyEntity party() {

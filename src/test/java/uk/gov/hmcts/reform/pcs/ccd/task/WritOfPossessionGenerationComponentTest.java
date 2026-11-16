@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
-import uk.gov.hmcts.reform.pcs.ccd.model.WritOfPossessionTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.writofpossession.WritOfPossessionService;
 
@@ -55,7 +55,7 @@ class WritOfPossessionGenerationComponentTest {
     private ClaimActivityLogService claimActivityLogService;
 
     @Mock
-    private TaskInstance<WritOfPossessionTaskData> taskInstance;
+    private TaskInstance<EnforcementDocumentTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -91,7 +91,7 @@ class WritOfPossessionGenerationComponentTest {
         assertThat(WRIT_OF_POSSESSION_TASK_DESCRIPTOR.getTaskName())
             .isEqualTo("writ-of-possession-generation-task");
         assertThat(WRIT_OF_POSSESSION_TASK_DESCRIPTOR.getDataClass())
-            .isEqualTo(WritOfPossessionTaskData.class);
+            .isEqualTo(EnforcementDocumentTaskData.class);
     }
 
     @Test
@@ -99,8 +99,8 @@ class WritOfPossessionGenerationComponentTest {
     void successfulExecutionReturnsOnCompleteRemove() {
         when(taskInstance.getData()).thenReturn(taskData());
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
-        CompletionHandler<WritOfPossessionTaskData> result = task.execute(taskInstance, executionContext);
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
+        CompletionHandler<EnforcementDocumentTaskData> result = task.execute(taskInstance, executionContext);
 
         verify(writOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
@@ -115,7 +115,7 @@ class WritOfPossessionGenerationComponentTest {
         doThrow(new RuntimeException("transient"))
             .when(writOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
@@ -134,7 +134,7 @@ class WritOfPossessionGenerationComponentTest {
         doThrow(new RuntimeException("docassembly 500"))
             .when(writOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
@@ -164,7 +164,7 @@ class WritOfPossessionGenerationComponentTest {
         doThrow(new RuntimeException("transient"))
             .when(writOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
@@ -182,7 +182,7 @@ class WritOfPossessionGenerationComponentTest {
         doThrow(new RuntimeException("docassembly 500"))
             .when(writOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
@@ -200,15 +200,15 @@ class WritOfPossessionGenerationComponentTest {
         doThrow(new RuntimeException("log write failed"))
             .when(claimActivityLogService).logGenerationFailure(anyLong(), any(), any());
 
-        CustomTask<WritOfPossessionTaskData> task = component.writOfPossessionGenerationTask();
+        CustomTask<EnforcementDocumentTaskData> task = component.writOfPossessionGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("generation failed");
     }
 
-    private static WritOfPossessionTaskData taskData() {
-        return WritOfPossessionTaskData.builder()
+    private static EnforcementDocumentTaskData taskData() {
+        return EnforcementDocumentTaskData.builder()
             .caseReference(CASE_REFERENCE)
             .enforcementOrderId(ENFORCEMENT_ORDER_ID)
             .build();

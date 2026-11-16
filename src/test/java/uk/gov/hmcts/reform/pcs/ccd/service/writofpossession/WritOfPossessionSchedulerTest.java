@@ -8,7 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.model.WritOfPossessionTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.WritOfPossessionGenerationComponent;
 
 import java.util.UUID;
@@ -54,7 +54,8 @@ class WritOfPossessionSchedulerTest {
         ArgumentCaptor<SchedulableInstance> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
         verify(schedulerClient).scheduleIfNotExists(captor.capture());
 
-        WritOfPossessionTaskData taskData = (WritOfPossessionTaskData) captor.getValue().getTaskInstance().getData();
+        EnforcementDocumentTaskData taskData =
+            (EnforcementDocumentTaskData) captor.getValue().getTaskInstance().getData();
         assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(taskData.getEnforcementOrderId()).isEqualTo(ENFORCEMENT_ORDER_ID);
     }
