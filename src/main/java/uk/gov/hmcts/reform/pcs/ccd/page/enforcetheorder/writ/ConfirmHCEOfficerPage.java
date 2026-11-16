@@ -18,8 +18,8 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                             </span>
                         </summary>
                         <div class="govuk-details__text">
-                            <p class="govuk-body">A High Court enforcement officer (HCEO) is a type of bailiff. If your
-                            application for a writ is successful, a High Court enforcement officer will carry out the
+                            <p class="govuk-body">A High Court Enforcement Officer (HCEO) is a type of bailiff. If your
+                            application for a writ is successful, a High Court Enforcement Officer will carry out the
                             eviction.
                             </p>
                             <p class="govuk-body">You can either choose your own HCEO, or we will choose one for you.
@@ -28,10 +28,10 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                             send it to).
                             </p>
                             <p class="govuk-body govuk-!-font-weight-bold">If you want to choose your own High Court
-                             enforcement officer
+                             Enforcement Officer
                             </p>
-                            <p class="govuk-body">It usually costs around £1000.00 to hire a High Court enforcement
-                             officer to do an eviction.
+                            <p class="govuk-body">It usually costs around £1000.00 to hire a High Court Enforcement
+                             Officer to do an eviction.
                             </p>
                             <p class="govuk-body govuk-!-margin-bottom-1">You may need to pay additional fees for things
                              like:</p>
@@ -49,19 +49,19 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                               <li class="govuk-!-font-size-19">
                                <a href="https://certificatedbailiffs.justice.gov.uk/searchPublic.do?search"
                                rel="noreferrer noopener" target="_blank" class="govuk-link">search for a High Court
-                               enforcement officer using your postcode</a>
+                               Enforcement Officer using your postcode</a>
                               </li>
                               <li class="govuk-!-font-size-19">
                                <a href="https://www.hceoa.org.uk/choosing-a-hceo"
                                rel="noreferrer noopener" target="_blank" class="govuk-link">check the full list of High
-                               Court enforcement officers</a> and choose one in your area
+                               Court Enforcement Officers</a> and choose one in your area
                               </li>
                               <li class="govuk-!-font-size-19 govuk-!-padding-bottom-1">search for an HCEO using a
                                search engine
                               </li>
                             </ul>
-                            <p class="govuk-body">We’ll ask you to provide the name of your High Court enforcement
-                            officer on the next page.
+                            <p class="govuk-body">We’ll ask you to provide the name of your High Court Enforcement
+                            Officer on the next page.
                             </p>
                         </div>
                     </details>
