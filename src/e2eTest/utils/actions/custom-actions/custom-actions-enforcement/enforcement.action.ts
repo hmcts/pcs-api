@@ -271,14 +271,14 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      //bug, Defendant name and address are not showing up on Welsh page
+      // HDPI-9502, Defendant name and address are not showing up on Welsh page
       // await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
 
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
     );
-    //bug, Defendant name and address are not showing up on Welsh page
+    // HDPI-9502, Defendant name and address are not showing up on Welsh page
     // await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
