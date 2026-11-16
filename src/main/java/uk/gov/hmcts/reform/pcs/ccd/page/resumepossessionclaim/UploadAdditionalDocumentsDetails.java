@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 import java.nio.charset.StandardCharsets;
@@ -64,8 +65,10 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
             .list(PCSCase::getAdditionalDocuments)
                 .readonly(AdditionalDocument::getDocumentType, NEVER_SHOW, true)
-                .mandatory(AdditionalDocument::getDocumentTypeEngland, ENGLAND)
-                .mandatory(AdditionalDocument::getDocumentTypeWales, WALES)
+                .mandatory(AdditionalDocument::getDocumentTypeEngland,
+                    or(ENGLAND, "documentTypeEngland=\"*\""))
+                .mandatory(AdditionalDocument::getDocumentTypeWales,
+                    or(WALES, "documentTypeWales=\"*\""))
                 .mandatory(AdditionalDocument::getDocument)
                 .mandatory(AdditionalDocument::getDescription)
             .done()
