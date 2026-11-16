@@ -64,9 +64,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     }
 
     private DynamicStringList buildApplicationTypeList() {
-        boolean release1bEnabled = featureToggleService.isEnabled(FeatureFlag.RELEASE_1B);
-        boolean enforcementEnabled = featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT);
-        boolean suspendEnabled = release1bEnabled && enforcementEnabled;
+        boolean suspendEnabled = featureToggleService.isEnabled(FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2);
         List<DynamicStringListElement> listItems = Arrays.stream(GenAppType.values())
             .filter(value -> suspendEnabled || value != GenAppType.SUSPEND)
             .map(value -> DynamicStringListElement.builder()
