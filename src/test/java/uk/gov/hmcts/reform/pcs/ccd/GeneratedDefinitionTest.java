@@ -84,7 +84,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(17);
+        assertThat(roleByTab).hasSize(18);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -158,6 +158,8 @@ class GeneratedDefinitionTest {
         assertThat(readers.get("caseDetailsHeading")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
         assertThat(readers.get("claimantDetailsHeading")).containsExactlyInAnyOrderElementsOf(PARTY_VISIBLE_PROFILES);
         assertThat(readers.get("judicialNotesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(JUDICIAL_PROFILES);
+        assertThat(readers.get("messagesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
+        assertThat(readers.get("messagesMarkdown")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("caseReviewDatesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
     }
 
