@@ -110,6 +110,8 @@ export class PageContentValidation implements IValidation {
     // Short wait for network to settle so hydrated/dynamically rendered content is present.
     // Capped + non-fatal so slow trackers don't block the run.
     await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
+    await page.locator(':has-text("Translation in progress")').first()
+      .waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {
