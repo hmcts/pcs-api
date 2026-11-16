@@ -20,14 +20,13 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmCaseDisposal;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.ConfirmDisposal;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.MarkForDisposal;
 
 /**
- * Delete feature to allow ccd data to be deleted via the ccd-case-disposer microservice for cases in the data-store.
- * This relies on running the events that transition the case to Draft Discarded.
- * Central CCD hard-delete via the disposer also needs resolved_ttl set (via TTLIncrement on confirmCaseDisposal).
- * The data in the decentralised ccd schema is deleted separately via the Repository.
+ * Triggers CCD retain-and-dispose system events ({@code MarkForDisposal}, {@code ConfirmDisposal}).
+ * Prefer the SDK {@code RetainAndDisposePolicy} task for scheduled runs; these helpers remain for
+ * transitional callers until that path fully replaces the custom scheduler.
  */
 @AllArgsConstructor
 @Service
@@ -52,13 +51,13 @@ public class CcdCaseDataDeletionService {
     public CaseResource markCaseForDeletion(long caseRef) {
         log.debug("Marking following case for deletion: {} ", caseRef);
 
-        return performEvent(markCaseForDeletion, caseRef);
+        return performEvent(MarkForDisposal, caseRef);
     }
 
     public CaseResource confirmCaseDisposal(long caseRef) {
         log.debug("Confirming disposal for case: {} ", caseRef);
 
-        return performEvent(confirmCaseDisposal, caseRef);
+        return performEvent(ConfirmDisposal, caseRef);
     }
 
     private CaseResource performEvent(EventId eventId, long caseRef) {

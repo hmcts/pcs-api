@@ -126,10 +126,10 @@ public enum State {
     BREATHING_SPACE,
 
     @CCD(
-            label = "Draft Discarded",
+            label = "Draft discarded",
             access = {SystemUserAccess.class}
     )
-    DRAFT_DISCARDED,
+    PendingDisposal,
 
     @CCD(
         label = "Closed",
