@@ -217,7 +217,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
-    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags'] });
+    await performAction('validateTabNotPresent', { user: user, tabs: ['Support'] });
   });
 
 });

@@ -74,11 +74,13 @@ public class DefencePackSelector {
                 recipientsOf(defenceForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
-            DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
-            if (counterClaimForm != null) {
-                recipientsOf(counterClaimForm, defendant, eligibleRecipients).forEach(
-                    party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
-            }
+        }
+        for (DocumentEntity counterClaimForm : counterClaimDocuments(pcsCase)) {
+            PartyEntity owner = counterClaimOwner(counterClaimForm);
+            List<PartyEntity> targets = owner == null
+                ? eligibleRecipients
+                : recipientsOf(counterClaimForm, owner, eligibleRecipients);
+            targets.forEach(party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
         }
 
         List<DefencePackCandidate> candidates = new ArrayList<>();
@@ -118,7 +120,6 @@ public class DefencePackSelector {
         return allParties;
     }
 
-    // Represented defendants are served digitally through their legal representative, never by post.
     private boolean isRepresented(PartyEntity party) {
         return party.getClaimPartyOrganisationList().stream()
             .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
@@ -146,13 +147,20 @@ public class DefencePackSelector {
             .orElse(null);
     }
 
-    private DocumentEntity counterClaimDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
+    private List<DocumentEntity> counterClaimDocuments(PcsCaseEntity pcsCase) {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.COUNTERCLAIM)
-            .filter(document -> document.getParty() != null
-                && document.getParty().getId().equals(defendant.getId()))
-            .findFirst()
-            .orElse(null);
+            .toList();
+    }
+
+    private PartyEntity counterClaimOwner(DocumentEntity document) {
+        if (document.getParty() != null) {
+            return document.getParty();
+        }
+        if (document.getCounterClaim() != null) {
+            return document.getCounterClaim().getParty();
+        }
+        return null;
     }
 
     private boolean belongsToDefendant(DocumentEntity document, PartyEntity defendant) {

@@ -155,7 +155,11 @@ export class PageContentValidation implements IValidation {
 
     PageContentValidation.pageToFileNameMap.set(page.url(), fileName);
 
-    return this.loadPageDataFile(fileName, page, testTitle);
+    const pageData = await this.loadPageDataFile(fileName, page, testTitle);
+    if (!pageData) {
+      PageContentValidation.missingDataFiles.add(fileName);
+    }
+    return pageData;
   }
 
   private getUrlSegment(url: string): string {
@@ -189,7 +193,7 @@ export class PageContentValidation implements IValidation {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else if(
-      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
+      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote", "enterBreathingSpace"].some(str =>
         page.url().includes(str)
       )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
@@ -247,27 +251,36 @@ export class PageContentValidation implements IValidation {
   }
 
   private async loadPageDataFile(fileName: string, page: Page, testTitle = ''): Promise<any> {
+    const isWelsh = process.env.RUN_E2E_IN_WELSH === 'true';
+    const isEnforcement = testTitle.includes('@enforcement');
+    const suffix = isWelsh ? 'page.data.cy.ts' : 'page.data.ts';
+    const cyBaseDir = isEnforcement
+      ? path.join(__dirname, '../../../data/page-data-cy/page-data-enforcement-cy')
+      : path.join(__dirname, '../../../data/page-data-cy');
+
     let filePath;
-    if (page.url().includes("enforceTheOrder")) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+    if (isWelsh) {
+      filePath = path.join(cyBaseDir, `${fileName}.${suffix}`);
+    } else if (page.url().includes("enforceTheOrder")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.${suffix}`);
     } else if (page.url().includes("makeAnApplication")) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.${suffix}`);
     }else if (page.url().includes("claimantMakeAnApplication")) {
-        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.${suffix}`);
     } else if (page.url().includes("legalRepDocumentUpload")  || page.url().includes("deleteDraftResponse")) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.${suffix}`);
     }
     else if (page.url().includes("globalSearch")) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.${suffix}`);
     }
     else if (
       ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties", "addJudicialNote"].some(str =>
         page.url().includes(str)
       )) {
-      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.${suffix}`);
     }
     else {
-      filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+      filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.${suffix}`);
     }
     if (!fs.existsSync(filePath)) return null;
     try {
