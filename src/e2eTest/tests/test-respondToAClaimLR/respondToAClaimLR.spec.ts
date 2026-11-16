@@ -1,14 +1,15 @@
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import { expect, test } from '@utils/test-fixtures';
+import { test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { caseSummary, home } from '@data/page-data';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {contactDetailsLR} from '@data/page-data-figma';
 import {startNow } from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
 import {deleteDraftResponse} from "@data/page-data-figma/page-data-legalRepresentative";
+import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
 
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
@@ -17,13 +18,26 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   if (!manageCaseBaseUrl) {
     throw new Error('MANAGE_CASE_BASE_URL is not set.');
   }
+
+  const isDeleteDraftResponse = testInfo.title.includes('Delete Draft Response');
+  const isVerifyLink = testInfo.title.includes('verifyLink');
+
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  if (testInfo.title.includes('Delete Draft Response')) {
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadDefault() });
-  } else {
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
-  }
+  await performAction('submitCaseAPI', {
+    data: isDeleteDraftResponse
+      ? submitCaseApiData.submitCasePayloadDefault()
+      : submitCaseApiData.submitCasePayload()
+  });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
+
+  if (!isDeleteDraftResponse) {
+    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+    await performAction('submitCaseAPI', {
+      data: isVerifyLink
+        ? submitCaseApiData.submitCaseDefendantAddressKnown()
+        : submitCaseApiData.submitCasePayload()
+    });
+  }
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
@@ -117,5 +131,28 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       text: caseSummary.deleteDraftResponse,
       shouldBeAvailable: true
     });
+  });
+
+  test('As a Defendant Solicitor I should not see the Respond to a claim event from event drop down after successful response submission @verifyLink @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
+    await performAction('clickButton', caseSummary.go);
+    await performAction('selectRespondToClaimContactPreferences', {
+      representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
+      notifications: contactDetailsLR.yesRadioOption,
+      correspondenceAddress: contactDetailsLR.noRadioOption,
+      phoneNumber: contactDetailsLR.noRadioOption
+    });
+    await performAction('clickButton', 'Close and Return to case details');
+    await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
+    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+
+    await performAction('clickTab', caseSummary.summaryTab);
+    await performValidation('elementNotToBeVisible', {
+          elementType: 'text',
+          text: 'Respond to the claim.',
+        });
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('validateDropDownValues', ['Select action', 'Amend representative’s details', 'Make an application', 'Manage support', 'Request support', 'Upload additional documents']);
   });
 });
