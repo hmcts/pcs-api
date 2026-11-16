@@ -145,7 +145,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex,
       partyIndex: partyIndex,
       partyType: partyType,
@@ -190,7 +190,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: 1,
       defendantIndex : partyIndex,
       partyType: partyType,
@@ -222,7 +222,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -280,7 +280,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: 1,
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
     });
@@ -315,7 +315,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: 1,
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
       
@@ -335,7 +335,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: 1,
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`)
     });
@@ -389,12 +389,12 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex,
       allowEmptyFolder: true
     });
@@ -424,13 +424,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Statements of case',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex,
       ccPayload: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
       defendantIndex : partyIndex,

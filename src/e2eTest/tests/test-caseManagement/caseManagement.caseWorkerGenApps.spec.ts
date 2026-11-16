@@ -130,11 +130,13 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenappApplication.whatDateAppReceivedQuestion,
       date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppHearingDate.mainHeader
     });
     await performAction('confirmIfCourtHearingInNext14Days', {
       question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
       option: enterGenAppHearingDate.yesRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppapplicationFee.mainHeader
     });
     await performAction('enterApplicationFeeDetails', {
@@ -143,6 +145,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppConsentAndNotice.mainHeader
     });
   });
@@ -160,11 +163,13 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenappApplication.whatDateAppReceivedQuestion,
       date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppHearingDate.mainHeader
     });
     await performAction('confirmIfCourtHearingInNext14Days', {
       question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
       option: enterGenAppHearingDate.yesRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppapplicationFee.mainHeader
     });
     await performAction('enterApplicationFeeDetails', {
@@ -173,19 +178,23 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppConsentAndNotice.mainHeader
     });
     await performAction('enterApplicationConsentAndNotice', {
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.yesRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
     await performAction('uploadADocument', {
+      submitPayload: submitPayload,
       label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence', {
       label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      submitPayload: submitPayload,
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -206,6 +215,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenappApplication.whatDateAppReceivedQuestion,
       date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppapplicationFee.mainHeader
     })
     await performAction('enterApplicationFeeDetails', {
@@ -214,23 +224,28 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppConsentAndNotice.mainHeader
     });
     await performAction('enterApplicationConsentAndNotice', {
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
     await performAction('uploadADocument', {
+      submitPayload: submitPayload,
       label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence', {
       label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      submitPayload: submitPayload,
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge', {
+      submitPayload: submitPayload,
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -251,6 +266,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenappApplication.whatDateAppReceivedQuestion,
       date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppapplicationFee.mainHeader
     })
     await performAction('enterApplicationFeeDetails', {
@@ -259,23 +275,28 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      submitPayload: submitPayload,
       nextPage: enterGenAppConsentAndNotice.mainHeader
     });
     await performAction('enterApplicationConsentAndNotice', {
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      submitPayload: submitPayload,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
     await performAction('uploadADocument', {
+      submitPayload: submitPayload,
       label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence', {
       label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      submitPayload: submitPayload,
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge', {
+      submitPayload: submitPayload,
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -313,6 +334,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
           label1: enterGenappApplication.whatDateAppReceivedQuestion,
           date: date,
           dateType: enterGenappApplication.dateTypeHiddenUserInput,
+          submitPayload: submitPayload,
           nextPage: enterGenAppapplicationFee.mainHeader
         });
       });
@@ -324,12 +346,14 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
           label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
           label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
           input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+          submitPayload: submitPayload,
           nextPage: enterGenAppUploadGeneralApplication.mainHeader
         });
       });
 
       await test.step(`And the user uploads a document via Upload general application page`, async () => {
         await performAction('uploadADocument', {
+          submitPayload: submitPayload,
           label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
           file: uploadFileName
         });
@@ -339,6 +363,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       await test.step(`And the user chooses not to upload additional supporting evidence and submits`, async () => {
         await performAction('uploadRelativeEvidence', {
           label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+          submitPayload: submitPayload,
           nextPage: genAppsCheckYourAnswers.mainHeader
         });
         await performAction('clickButton', genAppsCheckYourAnswers.submitButton);

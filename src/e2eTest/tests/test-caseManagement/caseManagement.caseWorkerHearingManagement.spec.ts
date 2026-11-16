@@ -23,20 +23,23 @@ import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.vali
 
 test.use({ storageState: undefined })
 
+let submitPayload: Record<string, any>;
+
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
   allPartyDetails.length = 0;
+  submitPayload = submitCaseApiData.submitCasePayloadCaseFileView()
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
+  await performAction('submitCaseAPI', { data: submitPayload });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
+    defendant1NameKnown: submitPayload.defendant1.nameKnown,
+    additionalDefendants: submitPayload.addAnotherDefendant,
+    payLoad: submitPayload
   });
 
   if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')) {
@@ -69,6 +72,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performAction('selectManageHearing', {
       question: manageHearing.doYouWantToAddQuestion,
       option: manageHearing.editAHearingRadioOption,
+      submitPayload: submitPayload,
       nextPage: editHearing.mainHeader
     });
     await performAction('editHearing', {
@@ -89,10 +93,11 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       option3: editHearing.noHiddenRadioOption,
       additionalInformationLabel: editHearing.enterAnyAdditionalInformationTextLabel,
       input: editHearing.additionalInformationTextInput,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersEditHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersEditHearing.submitButton);
-    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performAction('confirmHearingEdited', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
@@ -103,16 +108,18 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performAction('selectManageHearing', {
       question: manageHearing.doYouWantToAddQuestion,
       option: manageHearing.cancelAHearingRadioOption,
+      submitPayload: submitPayload,
       nextPage: cancelHearing.mainHeader
     });
     await performAction('errorValidationCancelHearing', cancelHearing.errorValidation);
     await performAction('cancelHearing', {
       label: cancelHearing.enterReasonForCancellationLabel,
       input: cancelHearing.reasonForCancellationTextInput,
+      submitPayload: submitPayload,
       nextPage: manageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
-    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+    await performAction('confirmHearingCancelled', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 
@@ -150,13 +157,14 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
           withoutNoticeQuestion: addHearing.hearingWithOutNoticeHiddenQuestion, option3: addHearing.hearingNoticeNoRadioOption,
           additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
           additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
+          submitPayload: submitPayload,
           nextPage: checkYourAnswersManageHearing.mainHeader
         });
         await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
       });
 
       await test.step(`Then the hearing is added successfully`, async () => {
-        await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+        await performAction('confirmAddHearing', { submitPayload: submitPayload });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
       });
 
@@ -165,7 +173,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
         await performAction('validateCaseFileViewFolders', home.caseFileFolders);
         await performAction('validateCaseFileViewIndividualFolder', {
           folder: 'Orders and Notice of Hearings',
-          submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+          submitPayload: submitPayload,
           caseWorkerHearing: [...CaseManagementCommonUtils.getHearingNoticeFileDetails('Defendant', defendantLength, 1), ...CaseManagementCommonUtils.getHearingNoticeFileDetails('Claimant', 1, 1)],
         });
       })
@@ -204,13 +212,14 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
           whoShouldReceiveNoticeQuestion: addHearing.whoShouldReceiveHiddenQuestion, option4: party,
           additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
           additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
+          submitPayload: submitPayload,
           nextPage: checkYourAnswersManageHearing.mainHeader
         });
         await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
       });
 
       await test.step(`Then the hearing is added successfully`, async () => {
-        await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+        await performAction('confirmAddHearing', { submitPayload: submitPayload });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
       });
       const sequenceOne = CaseManagementCommonUtils.getHearingNoticeFileDetails('Defendant', 1, 1)
@@ -220,7 +229,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
         await performAction('validateCaseFileViewFolders', home.caseFileFolders);
         await performAction('validateCaseFileViewIndividualFolder', {
           folder: 'Orders and Notice of Hearings',
-          submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+          submitPayload: submitPayload,
           caseWorkerHearing: [...sequenceOne]
         });
       });
@@ -252,13 +261,14 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
           whoShouldReceiveNoticeQuestion: addHearing.whoShouldReceiveHiddenQuestion, option4: party,
           additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
           additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
+          submitPayload: submitPayload,
           nextPage: checkYourAnswersManageHearing.mainHeader
         });
         await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
       });
 
       await test.step(`Then the hearing is added successfully`, async () => {
-        await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
+        await performAction('confirmAddHearing', { submitPayload: submitPayload });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
       });
 
@@ -267,7 +277,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
         await performAction('validateCaseFileViewFolders', home.caseFileFolders);
         await performAction('validateCaseFileViewIndividualFolder', {
           folder: 'Orders and Notice of Hearings',
-          submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+          submitPayload: submitPayload,
           caseWorkerHearing: [...sequenceOne, ...CaseManagementCommonUtils.getHearingNoticeFileDetails('Defendant', 1, 2)],
         });
       });

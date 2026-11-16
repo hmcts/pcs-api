@@ -302,6 +302,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationDetails(appDetails: actionRecord) {
+    await this.validateCaseDetails(appDetails.submitPayLoad);
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);
@@ -313,11 +314,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(courtHearing.submitPayLoad);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
       option: courtHearing.option,
@@ -326,8 +323,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await this.validateCaseDetails(fee.submitPayLoad);
     await performAction('clickRadioButton', {
       question: fee.question1,
       option: fee.option1,
@@ -360,11 +356,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(confirmApplicationConsent.submitPayLoad);
     await performAction('clickRadioButton', {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
@@ -379,6 +371,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
+    await this.validateCaseDetails(upload.submitPayload);
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
@@ -403,11 +396,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(uploadEvidence.submitPayload);
     if (uploadEvidence.files) {
       await performAction('uploadFile', {files: uploadEvidence.files, label: uploadEvidence.label});
     }
@@ -415,12 +404,8 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async verifyReferToJudge(referToJudgeData: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
+    await this.validateCaseDetails(referToJudgeData.submitPayload);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
@@ -441,11 +426,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async selectManageHearing(manageHearingOption: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(manageHearingOption.submitPayload);
     await performAction('clickRadioButton', {
       question: manageHearingOption.question,
       option: manageHearingOption.option,
@@ -454,11 +435,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async editHearing(editHearingData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(editHearingData.submitPayload);
     await performAction('clickRadioButton', {
       question: editHearingData.typeOfHearingQuestion,
       option: editHearingData.option
@@ -522,11 +499,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
     const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
       .replace(':00:00AM', ':00am')
       .replace(':00:00PM', ':00pm');
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(cancelHearingData.submitPayload);
     const validations = [
       {
         heading: cancelHearing.hearingLocationHeader,
@@ -909,11 +882,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(judicialNotes.submitPayload)
     await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
     await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
   }
@@ -931,6 +900,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
+    await this.validateCaseDetails(judicialNotes.submitPayload)
     const judicialNote = new Map<string, string>();
 
     judicialNote.set('Note', judicialNotes.userInput as string);
@@ -999,10 +969,10 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
       `✅ ${judicialNotes.table} validation passed`
     );
   }
-    private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
-      let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-      const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-      await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+  private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
