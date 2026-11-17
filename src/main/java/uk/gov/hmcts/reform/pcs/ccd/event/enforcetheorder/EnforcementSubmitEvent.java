@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import java.time.Instant;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
@@ -50,7 +49,7 @@ public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
         EnforcementFee enforcementFee = getEnforcementFee(enforcementOrder);
         FeeDetails feeDetails = feeService.getFee(enforcementFee.feeType());
         EnforcementOrderEntity enforcementOrderEntity =
-                enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED);
+                enforcementOrderService.submitEnforcementOrder(caseReference, enforcementOrder);
         scheduleFeePayment(caseReference, getClaimantParty(caseReference), feeDetails, enforcementOrderEntity.getId());
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()

@@ -37,7 +37,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,14 +85,14 @@ class EnforcementSubmitEventTest {
         UUID enforcementApplicationId = UUID.randomUUID();
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setId(enforcementApplicationId);
-        when(enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED))
+        when(enforcementOrderService.submitEnforcementOrder(caseReference, enforcementOrder))
             .thenReturn(enforcementOrderEntity);
 
         // When
         SubmitResponse<State> response = event.submit(payload);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED);
+        verify(enforcementOrderService).submitEnforcementOrder(caseReference, enforcementOrder);
         assertThat(response).isNotNull();
         verify(feeService).getFee(any());
         verify(pcsCaseService).loadCase(anyLong());
