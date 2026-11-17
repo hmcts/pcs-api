@@ -17,12 +17,15 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -39,6 +42,12 @@ public class ServiceHearingValuesMapper {
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
+    static final int MAX_COMMENT_LENGTH = 200;
+    static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
+    static final String ELLIPSIS = "...";
+    private static final String FLAG_SEPARATOR = ", ";
+    private static final String COMMENT_OPEN = " (Comments: ";
+    private static final String COMMENT_CLOSE = ")";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
@@ -125,28 +134,140 @@ public class ServiceHearingValuesMapper {
         return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
     }
 
+    /**
+     * Lists the case's active case-level flags for the listing officer, as
+     * {@code Case Flags: name, name (Comments: comment)}, within HMC's 2000-character limit.
+     *
+     * <p>With fewer than {@value #FULL_TEXT_MAX_COMMENTED_FLAGS} commented flags the full text is tried
+     * first and returned if it fits. Otherwise every flag name is kept in full and the comments are
+     * shortened to share the space that is left (see {@link #fitCommentsFairly}).
+     */
     private String listingComments(PcsCaseEntity pcsCase) {
-        List<String> flags = pcsCase.getCaseFlags().stream()
+        List<FlagText> flags = pcsCase.getCaseFlags().stream()
             .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
             .filter(flag -> flag.getFlagRefData() != null)
-            .map(ServiceHearingValuesMapper::formatFlag)
+            .map(FlagText::of)
             .toList();
 
         if (flags.isEmpty()) {
             return null;
         }
 
-        String comments = CASE_FLAGS_PREFIX + String.join(", ", flags);
-        return comments.length() > MAX_LISTING_COMMENTS_LENGTH
-            ? comments.substring(0, MAX_LISTING_COMMENTS_LENGTH)
-            : comments;
+        // less than 8 flags + comments should fit in the limit
+        long commentedFlags = flags.stream().filter(FlagText::hasComment).count();
+        if (commentedFlags < FULL_TEXT_MAX_COMMENTED_FLAGS) {
+            String fullText = render(flags);
+            if (fullText.length() <= MAX_LISTING_COMMENTS_LENGTH) {
+                return fullText;
+            }
+        }
+
+        // case has more than 8 flags + comments or fulltext was over the limit
+        String fittedText = render(fitCommentsFairly(flags));
+        // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request
+        return fittedText.length() > MAX_LISTING_COMMENTS_LENGTH
+            ? fittedText.substring(0, MAX_LISTING_COMMENTS_LENGTH)
+            : fittedText;
     }
 
-    private static String formatFlag(BaseCaseFlag flag) {
-        String name = flag.getFlagRefData().getFlagName();
-        String comment = flag.getFlagComment();
-        return comment == null || comment.isBlank()
-            ? name
-            : name + " (Comments: " + comment + ")";
+    /**
+     * Shortens the comments so the listing fits in {@value #MAX_LISTING_COMMENTS_LENGTH} characters,
+     * keeping every flag name whole. The space left after the fixed text is shared out smallest
+     * comment first: each comment gets the lesser of its own length (at most
+     * {@value #MAX_COMMENT_LENGTH}) and an equal share of what is still unallocated. Short comments
+     * therefore stay whole, and the space they don't use goes to the longer ones.
+     */
+    private static List<FlagText> fitCommentsFairly(List<FlagText> flags) {
+        int commentedFlags = (int) flags.stream().filter(FlagText::hasComment).count();
+        int fixedLength = render(flags.stream().map(FlagText::withoutComment).toList()).length()
+            + commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length());
+        int remaining = MAX_LISTING_COMMENTS_LENGTH - fixedLength;
+
+        List<Integer> smallestFirst = IntStream.range(0, flags.size())
+            .filter(i -> flags.get(i).hasComment())
+            .boxed()
+            .sorted(Comparator.comparingInt(i -> commentDemand(flags.get(i))))
+            .toList();
+
+        List<FlagText> fitted = new ArrayList<>(flags);
+        int unallocated = smallestFirst.size();
+        for (int i : smallestFirst) {
+            FlagText flag = flags.get(i);
+            int share = Math.max(0, remaining) / unallocated--;
+            int allowance = Math.min(commentDemand(flag), share);
+            fitted.set(i, flag.withComment(shorten(flag.comment(), allowance)));
+            remaining -= allowance;
+        }
+        return fitted;
+    }
+
+    private static int commentDemand(FlagText flag) {
+        return Math.min(flag.comment().length(), MAX_COMMENT_LENGTH);
+    }
+
+    /**
+     * Cuts a comment to at most {@code maxLength} characters, ending it with {@value #ELLIPSIS} so the
+     * listing officer knows there is more. Cuts at the last whitespace where that keeps at least half
+     * the space, otherwise mid-word. Returns null (show the flag without comments) when there isn't
+     * room for any text before the ellipsis.
+     */
+    static String shorten(String comment, int maxLength) {
+        if (comment.length() <= maxLength) {
+            return comment;
+        }
+        int limit = maxLength - ELLIPSIS.length();
+        if (limit <= 0) {
+            return null;
+        }
+        int cut = lastWhitespaceAtOrBefore(comment, limit);
+        if (cut < limit / 2) {
+            cut = limit;
+        }
+        return comment.substring(0, cut).stripTrailing() + ELLIPSIS;
+    }
+
+    private static int lastWhitespaceAtOrBefore(String text, int index) {
+        for (int i = Math.min(index, text.length() - 1); i >= 0; i--) {
+            if (Character.isWhitespace(text.charAt(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static String render(List<FlagText> flags) {
+        return flags.stream()
+            .map(FlagText::format)
+            .collect(Collectors.joining(FLAG_SEPARATOR, CASE_FLAGS_PREFIX, ""));
+    }
+
+    /**
+     * A flag's name and comment, trimmed. A comment that is missing, empty or only whitespace is held
+     * as null, meaning the flag is listed without comments.
+     */
+    private record FlagText(String name, String comment) {
+
+        static FlagText of(BaseCaseFlag flag) {
+            String comment = flag.getFlagComment() == null ? "" : flag.getFlagComment().strip();
+            return new FlagText(
+                Objects.toString(flag.getFlagRefData().getFlagName(), "").strip(),
+                comment.isEmpty() ? null : comment);
+        }
+
+        boolean hasComment() {
+            return comment != null;
+        }
+
+        FlagText withComment(String newComment) {
+            return new FlagText(name, newComment);
+        }
+
+        FlagText withoutComment() {
+            return withComment(null);
+        }
+
+        String format() {
+            return hasComment() ? name + COMMENT_OPEN + comment + COMMENT_CLOSE : name;
+        }
     }
 }
