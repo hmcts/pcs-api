@@ -48,6 +48,11 @@ public class CftlibOrganisationConfig {
             }
 
             @Override
+            public OrganisationDetailsResponse requireOrganisationDetailsForCurrentOrganisationUser() {
+                return getOrganisationDetailsForCurrentUser();
+            }
+
+            @Override
             public OrganisationDetailsResponse getOrganisationDetails(String userId) {
                 return getOrganisationDetailsForCurrentUser();
             }

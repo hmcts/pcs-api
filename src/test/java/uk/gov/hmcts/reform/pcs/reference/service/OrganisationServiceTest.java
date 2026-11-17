@@ -623,4 +623,57 @@ class OrganisationServiceTest {
 
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
     }
+
+    @Test
+    @DisplayName("Professional who also holds the IDAM citizen role still has their organisation found")
+    void requireOrganisationDetailsForCurrentOrganisationUserShouldLookUpForCitizenWithOrganisationRole() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().roles(List.of(UserRole.CITIZEN.getRole())).build());
+        stubOrganisationalRoles(UserRole.CITIZEN.getRole(), UserRole.CLAIMANT.getRole());
+        stubCurrentUser();
+        OrganisationDetailsResponse organisation = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+        stubRequiredPrd(organisation);
+
+        assertThat(organisationService.getOrganisationDetailsForCurrentUser()).isNull();
+        assertThat(organisationService.requireOrganisationDetailsForCurrentOrganisationUser())
+            .isEqualTo(organisation);
+    }
+
+    @Test
+    @DisplayName("A citizen with no organisation role is not looked up")
+    void requireOrganisationDetailsForCurrentOrganisationUserShouldReturnNullForCitizenOnly() {
+        stubOrganisationalRoles(UserRole.CITIZEN.getRole());
+
+        assertThat(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).isNull();
+        verifyNoInteractions(organisationDetailsService);
+    }
+
+    @Test
+    @DisplayName("The system user is not looked up")
+    void requireOrganisationDetailsForCurrentOrganisationUserShouldReturnNullForSystemUser() {
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        assertThat(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).isNull();
+        verifyNoInteractions(organisationDetailsService, userRoleService);
+    }
+
+    @Test
+    @DisplayName("Returns null when there is no current user ID")
+    void requireOrganisationDetailsForCurrentOrganisationUserShouldReturnNullWhenUserIdIsNull() {
+        assertThat(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).isNull();
+        verifyNoInteractions(organisationDetailsService);
+    }
+
+    @Test
+    @DisplayName("An rd-professional failure is raised, not reported as no organisation")
+    void requireOrganisationDetailsForCurrentOrganisationUserShouldThrowWhenLookupFails() {
+        stubCurrentUser();
+        when(organisationDetailsService.requireOrganisationDetails(USER_ID))
+            .thenThrow(new OrganisationDetailsException("rd-professional unavailable", null));
+
+        assertThatThrownBy(() -> organisationService.requireOrganisationDetailsForCurrentOrganisationUser())
+            .isInstanceOf(OrganisationDetailsException.class);
+    }
 }

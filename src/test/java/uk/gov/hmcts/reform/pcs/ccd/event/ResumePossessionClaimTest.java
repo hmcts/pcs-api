@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -177,7 +178,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             OrganisationDetailsResponse organisationDetails = OrganisationDetailsResponse.builder()
                 .name(orgName)
                 .build();
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
+            when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser())
+                .thenReturn(organisationDetails);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -197,6 +199,27 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.NO);
+            assertThat(claimantInformation.getClaimantName()).isNull();
+        }
+
+        @Test
+        void shouldSetFlagWhenOrganisationLookupFails() {
+            // Given
+            when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser())
+                .thenThrow(new OrganisationDetailsException("rd-professional unavailable", null));
+
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)

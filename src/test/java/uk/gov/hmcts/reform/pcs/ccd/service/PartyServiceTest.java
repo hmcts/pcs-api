@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -59,6 +60,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
@@ -97,7 +99,8 @@ class PartyServiceTest {
             .organisationIdentifier(ORG_ID)
             .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
             .build();
-        lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
+        lenient().when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser())
+            .thenReturn(orgDetails);
         lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         underTest = new PartyService(partyRepository, addressMapper, organisationService,
                                      featureToggleService, postcodeValidator);
@@ -1726,11 +1729,11 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutAnOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(null);
+            when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).thenReturn(null);
 
             assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Organisation must be provided");
+                .isInstanceOf(OrganisationNotFoundException.class)
+                .hasMessageContaining("No organisation found for the current user");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }
@@ -1742,13 +1745,23 @@ class PartyServiceTest {
                 .organisationIdentifier(ORG_ID)
                 .organisationProfileIds(List.of())
                 .build();
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
+            when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).thenReturn(orgDetails);
 
             assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("No organisation profile id found for organisation");
+                .isInstanceOf(OrganisationNotFoundException.class)
+                .hasMessageContaining("No organisation profile ID found for organisation " + ORG_ID);
 
             assertThat(caseEntity.getParties()).isEmpty();
+        }
+
+        @Test
+        void shouldRejectClaimSubmissionWithoutAnOrganisation() {
+            when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).thenReturn(null);
+
+            assertThatThrownBy(() -> underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity))
+                .isInstanceOf(OrganisationNotFoundException.class);
+
+            verifyNoInteractions(pcsCaseEntity, claimEntity);
         }
     }
 }

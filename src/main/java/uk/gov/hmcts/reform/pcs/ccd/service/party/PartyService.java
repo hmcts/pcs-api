@@ -23,7 +23,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
@@ -53,7 +55,7 @@ public class PartyService {
     private final PostcodeValidator postcodeValidator;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        OrganisationDetailsResponse orgDetails = requireClaimantOrganisation();
         PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
         populateClaimant(claimant, pcsCase, orgDetails.getOrganisationIdentifier(), orgDetails.getOrgProfileId());
         pcsCaseEntity.addParty(claimant);
@@ -175,23 +177,36 @@ public class PartyService {
      * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
-
-        requireNonNull(orgDetails, "Organisation must be provided to create a case");
+        OrganisationDetailsResponse orgDetails = requireClaimantOrganisation();
 
         String organisationId = orgDetails.getOrganisationIdentifier();
         String organisationProfileId = orgDetails.getOrgProfileId();
 
-        if (StringUtils.isBlank(organisationProfileId)) {
-            throw new IllegalArgumentException(
-                "Organisation profile ID must be provided to create a case for organisation " + organisationId);
-        }
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setRemoved(false);
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
         claimantParty.setClaimCreator(true);
         pcsCaseEntity.addParty(claimantParty);
+    }
+
+    /**
+     * The organisation the current user is claiming for. Throws {@link OrganisationNotFoundException}
+     * if there is no organisation or profile ID.
+     */
+    private OrganisationDetailsResponse requireClaimantOrganisation() {
+        OrganisationDetailsResponse orgDetails =
+            organisationService.requireOrganisationDetailsForCurrentOrganisationUser();
+
+        if (orgDetails == null) {
+            throw new OrganisationNotFoundException("No organisation found for the current user");
+        }
+        List<String> organisationProfileIds = orgDetails.getOrganisationProfileIds();
+        if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
+            throw new OrganisationNotFoundException(
+                "No organisation profile ID found for organisation " + orgDetails.getOrganisationIdentifier());
+        }
+        return orgDetails;
     }
 
     private Optional<PartyEntity> findClaimantStub(PcsCaseEntity pcsCaseEntity) {

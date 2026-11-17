@@ -83,7 +83,7 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
         OrganisationDetailsResponse orgDetails = new OrganisationDetailsResponse();
         orgDetails.setOrganisationIdentifier(ORGANISATION_ID);
         orgDetails.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
-        when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
+        when(organisationService.requireOrganisationDetailsForCurrentOrganisationUser()).thenReturn(orgDetails);
     }
 
     @AfterEach

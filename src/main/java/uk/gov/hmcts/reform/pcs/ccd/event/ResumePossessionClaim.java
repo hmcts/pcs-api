@@ -32,6 +32,8 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -103,7 +105,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-        OrganisationDetailsResponse orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        OrganisationDetailsResponse orgDetails = getClaimantOrganisationDetails();
         String organisationName = orgDetails != null ? orgDetails.getName() : null;
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
@@ -158,6 +160,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.allocateRegionId(caseData);
 
         return caseData;
+    }
+
+    /**
+     * Only pre-fills the claimant's name and address, so an rd-professional failure falls back to
+     * "not found" rather than failing the page. Ignores an IDAM citizen role.
+     */
+    private OrganisationDetailsResponse getClaimantOrganisationDetails() {
+        try {
+            return organisationService.requireOrganisationDetailsForCurrentOrganisationUser();
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation details from rd-professional API", ex);
+            return null;
+        }
     }
 
     private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {

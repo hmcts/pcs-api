@@ -23,10 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
@@ -37,6 +39,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 @Component
 @AllArgsConstructor
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
+
+    // TODO HDPI-10115: placeholder wording - needs content sign-off and a Welsh translation
+    static final String NO_ORGANISATION_ERROR = "We could not find the organisation your account belongs to. "
+        + "Contact your organisation administrator.";
 
     private final PcsCaseService pcsCaseService;
     private final FeeApplier feeApplier;
@@ -88,8 +94,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
-                                  caseData.getLegislativeCountry());
+        try {
+            pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                      caseData.getLegislativeCountry());
+        } catch (OrganisationNotFoundException ex) {
+            log.warn("Rejected claim creation for case {}: {}", caseReference, ex.getMessage());
+            return SubmitResponse.<State>builder().errors(List.of(NO_ORGANISATION_ERROR)).build();
+        }
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);

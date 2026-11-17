@@ -134,6 +134,25 @@ public class OrganisationService {
         }
     }
 
+    /**
+     * Organisation lookup for organisation-only events, such as making a claim. Ignores the IDAM citizen
+     * role, which professionals can also hold (HDPI-10115), and throws if rd-professional fails.
+     *
+     * @return The organisation details, or null if the user has none
+     */
+    public OrganisationDetailsResponse requireOrganisationDetailsForCurrentOrganisationUser() {
+        if (securityContextService.isSystemUser() || !currentUserBelongsToOrganisation()) {
+            return null;
+        }
+
+        String userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            return null;
+        }
+
+        return this.getCachedRequiredOrganisationDetails(userId);
+    }
+
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
             return this.getCachedOrganisationDetails(userId);

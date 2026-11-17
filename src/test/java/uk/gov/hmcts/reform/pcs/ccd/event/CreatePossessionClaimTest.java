@@ -9,8 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -25,8 +28,12 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,8 +59,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         UserInfo userDetails = mock(UserInfo.class);
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
-        when(userDetails.getUid()).thenReturn(USER_ID);
+        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+        lenient().when(userDetails.getUid()).thenReturn(USER_ID);
 
         CreatePossessionClaim underTest = new CreatePossessionClaim(
             pcsCaseService, feeApplier, enterPropertyAddress,
@@ -90,6 +97,24 @@ class CreatePossessionClaimTest extends BaseEventTest {
         RoleAssignmentTaskData taskData = getCapturedRoleAssignmentTaskData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         assertThat(taskData.getUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldReturnAnErrorRatherThanFailWhenTheUserHasNoOrganisation() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().addressLine1("1 Test Street").build())
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        when(pcsCaseService.createCase(anyLong(), any(), any()))
+            .thenThrow(new OrganisationNotFoundException("No organisation found for the current user"));
+
+        // When
+        SubmitResponse<State> response = callSubmitHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(CreatePossessionClaim.NO_ORGANISATION_ERROR);
+        verifyNoInteractions(schedulerClient);
     }
 
     @SuppressWarnings("unchecked")
