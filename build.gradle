@@ -583,6 +583,12 @@ bootJar {
   }
 }
 
+// Flyway 13 reads pluginConfiguration with Jackson 3 on the buildscript classpath only;
+// the app stays on Jackson 2, so allow that one build-script reference.
+tasks.named('jackson2CompatibilityGuard') {
+  allowedSourceFiles.add('build.gradle')
+}
+
 flyway {
   pluginConfiguration = ['postgresql.transactional.lock': 'false']
   url = System.getenv('FLYWAY_URL')
