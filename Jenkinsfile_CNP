@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.13.4")
+@Library("Infrastructure@2.13.6")
 
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
@@ -99,6 +99,9 @@ withPipeline(type, product, component) {
     def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
     if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
+    }
+    if (hasLabel(githubApi, "run_e2e_in_welsh")) {
+      env.RUN_E2E_IN_WELSH = "true"
     }
     if (hasLabel(githubApi, "enable_e2e_full_regression")) {
       env.E2E_SUITE = "chrome"
@@ -217,6 +220,22 @@ withPipeline(type, product, component) {
     archiveSmokeTestReports()
   }
 
+  afterSuccess('dbmigrate:demo') {
+    runDemoSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:demo') {
+    archiveSmokeTestReports()
+  }
+
+  afterSuccess('dbmigrate:ithc') {
+    runIthcSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:ithc') {
+    archiveSmokeTestReports()
+  }
+
   afterSuccess('akschartsinstall') {
     onPR {
       if (hasLabel(githubApi, "pr-values:wa")) {
@@ -330,11 +349,12 @@ def setPreviewEnvVars(githubApi) {
     env.PCS_FRONTEND_CHANGE_ID = frontendLabels[0].replace("pcs-frontend-pr:", "")
   }
 
-  // pr-values:ccd deploys the frontend into this preview, so link to it rather than to AAT.
-  if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
-    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-  } else if (env.PCS_FRONTEND_CHANGE_ID) {
+  // A paired pcs-frontend PR's preview is the frontend under test; otherwise the CCD
+  // preview labels deploy master's frontend into this preview, so link to it rather than to AAT.
+  if (env.PCS_FRONTEND_CHANGE_ID) {
     env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${env.PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  } else if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   } else {
     env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
   }
@@ -361,10 +381,52 @@ def setDemoEnvVars() {
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
+def runDemoSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - demo', product, 'demo') {
+    withTeamSecrets(vaultConfig, 'demo', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-demo.service.core-compute-demo.internal",
+      "ENVIRONMENT_NAME=demo",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-demo.service.core-compute-demo.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
+      "IDAM_API_URL=https://idam-api.demo.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
+}
+
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
   env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
+}
+
+def runIthcSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - ithc', product, 'ithc') {
+    withTeamSecrets(vaultConfig, 'ithc', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-ithc.service.core-compute-ithc.internal",
+      "ENVIRONMENT_NAME=ithc",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-ithc.service.core-compute-ithc.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal",
+      "IDAM_API_URL=https://idam-api.ithc.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
 }
 
 def setPerftestEnvVars() {
