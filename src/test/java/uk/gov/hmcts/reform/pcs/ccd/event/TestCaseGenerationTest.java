@@ -252,10 +252,16 @@ class TestCaseGenerationTest {
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<EventPayload<PCSCase, State>> captor = ArgumentCaptor.forClass(EventPayload.class);
-        verify(enforceTheOrder).submit(captor.capture());
-        assertThat(captor.getValue().caseReference()).isEqualTo(caseReference);
-        assertThat(captor.getValue().caseData()).isEqualTo(loadedCase);
+        ArgumentCaptor<EventPayload<PCSCase, State>> startPayloadCaptor = ArgumentCaptor.forClass(EventPayload.class);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<EventPayload<PCSCase, State>> submitPayloadCaptor = ArgumentCaptor.forClass(EventPayload.class);
+        InOrder enforcementOrder = inOrder(enforceTheOrder);
+        enforcementOrder.verify(enforceTheOrder).start(startPayloadCaptor.capture());
+        enforcementOrder.verify(enforceTheOrder).submit(submitPayloadCaptor.capture());
+        assertThat(startPayloadCaptor.getValue().caseReference()).isEqualTo(caseReference);
+        assertThat(startPayloadCaptor.getValue().caseData()).isEqualTo(loadedCase);
+        assertThat(submitPayloadCaptor.getValue().caseReference()).isEqualTo(caseReference);
+        assertThat(submitPayloadCaptor.getValue().caseData()).isEqualTo(loadedCase);
     }
 
     @Test

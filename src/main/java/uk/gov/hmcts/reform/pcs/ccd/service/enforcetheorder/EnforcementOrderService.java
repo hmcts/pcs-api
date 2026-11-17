@@ -39,6 +39,7 @@ public class EnforcementOrderService {
                     .enforcementOrder(EnforcementOrder.builder().build())
                     .state(AWAITING_SUBMISSION_TO_HMCTS)
                     .build();
+            pcsCaseEntity.getEnforcementOrders().add(enforcementOrderEntity);
             enforcementOrderRepository.save(enforcementOrderEntity);
         }
     }

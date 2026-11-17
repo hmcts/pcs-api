@@ -96,16 +96,14 @@ class EnforcementOrderServiceTest {
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
         final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
-        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
-                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
-                .pcsCase(pcsCaseEntity)
-                .build();
-        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
+        enforcementOrderService.createEnforcementOrder(CASE_REFERENCE);
+        EnforcementOrderEntity enforcementOrderEntity = pcsCaseEntity.getEnforcementOrders().iterator().next();
 
         // When
         EnforcementOrderEntity result =
