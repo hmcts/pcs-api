@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +36,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -128,6 +132,43 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
         assertThat(result).isSameAs(savedEntity);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
+    @Test
+    void shouldRankTheFirstApplicationOfATypeOne() {
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of());
+
+        assertThat(saved.getRank()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldRankOneMoreThanTheCasesExistingApplicationsOfTheSameType() {
+        EnforcementOrderEntity existingWrit = EnforcementOrderEntity.builder()
+            .writDetails(WritEntity.builder().build()).build();
+        EnforcementOrderEntity existingWarrant = EnforcementOrderEntity.builder()
+            .warrantDetails(new WarrantEntity()).build();
+
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of(existingWrit, existingWarrant));
+
+        assertThat(saved.getRank()).isEqualTo(2);
+    }
+
+    private EnforcementOrderEntity saveWarrantOnCaseWith(List<EnforcementOrderEntity> existingApplications) {
+        PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCaseEntity.setEnforcementOrders(new HashSet<>(existingApplications));
+        EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
+        doAnswer(invocation -> {
+            invocation.<EnforcementOrderEntity>getArgument(0).setWarrantDetails(new WarrantEntity());
+            return null;
+        }).when(strategy).process(any(), eq(enforcementOrder));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(strategy);
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        return enforcementOrderService.saveAndClearDraftData(
+            CASE_REFERENCE, enforcementOrder, EnforcementState.PENDING_CASE_ISSUED);
     }
 
     private static Stream<Arguments> enforcementOrderTypes() {

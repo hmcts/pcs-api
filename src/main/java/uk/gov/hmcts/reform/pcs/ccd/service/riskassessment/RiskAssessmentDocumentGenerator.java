@@ -11,10 +11,12 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 public class RiskAssessmentDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-APP-ENG-Risk-Assessment.docx";
+    static final String OUTPUT_FILENAME_TEMPLATE = "Risk assessment %d";
 
     private final DocAssemblyService docAssemblyService;
 
-    public String generate(RiskAssessmentPayload payload, String filename) {
-        return docAssemblyService.generateDocument(payload, TEMPLATE_ID, OutputType.PDF, filename);
+    public String generate(RiskAssessmentPayload payload, Integer rank) {
+        return docAssemblyService.generateDocument(payload, TEMPLATE_ID, OutputType.PDF,
+            OUTPUT_FILENAME_TEMPLATE.formatted(rank));
     }
 }

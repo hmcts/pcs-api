@@ -27,6 +27,8 @@ class WritOfPossessionServiceTest {
     private static final UUID ENFORCEMENT_ORDER_ID = UUID.randomUUID();
     private static final WritOfPossessionPayload PAYLOAD = WritOfPossessionPayload.builder().build();
     private static final String DOCUMENT_URL = "writ url";
+    private static final Integer RANK = 1;
+    private static final WritOfPossessionRenderContext CONTEXT = new WritOfPossessionRenderContext(PAYLOAD, RANK);
 
     @Mock
     private WritOfPossessionPersistenceService persistenceService;
@@ -40,21 +42,21 @@ class WritOfPossessionServiceTest {
 
     @Test
     void shouldGenerateTheWritThenAttachIt() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, WritOfPossessionService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
 
         underTest.generateAndAttach(ENFORCEMENT_ORDER_ID);
 
         InOrder order = inOrder(persistenceService, documentGenerator);
-        order.verify(persistenceService).buildPayload(ENFORCEMENT_ORDER_ID);
-        order.verify(documentGenerator).generate(PAYLOAD, WritOfPossessionService.OUTPUT_FILENAME);
+        order.verify(persistenceService).buildRenderContext(ENFORCEMENT_ORDER_ID);
+        order.verify(documentGenerator).generate(PAYLOAD, RANK);
         order.verify(persistenceService).attachDocumentAndQueueEmail(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
         verifyNoInteractions(documentImportService);
     }
 
     @Test
     void shouldSkipGenerateAndAttachWhenThereIsNoWritToGenerate() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
 
         underTest.generateAndAttach(ENFORCEMENT_ORDER_ID);
 
@@ -64,8 +66,8 @@ class WritOfPossessionServiceTest {
 
     @Test
     void shouldNotAttachWhenGenerationFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, WritOfPossessionService.OUTPUT_FILENAME))
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK))
             .thenThrow(new RuntimeException("docassembly 500"));
 
         assertThatThrownBy(() -> underTest.generateAndAttach(ENFORCEMENT_ORDER_ID))
@@ -77,8 +79,8 @@ class WritOfPossessionServiceTest {
 
     @Test
     void shouldDeleteTheGeneratedWritWhenAttachFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, WritOfPossessionService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attachDocumentAndQueueEmail(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
 
@@ -91,8 +93,8 @@ class WritOfPossessionServiceTest {
 
     @Test
     void shouldStillThrowTheAttachErrorWhenDeletingTheGeneratedWritFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, WritOfPossessionService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attachDocumentAndQueueEmail(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
         doThrow(new RuntimeException("delete failed")).when(documentImportService).deleteDocument(DOCUMENT_URL);

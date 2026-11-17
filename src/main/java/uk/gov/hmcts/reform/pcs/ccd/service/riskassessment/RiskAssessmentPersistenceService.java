@@ -57,14 +57,14 @@ public class RiskAssessmentPersistenceService {
      * profile, or its risk assessment has already been generated (so a retried task doesn't attach a second copy).
      */
     @Transactional(readOnly = true)
-    public Optional<RiskAssessmentPayload> buildPayload(UUID enforcementOrderId) {
+    public Optional<RiskAssessmentRenderContext> buildRenderContext(UUID enforcementOrderId) {
         EnforcementOrderEntity enforcementOrder = loadEnforcementOrder(enforcementOrderId);
         if (enforcementOrder.getWarrantDetails() == null
             || enforcementOrder.getRiskProfileDetails() == null
             || hasRiskAssessmentDocument(enforcementOrder)) {
             return Optional.empty();
         }
-        return Optional.of(toPayload(enforcementOrder));
+        return Optional.of(new RiskAssessmentRenderContext(toPayload(enforcementOrder), enforcementOrder.getRank()));
     }
 
     @Transactional

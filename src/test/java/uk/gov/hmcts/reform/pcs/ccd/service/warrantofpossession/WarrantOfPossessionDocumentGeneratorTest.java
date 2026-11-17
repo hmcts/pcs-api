@@ -22,11 +22,11 @@ class WarrantOfPossessionDocumentGeneratorTest {
     private WarrantOfPossessionDocumentGenerator underTest;
 
     @Test
-    void shouldGenerateTheWarrantAsAPdfWithTheGivenFilename() {
+    void shouldGenerateTheWarrantAsAPdfNamedWithItsRank() {
         WarrantOfPossessionPayload payload = WarrantOfPossessionPayload.builder().build();
         when(docAssemblyService.generateDocument(payload, WarrantOfPossessionDocumentGenerator.TEMPLATE_ID,
-            OutputType.PDF, "Warrant of possession")).thenReturn("document url");
+            OutputType.PDF, "Warrant of possession - application 2")).thenReturn("document url");
 
-        assertThat(underTest.generate(payload, "Warrant of possession")).isEqualTo("document url");
+        assertThat(underTest.generate(payload, 2)).isEqualTo("document url");
     }
 }

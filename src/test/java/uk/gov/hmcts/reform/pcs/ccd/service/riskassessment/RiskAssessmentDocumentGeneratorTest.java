@@ -22,11 +22,11 @@ class RiskAssessmentDocumentGeneratorTest {
     private RiskAssessmentDocumentGenerator underTest;
 
     @Test
-    void shouldGenerateTheRiskAssessmentAsAPdfWithTheGivenFilename() {
+    void shouldGenerateTheRiskAssessmentAsAPdfNamedWithItsRank() {
         RiskAssessmentPayload payload = RiskAssessmentPayload.builder().build();
         when(docAssemblyService.generateDocument(payload, RiskAssessmentDocumentGenerator.TEMPLATE_ID,
-            OutputType.PDF, "Risk assessment")).thenReturn("document url");
+            OutputType.PDF, "Risk assessment 2")).thenReturn("document url");
 
-        assertThat(underTest.generate(payload, "Risk assessment")).isEqualTo("document url");
+        assertThat(underTest.generate(payload, 2)).isEqualTo("document url");
     }
 }

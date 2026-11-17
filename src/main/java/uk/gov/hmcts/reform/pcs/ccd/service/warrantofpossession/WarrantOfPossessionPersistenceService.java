@@ -63,12 +63,13 @@ public class WarrantOfPossessionPersistenceService {
      * already been generated (so a retried or re-scheduled task doesn't attach a second copy).
      */
     @Transactional(readOnly = true)
-    public Optional<WarrantOfPossessionPayload> buildPayload(UUID enforcementOrderId) {
+    public Optional<WarrantOfPossessionRenderContext> buildRenderContext(UUID enforcementOrderId) {
         EnforcementOrderEntity enforcementOrder = loadEnforcementOrder(enforcementOrderId);
         if (enforcementOrder.getWarrantDetails() == null || hasWarrantDocument(enforcementOrder)) {
             return Optional.empty();
         }
-        return Optional.of(toPayload(enforcementOrder));
+        return Optional.of(
+            new WarrantOfPossessionRenderContext(toPayload(enforcementOrder), enforcementOrder.getRank()));
     }
 
     @Transactional

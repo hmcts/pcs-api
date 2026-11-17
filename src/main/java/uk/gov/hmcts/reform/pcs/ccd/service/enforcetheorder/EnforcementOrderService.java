@@ -62,10 +62,26 @@ public class EnforcementOrderService {
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
+        enforcementOrderEntity.setRank(nextRankForType(pcsCaseEntity, enforcementOrderEntity));
 
         enforcementStateService.mapToEntity(pcsCaseEntity, state);
         pcsCaseRepository.save(pcsCaseEntity);
         return enforcementOrderRepository.save(enforcementOrderEntity);
+    }
+
+    /**
+     * One more than the number of the case's existing applications of the same type, so writs and warrants are
+     * numbered separately.
+     */
+    private static int nextRankForType(PcsCaseEntity pcsCaseEntity, EnforcementOrderEntity newApplication) {
+        long sameType = pcsCaseEntity.getEnforcementOrders().stream()
+            .filter(existing -> existing != newApplication)
+            .filter(existing -> (existing.getWritDetails() != null) == (newApplication.getWritDetails() != null)
+                && (existing.getWarrantDetails() != null) == (newApplication.getWarrantDetails() != null)
+                && (existing.getWarrantOfRestitutionDetails() != null)
+                    == (newApplication.getWarrantOfRestitutionDetails() != null))
+            .count();
+        return (int) sameType + 1;
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity) {

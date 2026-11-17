@@ -116,7 +116,7 @@ class WritOfPossessionPersistenceServiceTest {
         warrantOrder.setWarrantDetails(new WarrantEntity());
         stubEnforcementOrder(warrantOrder);
 
-        assertThat(underTest.buildPayload(ENFORCEMENT_ORDER_ID)).isEmpty();
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID)).isEmpty();
     }
 
     @Test
@@ -125,14 +125,14 @@ class WritOfPossessionPersistenceServiceTest {
         enforcementOrder.addDocuments(List.of(DocumentEntity.builder().type(DocumentType.WRIT_OF_POSSESSION).build()));
         stubEnforcementOrder(enforcementOrder);
 
-        assertThat(underTest.buildPayload(ENFORCEMENT_ORDER_ID)).isEmpty();
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID)).isEmpty();
     }
 
     @Test
     void shouldThrowWhenTheEnforcementApplicationIsNotFound() {
         when(enforcementOrderRepository.findById(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.buildPayload(ENFORCEMENT_ORDER_ID))
+        assertThatThrownBy(() -> underTest.buildRenderContext(ENFORCEMENT_ORDER_ID))
             .isInstanceOf(EnforcementApplicationNotFoundException.class)
             .hasMessageContaining(ENFORCEMENT_ORDER_ID.toString());
     }
@@ -159,7 +159,7 @@ class WritOfPossessionPersistenceServiceTest {
             .build();
         stubEnforcementOrder(enforcementOrder(writ, statementOfTruth));
 
-        WritOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        WritOfPossessionPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-9012-3456");
         assertThat(payload.getCaseName()).isEqualTo("Acme Ltd v Bob Tenant");
@@ -187,7 +187,7 @@ class WritOfPossessionPersistenceServiceTest {
         when(partyService.getPartyName(defendant2)).thenReturn("Jo Tenant");
         stubEnforcementOrder(enforcementOrder(WritEntity.builder().build()));
 
-        WritOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        WritOfPossessionPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getDefendantNames()).isEqualTo("Bob Tenant, Jo Tenant");
     }
@@ -200,7 +200,7 @@ class WritOfPossessionPersistenceServiceTest {
             .build();
         stubEnforcementOrder(enforcementOrder(writ));
 
-        WritOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        WritOfPossessionPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getHceoName()).isNull();
         assertThat(payload.getHceoSelectionOutcome())
@@ -230,6 +230,15 @@ class WritOfPossessionPersistenceServiceTest {
         underTest.attachDocumentAndQueueEmail(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
 
         verify(notificationService).sendWritOfPossessionEmail(claimant);
+    }
+
+    @Test
+    void shouldPassTheApplicationRankForTheWritName() {
+        EnforcementOrderEntity enforcementOrder = enforcementOrder(WritEntity.builder().build());
+        enforcementOrder.setRank(2);
+        stubEnforcementOrder(enforcementOrder);
+
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().rank()).isEqualTo(2);
     }
 
     private void stubEnforcementOrder(EnforcementOrderEntity enforcementOrder) {

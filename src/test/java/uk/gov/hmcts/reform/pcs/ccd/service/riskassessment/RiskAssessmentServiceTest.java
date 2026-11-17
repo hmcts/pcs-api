@@ -27,6 +27,8 @@ class RiskAssessmentServiceTest {
     private static final UUID ENFORCEMENT_ORDER_ID = UUID.randomUUID();
     private static final RiskAssessmentPayload PAYLOAD = RiskAssessmentPayload.builder().build();
     private static final String DOCUMENT_URL = "risk assessment url";
+    private static final Integer RANK = 1;
+    private static final RiskAssessmentRenderContext CONTEXT = new RiskAssessmentRenderContext(PAYLOAD, RANK);
 
     @Mock
     private RiskAssessmentPersistenceService persistenceService;
@@ -40,21 +42,21 @@ class RiskAssessmentServiceTest {
 
     @Test
     void shouldGenerateTheRiskAssessmentThenAttachIt() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, RiskAssessmentService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
 
         underTest.generateAndAttach(ENFORCEMENT_ORDER_ID);
 
         InOrder order = inOrder(persistenceService, documentGenerator);
-        order.verify(persistenceService).buildPayload(ENFORCEMENT_ORDER_ID);
-        order.verify(documentGenerator).generate(PAYLOAD, RiskAssessmentService.OUTPUT_FILENAME);
+        order.verify(persistenceService).buildRenderContext(ENFORCEMENT_ORDER_ID);
+        order.verify(documentGenerator).generate(PAYLOAD, RANK);
         order.verify(persistenceService).attachDocument(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
         verifyNoInteractions(documentImportService);
     }
 
     @Test
     void shouldSkipGenerateAndAttachWhenThereIsNoRiskAssessmentToGenerate() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
 
         underTest.generateAndAttach(ENFORCEMENT_ORDER_ID);
 
@@ -64,8 +66,8 @@ class RiskAssessmentServiceTest {
 
     @Test
     void shouldNotAttachWhenGenerationFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, RiskAssessmentService.OUTPUT_FILENAME))
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK))
             .thenThrow(new RuntimeException("docassembly 500"));
 
         assertThatThrownBy(() -> underTest.generateAndAttach(ENFORCEMENT_ORDER_ID))
@@ -77,8 +79,8 @@ class RiskAssessmentServiceTest {
 
     @Test
     void shouldDeleteTheGeneratedRiskAssessmentWhenAttachFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, RiskAssessmentService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attachDocument(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
 
@@ -91,8 +93,8 @@ class RiskAssessmentServiceTest {
 
     @Test
     void shouldStillThrowTheAttachErrorWhenDeletingTheGeneratedRiskAssessmentFails() {
-        when(persistenceService.buildPayload(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(PAYLOAD));
-        when(documentGenerator.generate(PAYLOAD, RiskAssessmentService.OUTPUT_FILENAME)).thenReturn(DOCUMENT_URL);
+        when(persistenceService.buildRenderContext(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(CONTEXT));
+        when(documentGenerator.generate(PAYLOAD, RANK)).thenReturn(DOCUMENT_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attachDocument(ENFORCEMENT_ORDER_ID, DOCUMENT_URL);
         doThrow(new RuntimeException("delete failed")).when(documentImportService).deleteDocument(DOCUMENT_URL);

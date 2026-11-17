@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDocumentVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -74,8 +75,9 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      securityContextService, orderRepository);
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService,
+            new EnforcementDocumentVisibilityService(), new UploadTimestampProvider(), securityContextService,
+            orderRepository);
     }
 
     @Test
@@ -138,6 +140,42 @@ class DocumentsViewTest {
                 }
             );
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[DEFENDANT]", "[DEFENDANTSOLICITOR]", "defendant-solicitor"})
+    void shouldHideEnforcementDocumentsFromTheDefendantSide(String role) {
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(enforcementDocument(DocumentType.WARRANT_OF_POSSESSION)));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "claimant", "hearing-centre-admin", "fee-paid-judge"})
+    void shouldShowEnforcementDocumentsToTheClaimantSideAndStaff(String role) {
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+            enforcementDocument(DocumentType.WRIT_OF_POSSESSION),
+            enforcementDocument(DocumentType.WARRANT_OF_POSSESSION),
+            enforcementDocument(DocumentType.RISK_ASSESSMENT)));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).hasSize(3);
+    }
+
+    private static DocumentEntity enforcementDocument(DocumentType type) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(type.getLabel() + ".pdf")
+            .url("url")
+            .type(type)
+            .build();
     }
 
     @Test

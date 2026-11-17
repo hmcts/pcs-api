@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.document.model.writofpossession.WritOfPossessionPayload;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -18,19 +17,17 @@ import java.util.UUID;
 @AllArgsConstructor
 public class WritOfPossessionService {
 
-    static final String OUTPUT_FILENAME = "Writ of possession";
-
     private final WritOfPossessionPersistenceService persistenceService;
     private final WritOfPossessionDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
 
     public void generateAndAttach(UUID enforcementOrderId) {
-        Optional<WritOfPossessionPayload> payload = persistenceService.buildPayload(enforcementOrderId);
-        if (payload.isEmpty()) {
+        Optional<WritOfPossessionRenderContext> context = persistenceService.buildRenderContext(enforcementOrderId);
+        if (context.isEmpty()) {
             return;
         }
 
-        String documentUrl = documentGenerator.generate(payload.get(), OUTPUT_FILENAME);
+        String documentUrl = documentGenerator.generate(context.get().payload(), context.get().rank());
         try {
             persistenceService.attachDocumentAndQueueEmail(enforcementOrderId, documentUrl);
         } catch (Exception e) {

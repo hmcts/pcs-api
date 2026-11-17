@@ -102,14 +102,14 @@ class RiskAssessmentPersistenceServiceTest {
     void shouldBuildNoPayloadWhenThereIsNoRiskProfile() {
         stubEnforcementOrder(enforcementOrder(new WarrantEntity(), null));
 
-        assertThat(underTest.buildPayload(ENFORCEMENT_ORDER_ID)).isEmpty();
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID)).isEmpty();
     }
 
     @Test
     void shouldBuildNoPayloadWhenTheApplicationIsNotAWarrant() {
         stubEnforcementOrder(enforcementOrder(null, new RiskProfileEntity()));
 
-        assertThat(underTest.buildPayload(ENFORCEMENT_ORDER_ID)).isEmpty();
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID)).isEmpty();
     }
 
     @Test
@@ -118,14 +118,14 @@ class RiskAssessmentPersistenceServiceTest {
         enforcementOrder.addDocuments(List.of(DocumentEntity.builder().type(DocumentType.RISK_ASSESSMENT).build()));
         stubEnforcementOrder(enforcementOrder);
 
-        assertThat(underTest.buildPayload(ENFORCEMENT_ORDER_ID)).isEmpty();
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID)).isEmpty();
     }
 
     @Test
     void shouldThrowWhenTheEnforcementApplicationIsNotFound() {
         when(enforcementOrderRepository.findById(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.buildPayload(ENFORCEMENT_ORDER_ID))
+        assertThatThrownBy(() -> underTest.buildRenderContext(ENFORCEMENT_ORDER_ID))
             .isInstanceOf(EnforcementApplicationNotFoundException.class)
             .hasMessageContaining(ENFORCEMENT_ORDER_ID.toString());
     }
@@ -149,7 +149,7 @@ class RiskAssessmentPersistenceServiceTest {
         risk.setVulnerableReasonText("Young children");
         stubEnforcementOrder(enforcementOrder(warrant, risk));
 
-        RiskAssessmentPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        RiskAssessmentPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-9012-3456");
         assertThat(payload.getCaseName()).isEqualTo("Acme Ltd v Bob Tenant");
@@ -177,7 +177,7 @@ class RiskAssessmentPersistenceServiceTest {
         risk.setAnimalsDetails("Large dog");
         stubEnforcementOrder(enforcementOrder(new WarrantEntity(), risk));
 
-        RiskAssessmentPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        RiskAssessmentPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getSelectedPropertyRisks()).isEqualTo(
             RiskCategory.VIOLENT_OR_AGGRESSIVE.getLabel() + "\n" + RiskCategory.AGGRESSIVE_ANIMALS.getLabel());
@@ -191,7 +191,7 @@ class RiskAssessmentPersistenceServiceTest {
         enforcementOrder.addSelectedDefendants(List.of(SelectedDefendantEntity.builder().party(defendant2).build()));
         stubEnforcementOrder(enforcementOrder);
 
-        RiskAssessmentPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
+        RiskAssessmentPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
         assertThat(payload.getDefendantNames()).isEqualTo("Jo Tenant");
     }
@@ -210,6 +210,15 @@ class RiskAssessmentPersistenceServiceTest {
                 assertThat(document.getType()).isEqualTo(DocumentType.RISK_ASSESSMENT);
                 assertThat(document.getEnfApplication()).isEqualTo(enforcementOrder);
             });
+    }
+
+    @Test
+    void shouldPassTheApplicationRankForTheRiskAssessmentName() {
+        EnforcementOrderEntity enforcementOrder = enforcementOrder(new WarrantEntity(), new RiskProfileEntity());
+        enforcementOrder.setRank(2);
+        stubEnforcementOrder(enforcementOrder);
+
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().rank()).isEqualTo(2);
     }
 
     private void stubEnforcementOrder(EnforcementOrderEntity enforcementOrder) {

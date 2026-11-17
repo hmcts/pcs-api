@@ -22,11 +22,11 @@ class WritOfPossessionDocumentGeneratorTest {
     private WritOfPossessionDocumentGenerator underTest;
 
     @Test
-    void shouldGenerateTheWritAsAPdfWithTheGivenFilename() {
+    void shouldGenerateTheWritAsAPdfNamedWithItsRank() {
         WritOfPossessionPayload payload = WritOfPossessionPayload.builder().build();
         when(docAssemblyService.generateDocument(payload, WritOfPossessionDocumentGenerator.TEMPLATE_ID,
-            OutputType.PDF, "Writ of possession")).thenReturn("document url");
+            OutputType.PDF, "Writ of possession - application 2")).thenReturn("document url");
 
-        assertThat(underTest.generate(payload, "Writ of possession")).isEqualTo("document url");
+        assertThat(underTest.generate(payload, 2)).isEqualTo("document url");
     }
 }
