@@ -72,7 +72,8 @@ public class OrderStepEntity {
     /** On the issuing step, the order's wording as issued. */
     private String orderHtml;
 
+    /** Court staff's query on returning the order to its judge, kept as a closed message. */
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "note_id")
-    private CaseNoteEntity note;
+    @JoinColumn(name = "message_entry_id")
+    private CaseMessageEntryEntity messageEntry;
 }
