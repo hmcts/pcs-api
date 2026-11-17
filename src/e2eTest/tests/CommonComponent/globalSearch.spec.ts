@@ -74,7 +74,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
+test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch @ChallengedAccess', () => {
   test('Challenged access - Hearing centre team leader user can view the case after submitting a request', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
