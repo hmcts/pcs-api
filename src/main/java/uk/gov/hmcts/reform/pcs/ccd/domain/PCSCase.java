@@ -1226,9 +1226,6 @@ public class PCSCase {
     )
     private WarrantReturn warrantReturn;
 
-    @CCD
-    private EnforcementState activeEnforcementState;
-
     @CCD(
         searchable = false,
         access = {BailiffAccess.class}

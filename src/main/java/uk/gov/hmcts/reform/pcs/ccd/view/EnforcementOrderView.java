@@ -38,7 +38,7 @@ public class EnforcementOrderView {
 
     public void setCaseFields(PCSCase pcsCase, long caseReference, State state, PcsCaseEntity pcsCaseEntity) {
         setHasEnforcementDraftData(caseReference, state, pcsCase);
-        setActiveEnforcementState(pcsCaseEntity, pcsCase);
+        setEnforcementStateShowConditions(pcsCaseEntity, pcsCase);
     }
 
     private void setHasEnforcementDraftData(long caseReference, State state, PCSCase pcsCase) {
@@ -57,7 +57,7 @@ public class EnforcementOrderView {
         }
     }
 
-    private void setActiveEnforcementState(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
+    private void setEnforcementStateShowConditions(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         EnforcementStateEntity enforcementStateEntity = pcsCaseEntity.getEnforcementState();
 
         if (enforcementStateEntity == null) {
@@ -66,7 +66,6 @@ public class EnforcementOrderView {
         }
 
         EnforcementState activeState = enforcementStateEntity.getState();
-        pcsCase.setActiveEnforcementState(activeState);
         pcsCase.setCanRecordWarrantReturn(
             RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO
         );

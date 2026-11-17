@@ -75,24 +75,6 @@ class EnforcementOrderViewTest {
         assertThat(pcsCase.getEnforcementOrder()).isNull();
     }
 
-    @Test
-    void shouldPopulateActiveEnforcementState() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder().build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .enforcementState(
-                EnforcementStateEntity.builder()
-                    .state(EnforcementState.AWAITING_BAILIFF_ALLOCATION)
-                    .build()
-            ).build();
-
-        // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getActiveEnforcementState()).isEqualTo(EnforcementState.AWAITING_BAILIFF_ALLOCATION);
-    }
-
     @ParameterizedTest
     @MethodSource("recordWarrantReturnScenarios")
     void shouldSetCanRecordWarrantReturnFromActiveEnforcementState(EnforcementState enforcementState,
