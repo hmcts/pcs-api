@@ -23,23 +23,46 @@ public record ConfirmOrderReviewRequest(Action action,
     }
 
     /**
-     * How the order is issued. The frontend also asks about next steps, whether the order is final and
-     * whom to serve it on; nothing acts on those answers yet, so they are not read.
+     * How the order is issued: served on all parties, or without notice on the parties to serve, each one of the
+     * case's parties as the start sent them; whether court staff have completed the next steps, without which it is
+     * not issued; what it decides about the claim; what it says about costs; the sums it says one side pays; and
+     * whether it permits a warrant or writ of restitution.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal) {
+    public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal,
+                        boolean serveAllParties, List<UUID> partiesToServe, boolean nextStepsComplete,
+                        ClaimOutcome claimOutcome, OrderCosts costs, List<MoneyJudgment> moneyJudgments,
+                        boolean restitutionPermitted) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;
+            partiesToServe = partiesToServe == null ? List.of() : partiesToServe;
+            moneyJudgments = moneyJudgments == null ? List.of() : moneyJudgments;
+        }
+
+        public Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal, boolean serveAllParties,
+                     List<UUID> partiesToServe, boolean nextStepsComplete, ClaimOutcome claimOutcome) {
+            this(order, reviewDates, seal, serveAllParties, partiesToServe, nextStepsComplete, claimOutcome, null,
+                null, false);
         }
     }
 
     /**
-     * The order as issued, with any changes the caseworker made; {@code html} is Docweave's export,
+     * The order as issued, with any changes the caseworker made: what it decides about each application, the
+     * frontend's form state (stored, never read here), its Docweave document, and {@code html}, Docweave's export,
      * issued as is.
      */
     public record IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
-                              String html) {
+                              String html, List<ApplicationDecision> applicationDecisions) {
+
+        public IssuedOrder {
+            applicationDecisions = applicationDecisions == null ? List.of() : applicationDecisions;
+        }
+
+        public IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
+                           String html) {
+            this(orderType, formData, docweaveSnapshot, html, List.of());
+        }
     }
 
     public record ReviewDateEntry(LocalDate date, ReviewReason reason, String description) {

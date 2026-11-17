@@ -4,7 +4,7 @@ import test, { BrowserContext, expect, Page } from '@playwright/test';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
+import { allPartyDetails, caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm, uploadAdditionalDocumentsInformation, uploadYourDocuments
@@ -20,13 +20,14 @@ import { FieldsStore } from '@utils/actions/custom-actions/recordAnsweredFields.
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { getFormattedDate } from '@utils/common/string.utils';
 import { home } from '@data/page-data';
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 
 
 test.use({ storageState: undefined })
 let uploadAdditionalDocumentsInformationCL: ReturnType<typeof uploadAdditionalDocumentsInformation>;
 let genAppPayload: (id: string, name: string) => any;
-let submitPayload: Record<string, unknown>;
+let submitPayload: Record<string, any>;
 
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
@@ -36,8 +37,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const title = testInfo.title;
 
-  const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
-
   const isMultiDef = title.toLowerCase().includes('multi def');
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload() : submitCaseApiData.submitCasePayloadDefault();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -45,6 +44,12 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
+
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitPayload.defendant1.nameKnown,
+    additionalDefendants: submitPayload.addAnotherDefendant,
+    payLoad: submitPayload
+  });
 
   if (title.includes('ADJOURN')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournPayload;
@@ -96,7 +101,7 @@ test.afterEach(async () => {
 
 });
 /* The skipped tests will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755 */
-test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
+test.describe('Legal Representative - Upload Documents- e2e Journey', async () => {
 
   test.skip('Upload documents when GenApps submitted - Multi def', {
     annotation: {
@@ -104,7 +109,6 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async () => {
-    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
@@ -136,10 +140,13 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression @nightly', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -162,15 +169,18 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType,`${partyType} ${partyIndex}`)
     });
 
   });
 
-  test('Upload documents when GenApps submitted - Single def MULTI_APP @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def MULTI_APP @regression @nightly', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -202,7 +212,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType,`${partyType} ${partyIndex}`)
     });
   });
 
@@ -282,10 +292,13 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
   });
 
-  test('Upload documents when GenApps not submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps not submitted - Single def @regression @nightly', async () => {
 
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let fileName1 = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
+    let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, uploadYourDocuments.mainHeader as string);
@@ -304,19 +317,22 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName,``,``,`${partyType} ${partyIndex}`)
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
       submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName1)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName1,``,``,`${partyType} ${partyIndex}`)
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression', async ({ page, context }) => {
+  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression @nightly', async ({ page, context }) => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -339,8 +355,9 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
       submitPayload: submitPayload,
-      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, ``, appType,`${partyType} ${partyIndex}`)
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();

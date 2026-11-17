@@ -85,7 +85,8 @@ public class OrderDocumentService {
             .orElseThrow(() -> new IllegalStateException("No issued order " + orderId));
         DocumentEntity document = documentImportService.addDocumentToCase(
             order.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
-        document.setType(DocumentType.ORDER);
+        // An order served without notice is seen only by the parties it was served on and court staff.
+        document.setType(order.getServedParties().isEmpty() ? DocumentType.ORDER : DocumentType.WITHOUT_NOTICE_ORDER);
         // The order is issued, so its latest step is the issuing one.
         document.setIssueDate(orderSteps.latest(order).getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
         order.setDocument(document);
@@ -116,7 +117,7 @@ public class OrderDocumentService {
             .propertyAddress(addressFormatter.formatFullAddressWithoutCountry(
                 addressMapper.toAddressUK(pcsCase.getPropertyAddress()), AddressFormatter.COMMA_DELIMITER))
             .judgeName(Optional.ofNullable(order.getAuthorName()).orElse("the Judge"))
-            .orderDate(ORDER_DATE.format(issued.getCreatedAt().atZone(UK_ZONE_ID)))
+            .orderDate(ORDER_DATE.format(order.getMadeOn()))
             .orderHtml(issued.getOrderHtml())
             .sealName(order.getSeal() == OrderSeal.HIGH_COURT
                 ? "High Court" : Optional.ofNullable(courtName).orElse("County Court"))

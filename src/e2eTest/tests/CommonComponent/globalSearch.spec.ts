@@ -56,6 +56,8 @@ const setupGlobalSearchUser = async (
     }
   });
 
+  await performAction('updatePaymentAPI');
+
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
   await dismissCookieBanner(page, 'additional');
@@ -105,6 +107,21 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
       text: whyDoYouNeedToAccessThisCase.otherReasonInputText
     });
   });
+
+  test('Challenged access - Judge user can view the case after submitting a request', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      judicial.walesRegion_Judge_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer
+    });
+  });
 });
 
 const runFieldSearch = async (label: string, value: string) => {
@@ -116,7 +133,7 @@ const runFieldSearch = async (label: string, value: string) => {
 };
 
 const runGlobalSearchScenarios = () => {
-  test('Global search menu @smoke', async () => {
+  test('Global search menu', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
