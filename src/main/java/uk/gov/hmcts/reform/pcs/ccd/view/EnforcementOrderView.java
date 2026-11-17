@@ -5,17 +5,34 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @Component
 @RequiredArgsConstructor
 public class EnforcementOrderView {
+
+    private static final Set<EnforcementState> RECORD_WARRANT_RETURN_STATES = EnumSet.of(
+        EnforcementState.CASE_PROGRESSION,
+        EnforcementState.BREATHING_SPACE,
+        EnforcementState.AWAITING_ENFORCEMENT_OUTCOME,
+        EnforcementState.AWAITING_PROPERTY_VISIT,
+        EnforcementState.AWAITING_SCHEDULING,
+        EnforcementState.AWAITING_BAILIFF_ALLOCATION,
+        EnforcementState.JUDICIAL_REFERRAL,
+        EnforcementState.HEARING_READINESS,
+        EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+        EnforcementState.CLOSED,
+        EnforcementState.CASE_STAYED
+    );
 
     private final DraftCaseDataService draftCaseDataService;
 
@@ -44,9 +61,14 @@ public class EnforcementOrderView {
         EnforcementStateEntity enforcementStateEntity = pcsCaseEntity.getEnforcementState();
 
         if (enforcementStateEntity == null) {
+            pcsCase.setCanRecordWarrantReturn(YesOrNo.NO);
             return;
         }
 
-        pcsCase.setActiveEnforcementState(enforcementStateEntity.getState());
+        EnforcementState activeState = enforcementStateEntity.getState();
+        pcsCase.setActiveEnforcementState(activeState);
+        pcsCase.setCanRecordWarrantReturn(
+            RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO
+        );
     }
 }

@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturn;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -36,20 +35,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     private PcsCaseService pcsCaseService;
     private EnforcementOrderMediator enforcementOrderMediator;
     private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case";
-
-    private static final String HAS_VALID_ENFORCEMENT_STATE = ShowConditions.or(
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CASE_PROGRESSION),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_BAILIFF_ALLOCATION),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.JUDICIAL_REFERRAL),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.HEARING_READINESS),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_SCHEDULING),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_PROPERTY_VISIT),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_ENFORCEMENT_OUTCOME),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CLOSED),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CASE_STAYED),
-        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.BREATHING_SPACE)
-    );
+    private static final String CAN_RECORD_WARRANT_RETURN = "canRecordWarrantReturn=\"Yes\"";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -59,7 +45,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .name("Record warrant return")
             .showCondition(ShowConditions.and(
                 featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN),
-                HAS_VALID_ENFORCEMENT_STATE
+                CAN_RECORD_WARRANT_RETURN
             ))
             .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
