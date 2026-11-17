@@ -421,6 +421,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       date: date,
       question1: uploadADocument.partyDocRelatedToQuestion,
       option1: party,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);

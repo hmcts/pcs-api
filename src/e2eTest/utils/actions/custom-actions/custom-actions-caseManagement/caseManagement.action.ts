@@ -314,7 +314,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
-    await this.validateCaseDetails(courtHearing.submitPayLoad);
+    await this.validateCaseDetails(courtHearing.submitPayload);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
       option: courtHearing.option,
@@ -323,7 +323,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
-    await this.validateCaseDetails(fee.submitPayLoad);
+    await this.validateCaseDetails(fee.submitPayload);
     await performAction('clickRadioButton', {
       question: fee.question1,
       option: fee.option1,
