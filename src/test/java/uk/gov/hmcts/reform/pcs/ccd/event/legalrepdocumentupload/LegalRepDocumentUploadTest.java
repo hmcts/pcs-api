@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -53,6 +55,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -364,6 +368,75 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .isEmpty();
     }
 
+    @Test
+    void noDefendantParty_nothingToAddToCaseData() {
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants).isEmpty();
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getCurrentRepresentedPartyId()).isBlank();
+        assertThat(result.getCurrentRepresentedPartyName()).isBlank();
+    }
+
+    @Test
+    void oneDefendantParty_addToCaseData() {
+        UUID id = UUID.randomUUID();
+        PartyEntity partyEntity = PartyEntity.builder().id(id).firstName("Sam").lastName("Vimes").build();
+
+        when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of(partyEntity));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, id)).thenReturn(true);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants).hasSize(1);
+        assertThat(defendants.getFirst().getLabel()).isEqualTo("Sam Vimes");
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getCurrentRepresentedPartyId()).isEqualTo(String.valueOf(id));
+        assertThat(result.getCurrentRepresentedPartyName()).isEqualTo("Sam Vimes");
+    }
+
+    @Test
+    void twoDefendantParties_addToCaseData() {
+        UUID firstId = UUID.randomUUID();
+        UUID secondId = UUID.randomUUID();
+        PartyEntity firstPartyEntity = PartyEntity.builder()
+            .id(firstId).firstName("Sam").lastName("Vimes").build();
+        PartyEntity secondPartyEntity = PartyEntity.builder()
+            .id(secondId).firstName("Granny").lastName("Weatherwax").build();
+
+        when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of(firstPartyEntity, secondPartyEntity));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, firstId)).thenReturn(true);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, secondId)).thenReturn(true);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants).hasSize(2);
+        assertThat(defendants.get(0).getLabel()).isEqualTo("Sam Vimes");
+        assertThat(defendants.get(1).getLabel()).isEqualTo("Granny Weatherwax");
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getCurrentRepresentedPartyId()).isBlank();
+        assertThat(result.getCurrentRepresentedPartyName()).isBlank();
+    }
+
     @Nested
     @DisplayName("Submit Handler")
     class SubmitHandlerTests {
@@ -405,9 +478,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(respondedDefendant, awaitingDefendant));
             when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-                TEST_CASE_REFERENCE, respondedPartyId)).thenReturn(true);
+                TEST_CASE_REFERENCE, respondedPartyId)).thenReturn(false);
             when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-                TEST_CASE_REFERENCE, awaitingPartyId)).thenReturn(false);
+                TEST_CASE_REFERENCE, awaitingPartyId)).thenReturn(true);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
@@ -435,6 +508,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                anyLong(), any())).thenReturn(true);
 
             PCSCase pcsCase = PCSCase.builder().build();
 
@@ -490,6 +565,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             when(primaryClaimantParty.getOrganisationId())
                 .thenReturn(isDefendantLrScenario ? "different org ID" : ORGANISATION_ID);
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                anyLong(), any())).thenReturn(true);
 
             PCSCase pcsCase = PCSCase.builder()
                 .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
@@ -553,6 +630,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull() {
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+                     .getOrganisationId()).thenReturn(ORGANISATION_ID);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument nullLegalRepDocument = null;
@@ -578,6 +657,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnErrorWhenAtLeastOneLegalRepDocumentHasNoDocument() {
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+                     .getOrganisationId()).thenReturn(ORGANISATION_ID);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument legalRepDocumentWithoutDocument = LegalRepDocument.builder().build();
@@ -594,6 +675,84 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
-    }
+        @Test
+        void shouldResolveUploadingPartyFromCurrentRepresentedPartyIdWhenPresent() {
+            // Given
+            UUID targetPartyId = UUID.randomUUID();
+            PartyEntity expectedParty = PartyEntity.builder()
+                .id(targetPartyId)
+                .firstName("Selected")
+                .lastName("Defendant")
+                .build();
 
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(expectedParty));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(expectedParty));
+            when(defendantResponseRepository
+                     .existsByClaimPcsCaseCaseReferenceAndPartyId(anyLong(), eq(targetPartyId)))
+                .thenReturn(true);
+
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(mock(Document.class))
+                .build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .currentRepresentedPartyId(targetPartyId.toString())
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+                                                   .build())
+                .representedPartyNames(buildRepresentedPartyList(expectedParty))
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors()).isNullOrEmpty();
+            verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
+                List.of(legalRepDocument), pcsCaseEntity, expectedParty, null);
+        }
+
+        private DynamicList buildRepresentedPartyList(PartyEntity expectedParty) {
+            DynamicListElement party = DynamicListElement.builder()
+                .code(expectedParty.getId()).label(expectedParty.getFirstName() + " " + expectedParty.getLastName())
+                .build();
+
+            return DynamicList.builder()
+                .listItems(List.of(party))
+                .value(party)
+                .build();
+        }
+
+        @Test
+        void shouldReturnErrorWhenCurrentRepresentedPartyIdDoesNotExistInCaseParties() {
+            // Given
+            UUID unknownPartyId = UUID.randomUUID();
+            PartyEntity unknownParty = PartyEntity.builder()
+                .id(unknownPartyId)
+                .build();
+            PartyEntity otherParty = PartyEntity.builder()
+                .id(UUID.randomUUID())
+                .build();
+
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(otherParty));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(otherParty));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .currentRepresentedPartyId(unknownPartyId.toString())
+                .representedPartyNames(buildRepresentedPartyList(unknownParty))
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors())
+                .contains("No represented party found for ID: " + unknownPartyId);
+        }
+
+    }
 }
