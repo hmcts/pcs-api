@@ -30,7 +30,9 @@ import uk.gov.hmcts.reform.pcs.document.model.warrantofpossession.WarrantOfPosse
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 @AllArgsConstructor
 public class WarrantOfPossessionPersistenceService {
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
     static final String APPLICATION_TYPE = "Warrant of Possession";
     static final String SUSPENDED_ORDER = "Suspended order";
     static final String OTHER_ORDER = "Other";
@@ -122,7 +125,7 @@ public class WarrantOfPossessionPersistenceService {
             .signatoryFullName(statementOfTruth.getFullName())
             .signatoryPosition(statementOfTruth.getPositionHeld())
             .signatoryOrganisation(statementOfTruth.getFirmName())
-            .submissionDate(statementOfTruth.getCompletedDate().toLocalDate())
+            .submissionDate(DATE_FORMATTER.format(statementOfTruth.getCompletedDate()))
             .build();
     }
 

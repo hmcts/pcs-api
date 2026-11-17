@@ -1,15 +1,11 @@
 package uk.gov.hmcts.reform.pcs.document.model.writofpossession;
 
-
-
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
-import java.time.LocalDate;
-
 /**
- * Docmosis merge-field payload for the Writ of possession, one per recipient. Field names must match
+ * Docmosis merge-field payload for the writ of possession application. Field names must match
  * {@code CV-PCS-APP-ENG-Writ-Of-Possession.docx}.
  */
 @Data
@@ -36,7 +32,7 @@ public class WritOfPossessionPayload implements FormPayload {
     private String possessionOrderDate;
     private String breathingSpaceAnswer;
     private String highCourtPermissionAnswer;
-    private LocalDate highCourtPermissionOrderDate;
+    private String highCourtPermissionOrderDate;
 
     //High Court Enforcement Officer
     private String hceoHiredAnswer;
@@ -48,7 +44,7 @@ public class WritOfPossessionPayload implements FormPayload {
     private String signatoryFullName;
     private String signatoryPosition;
     private String signatoryOrganisation;
-    private LocalDate submissionDate;
+    private String submissionDate;
 
 }
 

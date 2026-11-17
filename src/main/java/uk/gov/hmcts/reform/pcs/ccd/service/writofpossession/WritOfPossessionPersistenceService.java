@@ -29,7 +29,9 @@ import uk.gov.hmcts.reform.pcs.document.model.writofpossession.WritOfPossessionP
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +42,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 @AllArgsConstructor
 public class WritOfPossessionPersistenceService {
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
     static final String COMPLETED_BY_CLAIMANT = "Claimant";
     static final String COMPLETED_BY_LEGAL_REPRESENTATIVE = "Claimant’s legal representative";
     static final String HCEO_SELECTED_BY_NICE = "The National Information Centre for Enforcement will choose a "
@@ -127,7 +130,7 @@ public class WritOfPossessionPersistenceService {
             .signatoryFullName(statementOfTruth.getFullName())
             .signatoryPosition(statementOfTruth.getPositionHeld())
             .signatoryOrganisation(statementOfTruth.getFirmName())
-            .submissionDate(statementOfTruth.getCompletedDate().toLocalDate())
+            .submissionDate(DATE_FORMATTER.format(statementOfTruth.getCompletedDate()))
             .build();
     }
 

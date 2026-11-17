@@ -36,7 +36,6 @@ import uk.gov.hmcts.reform.pcs.document.model.warrantofpossession.WarrantOfPosse
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -167,7 +166,7 @@ class WarrantOfPossessionPersistenceServiceTest {
         assertThat(payload.getSignatoryFullName()).isEqualTo("Sam Solicitor");
         assertThat(payload.getSignatoryPosition()).isEqualTo("Partner");
         assertThat(payload.getSignatoryOrganisation()).isEqualTo("Solicitors LLP");
-        assertThat(payload.getSubmissionDate()).isEqualTo(LocalDate.of(2026, 11, 10));
+        assertThat(payload.getSubmissionDate()).isEqualTo("10 November 2026");
     }
 
     @Test

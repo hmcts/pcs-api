@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
-import java.time.LocalDate;
-
 /**
  * Docmosis merge-field payload for the warrant of possession application. Field names must match
  * {@code CV-PCS-APP-ENG-Warrant-Of-Possession.docx}.
@@ -41,6 +39,6 @@ public class WarrantOfPossessionPayload implements FormPayload {
     private String signatoryFullName;
     private String signatoryPosition;
     private String signatoryOrganisation;
-    private LocalDate submissionDate;
+    private String submissionDate;
 
 }
