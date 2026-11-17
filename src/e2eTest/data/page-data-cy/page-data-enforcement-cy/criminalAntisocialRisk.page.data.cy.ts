@@ -7,5 +7,14 @@ export const criminalAntisocialRisk = {
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`, 
   previousButton: `Yn ôl`,
   continueButton: `Parhau`,
-  cancelLink: `Canslo`
+  cancelLink: `Canslo`,
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `textField` },
+  errorValidationField: {
+    errorTextField: [
+      { type: `moreThanMax`, input: `MAXPLUS`, errMessage: `In ‘What is their history of criminal or antisocial behaviour?’, you have entered more than the maximum number of characters (6,800)` },
+      { type: `empty`, input: `EMPTY`, errMessage: `Beth yw eu hanes o ran ymddygiad troseddol neu wrthgymdeithasol? yn ofynnol` },
+    ]
+  }
 }
