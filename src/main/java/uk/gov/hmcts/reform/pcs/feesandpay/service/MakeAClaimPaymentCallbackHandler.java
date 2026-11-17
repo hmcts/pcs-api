@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
@@ -26,10 +25,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStateTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.system.SystemAction;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -40,7 +37,6 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.system.SystemAction.CLAIM_ISSUED_PAYMENT;
 
 @Component
 @AllArgsConstructor
@@ -62,39 +58,27 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         FeesAndPayTaskData taskData = toFeesAndPayTaskData(feePaymentEntity);
         feePaymentEntity.setParty(getResponsibleParty(taskData));
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            PaymentStateTaskData paymentStateTaskData = createPaymentStateTaskData(feePaymentEntity,
-                taskData.getCaseReference(), resumePossessionClaim, paymentStatusCallback, CLAIM_ISSUED_PAYMENT);
-            executeEvent(paymentStateTaskData);
+            executeEvent(feePaymentEntity, taskData.getCaseReference(), paymentStatusCallback);
         } else {
-            log.warn("The {} was not successful [{}] for case: {}",
-                     resumePossessionClaim, feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());
+            log.warn("The payment was not successful: [{}] for case: {}",
+                     feePaymentEntity.getPaymentStatus(), taskData.getCaseReference());
         }
     }
 
-    PaymentStateTaskData createPaymentStateTaskData(FeePaymentEntity feePaymentEntity, long caseId,
-                                                           EventId eventId, PaymentStatusCallback paymentStatusCallback,
-                                                           SystemAction systemAction) {
-        return PaymentStateTaskData.builder()
-            .caseReference(caseId)
-            .eventId(eventId)
-            .systemAction(systemAction)
-            .paymentReference(paymentStatusCallback.getPaymentReference())
-            .idempotencyKey(feePaymentEntity.getClaim().getId()).build();
-    }
-
-    void executeEvent(PaymentStateTaskData taskData) {
-        log.info("Updating the CCD State for Case: {} in Event: {} and PaymentReference: {}",
-                 taskData.getCaseReference(), taskData.getEventId(), taskData.getPaymentReference());
+    void executeEvent(FeePaymentEntity feePaymentEntity, long caseReference,
+                      PaymentStatusCallback paymentStatusCallback) {
+        log.info("Updating the CCD State for Case: {} and PaymentReference: {}",
+                 caseReference, paymentStatusCallback.getPaymentReference());
         TransactionTemplate noTransaction = new TransactionTemplate(transactionManager);
         noTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
         SystemEventExecutionResult result = noTransaction.execute(status ->
-              systemEventExecutor.execute(taskData.getCaseReference(), taskData.getIdempotencyKey(),
-                                          context -> apply(taskData)));
+              systemEventExecutor.execute(caseReference, feePaymentEntity.getClaim().getId(),
+                                          context -> apply(caseReference,
+                                                           paymentStatusCallback)));
         log.info("System Event from Payment Callback event resulted in : {}", result);
     }
 
-    public SystemEventResult apply(PaymentStateTaskData taskData) {
-        long caseReference = taskData.getCaseReference();
+    public SystemEventResult apply(long caseReference, PaymentStatusCallback paymentStatusCallback) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         if (pcsCaseEntity.getClaims().getFirst().getClaimIssuedDate() == null) {
             log.info("Payment confirmed for case {} - issuing case and scheduling tasks", caseReference);
@@ -105,7 +89,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
             scheduleClaimIssuedNotification(caseReference);
             claimWaTaskService.createTasksForIssuedClaim(caseReference);
         }
-        return stateTransition(taskData);
+        return buildSateTransitionResult(caseReference, paymentStatusCallback.getPaymentReference());
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(FeePaymentEntity feePaymentEntity) {
@@ -123,11 +107,11 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
                                                      feesAndPayTaskData.getCaseReference());
     }
 
-    private SystemEventResult stateTransition(PaymentStateTaskData taskData) {
+    private SystemEventResult buildSateTransitionResult(long caseReference, String paymentReference) {
         return SystemEventResult.withStateTransition(
-            taskData.getEventId().name(),
-            taskData.getEventId().name(),
-            "Payment " + taskData.getPaymentReference() + " updated for " + taskData.getCaseReference(),
+            resumePossessionClaim.name(),
+            resumePossessionClaim.name(),
+            "Payment " + paymentReference + " updated for " + caseReference,
             CASE_ISSUED
         );
     }

@@ -34,12 +34,10 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
@@ -57,8 +55,6 @@ class EnforcementOrderServiceTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private PcsCaseRepository pcsCaseRepository;
-    @Mock
-    private EnforcementStateService enforcementStateService;
     @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @InjectMocks
@@ -102,11 +98,16 @@ class EnforcementOrderServiceTest {
 
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
-    void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
+    void shouldCreateAndSubmitEnforcementOrder(SelectEnforcementType enforcementType) {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
         final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .pcsCase(pcsCaseEntity)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
@@ -114,24 +115,25 @@ class EnforcementOrderServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        EnforcementOrderEntity result = enforcementOrderService.saveAndClearDraftData(
-                CASE_REFERENCE, enforcementOrder, EnforcementState.PENDING_CASE_ISSUED);
+        EnforcementOrderEntity result =
+                enforcementOrderService.submitEnforcementOrder(CASE_REFERENCE, enforcementOrder);
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
                 ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        var saveOrder = inOrder(strategyFactory, strategy, enforcementStateService, pcsCaseRepository,
+        var saveOrder = inOrder(strategyFactory, strategy, pcsCaseRepository, draftCaseDataService,
                 enforcementOrderRepository);
+        saveOrder.verify(strategyFactory).getStrategy(enforcementType);
         saveOrder.verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
-        saveOrder.verify(enforcementStateService)
-                .mapToEntity(pcsCaseEntity, EnforcementState.PENDING_CASE_ISSUED);
         saveOrder.verify(pcsCaseRepository).save(pcsCaseEntity);
+        saveOrder.verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
         saveOrder.verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
+        assertThat(savedEntity).isSameAs(enforcementOrderEntity);
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
         assertThat(result).isSameAs(savedEntity);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 
     @Test

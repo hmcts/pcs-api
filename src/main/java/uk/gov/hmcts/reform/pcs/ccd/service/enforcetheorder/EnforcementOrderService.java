@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -18,6 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementT
 
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
+
 @Service
 @AllArgsConstructor
 public class EnforcementOrderService {
@@ -25,9 +27,23 @@ public class EnforcementOrderService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final EnforcementStateService enforcementStateService;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
+
+    @Transactional
+    public void createEnforcementOrder(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getEnforcementOrders())
+                || pcsCaseEntity.getEnforcementOrders().stream()
+                    .noneMatch(order -> order.getState() == AWAITING_SUBMISSION_TO_HMCTS)) {
+            EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                    .pcsCase(pcsCaseEntity)
+                    .enforcementOrder(EnforcementOrder.builder().build())
+                    .state(AWAITING_SUBMISSION_TO_HMCTS)
+                    .build();
+            enforcementOrderRepository.save(enforcementOrderEntity);
+        }
+    }
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -46,27 +62,30 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public EnforcementOrderEntity saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder,
-                                                        EnforcementState state) {
-        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrder(caseReference, enforcementOrder, state);
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
-
-        return enforcementOrderEntity;
-    }
-
-    private EnforcementOrderEntity createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder,
-                                                          EnforcementState state) {
+    public EnforcementOrderEntity submitEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity);
-        strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
+        EnforcementOrderEntity enfEntity = findEnforcementOrderEntity(pcsCaseEntity);
+        enfEntity.setEnforcementOrder(enforcementOrder);
+        enfEntity.setState(PENDING_CASE_ISSUED);
+        strategyFactory.getStrategy(SelectEnforcementType.valueOf(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
-                .process(enforcementOrderEntity, enforcementOrder);
-        enforcementOrderEntity.setRank(nextRankForType(pcsCaseEntity, enforcementOrderEntity));
+                .process(enfEntity, enforcementOrder);
+        enfEntity.setRank(nextRankForType(pcsCaseEntity, enfEntity));
 
-        enforcementStateService.mapToEntity(pcsCaseEntity, state);
         pcsCaseRepository.save(pcsCaseEntity);
-        return enforcementOrderRepository.save(enforcementOrderEntity);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+
+        return enforcementOrderRepository.save(enfEntity);
+    }
+
+    private EnforcementOrderEntity findEnforcementOrderEntity(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getEnforcementOrders().stream()
+            .filter(order -> order.getState() == AWAITING_SUBMISSION_TO_HMCTS)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "No enforcement order found for case reference " + pcsCaseEntity.getCaseReference()
+                    + " with state " + AWAITING_SUBMISSION_TO_HMCTS));
     }
 
     /**
