@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -49,8 +48,6 @@ class EnforcementOrderServiceTest {
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private PcsCaseRepository pcsCaseRepository;
     @Mock
     private EnforcementTypeStrategyFactory strategyFactory;
     @InjectMocks
@@ -117,11 +114,9 @@ class EnforcementOrderServiceTest {
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
                 ArgumentCaptor.forClass(EnforcementOrderEntity.class);
-        var saveOrder = inOrder(strategyFactory, strategy, pcsCaseRepository, draftCaseDataService,
-                enforcementOrderRepository);
+        var saveOrder = inOrder(strategyFactory, strategy, draftCaseDataService, enforcementOrderRepository);
         saveOrder.verify(strategyFactory).getStrategy(enforcementType);
         saveOrder.verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
-        saveOrder.verify(pcsCaseRepository).save(pcsCaseEntity);
         saveOrder.verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
         saveOrder.verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 

@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -26,7 +25,6 @@ public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseService pcsCaseService;
-    private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
 
@@ -72,7 +70,6 @@ public class EnforcementOrderService {
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enfEntity, enforcementOrder);
 
-        pcsCaseRepository.save(pcsCaseEntity);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
 
         return enforcementOrderRepository.save(enfEntity);
