@@ -6,6 +6,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { home } from '@data/page-data';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 
 test.beforeEach(async ({ page }) => {
@@ -48,7 +49,8 @@ test.describe('Case management - e2e Journey @nightly', async () => {
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id,defendantUserDetails[0].name),
+      gaPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id,defendantUserDetails[0].name),
+      genApp: [...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
   });
 });
