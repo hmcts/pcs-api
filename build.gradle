@@ -5,11 +5,14 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '13.5.0'
+    jackson3Version = '3.1.6'
     serenityBddVersion = '5.3.11'
     serenityPluginVersion = '5.3.9'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    // Flyway needs Jackson here to parse the PostgreSQL migration-lock setting.
+    classpath("tools.jackson.core:jackson-databind:$jackson3Version")
   }
 }
 
@@ -22,7 +25,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.25.0'
+  id 'hmcts.ccd.sdk' version '7.26.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2474'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.6'
@@ -421,7 +424,6 @@ ext {
   httpCore5Version = "5.4.3"
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
-  jackson3Version = "3.1.6"
   cucumberVersion = "7.34.9"
 }
 
@@ -587,6 +589,7 @@ bootJar {
 }
 
 flyway {
+  pluginConfiguration = ['postgresql.transactional.lock': 'false']
   url = System.getenv('FLYWAY_URL')
   user = System.getenv('FLYWAY_USER')
   password = System.getenv('FLYWAY_PASSWORD')
