@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -90,6 +91,9 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private EntityManager entityManager;
 
+    @Value("${manage_case.url}")
+    private String manageCaseUrl;
+
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean
@@ -127,7 +131,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.hmctsInternalCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.publicCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.caseDeepLink").value(
-                    "http://localhost:3000/cases/case-details/PCS/PCS/" + CASE_REFERENCE + "#Case%20File%20View"))
+                    manageCaseUrl + CASE_REFERENCE + "#Case%20File%20View"))
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
