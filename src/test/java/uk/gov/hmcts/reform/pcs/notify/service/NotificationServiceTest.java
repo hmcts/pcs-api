@@ -1020,6 +1020,45 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should send warrant of possession email to the claimant with no personalisation")
+        void shouldSendWarrantOfPossessionEmail() {
+            // Given
+            String expectedTemplateId = "some template ID";
+            String expectedEmailAddress = "claimant@example.com";
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.WARRANT_OF_POSSESSION))
+                .thenReturn(expectedTemplateId);
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+
+            PartyEntity claimantParty = mock(PartyEntity.class);
+            when(claimantParty.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(claimantParty.getEmailAddress()).thenReturn(expectedEmailAddress);
+            when(partyService.getPartyRole(claimantParty)).thenReturn(PartyRole.CLAIMANT);
+            when(partyService.canSendEmailNotification(claimantParty, PartyRole.CLAIMANT)).thenReturn(true);
+
+            // When
+            notificationService.sendWarrantOfPossessionEmail(claimantParty);
+
+            // Then
+            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
+            assertThat(notificationCaptor.getAllValues().get(0).getClaimType())
+                .isEqualTo(NotificationClaimType.ENFORCEMENT);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(expectedEmailAddress);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+            assertThat(taskData.getPersonalisation()).isEmpty();
+        }
+
+        @Test
         @DisplayName("Should send notification for organisation with no counter claim")
         void notificationSentForOrganisationNoCounterclaim() {
             PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();

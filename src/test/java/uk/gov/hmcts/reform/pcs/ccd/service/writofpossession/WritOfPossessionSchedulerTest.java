@@ -32,7 +32,7 @@ class WritOfPossessionSchedulerTest {
     private WritOfPossessionScheduler scheduler;
 
     @Test
-    void usesEnforcementOrderIdAsTaskId() {
+    void shouldUseTheEnforcementOrderIdAsTheTaskId() {
         when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
         scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);
@@ -46,7 +46,7 @@ class WritOfPossessionSchedulerTest {
     }
 
     @Test
-    void passesCaseReferenceAndEnforcementOrderIdToTheTask() {
+    void shouldPassTheCaseReferenceAndEnforcementOrderIdToTheTask() {
         when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
         scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);
@@ -61,7 +61,7 @@ class WritOfPossessionSchedulerTest {
     }
 
     @Test
-    void rescheduleForSameEnforcementOrderIsNoOp() {
+    void shouldDoNothingWhenTheSameEnforcementOrderIsScheduledAgain() {
         when(schedulerClient.scheduleIfNotExists(any())).thenReturn(false);
 
         scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);

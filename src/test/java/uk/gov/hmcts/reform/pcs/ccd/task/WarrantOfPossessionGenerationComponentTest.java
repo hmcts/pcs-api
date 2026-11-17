@@ -1,0 +1,216 @@
+package uk.gov.hmcts.reform.pcs.ccd.task;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.Execution;
+import com.github.kagkarlsson.scheduler.task.ExecutionContext;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession.WarrantOfPossessionService;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.task.WarrantOfPossessionGenerationComponent.WARRANT_OF_POSSESSION_TASK_DESCRIPTOR;
+
+@ExtendWith(MockitoExtension.class)
+class WarrantOfPossessionGenerationComponentTest {
+
+    private static final long CASE_REFERENCE = 1234567812345678L;
+    private static final UUID ENFORCEMENT_ORDER_ID = UUID.randomUUID();
+
+    private WarrantOfPossessionGenerationComponent component;
+
+    @Mock
+    private WarrantOfPossessionService warrantOfPossessionService;
+
+    @Mock
+    private ClaimActivityLogService claimActivityLogService;
+
+    @Mock
+    private TaskInstance<EnforcementDocumentTaskData> taskInstance;
+
+    @Mock
+    private ExecutionContext executionContext;
+
+    @Mock
+    private Execution execution;
+
+    private final Duration backoffDelay = Duration.ofSeconds(3);
+    private final int maxRetries = 5;
+
+    private Logger componentLogger;
+    private ListAppender<ILoggingEvent> logAppender;
+
+    @BeforeEach
+    void setUp() {
+        component = new WarrantOfPossessionGenerationComponent(warrantOfPossessionService, claimActivityLogService,
+            maxRetries, backoffDelay);
+
+        componentLogger = (Logger) LoggerFactory.getLogger(WarrantOfPossessionGenerationComponent.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        componentLogger.addAppender(logAppender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        componentLogger.detachAppender(logAppender);
+    }
+
+    @Test
+    @DisplayName("Task has the right name and data type")
+    void taskDescriptorHasCorrectNameAndDataClass() {
+        assertThat(WARRANT_OF_POSSESSION_TASK_DESCRIPTOR.getTaskName())
+            .isEqualTo("warrant-of-possession-generation-task");
+        assertThat(WARRANT_OF_POSSESSION_TASK_DESCRIPTOR.getDataClass())
+            .isEqualTo(EnforcementDocumentTaskData.class);
+    }
+
+    @Test
+    @DisplayName("Generates the warrant and removes the task when it succeeds")
+    void successfulExecutionReturnsOnCompleteRemove() {
+        when(taskInstance.getData()).thenReturn(taskData());
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+        CompletionHandler<EnforcementDocumentTaskData> result = task.execute(taskInstance, executionContext);
+
+        verify(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+    }
+
+    @Test
+    @DisplayName("Rethrows without an error log or failure record before the last attempt")
+    void nonFinalAttemptRethrowsWithoutTerminalLog() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries - 1;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("transient"))
+            .when(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        assertThat(logAppender.list)
+            .noneMatch(event -> event.getLevel() == Level.ERROR
+                && event.getFormattedMessage().contains("permanently failed"));
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Logs one error tagged with the case and enforcement order on the last attempt")
+    void finalAttemptLogsTerminalError() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("docassembly 500"))
+            .when(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+
+        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
+            .filter(event -> event.getLevel() == Level.ERROR)
+            .filter(event -> event.getFormattedMessage().contains("permanently failed"))
+            .toList();
+        assertThat(terminalErrors).hasSize(1);
+
+        ILoggingEvent event = terminalErrors.getFirst();
+        assertThat(event.getFormattedMessage()).contains(ENFORCEMENT_ORDER_ID.toString());
+        assertThat(event.getThrowableProxy().getMessage()).isEqualTo("docassembly 500");
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("caseReference", String.valueOf(CASE_REFERENCE))
+            .containsEntry("enforcementOrderId", ENFORCEMENT_ORDER_ID.toString())
+            .containsEntry("taskName", "warrant-of-possession-generation-task")
+            .containsEntry("terminalFailure", "true")
+            .containsEntry("failureReason", "RuntimeException");
+    }
+
+    @Test
+    @DisplayName("Records a retrying failure on the first attempt")
+    void firstAttemptRecordsNonTerminalFailure() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        when(executionContext.getExecution()).thenReturn(execution); // consecutiveFailures = 0 -> attempt 1
+        doThrow(new RuntimeException("transient"))
+            .when(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(claimActivityLogService).logGenerationFailure(eq(CASE_REFERENCE), isNull(),
+            argThat((GenerationDetails details) -> !details.terminal()
+                && details.documentType() == DocumentType.WARRANT_OF_POSSESSION));
+    }
+
+    @Test
+    @DisplayName("Records a final failure on the last attempt")
+    void finalAttemptRecordsFailure() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("docassembly 500"))
+            .when(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(claimActivityLogService).logGenerationFailure(eq(CASE_REFERENCE), isNull(),
+            argThat(GenerationDetails::terminal));
+    }
+
+    @Test
+    @DisplayName("Still throws the original error if recording the failure fails")
+    void rethrowsOriginalErrorWhenRecordingFailureFails() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("generation failed"))
+            .when(warrantOfPossessionService).generateAndAttach(ENFORCEMENT_ORDER_ID);
+        doThrow(new RuntimeException("log write failed"))
+            .when(claimActivityLogService).logGenerationFailure(anyLong(), any(), any());
+
+        CustomTask<EnforcementDocumentTaskData> task = component.warrantOfPossessionGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("generation failed");
+    }
+
+    private static EnforcementDocumentTaskData taskData() {
+        return EnforcementDocumentTaskData.builder()
+            .caseReference(CASE_REFERENCE)
+            .enforcementOrderId(ENFORCEMENT_ORDER_ID)
+            .build();
+    }
+}

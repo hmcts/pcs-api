@@ -9,11 +9,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.riskassessment.RiskAssessmentScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession.WarrantOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.writofpossession.WritOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -44,6 +47,10 @@ class EnforcementPaymentCallbackHandlerTest {
     private PaymentStatusCallback paymentStatusCallback;
     @Mock
     private WritOfPossessionScheduler writOfPossessionScheduler;
+    @Mock
+    private WarrantOfPossessionScheduler warrantOfPossessionScheduler;
+    @Mock
+    private RiskAssessmentScheduler riskAssessmentScheduler;
 
     @InjectMocks
     private EnforcementPaymentCallbackHandler underTest;
@@ -84,18 +91,41 @@ class EnforcementPaymentCallbackHandlerTest {
     }
 
     @Test
-    void shouldNotScheduleTheWritOfPossessionWhenAWarrantApplicationIsPaid() {
+    void shouldScheduleTheWarrantAndRiskAssessmentWhenAWarrantApplicationIsPaid() {
         UUID enforcementApplicationId = UUID.randomUUID();
-        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
         EnforcementOrderEntity enforcementOrderEntity = enforcementOrder(
             enforcementApplicationId, enforcementState(EnforcementState.PENDING_CASE_ISSUED));
+        enforcementOrderEntity.getPcsCase().setCaseReference(CASE_REFERENCE);
         enforcementOrderEntity.setWarrantDetails(new WarrantEntity());
+        enforcementOrderEntity.setRiskProfileDetails(new RiskProfileEntity());
         when(enforcementOrderRepository.findById(enforcementApplicationId))
             .thenReturn(Optional.of(enforcementOrderEntity));
+        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
 
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
+        verify(warrantOfPossessionScheduler)
+            .scheduleWarrantOfPossessionGeneration(CASE_REFERENCE, enforcementApplicationId);
+        verify(riskAssessmentScheduler).scheduleRiskAssessmentGeneration(CASE_REFERENCE, enforcementApplicationId);
         verifyNoInteractions(writOfPossessionScheduler);
+    }
+
+    @Test
+    void shouldNotScheduleTheRiskAssessmentWhenTheWarrantHasNoRiskProfile() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        EnforcementOrderEntity enforcementOrderEntity = enforcementOrder(
+            enforcementApplicationId, enforcementState(EnforcementState.PENDING_CASE_ISSUED));
+        enforcementOrderEntity.getPcsCase().setCaseReference(CASE_REFERENCE);
+        enforcementOrderEntity.setWarrantDetails(new WarrantEntity());
+        when(enforcementOrderRepository.findById(enforcementApplicationId))
+            .thenReturn(Optional.of(enforcementOrderEntity));
+        FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
+
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
+
+        verify(warrantOfPossessionScheduler)
+            .scheduleWarrantOfPossessionGeneration(CASE_REFERENCE, enforcementApplicationId);
+        verifyNoInteractions(riskAssessmentScheduler);
     }
 
     @Test
