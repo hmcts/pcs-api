@@ -302,7 +302,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationDetails(appDetails: actionRecord) {
-    await this.validateCaseDetails(appDetails.submitPayLoad);
+    await this.validateCaseDetails(appDetails.submitPayload);
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);

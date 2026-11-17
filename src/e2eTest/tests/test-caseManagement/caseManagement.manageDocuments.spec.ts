@@ -210,7 +210,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('errorValidationUploadADocumentPage', uploadADocument.errorValidation);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName , submitPayload: submitPayload})
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -260,7 +260,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName ,submitPayload: submitPayload})
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -295,7 +295,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName,submitPayload: submitPayload, })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -351,7 +351,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName, submitPayload: submitPayload })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -413,7 +413,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       CaseManagementCommonUtils.renameDocument(files));
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName,submitPayload: submitPayload })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,

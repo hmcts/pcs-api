@@ -200,7 +200,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName, submitPayload: submitPayload })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -257,7 +257,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let fileName = uploadADocument.uploadDocHiddenOption[3];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName, submitPayload: submitPayload})
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -269,7 +269,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
