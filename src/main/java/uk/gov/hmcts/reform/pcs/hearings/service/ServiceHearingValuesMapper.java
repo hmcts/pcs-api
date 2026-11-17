@@ -9,9 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -43,25 +42,23 @@ public class ServiceHearingValuesMapper {
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
-    private final PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseService pcsCaseService;
     private final CaseNameFormatter caseNameFormatter;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
-                                      PcsCaseRepository pcsCaseRepository,
+                                      PcsCaseService pcsCaseService,
                                       CaseNameFormatter caseNameFormatter,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
-        this.pcsCaseRepository = pcsCaseRepository;
+        this.pcsCaseService = pcsCaseService;
         this.caseNameFormatter = caseNameFormatter;
         this.manageCaseUrl = manageCaseUrl;
     }
 
     @Transactional(readOnly = true)
     public ServiceHearingValues getServiceHearingValues(long caseReference) {
-        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
-
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         ServiceHearingValues values = defaults.getDefaultValues();
 
         String caseName = caseNameFormatter.formatCaseName(pcsCase);
@@ -79,8 +76,7 @@ public class ServiceHearingValuesMapper {
 
     @Transactional(readOnly = true)
     public List<ServiceLinkedCases> getServiceLinkedCases(long caseReference) {
-        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
         Map<Long, PcsCaseEntity> linkedCasesByReference = findLinkedCases(pcsCase.getCaseLinks());
 
@@ -105,7 +101,7 @@ public class ServiceHearingValuesMapper {
             return Map.of();
         }
 
-        return pcsCaseRepository.findAllByCaseReferenceIn(linkedCaseReferences).stream()
+        return pcsCaseService.findCasesByReferences(linkedCaseReferences).stream()
             .collect(Collectors.toMap(PcsCaseEntity::getCaseReference, Function.identity()));
     }
 

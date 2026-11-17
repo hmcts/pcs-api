@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 @AllArgsConstructor
 public class ServiceHearingController {
 
-    public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
     private final ServiceHearingValuesMapper serviceHearingValuesMapper;
     private final FeatureToggleService featureToggleService;

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ServiceHearingRequest {
 
-    public static final String CASE_REFERENCE_PATTERN = "\\d{16}";
+    private static final String CASE_REFERENCE_PATTERN = "\\d{16}";
 
     @NotBlank(message = "caseReference is required")
     @Pattern(regexp = CASE_REFERENCE_PATTERN, message = "caseReference must be a 16-digit case reference")

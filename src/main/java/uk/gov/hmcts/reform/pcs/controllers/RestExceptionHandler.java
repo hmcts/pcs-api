@@ -131,7 +131,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             HttpHeaders headers,
             HttpStatusCode status,
             WebRequest request) {
-        log.error("Request body is missing or is not valid JSON", ex);
+        log.error("Request body is missing or could not be parsed", ex);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new Error("Invalid data"));

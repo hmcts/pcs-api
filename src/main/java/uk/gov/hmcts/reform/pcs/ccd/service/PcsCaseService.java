@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.Set;
@@ -156,6 +157,10 @@ public class PcsCaseService {
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    public List<PcsCaseEntity> findCasesByReferences(Collection<Long> caseReferences) {
+        return pcsCaseRepository.findAllByCaseReferenceIn(caseReferences);
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {

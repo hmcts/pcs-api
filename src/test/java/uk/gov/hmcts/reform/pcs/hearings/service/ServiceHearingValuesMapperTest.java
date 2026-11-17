@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +45,7 @@ class ServiceHearingValuesMapperTest {
     private static final long LINKED_CASE_REFERENCE = 6543210987654321L;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PcsCaseService pcsCaseService;
     @Mock
     private CaseNameFormatter caseNameFormatter;
 
@@ -60,12 +59,12 @@ class ServiceHearingValuesMapperTest {
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
 
-        underTest = new ServiceHearingValuesMapper(defaults, pcsCaseRepository, caseNameFormatter, MANAGE_CASE_URL);
+        underTest = new ServiceHearingValuesMapper(defaults, pcsCaseService, caseNameFormatter, MANAGE_CASE_URL);
     }
 
     @Test
     void shouldThrowWhenCaseNotFound() {
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
         assertThatThrownBy(() -> underTest.getServiceHearingValues(CASE_REFERENCE))
             .isInstanceOf(CaseNotFoundException.class);
@@ -255,7 +254,7 @@ class ServiceHearingValuesMapperTest {
 
     @Test
     void shouldThrowWhenCaseNotFoundForLinkedCases() {
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
         assertThatThrownBy(() -> underTest.getServiceLinkedCases(CASE_REFERENCE))
             .isInstanceOf(CaseNotFoundException.class);
@@ -268,7 +267,7 @@ class ServiceHearingValuesMapperTest {
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
         assertThat(linkedCases).isEmpty();
-        verify(pcsCaseRepository, never()).findAllByCaseReferenceIn(any());
+        verify(pcsCaseService, never()).findCasesByReferences(any());
     }
 
     @Test
@@ -277,7 +276,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001", "CLRC002")))
             .build());
-        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE)))
+        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE)))
             .thenReturn(List.of(linkedCase));
         when(caseNameFormatter.formatCaseName(linkedCase)).thenReturn(CASE_NAME);
 
@@ -295,7 +294,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001")))
             .build());
-        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
+        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -312,7 +311,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE)))
             .build());
-        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
+        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -328,7 +327,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001"), link(secondLinkedCase, "CLRC003")))
             .build());
-        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
             .thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
@@ -349,7 +348,7 @@ class ServiceHearingValuesMapperTest {
                 link(secondLinkedCase, "CLRC003"),
                 link(LINKED_CASE_REFERENCE, "CLRC002")))
             .build());
-        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
             .thenReturn(List.of(secondCase, firstCase));
         when(caseNameFormatter.formatCaseName(firstCase)).thenReturn(CASE_NAME);
         when(caseNameFormatter.formatCaseName(secondCase)).thenReturn("Other Landlord vs Other Tenant");
@@ -359,13 +358,13 @@ class ServiceHearingValuesMapperTest {
         assertThat(linkedCases)
             .extracting(ServiceLinkedCases::getCaseName)
             .containsExactly(CASE_NAME, "Other Landlord vs Other Tenant", CASE_NAME);
-        verify(pcsCaseRepository, times(1)).findAllByCaseReferenceIn(any());
-        verify(pcsCaseRepository, never()).findByCaseReference(LINKED_CASE_REFERENCE);
-        verify(pcsCaseRepository, never()).findByCaseReference(secondLinkedCase);
+        verify(pcsCaseService, times(1)).findCasesByReferences(any());
+        verify(pcsCaseService, never()).loadCase(LINKED_CASE_REFERENCE);
+        verify(pcsCaseService, never()).loadCase(secondLinkedCase);
     }
 
     private void givenCase(PcsCaseEntity pcsCase) {
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
     }
 
     private static List<CaseLinkEntity> links(CaseLinkEntity... links) {
