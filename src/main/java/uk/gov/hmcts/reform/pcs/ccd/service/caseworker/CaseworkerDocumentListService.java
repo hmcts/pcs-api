@@ -55,6 +55,17 @@ public class CaseworkerDocumentListService {
             || !getOpenCounterClaims(counterClaims).isEmpty();
     }
 
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
+                                                         List<CounterClaimEntity> counterClaims) {
+        return buildRelatedSubmissionsList(null, genApps, counterClaims, null);
+    }
+
+    public DynamicStringList buildRelatedSubmissionsList(List<ListValue<GeneralApplication>> genApps,
+                                                         List<CounterClaimEntity> counterClaims,
+                                                         DynamicStringList existingList) {
+        return buildRelatedSubmissionsList(null, genApps, counterClaims, existingList);
+    }
+
     public DynamicStringList buildRelatedSubmissionsList(PcsCaseEntity pcsCaseEntity,
                                                          List<ListValue<GeneralApplication>> genApps,
                                                          List<CounterClaimEntity> counterClaims) {
@@ -227,6 +238,10 @@ public class CaseworkerDocumentListService {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
             Integer rank = counterClaimEntity.getRank();
             return rank != null ? "Counter claim CC%d".formatted(rank) : "Counter claim";
+        }
+
+        if (pcsCaseEntity == null || pcsCaseEntity.getMainClaim() == null || counterClaimEntity.getParty() == null) {
+            return "Counter claim";
         }
 
         String partyLabel = partyService.getPartyLabel(
