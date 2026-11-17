@@ -24,7 +24,20 @@ public class LanguageFlagDuplicateValidator {
     static final String SIGN_LANGUAGE_ERROR = "more than one language cannot be added";
     static final Set<String> ACTIVE_OR_REQUESTED_STATUSES = Set.of("Active", "Requested");
 
-    // checks each person on this save against the flags already on the case
+    /**
+     * Checks that a case flags submission does not give any party more than one spoken language
+     * interpreter (PF0015) or sign language interpreter (RA0042) flag.
+     *
+     * <p>Only Active and Requested flags count; Inactive and Not approved flags do not. Internal and
+     * external flags on the same party are counted together. Where the submission sends no flags for a
+     * visibility, the party's saved flags for that visibility are kept and counted, as the merge does.
+     *
+     * <p>A flag code is rejected only when the party ends up with more than one of it and with more than
+     * they had before. A party who already has duplicates can still have them edited or deactivated, but
+     * cannot be given another.
+     *
+     * @return the error messages to show, or an empty list when the submission can be saved
+     */
     public List<String> validatePartyLanguageFlags(List<ListValue<Party>> incomingParties,
                                                    Set<PartyEntity> existingParties) {
         if (incomingParties == null || incomingParties.isEmpty()) {
@@ -56,7 +69,6 @@ public class LanguageFlagDuplicateValidator {
         return List.of();
     }
 
-    // finds that person on the case so we can see the flags they already have
     private PartyEntity findExistingParty(ListValue<Party> incomingParty, Set<PartyEntity> existingParties) {
         if (incomingParty == null || incomingParty.getId() == null || existingParties == null) {
             return null;
@@ -75,7 +87,6 @@ public class LanguageFlagDuplicateValidator {
         return null;
     }
 
-    // true if this save leaves more than one of this flag and more than they had before
     private boolean addsDuplicateFlag(PartyEntity existingParty, Party incomingParty, String flagCode) {
         int before = countExistingFlags(existingParty, null, flagCode);
         int after = countFlagsAfterSave(existingParty, incomingParty, FlagVisibility.INTERNAL, flagCode)
@@ -83,7 +94,6 @@ public class LanguageFlagDuplicateValidator {
         return after > 1 && after > before;
     }
 
-    // flags this save would leave, or the saved ones if the caseworker or citizen list wasnt sent
     private int countFlagsAfterSave(PartyEntity existingParty, Party incomingParty,
                                     FlagVisibility visibility, String flagCode) {
         Flags incomingFlags = getIncomingFlags(incomingParty, visibility);
@@ -99,7 +109,9 @@ public class LanguageFlagDuplicateValidator {
         return count;
     }
 
-    // flags already saved, from both the caseworker and citizen lists when no visibility is passed
+    /**
+     * Counts the party's saved flags for one visibility, or for both when {@code visibility} is null.
+     */
     private int countExistingFlags(PartyEntity existingParty, FlagVisibility visibility, String flagCode) {
         List<CasePartyFlagEntity> existingFlags = existingParty.getDefendantFlags();
         if (existingFlags == null) {
@@ -125,7 +137,6 @@ public class LanguageFlagDuplicateValidator {
         return existingFlag.getFlagRefData() == null ? null : existingFlag.getFlagRefData().getFlagCode();
     }
 
-    // caseworker flags or citizen flags
     private Flags getIncomingFlags(Party incomingParty, FlagVisibility visibility) {
         if (incomingParty == null) {
             return null;
@@ -139,7 +150,6 @@ public class LanguageFlagDuplicateValidator {
         return flags == null || flags.getDetails() == null || flags.getDetails().isEmpty();
     }
 
-    // this flag code, and active or requested
     private boolean isActiveOrRequestedFlag(FlagDetail detail, String flagCode) {
         return detail != null
             && flagCode.equals(detail.getFlagCode())
@@ -147,6 +157,7 @@ public class LanguageFlagDuplicateValidator {
     }
 
     private static boolean isActiveOrRequested(String status) {
-        return status != null && ACTIVE_OR_REQUESTED_STATUSES.contains(status);
+        return ACTIVE_OR_REQUESTED_STATUSES.stream()
+            .anyMatch(countingStatus -> countingStatus.equalsIgnoreCase(status));
     }
 }
