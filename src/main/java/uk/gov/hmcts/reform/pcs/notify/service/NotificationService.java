@@ -39,7 +39,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -286,31 +285,32 @@ public class NotificationService {
     public void sendNoticeOfChangeNonRepresentedPartiesEmailNotification(PartyEntity representedDefendant) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
-        List<PartyEntity> recipients = new ArrayList<>();
         getActivePartiesByRole(pcsCase, PartyRole.CLAIMANT).stream()
             .findFirst()
-            .ifPresent(recipients::add);
+            .ifPresent(claimant -> sendNoticeOfChangeOtherPartyRepresented(claimant, PartyRole.CLAIMANT, pcsCase));
 
         pcsCase.getClaims().getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
             .filter(this::isActiveParty)
             .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
-            .forEach(recipients::add);
+            .forEach(defendant -> sendNoticeOfChangeOtherPartyRepresented(defendant, PartyRole.DEFENDANT, pcsCase));
+    }
 
-        for (PartyEntity recipient : recipients) {
-            if (recipient.getEmailAddress() == null) {
-                log.info("Skipping notice of change email to party {}: no email address", recipient.getId());
-                continue;
-            }
-
-            sendEmail(
-                partyRecipient(recipient),
-                EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED,
-                NotificationClaimType.NOTICE_OF_CHANGE,
-                notificationPersonalisationFactory.forParty(recipient, pcsCase)
-            );
+    private void sendNoticeOfChangeOtherPartyRepresented(PartyEntity recipient,
+                                                         PartyRole recipientRole,
+                                                         PcsCaseEntity pcsCase) {
+        if (recipient.getEmailAddress() == null) {
+            log.info("Skipping notice of change email to party {}: no email address", recipient.getId());
+            return;
         }
+
+        sendEmail(
+            partyRecipient(recipient),
+            EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeOtherPartyRepresented(recipient, recipientRole, pcsCase)
+        );
     }
 
     private List<PartyEntity> getActivePartiesByRole(PcsCaseEntity pcsCase, PartyRole role) {

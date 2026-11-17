@@ -176,6 +176,7 @@ public class NotificationPersonalisationFactory {
             .caseName(release14Enabled() ? getFormattedCaseName(pcsCaseEntity) : "")
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
+            .nextStepUrl(manageCaseUrl(pcsCaseEntity.getCaseReference().toString()))
             .build();
     }
 
@@ -257,6 +258,21 @@ public class NotificationPersonalisationFactory {
                 representedDefendant.getNameKnown() != null && representedDefendant.getNameKnown().toBoolean(),
                 representedDefendant.getFirstName(),
                 representedDefendant.getLastName()))
+            .nextStepUrl(manageCaseUrl(representedDefendant.getPcsCase().getCaseReference().toString()))
+            .build();
+    }
+
+    public ClaimBasePersonalisation noticeOfChangeOtherPartyRepresented(PartyEntity recipient,
+                                                                        PartyRole recipientRole,
+                                                                        PcsCaseEntity pcsCaseEntity) {
+        // Claimants are professional users and manage their case in ExUI; defendants use the citizen frontend
+        String nextStepUrl = recipientRole == PartyRole.CLAIMANT
+            ? manageCaseUrl(pcsCaseEntity.getCaseReference().toString())
+            : (release14Enabled() ? frontendUrl + "/claims" : "");
+
+        return ClaimBasePersonalisation.builder()
+            .base(buildPersonalisation(recipient, pcsCaseEntity))
+            .nextStepUrl(nextStepUrl)
             .build();
     }
 
@@ -343,8 +359,12 @@ public class NotificationPersonalisationFactory {
         return caseNameFormatter.formatCaseName(claimants, defendants);
     }
 
+    private String manageCaseUrl(String caseReference) {
+        return String.format("%s/cases/case-details/PCS/PCS/%s", manageCaseUrl, caseReference);
+    }
+
     private String manageCaseTabUrl(String caseReference, String tab) {
-        return String.format("%s/cases/case-details/PCS/PCS/%s#%s", manageCaseUrl, caseReference, tab);
+        return String.format("%s#%s", manageCaseUrl(caseReference), tab);
     }
 
     private boolean release14Enabled() {

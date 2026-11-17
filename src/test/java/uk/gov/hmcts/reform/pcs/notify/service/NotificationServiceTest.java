@@ -804,6 +804,7 @@ class NotificationServiceTest {
                 .caseName("org vs Jane Smith")
                 .claimantName("John Doe")
                 .primaryDefendantName("Jane Smith")
+                .nextStepUrl("manageCaseUrl")
                 .build();
 
             when(notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponseEntity,
@@ -997,6 +998,7 @@ class NotificationServiceTest {
                     .caseName("Org vs Jane Smith")
                     .claimantName("John Doe")
                     .primaryDefendantName("Jane Smith")
+                    .nextStepUrl("manageCaseUrl")
                     .build()
             );
 
@@ -1030,6 +1032,7 @@ class NotificationServiceTest {
                 .caseName("Org vs Jane Smith")
                 .claimantName("John Doe")
                 .primaryDefendantName("Jane Smith")
+                .nextStepUrl("manageCaseUrl")
                 .build();
 
             when(notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity, pcsCaseEntity))
@@ -1070,6 +1073,7 @@ class NotificationServiceTest {
                     .caseName("Org vs Jane Smith")
                     .claimantName("John Doe")
                     .primaryDefendantName("Jane Smith")
+                    .nextStepUrl("manageCaseUrl")
                     .build()
             );
 
@@ -1126,8 +1130,8 @@ class NotificationServiceTest {
                 .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
             lenient().when(notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(any(), any()))
                 .thenReturn(mock(NoticeOfChangeNoLongerRepresentingPersonalisation.class));
-            lenient().when(notificationPersonalisationFactory.forParty(any(), any()))
-                .thenReturn(mock(BasePersonalisation.class));
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeOtherPartyRepresented(any(), any(), any()))
+                .thenReturn(mock(ClaimBasePersonalisation.class));
             lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(any(), any()))
                 .thenReturn(mock(NoticeOfChangeCompleteLegalRepPersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
@@ -1244,6 +1248,10 @@ class NotificationServiceTest {
             assertThat(schedulableInstanceCaptor.getAllValues())
                 .extracting(instance -> instance.getTaskInstance().getData().getEmailAddress())
                 .containsExactlyInAnyOrder(CLAIMANT_EMAIL, OTHER_DEFENDANT_EMAIL);
+            verify(notificationPersonalisationFactory)
+                .noticeOfChangeOtherPartyRepresented(claimant, PartyRole.CLAIMANT, pcsCase);
+            verify(notificationPersonalisationFactory)
+                .noticeOfChangeOtherPartyRepresented(otherDefendant, PartyRole.DEFENDANT, pcsCase);
         }
 
         @Test

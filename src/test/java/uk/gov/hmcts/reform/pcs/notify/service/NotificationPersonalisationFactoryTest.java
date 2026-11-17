@@ -364,6 +364,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("caseName", "Jane Smith vs John Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890")
                 .doesNotContainKey("firstName")
                 .doesNotContainKey("lastName");
         }
@@ -505,6 +506,34 @@ class NotificationPersonalisationFactoryTest {
     }
 
     @Nested
+    @DisplayName("noticeOfChangeOtherPartyRepresented")
+    class NoticeOfChangeOtherPartyRepresentedTests {
+
+        @Test
+        @DisplayName("Should link a claimant to the case in Manage Case")
+        void shouldLinkClaimantToManageCase() {
+            PartyEntity claimantParty = stubClaimantParty();
+            stubDefendantParty();
+
+            assertThat(factory.noticeOfChangeOtherPartyRepresented(
+                claimantParty, PartyRole.CLAIMANT, pcsCaseEntity).toMap())
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890");
+        }
+
+        @Test
+        @DisplayName("Should link a defendant to the citizen frontend")
+        void shouldLinkDefendantToFrontend() {
+            stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+
+            assertThat(factory.noticeOfChangeOtherPartyRepresented(
+                defendantParty, PartyRole.DEFENDANT, pcsCaseEntity).toMap())
+                .containsEntry("nextStepUrl", "frontEndUrl/claims");
+        }
+    }
+
+    @Nested
     @DisplayName("noticeOfChangeCompleteLegalRep")
     class NoticeOfChangeCompleteLegalRepTests {
 
@@ -523,6 +552,7 @@ class NotificationPersonalisationFactoryTest {
                 legalRepresentativeOrganisation, createRepresentedDefendant("Sam", "Jones")).toMap())
                 .containsEntry("organisationName", "Test Solicitors LLP")
                 .containsEntry("partyName", "SAM JONES")
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")

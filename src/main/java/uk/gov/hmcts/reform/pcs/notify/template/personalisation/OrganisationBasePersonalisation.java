@@ -12,6 +12,7 @@ public class OrganisationBasePersonalisation implements TemplatePersonalisation 
     private final String caseName;
     private final String claimantName;
     private final String primaryDefendantName;
+    private final String nextStepUrl;
 
     @Override
     public Map<String, Object> toMap() {
@@ -20,7 +21,8 @@ public class OrganisationBasePersonalisation implements TemplatePersonalisation 
             "caseNumber", caseNumber,
             "caseName", caseName,
             "claimantName", claimantName,
-            "primaryDefendantName", primaryDefendantName
+            "primaryDefendantName", primaryDefendantName,
+            "nextStepUrl", nextStepUrl
         );
     }
 }
