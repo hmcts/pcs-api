@@ -7,10 +7,12 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturn;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -35,13 +37,30 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     private EnforcementOrderMediator enforcementOrderMediator;
     private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case";
 
+    private static final String HAS_VALID_ENFORCEMENT_STATE = ShowConditions.or(
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CASE_PROGRESSION),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_BAILIFF_ALLOCATION),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.JUDICIAL_REFERRAL),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.HEARING_READINESS),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_SCHEDULING),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_PROPERTY_VISIT),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.AWAITING_ENFORCEMENT_OUTCOME),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CLOSED),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.CASE_STAYED),
+        ShowConditions.fieldEquals("activeEnforcementState", EnforcementState.BREATHING_SPACE)
+    );
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent("ext:recordWarrantReturn", this::submit)
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
-            .showCondition(featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN))
+            .showCondition(ShowConditions.and(
+                featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN),
+                HAS_VALID_ENFORCEMENT_STATE
+            ))
             .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }

@@ -11,6 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.stream.Stream;
@@ -41,9 +44,10 @@ class EnforcementOrderViewTest {
         }
 
         PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, state);
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, state, pcsCaseEntity);
 
         // Then
         if (state == State.CASE_ISSUED) {
@@ -61,13 +65,32 @@ class EnforcementOrderViewTest {
     void shouldNotPopulateEnforcementOrderWhenCaseNotIssued() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED);
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED, pcsCaseEntity);
 
         // Then
         verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         assertThat(pcsCase.getEnforcementOrder()).isNull();
+    }
+
+    @Test
+    void shouldPopulateActiveEnforcementState() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .enforcementState(
+                EnforcementStateEntity.builder()
+                    .state(EnforcementState.AWAITING_BAILIFF_ALLOCATION)
+                    .build()
+            ).build();
+
+        // When
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getActiveEnforcementState()).isEqualTo(EnforcementState.AWAITING_BAILIFF_ALLOCATION);
     }
 
     private static Stream<Arguments> enforcementDraftScenarios() {

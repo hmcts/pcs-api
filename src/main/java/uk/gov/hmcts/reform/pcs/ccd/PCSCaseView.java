@@ -144,7 +144,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
-        enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
+        enforcementOrderView.setCaseFields(pcsCase, caseReference, state, pcsCaseEntity);
 
         caseFieldsView.setCaseFields(pcsCase);
 
