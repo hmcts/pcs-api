@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRe
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 
 import java.util.Set;
 
@@ -74,21 +75,20 @@ public class EnforcementOrderService {
         // Preserve AC02: transition live enforcement applications.
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
-        Set<EnforcementOrderEntity> applications =
-            pcsCase.getEnforcementOrders();
+        EnforcementStateEntity enforcementState =
+            pcsCase.getEnforcementState();
 
-        if (CollectionUtils.isEmpty(applications)) {
-            log.info(
-                "No enforcement applications found for case {}",
-                caseReference
-            );
+        if (enforcementState == null) {
+            log.info("No enforcement state found for case {}", caseReference);
             return;
         }
 
-        for (EnforcementOrderEntity application : applications) {
-            if (application.getState() == EnforcementState.CASE_PROGRESSION) {
-                application.setState(EnforcementState.BREATHING_SPACE);
-            }
+        EnforcementState currentState = enforcementState.getState();
+
+        if (currentState == EnforcementState.CASE_PROGRESSION) {
+            enforcementState.setState(EnforcementState.BREATHING_SPACE);
+
+            log.info("Updated enforcement state to BREATHING_SPACE for case {}", caseReference);
         }
     }
 

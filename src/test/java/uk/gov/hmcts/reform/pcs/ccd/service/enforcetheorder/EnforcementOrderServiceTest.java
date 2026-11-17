@@ -41,6 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildPcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderServiceTest {
@@ -101,29 +102,22 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
 
-        EnforcementOrderEntity liveApplication = new EnforcementOrderEntity();
-        liveApplication.setState(EnforcementState.CASE_PROGRESSION);
+        EnforcementStateEntity enforcementState =
+            EnforcementStateEntity.builder()
+                .pcsCase(pcsCase)
+                .state(EnforcementState.CASE_PROGRESSION)
+                .build();
 
-        EnforcementOrderEntity pendingApplication = new EnforcementOrderEntity();
-        pendingApplication.setState(EnforcementState.PENDING_CASE_ISSUED);
+        pcsCase.setEnforcementState(enforcementState);
+        pcsCase.setEnforcementOrders(Set.of());
 
-        pcsCase.setEnforcementOrders(Set.of(
-            liveApplication,
-            pendingApplication
-        ));
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE))
-            .thenReturn(pcsCase);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
 
         // When
         enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
 
         // Then
-        assertThat(liveApplication.getState())
-            .isEqualTo(EnforcementState.BREATHING_SPACE);
-
-        assertThat(pendingApplication.getState())
-            .isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
+        assertThat(enforcementState.getState()).isEqualTo(EnforcementState.BREATHING_SPACE);
 
     }
 
@@ -132,16 +126,18 @@ class EnforcementOrderServiceTest {
     void shouldHandleCaseWithNoEnforcementApplications() {
         // Given
         final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
-        pcsCase.setEnforcementOrders(Set.of());
+        pcsCase.setEnforcementState(null);
 
-        when(pcsCaseService.loadCase(CASE_REFERENCE))
-            .thenReturn(pcsCase);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
 
         // When
         enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
 
         // Then
-        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+        assertThat(pcsCase.getEnforcementState()).isNull();
+
+        verify(draftCaseDataService)
+            .discardAllUnsubmittedEventData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
 
 
@@ -229,10 +225,13 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
 
-        EnforcementOrderEntity application = new EnforcementOrderEntity();
-        application.setState(initialState);
+        EnforcementStateEntity enforcementState =
+            EnforcementStateEntity.builder()
+                .pcsCase(pcsCase)
+                .state(initialState)
+                .build();
 
-        pcsCase.setEnforcementOrders(Set.of(application));
+        pcsCase.setEnforcementState(enforcementState);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE))
             .thenReturn(pcsCase);
@@ -241,7 +240,7 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
 
         // Then
-        assertThat(application.getState()).isEqualTo(expectedState);
+        assertThat(pcsCase.getEnforcementState().getState()).isEqualTo(expectedState);
 
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
     }
@@ -253,13 +252,13 @@ class EnforcementOrderServiceTest {
                 EnforcementState.BREATHING_SPACE
             ),
             arguments(
-                EnforcementState.PENDING_CASE_ISSUED,
-                EnforcementState.PENDING_CASE_ISSUED
-
-            ),
-            arguments(
                 EnforcementState.BREATHING_SPACE,
                 EnforcementState.BREATHING_SPACE
+            ),
+            arguments(
+                EnforcementState.REQUESTED_FOR_DELETION,
+                EnforcementState.REQUESTED_FOR_DELETION
+
             )
         );
     }
