@@ -244,6 +244,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
         await performAction('selectManageHearing', {
           question: manageHearing.doYouWantToAddQuestion,
           option: manageHearing.addAHearingRadioOption,
+          submitPayload: submitPayload,
           nextPage: addHearing.mainHeader
         });
         await performAction('addAHearing', {

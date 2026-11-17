@@ -356,7 +356,7 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await this.validateCaseDetails(confirmApplicationConsent.submitPayLoad);
+    await this.validateCaseDetails(confirmApplicationConsent.submitPayload);
     await performAction('clickRadioButton', {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
