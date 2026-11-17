@@ -56,8 +56,6 @@ const setupGlobalSearchUser = async (
     }
   });
 
-  await performAction('updatePaymentAPI');
-
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
   await dismissCookieBanner(page, 'additional');
@@ -115,6 +113,7 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
       judicial.walesRegion_Judge_email
     );
 
+    await performAction('updatePaymentAPI');
     await performAction('accessingTheSearch');
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
