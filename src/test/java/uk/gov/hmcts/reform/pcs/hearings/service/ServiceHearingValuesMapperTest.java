@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -30,6 +32,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,6 +51,8 @@ class ServiceHearingValuesMapperTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private CaseNameFormatter caseNameFormatter;
+    @Mock
+    private IndividualDetailsFlagMapper individualDetailsFlagMapper;
 
     private ServiceHearingValuesMapper underTest;
 
@@ -59,7 +64,9 @@ class ServiceHearingValuesMapperTest {
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
 
-        underTest = new ServiceHearingValuesMapper(defaults, pcsCaseService, caseNameFormatter, MANAGE_CASE_URL);
+        underTest = new ServiceHearingValuesMapper(
+            defaults, pcsCaseService, caseNameFormatter, individualDetailsFlagMapper, MANAGE_CASE_URL);
+        lenient().when(individualDetailsFlagMapper.map(any())).thenReturn(new IndividualDetails());
     }
 
     @Test
@@ -156,6 +163,56 @@ class ServiceHearingValuesMapperTest {
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getNumberOfPhysicalAttendees()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldUseFlagMapperResultForPartyIndividualDetails() {
+        List<CasePartyFlagEntity> partyFlags = new ArrayList<>(List.of(new CasePartyFlagEntity()));
+        PartyEntity defendant = PartyEntity.builder().defendantFlags(partyFlags).build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+        IndividualDetails mapped = new IndividualDetails();
+        when(individualDetailsFlagMapper.map(partyFlags)).thenReturn(mapped);
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement()
+            .satisfies(party -> assertThat(party.getIndividualDetails()).isSameAs(mapped));
+    }
+
+    @Test
+    void shouldSetConfiguredHearingChannelOnPartyIndividualDetails() {
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(PartyEntity.builder().build()))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement()
+            .extracting(party -> party.getIndividualDetails().getPreferredHearingChannel())
+            .isEqualTo("INTER");
+    }
+
+    @Test
+    void shouldAddOnePartyPerActivePartyAndSkipRemovedParties() {
+        PartyEntity claimant = PartyEntity.builder().firstName("Jane").build();
+        PartyEntity defendant = PartyEntity.builder().firstName("John").build();
+        PartyEntity removed = PartyEntity.builder().firstName("Gone").removed(true).build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant, defendant, removed))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).hasSize(2);
+        verify(individualDetailsFlagMapper, times(2)).map(any());
+    }
+
+    @Test
+    void shouldKeepDefaultPartyWhenCaseHasNoActiveParties() {
+        givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement()
+            .extracting(party -> party.getIndividualDetails().getPreferredHearingChannel())
+            .isEqualTo("INTER");
+        verifyNoInteractions(individualDetailsFlagMapper);
     }
 
     @Test

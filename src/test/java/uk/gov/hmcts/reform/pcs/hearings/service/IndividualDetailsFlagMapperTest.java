@@ -269,6 +269,38 @@ class IndividualDetailsFlagMapperTest {
                 "Reasonable Adjustments: Step free / wheelchair access (Comment: adjustment comment).\n"
                     + "Party Flags: Detained individual, Sign Language Interpreter (Language entered: Makaton).");
         }
+
+        @Test
+        void shouldTruncateOtherDetailsLongerThanMaxLength() {
+            String prefix = "Party Flags: Detained individual (Comment: ";
+            String longComment = "x".repeat(IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH);
+
+            IndividualDetails result = underTest.map(List.of(
+                flag("PF0019", "Detained individual", "Active", longComment, false)
+            ));
+
+            String expected = (prefix + longComment + ").")
+                .substring(0, IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH);
+            assertThat(result.getOtherReasonableAdjustmentDetails())
+                .hasSize(IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH)
+                .isEqualTo(expected);
+        }
+
+        @Test
+        void shouldNotTruncateOtherDetailsAtMaxLength() {
+            String prefix = "Party Flags: Detained individual (Comment: ";
+            String suffix = ").";
+            String comment = "x".repeat(
+                IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH - prefix.length() - suffix.length());
+
+            IndividualDetails result = underTest.map(List.of(
+                flag("PF0019", "Detained individual", "Active", comment, false)
+            ));
+
+            assertThat(result.getOtherReasonableAdjustmentDetails())
+                .hasSize(IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH)
+                .isEqualTo(prefix + comment + suffix);
+        }
     }
 
     private static CasePartyFlagEntity flag(String code, String name, String status, String comment,
