@@ -8,8 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,10 +30,83 @@ class ReferenceDataCacheTest {
     private ReferenceDataCache underTest;
 
     @Test
-    void shouldBeEmptyBeforeFirstLoad() {
+    void shouldLoadFromTheDatabaseWhenATableHasNotBeenCachedYet() {
+        // given
+        ReferenceRecord urgent = new ReferenceRecord("Urgent", "Urgent", null, null, null, null, true);
+        when(repository.load(SOURCE)).thenReturn(table(urgent));
+
+        // when
+        Optional<ReferenceRecord> found = underTest.find(SOURCE, "Urgent");
+        Map<String, ReferenceRecord> records = underTest.records(SOURCE);
+
+        // then
+        assertThat(found).contains(urgent);
+        assertThat(records).containsOnlyKeys("Urgent");
+        verify(repository, times(1)).load(SOURCE);
+    }
+
+    @Test
+    void shouldNotQueryTheDatabaseWhenAKeyIsMissingFromACachedTable() {
+        // given
+        ReferenceRecord urgent = new ReferenceRecord("Urgent", "Urgent", null, null, null, null, true);
+        when(repository.load(SOURCE)).thenReturn(table(urgent));
+        underTest.reload(SOURCE);
+
+        // when
+        Optional<ReferenceRecord> found = underTest.find(SOURCE, "Unknown");
+
+        // then
+        assertThat(found).isEmpty();
+        verify(repository, times(1)).load(SOURCE);
+    }
+
+    @Test
+    void shouldPropagateTheFailureWhenAnUncachedTableCannotBeLoaded() {
+        // given
+        when(repository.load(SOURCE)).thenThrow(new IllegalStateException("db down"));
+
         // when / then
-        assertThat(underTest.records(SOURCE)).isEmpty();
-        assertThat(underTest.find(SOURCE, "Urgent")).isEmpty();
+        assertThatThrownBy(() -> underTest.find(SOURCE, "Urgent"))
+            .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> underTest.records(SOURCE))
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldNotOverwriteANewerTableLoadedWhileAnUncachedTableWasBeingRead() {
+        // given
+        ReferenceRecord stale = new ReferenceRecord("Urgent", "Stale", null, null, null, null, true);
+        ReferenceRecord fresh = new ReferenceRecord("Urgent", "Fresh", null, null, null, null, true);
+        AtomicInteger calls = new AtomicInteger();
+        when(repository.load(SOURCE)).thenAnswer(invocation -> {
+            if (calls.getAndIncrement() == 0) {
+                underTest.reload(SOURCE);
+                return table(stale);
+            }
+            return table(fresh);
+        });
+
+        // when
+        Optional<ReferenceRecord> found = underTest.find(SOURCE, "Urgent");
+
+        // then
+        assertThat(found).contains(fresh);
+        assertThat(underTest.find(SOURCE, "Urgent")).contains(fresh);
+    }
+
+    @Test
+    void shouldNotAllowCallersToModifyTheCachedRecords() {
+        // given
+        ReferenceRecord urgent = new ReferenceRecord("Urgent", "Urgent", null, null, null, null, true);
+        when(repository.load(SOURCE)).thenReturn(table(urgent));
+
+        // when
+        Map<String, ReferenceRecord> records = underTest.records(SOURCE);
+
+        // then
+        assertThatThrownBy(() -> records.put("Other", urgent))
+            .isInstanceOf(UnsupportedOperationException.class);
+        assertThat(underTest.find(SOURCE, "Other")).isEmpty();
     }
 
     @Test

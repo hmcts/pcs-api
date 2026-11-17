@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,13 +26,22 @@ public class ReferenceDataCache {
         return table;
     }
 
-    Optional<ReferenceRecord> find(ReferenceDataSource source, String key) {
-        return Optional.ofNullable(tables.get(source)).map(table -> table.records().get(key));
+    public Optional<ReferenceRecord> find(ReferenceDataSource source, String key) {
+        return Optional.ofNullable(table(source).records().get(key));
     }
 
-    Map<String, ReferenceRecord> records(ReferenceDataSource source) {
+    public Map<String, ReferenceRecord> records(ReferenceDataSource source) {
+        return Collections.unmodifiableMap(table(source).records());
+    }
+
+    private ReferenceTable table(ReferenceDataSource source) {
         ReferenceTable table = tables.get(source);
-        return table == null ? Map.of() : table.records();
+        if (table != null) {
+            return table;
+        }
+        ReferenceTable loaded = repository.load(source);
+        ReferenceTable existing = tables.putIfAbsent(source, loaded);
+        return existing != null ? existing : loaded;
     }
 
     @EventListener(ApplicationReadyEvent.class)
