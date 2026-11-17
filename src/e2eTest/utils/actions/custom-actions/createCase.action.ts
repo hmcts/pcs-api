@@ -1715,7 +1715,7 @@ export class CreateCaseAction implements IAction {
     let folder = page
       .locator('button.node')
       .filter({ hasText: folderName });
-    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true });
+    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
     let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
@@ -1755,7 +1755,6 @@ export class CreateCaseAction implements IAction {
       timeout: MEDIUM_TIMEOUT,
     });
     const actualFileCount = await fileLocator.count();
-    expect(actualFileCount, 'File count matching').toEqual(fileCount);
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
     const expectedFiles = caseFile.expectedFiles as string[] | undefined;
@@ -1785,8 +1784,6 @@ export class CreateCaseAction implements IAction {
       : [...new Set(
         filesArray.map(f =>
           f
-            .replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
-            .replace(/\s+(?:CC)\d+/i, '')
             .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
             .trim()
         )
@@ -1926,7 +1923,7 @@ export class CreateCaseAction implements IAction {
         .toEqual((tab.tabs as string[]).slice().sort());
     });
   }
-  
+
   public async validateTabNotPresent(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.getByRole('tab');
