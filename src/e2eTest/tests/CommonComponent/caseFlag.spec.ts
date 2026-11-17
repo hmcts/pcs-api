@@ -303,7 +303,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
       }
       await performAction('navigateToCaseSummary', 'yes');
 
-      if (attempt === 0 && email.includes("wales") ) {
+      if (attempt === 0 && email === "HHJ.Nicholas.Dominguez@ejudiciary.net") {
         await performAction('handleChallengedAccess', {
           button: challengedCaseDetails.requestAccessbutton,
           reason: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer,
@@ -311,11 +311,11 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
           link: challengedAccessSuccess.viewCaseFileLink
         });
       }
-        await performAction('canViewCaseAndPartyFlag', 'yes');
-        await performAction('canCreateCaseLevelFlag', 'no');
-        await performAction('canCreatePartyLevelFlag', {condition:'no',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
-        await performAction('canManageCaseLevelFlag', 'no');
-        await performAction('canManagePartyLevelFlag', 'no');
+      await performAction('canViewCaseAndPartyFlag', 'yes');
+      await performAction('canCreateCaseLevelFlag', 'no');
+      await performAction('canCreatePartyLevelFlag', { condition: 'no', name: `${partyNames[0].firstName} ${partyNames[0].lastName}` });
+      await performAction('canManageCaseLevelFlag', 'no');
+      await performAction('canManagePartyLevelFlag', 'no');
     };
     for (const email of judicialUsers) {
       try {
