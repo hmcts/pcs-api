@@ -234,24 +234,23 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');
-      if (email.includes("pcs-hearing-centre")) {
-        if(email.includes("wales") && attempt === 0) {
-          await performAction('handleChallengedAccess', {
+      if (email.includes("wales") && attempt === 0) {
+        await performAction('handleChallengedAccess', {
           button: challengedCaseDetails.requestAccessbutton,
           reason: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer,
           successMessage: challengedAccessSuccess.successMessage,
           link: challengedAccessSuccess.viewCaseFileLink
         });
-
-        }
+      }
+      if (email.includes("pcs-hearing-centre")) {
         await performAction('canCreateCaseLevelFlag', 'yes');
-        await performAction('canCreatePartyLevelFlag', {condition:'yes',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
+        await performAction('canCreatePartyLevelFlag', { condition: 'yes', name: `${partyNames[0].firstName} ${partyNames[0].lastName}` });
         await performAction('canManageCaseLevelFlag', 'yes');
         await performAction('canManagePartyLevelFlag', 'yes');
         await performAction('canViewCaseAndPartyFlag', 'yes');
       } else {
         await performAction('canCreateCaseLevelFlag', 'no');
-        await performAction('canCreatePartyLevelFlag', {condition:'no',name:`${partyNames[0].firstName} ${partyNames[0].lastName}`});
+        await performAction('canCreatePartyLevelFlag', { condition: 'no', name: `${partyNames[0].firstName} ${partyNames[0].lastName}` });
         await performAction('canManageCaseLevelFlag', 'no');
         await performAction('canManagePartyLevelFlag', 'no');
         await performAction('canViewCaseAndPartyFlag', 'no');
