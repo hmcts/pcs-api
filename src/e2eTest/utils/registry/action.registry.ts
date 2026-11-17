@@ -73,6 +73,8 @@ export class ActionRegistry {
     ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['midEventRespondPossessionClaimCitizenAPI', new CreateCaseAPIAction()],
@@ -155,6 +157,7 @@ export class ActionRegistry {
     ['deleteDraftResponseOption', new RespondToAClaimAction()],
     ['confirmDeleteDraftResponse', new RespondToAClaimAction()],
     ['getAddressInfo', new RespondToAClaimAction()],
+    ['validateDropDownValues', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -209,6 +212,8 @@ export class ActionRegistry {
     ['uploadFiles', new DocumentsAction()],
     ['uploadAdditionalDocsLR', new DocumentsAction()],
     ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['selectDocumentRelatingToCC', new DocumentsAction()],
+    ['updatePaymentAPILRCC', new CreateCaseAPIAction()],
     ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
@@ -221,7 +226,11 @@ export class ActionRegistry {
     ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
     ['requestChallengedAccess', new GlobalSearchCaseAction()],
     ['removeFile', new RemoveFileAction()],
-    ['getAllPartyDetails', new CreateCaseAction()],   
+    ['getAllPartyDetails', new CreateCaseAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['removeFile', new RemoveFileAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
