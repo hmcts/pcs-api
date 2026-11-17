@@ -74,7 +74,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch @ChallengedAccess', () => {
+test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
   test('Challenged access - Hearing centre team leader user can view the case after submitting a request', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
@@ -181,7 +181,7 @@ const runGlobalSearchScenarios = () => {
   { roleName: 'CTSC User', account: staff.pcs_ctsc_admin_email},
   { roleName: 'Judge User', account: judicial.possessionFeePaid_Judge_email }
 ].forEach(({ roleName, account }) => {
-  test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @globalSearch`, () => {
+  test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @globalSearch @run`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
