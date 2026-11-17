@@ -385,8 +385,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
             lastName,
             mainTable: defendant.table,
             subTable: 'Service address',
-            defAddress: getDefendantAddress(submitPayload, createPayload, defendant.name),
-            submitPayload: submitPayload,
+            defAddress: getDefendantAddress(submitPayload, createPayload, defendant.name)
           });
         }
       }

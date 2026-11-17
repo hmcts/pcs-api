@@ -1162,7 +1162,9 @@ private async completeBreathingSpaceFormHappyPath(data: { targetType: string; re
   }
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
-    await this.validateCaseDetails(defendantsDetails.submitPayload);
+    if (defendantsDetails.submitPayload) {
+      await this.validateCaseDetails(defendantsDetails.submitPayload);
+    }
     const defendant = new Map<string, string>();
     let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
     let index = section.split('-')[0] !== 'Defendant' ? 'last' : ''
