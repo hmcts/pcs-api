@@ -35,8 +35,8 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
-  cannotApplyForWarrantInfo
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments,cannotApplyForWritInfo,cannotApplyForWarrantInfo
+  
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
@@ -88,10 +88,10 @@ export class EnforcementAction implements IAction{
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
-      
+      ['resumeDraftApplication', () => this.resumeDraftApplication(page)],    
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['validatePermissionRequiredPage', () => this.validatePermissionRequiredPage(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -175,6 +175,14 @@ export class EnforcementAction implements IAction{
     await performAction('clickRadioButton', { question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion, option: breathingSpaceData.option });
     await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, breathingSpaceData.nextPage as string);
     await performAction('clickButton', defendantInBreathingSpace.continueButton);
+  }
+  private async validatePermissionRequiredPage(permissionData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: permissionData.youNeedPermissionParagraph as string });
+    await performValidation('text', { elementType: 'paragraph', text: permissionData.breachedDifferentTermHeader as string });
+    await performValidation('text', { elementType: 'paragraph', text: permissionData.breachedDifferentTermParagraph as string });
+    await performValidation('text', { elementType: 'link', text: permissionData.askJudgeForPermissionLink as string });
   }
 
   private async missedPayments(missedPaymentsData: actionRecord) {

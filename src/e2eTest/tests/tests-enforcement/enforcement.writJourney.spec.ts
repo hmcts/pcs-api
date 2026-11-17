@@ -21,7 +21,7 @@ import {
   enforcementApplication,
   languageUsed, missedPayments,
   nameAndAddressForEviction,
-  statementOfTruth
+  statementOfTruth,permissionForWritInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -162,7 +162,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: defendantInBreathingSpace.mainHeader
     });
     await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -291,4 +291,54 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('clickButton', changeNameAddress.continueButton);
       await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
+    
+    test('Writ - Given a suspended order with no missed payments, when a Claimant applies for a Writ of Possession without judge permission, then they are blocked from continuing @enforcement @regression', async () => {
+    await test.step('Given the Claimant starts the "Enforce the order" journey on a suspended order case', async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
+    });
+
+    await test.step('When the Claimant selects Writ of Possession and completes eviction and breathing space details', async () => {
+      await performAction('validateWritOrWarrantFeeAmount', {
+        journey: enforcementApplication.writOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
+      });
+      await performAction('selectApplicationType', {
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.writOfPossessionRadioOption,
+        question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+        question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+        option1: enforcementApplication.yesRadioOptionHidden,
+        nextPage: nameAndAddressForEviction.mainHeader
+      });
+      await performAction('selectNameAndAddressForEviction', {
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.yesRadioOption,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+        nextPage: defendantInBreathingSpace.mainHeader
+      });
+      await performAction('isDefendantInBreathingSpace', {
+        option: defendantInBreathingSpace.noRadioOption,
+        nextPage: missedPayments.mainHeader
+      });
+    });
+
+    await test.step('And the Claimant selects "No" for whether the defendants have missed any payments', async () => {
+      await performAction('missedPayments', {
+        option: missedPayments.noRadioOption,
+        nextPage: permissionForWritInfo.mainHeader
+      });
+    });
+
+    await test.step('Then the Claimant is shown the judge permission required screen and blocked from continuing', async () => {
+      await performAction('validatePermissionRequiredPage', permissionForWritInfo);
+      await performAction('errorValidationPermissionRequiredPage', permissionForWritInfo.errorValidation);
+    });
+  });
+
 });

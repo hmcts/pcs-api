@@ -37,4 +37,6 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/confirmEviction
 export * from '@data/page-data-figma/page-data-enforcement-figma/evictionDate.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/missedPayments.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBreathingSpace.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/permissionForWritInfo.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWritInfo.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';

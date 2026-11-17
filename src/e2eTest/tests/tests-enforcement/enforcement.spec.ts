@@ -39,7 +39,7 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments
+  statementOfTruth, defendantInBreathingSpace, missedPayments,cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -862,3 +862,4 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
     await performAction('resumeDraftApplication');
   });
 });
+
