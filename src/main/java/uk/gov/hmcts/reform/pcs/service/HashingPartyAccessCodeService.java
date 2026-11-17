@@ -12,14 +12,18 @@ import java.util.UUID;
 /**
  * Stores access codes BCrypt-encoded. Plaintext never lives in {@code party_access_code.code}.
  *
- * <p>A lookup that finds no match always runs at least {@link #MIN_MATCH_ATTEMPTS} BCrypt compares,
- * padding with a dummy hash, so a wrong code takes as long whether or not the case exists.
+ * <p>Every lookup runs at least {@link #MATCH_ATTEMPTS} BCrypt compares: it checks every stored code
+ * without stopping at a match, then pads with a dummy hash. The time taken therefore does not depend on
+ * whether the code is right, how many codes the case has, or whether the case exists at all.
  */
 @Service
 @Slf4j
 public class HashingPartyAccessCodeService implements PartyAccessCodeHashingService {
 
-    static final int MIN_MATCH_ATTEMPTS = 2;
+    /**
+     * Above any realistic number of defendants on a case, so every lookup costs the same.
+     */
+    static final int MATCH_ATTEMPTS = 10;
 
     private final PasswordEncoder encoder;
     private final String dummyHash;
@@ -46,30 +50,20 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
         if (accessCode == null) {
             return Optional.empty();
         }
+        PartyAccessCodeEntity match = null;
         int attempts = 0;
         for (PartyAccessCodeEntity entity : repository.findAllByPcsCase_Id(caseId)) {
             if (entity.getCode() == null) {
                 continue;
             }
             attempts++;
-            if (encoder.matches(accessCode, entity.getCode())) {
-                return Optional.of(entity);
+            if (encoder.matches(accessCode, entity.getCode()) && match == null) {
+                match = entity;
             }
         }
-        padMatchAttempts(accessCode, attempts);
-        return Optional.empty();
-    }
-
-    @Override
-    public void matchAgainstDummyCodes(String accessCode) {
-        if (accessCode != null) {
-            padMatchAttempts(accessCode, 0);
-        }
-    }
-
-    private void padMatchAttempts(String accessCode, int attemptsSoFar) {
-        for (int i = attemptsSoFar; i < MIN_MATCH_ATTEMPTS; i++) {
+        for (int i = attempts; i < MATCH_ATTEMPTS; i++) {
             encoder.matches(accessCode, dummyHash);
         }
+        return Optional.ofNullable(match);
     }
 }

@@ -142,11 +142,25 @@ class PartyAccessCodeLinkServiceTest {
         // GIVEN
         InvalidAccessCodeException rejection = new InvalidAccessCodeException("Invalid data");
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(CASE_REFERENCE));
-        when(validator.rejectForUnknownCase(ACCESS_CODE)).thenReturn(rejection);
+        when(validator.validateAccessCode(PartyAccessCodeLinkService.UNKNOWN_CASE_ID, ACCESS_CODE))
+            .thenThrow(rejection);
 
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isSameAs(rejection);
+        verifyNoInteractions(caseRoleAssignmentService);
+    }
+
+    @Test
+    void shouldNotLink_WhenCaseNotFoundButAccessCodeSomehowMatches() {
+        // GIVEN
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(CASE_REFERENCE));
+        when(validator.validateAccessCode(PartyAccessCodeLinkService.UNKNOWN_CASE_ID, ACCESS_CODE))
+            .thenReturn(PartyAccessCodeEntity.builder().partyId(UUID.randomUUID()).build());
+
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
+            .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(caseRoleAssignmentService);
     }
 

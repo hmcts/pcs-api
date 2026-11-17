@@ -24,6 +24,8 @@ import java.util.UUID;
 @Slf4j
 public class PartyAccessCodeLinkService {
 
+    static final UUID UNKNOWN_CASE_ID = new UUID(0L, 0L);
+
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeLinkValidator validator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -36,17 +38,17 @@ public class PartyAccessCodeLinkService {
     ) {
         String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
-        PcsCaseEntity caseEntity;
-        try {
-            caseEntity = pcsCaseService.loadCase(caseReference);
-        } catch (CaseNotFoundException e) {
-            throw validator.rejectForUnknownCase(accessCode);
-        }
+        PcsCaseEntity caseEntity = findCase(caseReference);
 
+        // An unknown case goes through the same access code check as a known one, against an id with no
+        // codes, so the response and the time taken don't reveal whether the case exists.
         PartyAccessCodeEntity pac = validator.validateAccessCode(
-            caseEntity.getId(),
+            caseEntity != null ? caseEntity.getId() : UNKNOWN_CASE_ID,
             accessCode
         );
+        if (caseEntity == null) {
+            throw new IllegalStateException("Access code matched for an unknown case");
+        }
 
         UUID partyId = pac.getPartyId();
 
@@ -72,4 +74,11 @@ public class PartyAccessCodeLinkService {
         caseRoleAssignmentService.assignRasRole(caseReference, idamUserId, UserRole.DEFENDANT);
     }
 
+    private PcsCaseEntity findCase(long caseReference) {
+        try {
+            return pcsCaseService.loadCase(caseReference);
+        } catch (CaseNotFoundException e) {
+            return null;
+        }
+    }
 }
