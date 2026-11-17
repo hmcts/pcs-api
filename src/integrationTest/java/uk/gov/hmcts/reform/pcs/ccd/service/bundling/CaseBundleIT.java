@@ -221,16 +221,42 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         final var other = events.registerActor("Other", "Judge", "caseworker-pcs", "judge");
         var admin = events.registerActor("Selected", "Admin", "caseworker-pcs", "hearing-centre-admin");
         assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        String originalTitle = events.view(reference, allowed).getCaseTitleMarkdown();
+        assertThat(originalTitle).doesNotContain("/documentsv2/");
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false)
             .variationForUser(allowed.uid(), true).variationForUser(admin.uid(), true));
-        assertThat(events.view(reference, allowed).getBundleTab().getBundle()).isNotNull();
+        PCSCase visible = events.view(reference, allowed);
+        assertThat(visible.getBundleTab().getBundle()).isNotNull();
+        UUID documentId = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
+            .stored().orElseThrow().id();
+        assertThat(visible.getCaseTitleMarkdown())
+            .contains("href=\"/documentsv2/" + documentId + "/binary\"")
+            .contains("target=\"_blank\" rel=\"noopener noreferrer\"")
+            .contains("Whole file download (opens in new tab)");
         assertThat(events.view(reference, other).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, other).getCaseTitleMarkdown()).isEqualTo(originalTitle);
         assertThat(events.view(reference, admin).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, admin).getCaseTitleMarkdown()).isEqualTo(originalTitle);
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
         assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
+    }
+
+    @Test
+    void overviewHasNoDownloadUntilTheBundleIsPublished() throws Exception {
+        long reference = cases.issue();
+        var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
+        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
+
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Preparing.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
+        assertThat(events.view(reference, judge).getBundleTab().getStatus()).isEqualTo("The bundle is being prepared.");
+        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
+        run(caseKey(reference));
     }
 
     private OrderStart.CaseBundle orderBundle(long reference, String role) {
