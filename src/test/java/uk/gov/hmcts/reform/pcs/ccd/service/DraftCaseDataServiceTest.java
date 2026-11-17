@@ -21,11 +21,16 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -62,6 +67,12 @@ class DraftCaseDataServiceTest {
     private DraftCaseJsonMerger draftCaseJsonMerger;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private EnforcementStateService enforcementStateService;
     @Captor
     private ArgumentCaptor<DraftCaseDataEntity> unsubmittedCaseDataEntityCaptor;
 
@@ -78,7 +89,10 @@ class DraftCaseDataServiceTest {
             objectMapper,
             draftCaseJsonMerger,
             securityContextService,
-            new TransactionTemplate(mock(PlatformTransactionManager.class))
+            new TransactionTemplate(mock(PlatformTransactionManager.class)),
+            pcsCaseService,
+            pcsCaseRepository,
+            enforcementStateService
         );
     }
 
@@ -194,6 +208,60 @@ class DraftCaseDataServiceTest {
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
         assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldMapAndPersistInitialEnforcementStateWhenPatchingEnforcementDraft() throws JsonProcessingException {
+        // Given
+        Object eventData = new Object();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        when(objectMapper.writeValueAsString(eventData)).thenReturn("enforcement draft");
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, EventId.enforceTheOrder, USER_ID
+        )).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().uid(USER_ID).build());
+        when(securityContextService.toUserId(USER_ID)).thenReturn(USER_ID);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, eventData, EventId.enforceTheOrder);
+
+        // Then
+        verify(enforcementStateService).mapToEntity(
+            pcsCaseEntity, EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+        );
+        verify(pcsCaseRepository).save(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldMapAndPersistEnforcementStateWhenPatchingExistingEnforcementDraft() throws JsonProcessingException {
+        // Given
+        Object eventData = new Object();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setEnforcementState(EnforcementStateEntity.builder()
+            .pcsCase(pcsCaseEntity)
+            .state(EnforcementState.PENDING_CASE_ISSUED)
+            .build());
+        when(objectMapper.writeValueAsString(eventData)).thenReturn("enforcement draft");
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, EventId.enforceTheOrder, USER_ID
+        )).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().uid(USER_ID).build());
+        when(securityContextService.toUserId(USER_ID)).thenReturn(USER_ID);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, eventData, EventId.enforceTheOrder);
+
+        // Then
+        verify(enforcementStateService).mapToEntity(
+            pcsCaseEntity, EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+        );
+        verify(pcsCaseRepository).save(pcsCaseEntity);
     }
 
     @Test

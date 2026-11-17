@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +20,6 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -56,9 +53,6 @@ public class EnforcementOrderEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "enforcement_order")
     private EnforcementOrder enforcementOrder;
-
-    @Enumerated(EnumType.STRING)
-    private EnforcementState state;
 
     @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private RiskProfileEntity riskProfileDetails;

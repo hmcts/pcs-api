@@ -21,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -73,6 +74,10 @@ public class PcsCaseEntity {
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private TenancyLicenceEntity tenancyLicence;
+
+    @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private EnforcementStateEntity enforcementState;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
