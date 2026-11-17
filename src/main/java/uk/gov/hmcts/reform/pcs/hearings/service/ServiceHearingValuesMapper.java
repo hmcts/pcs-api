@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -41,6 +43,7 @@ public class ServiceHearingValuesMapper {
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
+    static final String URGENT_CASE_FLAG_CODE = "CF0007";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     static final int MAX_COMMENT_LENGTH = 200;
     static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
@@ -76,8 +79,15 @@ public class ServiceHearingValuesMapper {
         values.setPublicCaseName(caseName);
         values.setCaseDeepLink(caseDeepLink(pcsCase.getCaseReference()));
         values.setCaseSlaStartDate(caseSlaStartDate(pcsCase));
+        values.setHearingWindow(hearingWindow(pcsCase));
+        if (isUrgentHearing(pcsCase)) {
+            values.setHearingPriorityType(defaults.getHearingPriorityUrgent());
+        }
         values.setNumberOfPhysicalAttendees(numberOfPhysicalAttendees(pcsCase));
         values.setListingComments(listingComments(pcsCase));
+        String caseManagementLocation = Objects.toString(pcsCase.getCaseManagementLocation(), null);
+        values.setCaseManagementLocationCode(caseManagementLocation);
+        values.getHearingLocations().forEach(location -> location.setLocationId(caseManagementLocation));
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -114,16 +124,48 @@ public class ServiceHearingValuesMapper {
             .collect(Collectors.toMap(PcsCaseEntity::getCaseReference, Function.identity()));
     }
 
-
     private String caseDeepLink(long caseReference) {
         return manageCaseUrl + String.format(CASE_FILE_VIEW_PATH, caseReference);
     }
 
-    private LocalDate caseSlaStartDate(PcsCaseEntity pcsCase) {
+    private LocalDate getClaimIssuedDate(PcsCaseEntity pcsCase) {
         return Optional.ofNullable(pcsCase.getMainClaim())
             .map(ClaimEntity::getClaimIssuedDate)
             .map(issued -> issued.atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate())
             .orElse(null);
+    }
+
+    private LocalDate caseSlaStartDate(PcsCaseEntity pcsCase) {
+        return getClaimIssuedDate(pcsCase);
+    }
+
+    private HearingWindow hearingWindow(PcsCaseEntity pcsCase) {
+        LocalDate claimIssuedDate = getClaimIssuedDate(pcsCase);
+        if (claimIssuedDate == null) {
+            return null;
+        }
+        HearingWindow hearingWindow = new HearingWindow();
+        hearingWindow.setDateRangeStart(claimIssuedDate.plusDays(defaults.getNumberOfDaysStartOffset()));
+        hearingWindow.setDateRangeEnd(claimIssuedDate.plusDays(defaults.getNumberOfDaysOffset()));
+        return hearingWindow;
+    }
+
+    private boolean isUrgentHearing(PcsCaseEntity pcsCase) {
+        return hasActiveUrgentFlag(pcsCase) || hasOpenSuspendApplication(pcsCase);
+    }
+
+    private boolean hasActiveUrgentFlag(PcsCaseEntity pcsCase) {
+        return pcsCase.getCaseFlags().stream()
+            .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
+            .map(BaseCaseFlag::getFlagRefData)
+            .filter(Objects::nonNull)
+            .anyMatch(flagRefData -> URGENT_CASE_FLAG_CODE.equals(flagRefData.getFlagCode()));
+    }
+
+    private boolean hasOpenSuspendApplication(PcsCaseEntity pcsCase) {
+        return pcsCase.getGenApps().stream()
+            .anyMatch(genApp -> genApp.getType() == GenAppType.SUSPEND
+                && genApp.isOpen());
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {

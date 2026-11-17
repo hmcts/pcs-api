@@ -23,11 +23,14 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -78,6 +81,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     private static final long LINKED_CASE_REFERENCE = 2234567890123456L;
     private static final long CASE_NOT_IN_PCS = 3234567890123456L;
     private static final String CASE_NAME = "Test Claimant vs John Doe";
+    private static final int CASE_MANAGEMENT_LOCATION = 20262;
 
     @Autowired
     private MockMvc mockMvc;
@@ -118,6 +122,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         void shouldReturnHearingValuesForStoredCase() throws Exception {
             // 23:30 UTC in British Summer Time is 00:30 the next day in the UK
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, LocalDateTime.of(2026, 6, 30, 23, 30));
+            pcsCase.setCaseManagementLocation(CASE_MANAGEMENT_LOCATION);
             persist(pcsCase);
 
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
@@ -129,9 +134,90 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.caseDeepLink").value(
                     "http://localhost:3000/cases/case-details/PCS/PCS/" + CASE_REFERENCE + "#Case%20File%20View"))
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
+                .andExpect(jsonPath("$.caseManagementLocationCode").value(String.valueOf(CASE_MANAGEMENT_LOCATION)))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
+                .andExpect(jsonPath("$.hearingLocations[0].locationId").value(String.valueOf(CASE_MANAGEMENT_LOCATION)))
+                .andExpect(jsonPath("$.hearingType").value("AAA3-FPH"))
+                .andExpect(jsonPath("$.hearingChannels", contains("INTER")))
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"))
+                // Issued 1 July 2026 in the UK: start is 27 days later and end is 57 days later
+                .andExpect(jsonPath("$.hearingWindow.dateRangeStart").value("2026-07-28"))
+                .andExpect(jsonPath("$.hearingWindow.dateRangeEnd").value("2026-08-27"))
+                .andExpect(jsonPath("$.hearingWindow.firstDateTimeMustBe").doesNotExist())
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
                 .andExpect(jsonPath("$.listingComments").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("leaves out the location codes and hearing window when the case has neither")
+        void shouldOmitLocationAndHearingWindowWhenNotAvailable() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.caseManagementLocationCode").doesNotExist())
+                .andExpect(jsonPath("$.hearingLocations[0].locationId").doesNotExist())
+                .andExpect(jsonPath("$.hearingWindow").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("sets an urgent priority when the case has an active Urgent case flag")
+        void shouldSetUrgentPriorityForActiveUrgentFlag() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0007", "Urgent case"), "Active", null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Urgent"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the Urgent case flag is not active")
+        void shouldKeepStandardPriorityForInactiveUrgentFlag() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0007", "Urgent case"), "Inactive", null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
+        }
+
+        @Test
+        @DisplayName("sets an urgent priority when the case has an open general application to suspend")
+        void shouldSetUrgentPriorityForOpenSuspendApplication() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.SUSPEND, GenAppState.GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Urgent"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the application to suspend has not been issued")
+        void shouldKeepStandardPriorityForSuspendApplicationNotYetIssued() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.SUSPEND, GenAppState.PENDING_GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the open general application is not to suspend")
+        void shouldKeepStandardPriorityForOpenApplicationThatIsNotToSuspend() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
         }
 
         @Test
@@ -393,6 +479,16 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
         pcsCase.getCaseFlags().add(flag);
+    }
+
+    /** Adds an application made by the case's first party; type, rank, case and party are the NOT NULL columns. */
+    private static void addGenApp(PcsCaseEntity pcsCase, GenAppType type, GenAppState state) {
+        GenAppEntity genApp = GenAppEntity.builder()
+            .type(type)
+            .state(state)
+            .party(pcsCase.getParties().iterator().next())
+            .build();
+        pcsCase.addGenApp(genApp);
     }
 
     private static void addLink(PcsCaseEntity pcsCase, long linkedCaseReference, String... reasonCodes) {

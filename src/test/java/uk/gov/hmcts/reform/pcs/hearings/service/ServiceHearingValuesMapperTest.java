@@ -4,19 +4,27 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -45,6 +53,9 @@ class ServiceHearingValuesMapperTest {
     private static final String MANAGE_CASE_URL = "https://manage-case.example";
     private static final String CASE_NAME = "Jane Landlord vs John Tenant";
     private static final long LINKED_CASE_REFERENCE = 6543210987654321L;
+    private static final String STANDARD_PRIORITY = "Standard";
+    private static final String URGENT_PRIORITY = "Urgent";
+    private static final String URGENT_CASE_FLAG_CODE = "CF0007";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -60,6 +71,12 @@ class ServiceHearingValuesMapperTest {
         defaults.setLocationType("court");
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
+        defaults.setHearingType("AAA3-FPH");
+        defaults.setHearingChannels(List.of("INTER"));
+        defaults.setHearingPriorityStandard(STANDARD_PRIORITY);
+        defaults.setHearingPriorityUrgent(URGENT_PRIORITY);
+        defaults.setNumberOfDaysStartOffset(27);
+        defaults.setNumberOfDaysOffset(57);
 
         underTest = new ServiceHearingValuesMapper(defaults, pcsCaseService, caseNameFormatter, MANAGE_CASE_URL);
     }
@@ -82,6 +99,140 @@ class ServiceHearingValuesMapperTest {
         assertThat(values.getHearingLocations()).singleElement()
             .extracting("locationType").isEqualTo("court");
         assertThat(values.getPanelRequirements().getRoleType()).containsExactly("24", "45");
+        assertThat(values.getHearingType()).isEqualTo("AAA3-FPH");
+        assertThat(values.getHearingChannels()).containsExactly("INTER");
+    }
+
+    @Test
+    void shouldSetCaseManagementLocationCodeAndLocationIdToCaseManagementLocation() {
+        givenCase(caseBuilder().caseManagementLocation(20262).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseManagementLocationCode()).isEqualTo("20262");
+        assertThat(values.getHearingLocations()).singleElement()
+            .extracting("locationId").isEqualTo("20262");
+    }
+
+    @Test
+    void shouldLeaveLocationCodesEmptyWhenCaseHasNoCaseManagementLocation() {
+        givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseManagementLocationCode()).isNull();
+        assertThat(values.getHearingLocations()).singleElement()
+            .extracting("locationId").isNull();
+    }
+
+    @Test
+    void shouldSetHearingWindowFromClaimIssuedDatePlusConfiguredOffsets() {
+        givenCase(caseIssuedOn(LocalDateTime.of(2027, 1, 1, 10, 0)));
+
+        HearingWindow hearingWindow = underTest.getServiceHearingValues(CASE_REFERENCE).getHearingWindow();
+
+        assertThat(hearingWindow.getDateRangeStart()).isEqualTo(LocalDate.of(2027, 1, 28));
+        assertThat(hearingWindow.getDateRangeEnd()).isEqualTo(LocalDate.of(2027, 2, 27));
+        assertThat(hearingWindow.getFirstDateTimeMustBe()).isNull();
+    }
+
+    @Test
+    void shouldCountHearingWindowFromUkDateOfClaimIssue() {
+        // 23:30 UTC in British Summer Time is 00:30 on 2 June in the UK
+        givenCase(caseIssuedOn(LocalDateTime.of(2026, 6, 1, 23, 30)));
+
+        HearingWindow hearingWindow = underTest.getServiceHearingValues(CASE_REFERENCE).getHearingWindow();
+
+        assertThat(hearingWindow.getDateRangeStart()).isEqualTo(LocalDate.of(2026, 6, 29));
+        assertThat(hearingWindow.getDateRangeEnd()).isEqualTo(LocalDate.of(2026, 7, 29));
+    }
+
+    @Test
+    void shouldLeaveHearingWindowEmptyWhenCaseHasNoClaim() {
+        givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingWindow()).isNull();
+    }
+
+    @Test
+    void shouldLeaveHearingWindowEmptyWhenMainClaimNotIssued() {
+        givenCase(caseIssuedOn(null));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingWindow()).isNull();
+    }
+
+    @Test
+    void shouldSetStandardPriorityByDefault() {
+        givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(STANDARD_PRIORITY);
+    }
+
+    @Test
+    void shouldSetUrgentPriorityWhenCaseHasActiveUrgentFlag() {
+        givenCase(caseBuilder().caseFlags(flags(flagWithCode(URGENT_CASE_FLAG_CODE, "Active"))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(URGENT_PRIORITY);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Inactive", "Requested", "Not approved"})
+    void shouldSetStandardPriorityWhenUrgentFlagIsNotActive(String status) {
+        givenCase(caseBuilder().caseFlags(flags(flagWithCode(URGENT_CASE_FLAG_CODE, status))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(STANDARD_PRIORITY);
+    }
+
+    @Test
+    void shouldSetStandardPriorityWhenActiveFlagIsNotUrgent() {
+        givenCase(caseBuilder().caseFlags(flags(
+            flagWithCode("CF0002", "Active"),
+            flag("Urgent case", null)
+        )).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(STANDARD_PRIORITY);
+    }
+
+    @Test
+    void shouldSetUrgentPriorityWhenCaseHasOpenApplicationToSuspend() {
+        givenCase(caseWithGenApp(GenAppType.SUSPEND, GenAppState.GEN_APP_ISSUED));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(URGENT_PRIORITY);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = GenAppState.class, names = "GEN_APP_ISSUED", mode = EnumSource.Mode.EXCLUDE)
+    @NullSource
+    void shouldSetStandardPriorityWhenApplicationToSuspendIsNotOpen(GenAppState state) {
+        givenCase(caseWithGenApp(GenAppType.SUSPEND, state));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(STANDARD_PRIORITY);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = GenAppType.class, names = "SUSPEND", mode = EnumSource.Mode.EXCLUDE)
+    void shouldSetStandardPriorityWhenOpenApplicationIsNotToSuspend(GenAppType type) {
+        givenCase(caseWithGenApp(type, GenAppState.GEN_APP_ISSUED));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getHearingPriorityType()).isEqualTo(STANDARD_PRIORITY);
     }
 
     @Test
@@ -516,5 +667,23 @@ class ServiceHearingValuesMapperTest {
             .flagComment(comment)
             .defaultStatus(status)
             .build();
+    }
+
+    private static CaseFlagEntity flagWithCode(String flagCode, String status) {
+        return CaseFlagEntity.builder()
+            .flagRefData(FlagRefDataEntity.builder().flagCode(flagCode).flagName("Flag " + flagCode).build())
+            .defaultStatus(status)
+            .build();
+    }
+
+    private static PcsCaseEntity caseIssuedOn(LocalDateTime claimIssuedDate) {
+        ClaimEntity claim = ClaimEntity.builder().claimIssuedDate(claimIssuedDate).build();
+        return caseBuilder().claims(new ArrayList<>(List.of(claim))).build();
+    }
+
+    private static PcsCaseEntity caseWithGenApp(GenAppType type, GenAppState state) {
+        PcsCaseEntity pcsCase = caseBuilder().build();
+        pcsCase.getGenApps().add(GenAppEntity.builder().type(type).state(state).build());
+        return pcsCase;
     }
 }
