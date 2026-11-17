@@ -984,6 +984,244 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should send gen app received email to legal representative when applicant is represented")
+        void shouldSendGenAppReceivedEmailToLegalRepresentative() {
+            // Given
+            String expectedTemplateId = "lr-template-id";
+            String expectedEmailAddress = "solicitor@example.com";
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.GENERAL_APPLICATION_RECEIVED_LEGAL_REP))
+                .thenReturn(expectedTemplateId);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getId()).thenReturn(PROVIDER_NOTIFICATION_ID);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+
+            PartyEntity applicantPartyEntity = mock(PartyEntity.class);
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
+            when(applicantPartyEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            ClaimPartyContactDetailsEntity contactDetails = mock(ClaimPartyContactDetailsEntity.class);
+            when(contactDetails.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(contactDetails.getEmailAddress()).thenReturn(expectedEmailAddress);
+
+            OrganisationEntity organisationEntity = mock(OrganisationEntity.class);
+            when(organisationEntity.getClaimPartyContactDetails()).thenReturn(List.of(contactDetails));
+
+            ClaimPartyOrganisationEntity link = mock(ClaimPartyOrganisationEntity.class);
+            when(link.getActive()).thenReturn(YesOrNo.YES);
+            when(link.getOrganisation()).thenReturn(organisationEntity);
+            when(applicantPartyEntity.getClaimPartyOrganisationList()).thenReturn(List.of(link));
+
+            GenAppPersonalisation personalisation = mock(GenAppPersonalisation.class);
+            Map<String, Object> expectedPersonalisationMap = Map.of("subjectLine", "Request to adjourn");
+            when(personalisation.toMap()).thenReturn(expectedPersonalisationMap);
+
+            when(notificationPersonalisationFactory.forGenApp(applicantPartyEntity, genAppEntity, false, true))
+                .thenReturn(personalisation);
+
+            // When
+            notificationService.sendGenAppApplicantNotification(genAppEntity);
+
+            // Then
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SchedulableInstance<SendEmailTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+            SendEmailTaskData taskData = schedulableInstance.getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(expectedEmailAddress);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+            assertThat(taskData.getPersonalisation()).isEqualTo(expectedPersonalisationMap);
+        }
+
+        @Test
+        @DisplayName("Should send respondent notification to citizen")
+        void shouldSendGenAppRespondentNotificationToCitizen() {
+            // Given
+            String expectedTemplateId = "respondent-cui-template-id";
+            String respondentEmail = "respondent@example.com";
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.GENERAL_APPLICATION_RESPONDENT))
+                .thenReturn(expectedTemplateId);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            UUID applicantId = UUID.randomUUID();
+            UUID respondentId = UUID.randomUUID();
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            PartyEntity applicant = mock(PartyEntity.class);
+            when(applicant.getId()).thenReturn(applicantId);
+            when(genAppEntity.getParty()).thenReturn(applicant);
+
+            PartyEntity respondent = mock(PartyEntity.class);
+            when(respondent.getId()).thenReturn(respondentId);
+            when(respondent.isRemoved()).thenReturn(false);
+            when(respondent.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(respondent.getEmailAddress()).thenReturn(respondentEmail);
+            when(respondent.getClaimPartyOrganisationList()).thenReturn(List.of());
+
+            ClaimEntity claim = mock(ClaimEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
+
+            ClaimPartyEntity claimPartyApplicant = mock(ClaimPartyEntity.class);
+            when(claimPartyApplicant.getParty()).thenReturn(applicant);
+
+            ClaimPartyEntity claimPartyRespondent = mock(ClaimPartyEntity.class);
+            when(claimPartyRespondent.getParty()).thenReturn(respondent);
+
+            when(claim.getClaimParties()).thenReturn(List.of(claimPartyApplicant, claimPartyRespondent));
+
+            when(partyService.getPartyRole(respondent)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(respondent, PartyRole.DEFENDANT)).thenReturn(true);
+
+            GenAppPersonalisation personalisation = mock(GenAppPersonalisation.class);
+            Map<String, Object> expectedPersonalisationMap = Map.of("subjectLine", "A party has made an application");
+            when(personalisation.toMap()).thenReturn(expectedPersonalisationMap);
+
+            when(notificationPersonalisationFactory.forGenApp(respondent, genAppEntity, true, false))
+                .thenReturn(personalisation);
+
+            // When
+            notificationService.sendGenAppRespondentNotifications(genAppEntity);
+
+            // Then
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(respondentEmail);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+            assertThat(taskData.getPersonalisation()).isEqualTo(expectedPersonalisationMap);
+        }
+
+        @Test
+        @DisplayName("Should send respondent notification to legal representative when respondent is represented")
+        void shouldSendGenAppRespondentNotificationToLegalRepresentative() {
+            // Given
+            String expectedTemplateId = "respondent-lr-template-id";
+            String lrEmail = "solicitor-respondent@example.com";
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.GENERAL_APPLICATION_RESPONDENT_LEGAL_REP))
+                .thenReturn(expectedTemplateId);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            UUID applicantId = UUID.randomUUID();
+            UUID respondentId = UUID.randomUUID();
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getId()).thenReturn(PROVIDER_NOTIFICATION_ID);
+
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            PartyEntity applicant = mock(PartyEntity.class);
+            when(applicant.getId()).thenReturn(applicantId);
+            when(genAppEntity.getParty()).thenReturn(applicant);
+
+            PartyEntity respondent = mock(PartyEntity.class);
+            when(respondent.getId()).thenReturn(respondentId);
+            when(respondent.isRemoved()).thenReturn(false);
+            when(respondent.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            ClaimEntity claim = mock(ClaimEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
+
+            ClaimPartyEntity claimPartyApplicant = mock(ClaimPartyEntity.class);
+            when(claimPartyApplicant.getParty()).thenReturn(applicant);
+
+            ClaimPartyEntity claimPartyRespondent = mock(ClaimPartyEntity.class);
+            when(claimPartyRespondent.getParty()).thenReturn(respondent);
+
+            when(claim.getClaimParties()).thenReturn(List.of(claimPartyApplicant, claimPartyRespondent));
+
+            ClaimPartyContactDetailsEntity contactDetails = mock(ClaimPartyContactDetailsEntity.class);
+            when(contactDetails.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(contactDetails.getEmailAddress()).thenReturn(lrEmail);
+
+            OrganisationEntity organisationEntity = mock(OrganisationEntity.class);
+            when(organisationEntity.getClaimPartyContactDetails()).thenReturn(List.of(contactDetails));
+
+            ClaimPartyOrganisationEntity link = mock(ClaimPartyOrganisationEntity.class);
+            when(link.getActive()).thenReturn(YesOrNo.YES);
+            when(link.getOrganisation()).thenReturn(organisationEntity);
+            when(respondent.getClaimPartyOrganisationList()).thenReturn(List.of(link));
+
+            GenAppPersonalisation personalisation = mock(GenAppPersonalisation.class);
+            Map<String, Object> expectedPersonalisationMap = Map.of("subjectLine", "A party has made an application");
+            when(personalisation.toMap()).thenReturn(expectedPersonalisationMap);
+
+            when(notificationPersonalisationFactory.forGenApp(respondent, genAppEntity, true, true))
+                .thenReturn(personalisation);
+
+            // When
+            notificationService.sendGenAppRespondentNotifications(genAppEntity);
+
+            // Then
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(lrEmail);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+        }
+
+        @Test
+        @DisplayName("Should skip removed parties and parties who do not want email notifications")
+        void shouldSkipRemovedAndUnconsentingPartiesForGenAppRespondentNotification() {
+            // Given
+            UUID applicantId = UUID.randomUUID();
+            UUID removedRespondentId = UUID.randomUUID();
+            UUID unconsentingRespondentId = UUID.randomUUID();
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            PartyEntity applicant = mock(PartyEntity.class);
+            when(applicant.getId()).thenReturn(applicantId);
+            when(genAppEntity.getParty()).thenReturn(applicant);
+
+            PartyEntity removedRespondent = mock(PartyEntity.class);
+            when(removedRespondent.isRemoved()).thenReturn(true);
+
+            PartyEntity unconsentingRespondent = mock(PartyEntity.class);
+            when(unconsentingRespondent.getId()).thenReturn(unconsentingRespondentId);
+            when(unconsentingRespondent.isRemoved()).thenReturn(false);
+            when(unconsentingRespondent.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(unconsentingRespondent.getEmailAddress()).thenReturn("unconsenting@example.com");
+            when(unconsentingRespondent.getClaimPartyOrganisationList()).thenReturn(List.of());
+
+            ClaimEntity claim = mock(ClaimEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
+
+            ClaimPartyEntity claimPartyApplicant = mock(ClaimPartyEntity.class);
+            when(claimPartyApplicant.getParty()).thenReturn(applicant);
+
+            ClaimPartyEntity claimPartyRemoved = mock(ClaimPartyEntity.class);
+            when(claimPartyRemoved.getParty()).thenReturn(removedRespondent);
+
+            ClaimPartyEntity claimPartyUnconsenting = mock(ClaimPartyEntity.class);
+            when(claimPartyUnconsenting.getParty()).thenReturn(unconsentingRespondent);
+
+            when(claim.getClaimParties())
+                .thenReturn(List.of(claimPartyApplicant, claimPartyRemoved, claimPartyUnconsenting));
+
+            when(partyService.getPartyRole(unconsentingRespondent)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(unconsentingRespondent, PartyRole.DEFENDANT)).thenReturn(false);
+
+            // When
+            notificationService.sendGenAppRespondentNotifications(genAppEntity);
+
+            // Then
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        @Test
         @DisplayName("Should send notification for organisation with no counter claim")
         void notificationSentForOrganisationNoCounterclaim() {
             PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();

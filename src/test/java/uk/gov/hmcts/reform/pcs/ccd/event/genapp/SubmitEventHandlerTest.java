@@ -248,6 +248,7 @@ class SubmitEventHandlerTest {
                 verify(genAppWaTaskService, never()).createTranslationTaskForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
+                verify(genAppNotificationService).sendGenAppIssuedNotifications(expectedGenAppEntityId);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
                 verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
             }
