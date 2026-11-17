@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -179,13 +180,10 @@ public class PartyService {
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
         OrganisationDetailsResponse orgDetails = requireClaimantOrganisation();
 
-        String organisationId = orgDetails.getOrganisationIdentifier();
-        String organisationProfileId = orgDetails.getOrgProfileId();
-
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setRemoved(false);
-        claimantParty.setOrganisationId(organisationId);
-        claimantParty.setOrganisationProfileId(organisationProfileId);
+        claimantParty.setOrganisationId(orgDetails.getOrganisationIdentifier());
+        claimantParty.setOrganisationProfileId(orgDetails.getOrgProfileId());
         claimantParty.setClaimCreator(true);
         pcsCaseEntity.addParty(claimantParty);
     }
@@ -201,8 +199,7 @@ public class PartyService {
         if (orgDetails == null) {
             throw new OrganisationNotFoundException("No organisation found for the current user");
         }
-        List<String> organisationProfileIds = orgDetails.getOrganisationProfileIds();
-        if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
+        if (CollectionUtils.isEmpty(orgDetails.getOrganisationProfileIds())) {
             throw new OrganisationNotFoundException(
                 "No organisation profile ID found for organisation " + orgDetails.getOrganisationIdentifier());
         }

@@ -141,16 +141,8 @@ public class OrganisationService {
      * @return The organisation details, or null if the user has none
      */
     public OrganisationDetailsResponse requireOrganisationDetailsForCurrentOrganisationUser() {
-        if (securityContextService.isSystemUser() || !currentUserBelongsToOrganisation()) {
-            return null;
-        }
-
-        String userId = securityContextService.getCurrentUserId();
-        if (userId == null) {
-            return null;
-        }
-
-        return this.getCachedRequiredOrganisationDetails(userId);
+        String userId = resolveOrganisationUserId();
+        return userId == null ? null : this.getCachedRequiredOrganisationDetails(userId);
     }
 
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
@@ -206,7 +198,15 @@ public class OrganisationService {
      * anyway.
      */
     private String resolveProfessionalUserId() {
-        if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
+        if (securityContextService.isSystemUser() || currentUserIsCitizen()) {
+            return null;
+        }
+        return resolveOrganisationUserId();
+    }
+
+    /** As resolveProfessionalUserId, but without the citizen check (HDPI-10115). */
+    private String resolveOrganisationUserId() {
+        if (securityContextService.isSystemUser() || !currentUserBelongsToOrganisation()) {
             return null;
         }
         return securityContextService.getCurrentUserId();
