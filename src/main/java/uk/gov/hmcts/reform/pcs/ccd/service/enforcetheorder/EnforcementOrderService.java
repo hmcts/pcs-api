@@ -89,6 +89,11 @@ public class EnforcementOrderService {
             enforcementState.setState(EnforcementState.BREATHING_SPACE);
 
             log.info("Updated enforcement state to BREATHING_SPACE for case {}", caseReference);
+        } else if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+            || currentState == EnforcementState.PENDING_CASE_ISSUED) {
+
+            enforcementState.setState(EnforcementState.DRAFT_DISCARDED);
+            log.info("Updated enforcement state to Draft Discarded for case {}", caseReference);
         }
     }
 
