@@ -22,12 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 import uk.gov.hmcts.reform.pcs.document.model.warrantofpossession.WarrantOfPossessionPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -35,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
@@ -56,7 +55,6 @@ public class WarrantOfPossessionPersistenceService {
     private final CaseNameFormatter caseNameFormatter;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
-    private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final RecipientAddressResolver recipientAddressResolver;
     private final NotificationService notificationService;
 
@@ -107,7 +105,7 @@ public class WarrantOfPossessionPersistenceService {
             // TODO: confirm the source of the claimant / applicant reference
             .claimantReference(null)
             // Defendant details
-            .defendants(buildDefendants(enforcementOrder, pcsCase.getPropertyAddress()))
+            .defendantNames(joinDefendantNames(enforcementOrder))
             // Application details
             .applicationType(APPLICATION_TYPE)
             .possessionOrderType(warrant.getIsSuspendedOrder() == VerticalYesNo.YES ? SUSPENDED_ORDER : OTHER_ORDER)
@@ -127,15 +125,10 @@ public class WarrantOfPossessionPersistenceService {
             .build();
     }
 
-    private List<EnforcementDefendant> buildDefendants(EnforcementOrderEntity enforcementOrder,
-                                                       AddressEntity propertyAddress) {
+    private String joinDefendantNames(EnforcementOrderEntity enforcementOrder) {
         return defendantsToEvict(enforcementOrder).stream()
-            .map(defendant -> EnforcementDefendant.builder()
-                .name(partyService.getPartyName(defendant))
-                .address(formatAddress(defenceCorrespondenceAddressResolver
-                                           .resolveCorrespondenceAddress(defendant, propertyAddress)))
-                .build())
-            .toList();
+            .map(partyService::getPartyName)
+            .collect(Collectors.joining(", "));
     }
 
     /**

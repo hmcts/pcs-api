@@ -28,12 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 import uk.gov.hmcts.reform.pcs.document.model.warrantofpossession.WarrantOfPossessionPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -72,8 +70,6 @@ class WarrantOfPossessionPersistenceServiceTest {
     @Mock
     private AddressMapper addressMapper;
     @Mock
-    private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
-    @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private NotificationService notificationService;
@@ -90,7 +86,7 @@ class WarrantOfPossessionPersistenceServiceTest {
     void setUp() {
         underTest = new WarrantOfPossessionPersistenceService(enforcementOrderRepository, documentImportService,
             claimActivityLogService, partyService, new CaseReferenceFormatter(), caseNameFormatter, addressMapper,
-            new AddressFormatter(), defenceCorrespondenceAddressResolver, recipientAddressResolver,
+            new AddressFormatter(), recipientAddressResolver,
             notificationService);
 
         ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
@@ -193,8 +189,7 @@ class WarrantOfPossessionPersistenceServiceTest {
 
         WarrantOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
 
-        assertThat(payload.getDefendants()).extracting(EnforcementDefendant::getName)
-            .containsExactly("Bob Tenant", "Jo Tenant");
+        assertThat(payload.getDefendantNames()).isEqualTo("Bob Tenant, Jo Tenant");
     }
 
     @Test
@@ -207,8 +202,7 @@ class WarrantOfPossessionPersistenceServiceTest {
 
         WarrantOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
 
-        assertThat(payload.getDefendants()).extracting(EnforcementDefendant::getName)
-            .containsExactly("Jo Tenant");
+        assertThat(payload.getDefendantNames()).isEqualTo("Jo Tenant");
     }
 
     @Test

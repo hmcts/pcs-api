@@ -3,10 +3,8 @@ package uk.gov.hmcts.reform.pcs.document.model.warrantofpossession;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
-import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Docmosis merge-field payload for the warrant of possession application. Field names must match
@@ -28,7 +26,7 @@ public class WarrantOfPossessionPayload implements FormPayload {
     private String claimantEmailAddress;
 
     //Defendant details
-    private List<EnforcementDefendant> defendants;
+    private String defendantNames;
 
     //Application details
     private String applicationType;

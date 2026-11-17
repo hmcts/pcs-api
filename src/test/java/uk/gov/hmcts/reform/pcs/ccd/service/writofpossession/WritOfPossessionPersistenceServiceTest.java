@@ -28,12 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.document.model.enforcement.EnforcementDefendant;
 import uk.gov.hmcts.reform.pcs.document.model.writofpossession.WritOfPossessionPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -47,7 +45,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
@@ -73,8 +70,6 @@ class WritOfPossessionPersistenceServiceTest {
     @Mock
     private AddressMapper addressMapper;
     @Mock
-    private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
-    @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private NotificationService notificationService;
@@ -93,7 +88,7 @@ class WritOfPossessionPersistenceServiceTest {
     void setUp() {
         underTest = new WritOfPossessionPersistenceService(enforcementOrderRepository, documentImportService,
             claimActivityLogService, partyService, new CaseReferenceFormatter(), caseNameFormatter, addressMapper,
-            new AddressFormatter(), defenceCorrespondenceAddressResolver, recipientAddressResolver,
+            new AddressFormatter(), recipientAddressResolver,
             notificationService);
 
         ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
@@ -187,22 +182,14 @@ class WritOfPossessionPersistenceServiceTest {
     }
 
     @Test
-    void shouldListEveryActiveDefendantOnTheClaimWithTheirOwnAddress() {
+    void shouldJoinTheNamesOfEveryActiveDefendantOnTheClaim() {
         when(partyService.getPartyName(defendant1)).thenReturn("Bob Tenant");
         when(partyService.getPartyName(defendant2)).thenReturn("Jo Tenant");
-        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant1, propertyAddress))
-            .thenReturn(AddressUK.builder().addressLine1("1 Rented Road").postCode("CF10 1AA").build());
-        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant2, propertyAddress))
-            .thenReturn(AddressUK.builder().addressLine1("9 Elsewhere Street").postCode("LS1 2BB").build());
         stubEnforcementOrder(enforcementOrder(WritEntity.builder().build()));
 
         WritOfPossessionPayload payload = underTest.buildPayload(ENFORCEMENT_ORDER_ID).orElseThrow();
 
-        assertThat(payload.getDefendants())
-            .extracting(EnforcementDefendant::getName, EnforcementDefendant::getAddress)
-            .containsExactly(
-                tuple("Bob Tenant", "1 Rented Road\nCF10 1AA"),
-                tuple("Jo Tenant", "9 Elsewhere Street\nLS1 2BB"));
+        assertThat(payload.getDefendantNames()).isEqualTo("Bob Tenant, Jo Tenant");
     }
 
     @Test
