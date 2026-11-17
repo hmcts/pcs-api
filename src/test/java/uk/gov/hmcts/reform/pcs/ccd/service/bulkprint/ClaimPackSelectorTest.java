@@ -141,8 +141,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Does not add application evidence to a Welsh defendant pack")
-    void shouldLeaveWelshDefendantPackWithoutEvidence() {
+    @DisplayName("Puts application evidence after the claim form for a Welsh defendant")
+    void shouldIncludeApplicationEvidenceForAWelshDefendant() {
         enableBulkPrint2();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
@@ -153,11 +153,8 @@ class ClaimPackSelectorTest {
         pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
         attachEvidence(pcsCase, notice);
 
-        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
-
-        assertThat(result).filteredOn(candidate -> candidate.recipientType() == PartyRole.DEFENDANT)
-            .singleElement()
-            .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(pinA, claimForm));
+        assertThat(underTest.findClaimPackCandidates(pcsCase).get(1).documents())
+            .containsExactly(pinA, claimForm, notice);
     }
 
     @Test
