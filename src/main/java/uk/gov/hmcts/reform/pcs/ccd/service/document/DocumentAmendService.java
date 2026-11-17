@@ -47,7 +47,7 @@ public class DocumentAmendService {
     private final CaseworkerDocumentListService caseworkerDocumentListService;
 
     private static final String PARTY_POSTFIX_PATTERN = " - (Claimant|Defendant) \\d+$";
-    private static final String GEN_APP_POSTFIX_PATTERN = " GA\\d+$";
+    private static final String SUBMISSION_POSTFIX_PATTERN = " (?:GA|CC)\\d+$";
     private static final String ISSUE_DATE_POSTFIX_PATTERN = " \\d{8}$";
 
     public void initialiseAmendDetails(long caseReference, PCSCase caseData) {
@@ -338,7 +338,7 @@ public class DocumentAmendService {
         String baseFileName = FilenameUtils.getBaseName(fileName);
         return baseFileName
             .replaceFirst(PARTY_POSTFIX_PATTERN, "")
-            .replaceFirst(GEN_APP_POSTFIX_PATTERN, "")
+            .replaceFirst(SUBMISSION_POSTFIX_PATTERN, "")
             .replaceFirst(ISSUE_DATE_POSTFIX_PATTERN, "");
     }
 
