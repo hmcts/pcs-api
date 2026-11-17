@@ -35,7 +35,7 @@ public class SavingPageBuilder extends PageBuilder {
 
     @Override
     public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(
-            String id, MidEvent<PCSCase, State> midEventCallback) {
+        String id, MidEvent<PCSCase, State> midEventCallback) {
 
         SavingMidEventDecorator savingMidEventDecorator = new SavingMidEventDecorator(midEventCallback, eventId);
         return super.page(id, savingMidEventDecorator::handleMidEvent);
@@ -68,9 +68,9 @@ public class SavingPageBuilder extends PageBuilder {
             patchUnsubmittedData(details);
 
             return Optional.ofNullable(wrappedMidEventResponse)
-                    .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                            .data(details.getData())
-                            .build());
+                .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .data(details.getData())
+                        .build());
         }
 
         private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
