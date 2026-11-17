@@ -59,7 +59,7 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, pcsCaseEntity);
-        strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
+        strategyFactory.getStrategy(SelectEnforcementType.valueOf(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
 
