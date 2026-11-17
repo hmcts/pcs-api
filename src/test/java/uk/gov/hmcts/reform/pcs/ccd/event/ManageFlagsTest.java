@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ManageFlagsTest extends BaseEventTest {
@@ -52,6 +54,33 @@ class ManageFlagsTest extends BaseEventTest {
 
         // Then
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldReturnLanguageFlagErrorsFromSubmitCallback() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        List<String> duplicateErrors = List.of("more than one language cannot be added");
+        when(pcsCaseService.patchCaseFlags(TEST_CASE_REFERENCE, pcsCase)).thenReturn(duplicateErrors);
+
+        // When
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
+
+        // Then
+        assertThat(response.getErrors()).isEqualTo(duplicateErrors);
+    }
+
+    @Test
+    void shouldReturnNoErrorsWhenFlagsAreSaved() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(pcsCaseService.patchCaseFlags(TEST_CASE_REFERENCE, pcsCase)).thenReturn(List.of());
+
+        // When
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
+
+        // Then
+        assertThat(response.getErrors()).isNullOrEmpty();
     }
 
     @Test

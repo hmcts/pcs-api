@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import java.util.List;
+
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
@@ -70,7 +72,10 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker created case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        List<String> errors = pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        if (!errors.isEmpty()) {
+            return SubmitResponse.<State>builder().errors(errors).build();
+        }
 
         return SubmitResponse.defaultResponse();
     }
