@@ -14,6 +14,7 @@ export const uploadADocument = {
   yearTextLabel: `Year`,
   dateTypeHiddenUserInput: `past`,
   uploadDocHiddenOption:[`legalAidCertificate.pdf`,`possessionNotice.pdf`,`certificateOfService.pdf`, 'possessionNoticeWithOutNotice.pdf'],
+  ccDocHiddenOption: [`Counterclaim CC1 - Defendant 1.pdf`,`Defence - Defendant 1.pdf`,`Claim - Claimant 1.pdf`],
   errorValidation: `YES`,
   thereIsProbErrorMessageHeader: `There is a problem`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
