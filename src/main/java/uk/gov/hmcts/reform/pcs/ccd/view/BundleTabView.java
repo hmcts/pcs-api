@@ -72,6 +72,7 @@ public class BundleTabView {
             case UP_TO_DATE -> missing.isEmpty() ? UP_TO_DATE : UP_TO_DATE_WITH_MISSING;
         };
         pcsCase.setBundleTab(BundleTab.builder().status(status)
+            .documentId(publication.flatMap(current -> current.stored().map(stored -> stored.id())).orElse(null))
             .bundle(publication.flatMap(current -> current.stored().map(stored -> Document.builder()
                 .url(stored.url())
                 .binaryUrl(stored.binaryUrl())
