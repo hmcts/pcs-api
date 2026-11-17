@@ -39,7 +39,7 @@ public class SelectedDefendantsMapper {
 
         return parties.stream()
             .map(party -> SelectedDefendantEntity.builder()
-                .enfCase(enforcementOrderEntity)
+                .enfApplication(enforcementOrderEntity)
                 .party(party)
                 .build()
             )

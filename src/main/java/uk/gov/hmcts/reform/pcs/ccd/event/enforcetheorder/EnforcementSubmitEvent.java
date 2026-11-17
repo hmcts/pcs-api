@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -10,10 +12,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
+import java.time.Instant;
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @Component("enforcementSubmitEventHandler")
 @Slf4j
@@ -21,30 +37,68 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
 
     private final EnforcementOrderService enforcementOrderService;
+    private final SchedulerClient schedulerClient;
+    private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
+    private final FeeService feeService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
         long caseReference = payload.caseReference();
         PCSCase pcsCase = payload.caseData();
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+        EnforcementFee enforcementFee = getEnforcementFee(enforcementOrder);
+        FeeDetails feeDetails = feeService.getFee(enforcementFee.feeType());
+        EnforcementOrderEntity enforcementOrderEntity =
+                enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder, PENDING_CASE_ISSUED);
+        scheduleFeePayment(caseReference, getClaimantParty(caseReference), feeDetails, enforcementOrderEntity.getId());
         log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}", caseReference);
         return SubmitResponse.<State>builder()
-            .confirmationBody(getPaymentConfirmationMarkdown(getFeeAmount(enforcementOrder), caseReference))
-            .state(PENDING_ENFORCEMENT_ISSUED)
+            .confirmationBody(getPaymentConfirmationMarkdown(enforcementFee.amount(), caseReference))
             .build();
     }
 
-    private String getFeeAmount(EnforcementOrder enforcementOrder) {
-        String enforcementType = enforcementOrder.getChooseEnforcementType().getValueCode();
-        SelectEnforcementType selectEnforcementType = getSelectEnforcementTypeFromName(enforcementType);
-        return switch (selectEnforcementType) {
-            case WARRANT -> enforcementOrder.getWarrantFeeAmount();
-            case WRIT -> enforcementOrder.getWritFeeAmount();
-            case WARRANT_OF_RESTITUTION,
-                 WRIT_OF_RESTITUTION ->
-                throw new IllegalArgumentException("Unimplemented enforcement type: " + selectEnforcementType);
+    private record EnforcementFee(FeeType feeType, String amount) {}
+
+    private EnforcementFee getEnforcementFee(EnforcementOrder enforcementOrder) {
+        SelectEnforcementType type = getSelectEnforcementType(enforcementOrder);
+        return switch (type) {
+            case WARRANT -> new EnforcementFee(
+                FeeType.ENFORCEMENT_WARRANT_FEE,
+                enforcementOrder.getWarrantFeeAmount()
+            );
+            case WRIT -> new EnforcementFee(
+                FeeType.ENFORCEMENT_WRIT_FEE,
+                enforcementOrder.getWritFeeAmount()
+            );
+            case WARRANT_OF_RESTITUTION, WRIT_OF_RESTITUTION ->
+                throw new IllegalArgumentException("Unimplemented enforcement type: " + type);
         };
+    }
+
+    private PartyEntity getClaimantParty(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+    }
+
+    void scheduleFeePayment(long caseReference, PartyEntity partyEntity, FeeDetails feeDetails, UUID enfApplicationId) {
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(feeDetails)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(caseReference)
+            .responsiblePartyId(partyEntity.getId())
+            .responsiblePartyName(partyService.getPartyName(partyEntity))
+            .paymentCallbackHandlerType(ENFORCEMENT)
+            .relatedEntityId(enfApplicationId)
+            .build();
+        String instanceId = enforceTheOrder.name() + "-" + caseReference;
+        schedulerClient.scheduleIfNotExists(FEES_AND_PAY_TASK_DESCRIPTOR.instance(instanceId)
+                                                .data(taskData).scheduledTo(Instant.now()));
+    }
+
+    private static @NonNull SelectEnforcementType getSelectEnforcementType(EnforcementOrder enforcementOrder) {
+        String enforcementType = enforcementOrder.getChooseEnforcementType().getValueCode();
+        return SelectEnforcementType.valueOf(enforcementType);
     }
 
     private static String getPaymentConfirmationMarkdown(String enforcementFee, long caseReference) {

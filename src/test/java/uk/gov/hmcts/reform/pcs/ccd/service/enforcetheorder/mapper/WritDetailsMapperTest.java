@@ -28,7 +28,6 @@ class WritDetailsMapperTest {
     private WritDetailsMapper underTest;
 
     private WritDetails writDetails;
-    private NameAndAddressForEviction nameAndAddressForEviction;
 
     private EnforcementOrderEntity enforcementOrderEntity;
     private EnforcementOrder enforcementOrder;
@@ -36,7 +35,7 @@ class WritDetailsMapperTest {
 
     @BeforeEach
     void setUp() {
-        nameAndAddressForEviction = NameAndAddressForEviction.builder()
+        NameAndAddressForEviction nameAndAddressForEviction = NameAndAddressForEviction.builder()
             .correctNameAndAddress(VerticalYesNo.YES)
             .build();
 
@@ -64,6 +63,7 @@ class WritDetailsMapperTest {
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
+        assertThat(entity.getEnfApplication()).isSameAs(enforcementOrderEntity);
     }
 
     @Test
