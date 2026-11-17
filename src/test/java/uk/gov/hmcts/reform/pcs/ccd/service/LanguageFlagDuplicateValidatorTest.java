@@ -38,6 +38,10 @@ class LanguageFlagDuplicateValidatorTest {
         );
     }
 
+    static Stream<String> languageFlagCodes() {
+        return Stream.of(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, SIGN_LANGUAGE_INTERPRETER_FLAG_CODE);
+    }
+
     @ParameterizedTest
     @MethodSource("languageFlags")
     void shouldRejectTwoActiveFlagsOfTheSameCodeOnOnePerson(String flagCode, String expectedError) {
@@ -73,8 +77,8 @@ class LanguageFlagDuplicateValidatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("languageFlags")
-    void shouldAllowAnActiveFlagNextToAnInactiveOne(String flagCode, String expectedError) {
+    @MethodSource("languageFlagCodes")
+    void shouldAllowAnActiveFlagNextToAnInactiveOne(String flagCode) {
         UUID partyId = UUID.randomUUID();
         PartyEntity existingParty = existingParty(partyId);
 
@@ -90,8 +94,8 @@ class LanguageFlagDuplicateValidatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("languageFlags")
-    void shouldAllowAnActiveFlagNextToANotApprovedOne(String flagCode, String expectedError) {
+    @MethodSource("languageFlagCodes")
+    void shouldAllowAnActiveFlagNextToANotApprovedOne(String flagCode) {
         UUID partyId = UUID.randomUUID();
         PartyEntity existingParty = existingParty(partyId);
 
@@ -126,8 +130,8 @@ class LanguageFlagDuplicateValidatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("languageFlags")
-    void shouldAllowTheSameFlagOnDifferentPeople(String flagCode, String expectedError) {
+    @MethodSource("languageFlagCodes")
+    void shouldAllowTheSameFlagOnDifferentPeople(String flagCode) {
         UUID firstPartyId = UUID.randomUUID();
         UUID secondPartyId = UUID.randomUUID();
 
