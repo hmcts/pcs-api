@@ -146,7 +146,7 @@ public class RiskAssessmentPersistenceService {
      * The risk categories the claimant ticked. The journey only asks for details of the categories selected, so a
      * category counts as selected when its details were given.
      */
-    private static String selectedRisks(RiskProfileEntity risk) {
+    private String selectedRisks(RiskProfileEntity risk) {
         Map<RiskCategory, String> detailsByCategory = new LinkedHashMap<>();
         detailsByCategory.put(RiskCategory.VIOLENT_OR_AGGRESSIVE, risk.getViolentDetails());
         detailsByCategory.put(RiskCategory.FIREARMS_POSSESSION, risk.getFirearmsDetails());
@@ -159,7 +159,7 @@ public class RiskAssessmentPersistenceService {
         String selected = detailsByCategory.entrySet().stream()
             .filter(entry -> StringUtils.isNotBlank(entry.getValue()))
             .map(entry -> entry.getKey().getLabel())
-            .collect(Collectors.joining(AddressFormatter.NEWLINE_DELIMITER));
+            .collect(Collectors.joining("\n"));
         return selected.isEmpty() ? null : selected;
     }
 

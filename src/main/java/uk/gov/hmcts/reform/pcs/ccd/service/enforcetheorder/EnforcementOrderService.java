@@ -92,15 +92,19 @@ public class EnforcementOrderService {
      * One more than the number of the case's existing applications of the same type, so writs and warrants are
      * numbered separately.
      */
-    private static int nextRankForType(PcsCaseEntity pcsCaseEntity, EnforcementOrderEntity newApplication) {
+    private int nextRankForType(PcsCaseEntity pcsCaseEntity, EnforcementOrderEntity newApplication) {
+        String type = enforcementType(newApplication);
         long sameType = pcsCaseEntity.getEnforcementOrders().stream()
             .filter(existing -> existing != newApplication)
-            .filter(existing -> (existing.getWritDetails() != null) == (newApplication.getWritDetails() != null)
-                && (existing.getWarrantDetails() != null) == (newApplication.getWarrantDetails() != null)
-                && (existing.getWarrantOfRestitutionDetails() != null)
-                    == (newApplication.getWarrantOfRestitutionDetails() != null))
+            .filter(existing -> type.equals(enforcementType(existing)))
             .count();
         return (int) sameType + 1;
+    }
+
+    private String enforcementType(EnforcementOrderEntity application) {
+        EnforcementOrder enforcementOrder = application.getEnforcementOrder();
+        return enforcementOrder == null || enforcementOrder.getChooseEnforcementType() == null
+            ? null : enforcementOrder.getChooseEnforcementType().getValueCode();
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity) {

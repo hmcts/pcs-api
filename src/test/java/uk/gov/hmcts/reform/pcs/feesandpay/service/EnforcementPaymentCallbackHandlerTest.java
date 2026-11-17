@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
@@ -181,6 +182,7 @@ class EnforcementPaymentCallbackHandlerTest {
         EnforcementOrderEntity entity = new EnforcementOrderEntity();
         entity.setId(id);
         entity.setState(state);
+        entity.setPcsCase(new PcsCaseEntity());
         return entity;
     }
 }

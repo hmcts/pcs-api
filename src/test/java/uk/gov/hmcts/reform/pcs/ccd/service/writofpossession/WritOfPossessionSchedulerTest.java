@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.writofpossession;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -10,12 +11,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.WritOfPossessionGenerationComponent;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,8 +33,16 @@ class WritOfPossessionSchedulerTest {
     @Mock
     private SchedulerClient schedulerClient;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @InjectMocks
     private WritOfPossessionScheduler scheduler;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+    }
 
     @Test
     void shouldUseTheEnforcementOrderIdAsTheTaskId() {
@@ -67,5 +80,14 @@ class WritOfPossessionSchedulerTest {
         scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);
 
         verify(schedulerClient).scheduleIfNotExists(any());
+    }
+
+    @Test
+    void shouldNotScheduleWhenRelease1bIsDisabled() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
+
+        scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);
+
+        verifyNoInteractions(schedulerClient);
     }
 }

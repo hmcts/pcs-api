@@ -4,6 +4,8 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.WarrantOfPossessionGenerationComponent;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,9 +14,11 @@ import java.util.UUID;
 public class WarrantOfPossessionScheduler {
 
     private final SchedulerClient schedulerClient;
+    private final FeatureToggleService featureToggleService;
 
-    public WarrantOfPossessionScheduler(SchedulerClient schedulerClient) {
+    public WarrantOfPossessionScheduler(SchedulerClient schedulerClient, FeatureToggleService featureToggleService) {
         this.schedulerClient = schedulerClient;
+        this.featureToggleService = featureToggleService;
     }
 
     /**
@@ -23,6 +27,9 @@ public class WarrantOfPossessionScheduler {
      * case still gets its own document.
      */
     public void scheduleWarrantOfPossessionGeneration(long caseReference, UUID enforcementOrderId) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
+            return;
+        }
         EnforcementDocumentTaskData taskData = EnforcementDocumentTaskData.builder()
             .caseReference(caseReference)
             .enforcementOrderId(enforcementOrderId)
