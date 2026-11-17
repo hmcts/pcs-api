@@ -88,6 +88,22 @@ class CounterClaimFormDocumentGeneratorTest {
     }
 
     @Test
+    void fallsBackToFilenameWithoutRankWhenRankNull() {
+        CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
+        when(docAssemblyService.generateDocument(payload,
+            CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID,
+            OutputType.PDF,
+            "Counterclaim - Defendant 1"
+        )).thenReturn("https://dm-store/fallback");
+
+        String url = generator.generate(payload, null, 1);
+
+        assertThat(url).isEqualTo("https://dm-store/fallback");
+        verify(docAssemblyService).generateDocument(
+            payload, CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID, OutputType.PDF, "Counterclaim - Defendant 1");
+    }
+
+    @Test
     void expectedCounterClaimFormFilenameMatchesGeneratedFilename() {
         assertThat(CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename(2))
             .isEqualTo("Counterclaim - Defendant 2");
@@ -97,6 +113,12 @@ class CounterClaimFormDocumentGeneratorTest {
             .isEqualTo("Counterclaim CC3 - Defendant 2");
         assertThat(CounterClaimFormDocumentGenerator.counterClaimFormFilename(true, null, 2))
             .isEqualTo("Counterclaim - Defendant 2");
+    }
+
+    @Test
+    void expectedCounterClaimFormFilenameWithRankMatchesGeneratedFilename() {
+        assertThat(CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename(1, 2))
+            .isEqualTo("Counterclaim CC1 - Defendant 2");
     }
 
     @Test
