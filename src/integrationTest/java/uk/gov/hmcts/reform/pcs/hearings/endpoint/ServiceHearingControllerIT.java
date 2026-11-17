@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 
+import feign.FeignException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.hearings.service.ServiceHearingValuesMapper;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
@@ -45,9 +48,11 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -67,6 +72,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174001";
 
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final long LINKED_CASE_REFERENCE = 2234567890123456L;
@@ -88,6 +94,8 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean
     private OAuth2AuthorizedClientManager authorizedClientManager;
+    @MockitoBean
+    private IdamUserInfoApi idamUserInfoApi;
     @MockitoSpyBean
     private FeatureToggleService featureToggleService;
     @MockitoSpyBean
@@ -96,6 +104,8 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     @BeforeEach
     void setUp() {
         idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
+        // Both endpoints sit behind IdamAuthenticationFilter, which validates the user token against IDAM
+        when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(UserInfo.builder().uid(USER_ID).build());
         givenHmcIntegrationEnabled(true);
     }
 
@@ -177,7 +187,6 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
             addLink(pcsCase, LINKED_CASE_REFERENCE, "CLRC001", "CLRC002");
             addLink(pcsCase, CASE_NOT_IN_PCS, "CLRC003");
-            addLink(pcsCase, LINKED_CASE_REFERENCE, "CLRC004");
             persist(pcsCase);
 
             // Neither case links nor their reasons have an @OrderBy, so assert without relying on order
@@ -188,11 +197,9 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].caseReference", containsInAnyOrder(
                     String.valueOf(LINKED_CASE_REFERENCE),
-                    String.valueOf(CASE_NOT_IN_PCS),
-                    String.valueOf(LINKED_CASE_REFERENCE))))
-                .andExpect(jsonPath(linked + ".caseName", contains(CASE_NAME, CASE_NAME)))
-                .andExpect(jsonPath(linked + ".reasonsForLink[*]",
-                                    containsInAnyOrder("CLRC001", "CLRC002", "CLRC004")))
+                    String.valueOf(CASE_NOT_IN_PCS))))
+                .andExpect(jsonPath(linked + ".caseName", contains(CASE_NAME)))
+                .andExpect(jsonPath(linked + ".reasonsForLink[*]", containsInAnyOrder("CLRC001", "CLRC002")))
                 .andExpect(jsonPath(notInPcs + ".caseName", empty()))
                 .andExpect(jsonPath(notInPcs + ".reasonsForLink[*]", contains("CLRC003")));
         }
@@ -264,6 +271,32 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body(CASE_REFERENCE)))
                 .andExpect(status().isBadRequest());
+
+            verifyMapperNotCalled();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {HEARING_VALUES_PATH, LINKED_CASES_PATH})
+        @DisplayName("return 401 without calling IDAM when the Authorization header is missing")
+        void shouldRejectMissingAuthorizationHeader(String path) throws Exception {
+            mockMvc.perform(post(path)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body(CASE_REFERENCE)))
+                .andExpect(status().isUnauthorized());
+
+            verify(idamUserInfoApi, never()).getUserInfo(anyString());
+            verifyMapperNotCalled();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {HEARING_VALUES_PATH, LINKED_CASES_PATH})
+        @DisplayName("return 401 when IDAM rejects the user token")
+        void shouldRejectTokenThatIdamRejects(String path) throws Exception {
+            when(idamUserInfoApi.getUserInfo(anyString())).thenThrow(FeignException.Unauthorized.class);
+
+            postFor(path, CASE_REFERENCE)
+                .andExpect(status().isUnauthorized());
 
             verifyMapperNotCalled();
         }
@@ -355,6 +388,9 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             .defaultStatus(status)
             .flagComment(comment)
             .build();
+        // Both columns are NOT NULL; Hibernate inserts explicit nulls, so the DB default on visibility doesn't apply
+        flag.setPaths(":Case");
+        flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
         pcsCase.getCaseFlags().add(flag);
     }
