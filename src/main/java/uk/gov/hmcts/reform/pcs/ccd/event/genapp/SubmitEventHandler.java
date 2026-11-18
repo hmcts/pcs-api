@@ -171,7 +171,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                         long caseReference,
                                                         FeeDetails feeDetails) {
 
-        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
         OrganisationDetailsResponse party = organisationService.getOrganisationDetailsForCurrentUser();
 
         return FeesAndPayTaskData.builder()
