@@ -11,23 +11,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import java.util.Optional;
 
 public class SavingPageBuilder extends PageBuilder {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final EnforcementOrderService enforcementOrderService;
     private final EventId eventId;
 
     public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
-                             EnforcementOrderService enforcementOrderService,
                              EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
 
         super(eventBuilder);
         this.draftCaseDataService = draftCaseDataService;
-        this.enforcementOrderService = enforcementOrderService;
         this.eventId = eventId;
     }
 
@@ -73,8 +69,8 @@ public class SavingPageBuilder extends PageBuilder {
 
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .data(details.getData())
-                    .build());
+                        .data(details.getData())
+                        .build());
         }
 
         private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
@@ -82,11 +78,6 @@ public class SavingPageBuilder extends PageBuilder {
             PCSCase caseData = details.getData();
 
             draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
-            if (caseEventId == EventId.enforceTheOrder) {
-                enforcementOrderService.createEnforcementOrder(caseReference);
-            }
         }
-
     }
-
 }

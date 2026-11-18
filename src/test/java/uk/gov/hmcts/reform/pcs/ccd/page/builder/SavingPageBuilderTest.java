@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,8 +36,6 @@ class SavingPageBuilderTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private EnforcementOrderService enforcementOrderService;
-    @Mock
     private EventBuilder<PCSCase, UserRole, State> eventBuilder;
     @Mock
     private FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> fieldCollectionBuilder;
@@ -52,29 +49,7 @@ class SavingPageBuilderTest {
     @BeforeEach
     void setUp() {
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
-        underTest = new SavingPageBuilder(draftCaseDataService, enforcementOrderService, eventBuilder, eventId);
-    }
-
-    @Test
-    void shouldCreateEnforcementOrderWhenSavingEnforcementDraft() {
-        underTest = new SavingPageBuilder(
-            draftCaseDataService, enforcementOrderService, eventBuilder, EventId.enforceTheOrder
-        );
-        underTest.page(TEST_PAGE_ID);
-
-        PCSCase caseData = mock(PCSCase.class);
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .id(CASE_REFERENCE)
-            .data(caseData)
-            .build();
-
-        getMidEventHandler().handle(caseDetails, new CaseDetails<>());
-
-        InOrder inOrder = Mockito.inOrder(draftCaseDataService, enforcementOrderService);
-        inOrder.verify(draftCaseDataService).patchUnsubmittedEventData(
-            CASE_REFERENCE, caseData, EventId.enforceTheOrder
-        );
-        inOrder.verify(enforcementOrderService).createEnforcementOrder(CASE_REFERENCE);
+        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
     }
 
     @Test
