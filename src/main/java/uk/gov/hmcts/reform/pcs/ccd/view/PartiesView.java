@@ -200,7 +200,7 @@ public class PartiesView {
                     hasUnknownDefendants = true;
                     continue;
                 }
-                knownNames.add("<div class=\"govuk-!-margin-bottom-2\">"
+                knownNames.add("<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">"
                                    + party.getFirstName() + " " + party.getLastName()
                                    + "</div>");
             }
