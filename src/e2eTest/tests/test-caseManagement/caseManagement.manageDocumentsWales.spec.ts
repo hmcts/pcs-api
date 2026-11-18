@@ -12,6 +12,7 @@ import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-ca
 import { createCaseApiWalesData } from '@data/api-data/createCaseWales.api.data';
 import { submitCaseApiDataWales } from '@data/api-data/submitCaseWales.api.data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 test.use({ storageState: undefined })
 
@@ -66,6 +67,8 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -92,8 +95,8 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerAmend: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
   });
 
@@ -101,6 +104,9 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -129,7 +135,10 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
+      claimantIndex: claimantIndex,
+      defendantIndex: partyIndex,
+      partyType: partyType,
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date,'',`${partyType} ${partyIndex}`)
     });
   });
 
@@ -137,6 +146,8 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let date = '';
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[0];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
@@ -165,7 +176,9 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
+      claimantIndex: 1,
+      defendantIndex : partyIndex,
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, '','',`${partyType} ${partyIndex}`)
     });
   });
 
@@ -173,6 +186,8 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
@@ -193,9 +208,10 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[1].id, defendantUserDetails[1].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[1].id, defendantUserDetails[1].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();
@@ -214,8 +230,9 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
+
     });
 
   });
@@ -224,6 +241,9 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
+    const claimantIndex = 1;
+    const partyType = party.split(' - ')[1].split(' ')[0];
+    const partyIndex = Number(party.split(' - ')[1].split(' ')[1]);
     let fileName = uploadADocument.uploadDocHiddenOption[3];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
@@ -244,9 +264,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: genAppPayload(defendantUserDetails[1].id, defendantUserDetails[1].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      gaPayload: genAppPayload(defendantUserDetails[1].id, defendantUserDetails[1].name),
+      caseWorkerUpload: [CaseManagementCommonUtils.renameDocument(fileName, date, appType,`${partyType} ${partyIndex}`),  ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantUserDetails.length, `General Application`,`Defendant`)]
+
     });
+    CYAStore.getInstance().clearAll();
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();
@@ -266,6 +288,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      claimantIndex: claimantIndex,
       allowEmptyFolder: true
     });
 

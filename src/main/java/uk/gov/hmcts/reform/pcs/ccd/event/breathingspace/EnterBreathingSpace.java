@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.breathingspace;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -17,19 +16,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
 
-    private EnforcementOrderService enforcementOrderService;
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
     private BreathingSpaceService breathingSpaceService;
     private AddressFormatter addressFormatter;
@@ -52,10 +48,10 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        breathingSpaceService.createBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
+        breathingSpaceService.enterBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
 
-        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
-        return SubmitResponse.<State>builder().state(State.BREATHING_SPACE)
+        return SubmitResponse.<State>builder()
+            .state(State.BREATHING_SPACE)
             .confirmationBody(this.getConfirmationBodyMarkdown(caseData, caseReference))
             .build();
     }

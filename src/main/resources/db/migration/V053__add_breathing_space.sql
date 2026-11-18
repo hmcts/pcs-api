@@ -7,7 +7,7 @@ CREATE TABLE breathing_space (
     type VARCHAR(50),
     expected_end_date DATE,
     created_at TIMESTAMP WITHOUT TIME ZONE
-        DEFAULT CURRENT_TIMESTAMP NOT NULL
+       DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE INDEX idx_breathing_space_claim_id ON public.breathing_space USING btree (claim_id);

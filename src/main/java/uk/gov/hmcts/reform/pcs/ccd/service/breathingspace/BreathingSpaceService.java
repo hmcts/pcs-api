@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,7 @@ public class BreathingSpaceService {
 
     private final ClaimService claimService;
     private final BreathingSpaceRepository breathingSpaceRepository;
+    private final EnforcementOrderService enforcementOrderService;
 
     public void createBreathingSpace(long caseReference, BreathingSpaceDetails breathingSpaceDetails) {
         ClaimEntity claimEntity = this.claimService.loadClaim(caseReference);
@@ -56,6 +59,13 @@ public class BreathingSpaceService {
             .stream()
             .findFirst();
     }
+
+    @Transactional
+    public void enterBreathingSpace(long caseReference, BreathingSpaceDetails breathingSpaceDetails) {
+        createBreathingSpace(caseReference, breathingSpaceDetails);
+        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
+    }
+
 
 
 }

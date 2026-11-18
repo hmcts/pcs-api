@@ -6,12 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -24,7 +21,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,8 +28,6 @@ class EnforcementPaymentCallbackHandlerTest {
 
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
-    @Mock
-    private EnforcementStateService enforcementStateService;
     @Mock
     private PaymentStatusCallback paymentStatusCallback;
 
@@ -44,18 +38,14 @@ class EnforcementPaymentCallbackHandlerTest {
     void shouldMoveEnforcementApplicationToCaseProgressionWhenPaymentIsPaid() {
         UUID enforcementApplicationId = UUID.randomUUID();
         FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
-        EnforcementStateEntity enforcementStateEntity = enforcementState(EnforcementState.PENDING_CASE_ISSUED);
         EnforcementOrderEntity enforcementOrderEntity =
-            enforcementOrder(enforcementApplicationId, enforcementStateEntity);
+            enforcementOrder(enforcementApplicationId, EnforcementState.PENDING_CASE_ISSUED);
         when(enforcementOrderRepository.findById(enforcementApplicationId))
             .thenReturn(Optional.of(enforcementOrderEntity));
 
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
-        assertThat(enforcementStateEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
-        verify(enforcementStateService).mapToEntity(
-            enforcementOrderEntity.getPcsCase(), EnforcementState.CASE_PROGRESSION
-        );
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.CASE_PROGRESSION);
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
     }
 
@@ -63,16 +53,14 @@ class EnforcementPaymentCallbackHandlerTest {
     void shouldNotChangeStateWhenPaymentIsPaidButStateIsNotPendingCaseIssued() {
         UUID enforcementApplicationId = UUID.randomUUID();
         FeePaymentEntity feePaymentEntity = feePayment(enforcementApplicationId, PaymentStatus.PAID);
-        EnforcementStateEntity enforcementStateEntity = enforcementState(EnforcementState.CASE_PROGRESSION);
         EnforcementOrderEntity enforcementOrderEntity =
-            enforcementOrder(enforcementApplicationId, enforcementStateEntity);
+            enforcementOrder(enforcementApplicationId, EnforcementState.CASE_PROGRESSION);
         when(enforcementOrderRepository.findById(enforcementApplicationId))
             .thenReturn(Optional.of(enforcementOrderEntity));
 
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
-        assertThat(enforcementStateEntity.getState()).isEqualTo(EnforcementState.CASE_PROGRESSION);
-        verifyNoInteractions(enforcementStateService);
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.CASE_PROGRESSION);
         verify(enforcementOrderRepository, never()).save(enforcementOrderEntity);
     }
 
@@ -83,7 +71,6 @@ class EnforcementPaymentCallbackHandlerTest {
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
         verify(enforcementOrderRepository, never()).findById(any());
-        verifyNoInteractions(enforcementStateService);
     }
 
     @Test
@@ -105,18 +92,9 @@ class EnforcementPaymentCallbackHandlerTest {
             .build();
     }
 
-    private static EnforcementOrderEntity enforcementOrder(UUID id, EnforcementStateEntity enforcementStateEntity) {
+    private static EnforcementOrderEntity enforcementOrder(UUID id, EnforcementState state) {
         EnforcementOrderEntity entity = new EnforcementOrderEntity();
         entity.setId(id);
-        PcsCaseEntity pcsCase = new PcsCaseEntity();
-        pcsCase.setEnforcementState(enforcementStateEntity);
-        enforcementStateEntity.setPcsCase(pcsCase);
-        entity.setPcsCase(pcsCase);
-        return entity;
-    }
-
-    private static EnforcementStateEntity enforcementState(EnforcementState state) {
-        EnforcementStateEntity entity = new EnforcementStateEntity();
         entity.setState(state);
         return entity;
     }
