@@ -257,16 +257,25 @@ public class NotificationService {
         PartyEntity applicant = genApp.getParty();
         PcsCaseEntity pcsCase = genApp.getPcsCase();
 
-        otherActiveParties(pcsCase, applicant)
-            .forEach(respondent -> sendGenAppRespondentNotification(genApp, respondent));
+        otherActiveClaimParties(pcsCase, applicant)
+            .forEach(claimParty -> sendGenAppRespondentNotification(
+                genApp, claimParty.getParty(), claimParty.getRole()));
     }
 
-    private void sendGenAppRespondentNotification(GenAppEntity genApp, PartyEntity respondent) {
+    private void sendGenAppRespondentNotification(GenAppEntity genApp, PartyEntity respondent, PartyRole role) {
         OrganisationEntity legalRep = activeLegalRep(respondent);
 
         if (legalRep != null) {
             sendEmail(
                 legalRepresentativeRecipient(respondent, legalRepEmail(legalRep, respondent.getPcsCase())),
+                EmailTemplate.GENERAL_APPLICATION_RESPONDENT_LEGAL_REP,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forGenApp(respondent, genApp, true, true)
+            );
+        } else if (role == PartyRole.CLAIMANT) {
+            // Claimants are organisation users working in Manage Case, so they get the legal rep copy
+            sendEmail(
+                partyRecipient(respondent),
                 EmailTemplate.GENERAL_APPLICATION_RESPONDENT_LEGAL_REP,
                 NotificationClaimType.GENERAL_APPLICATION,
                 notificationPersonalisationFactory.forGenApp(respondent, genApp, true, true)
@@ -281,11 +290,10 @@ public class NotificationService {
         }
     }
 
-    private List<PartyEntity> otherActiveParties(PcsCaseEntity pcsCase, PartyEntity applicant) {
+    private List<ClaimPartyEntity> otherActiveClaimParties(PcsCaseEntity pcsCase, PartyEntity applicant) {
         return pcsCase.getClaims().getFirst().getClaimParties().stream()
-            .map(ClaimPartyEntity::getParty)
-            .filter(this::isActiveParty)
-            .filter(party -> !party.getId().equals(applicant.getId()))
+            .filter(claimParty -> isActiveParty(claimParty.getParty()))
+            .filter(claimParty -> !claimParty.getParty().getId().equals(applicant.getId()))
             .toList();
     }
 
