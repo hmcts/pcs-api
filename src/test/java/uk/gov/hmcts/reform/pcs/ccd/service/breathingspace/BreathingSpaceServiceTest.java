@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
 class BreathingSpaceServiceTest {
@@ -39,6 +41,8 @@ class BreathingSpaceServiceTest {
 
     @Mock
     private BreathingSpaceRepository breathingSpaceRepository;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
     @Captor
     private ArgumentCaptor<BreathingSpaceEntity> breathingSpaceEntityCaptor;
@@ -188,6 +192,32 @@ class BreathingSpaceServiceTest {
                        .getExpectedEndDate())
             .isNull();
     }
+
+    @Test
+    void shouldSaveBreathingSpaceBeforeUpdatingEnforcement() {
+        // Given
+        ClaimEntity claimEntity = new ClaimEntity();
+        when(claimService.loadClaim(CASE_REFERENCE))
+            .thenReturn(claimEntity);
+
+        BreathingSpaceDetails details = stub();
+
+        // When
+        underTest.enterBreathingSpace(CASE_REFERENCE, details);
+
+        // Then
+        var inOrder = inOrder(
+            breathingSpaceRepository,
+            enforcementOrderService
+        );
+
+        inOrder.verify(breathingSpaceRepository)
+            .save(any(BreathingSpaceEntity.class));
+
+        inOrder.verify(enforcementOrderService)
+            .updateStatesForBreathingSpace(CASE_REFERENCE);
+    }
+
 
     private BreathingSpaceDetails stub() {
         return BreathingSpaceDetails.builder()
