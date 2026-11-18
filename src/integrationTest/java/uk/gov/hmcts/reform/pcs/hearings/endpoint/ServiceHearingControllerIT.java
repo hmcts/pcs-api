@@ -289,14 +289,14 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("sets each party's role from its entity role code on the main claim")
-        void shouldSetPartyRoleFromMainClaimEntityRoleCode() throws Exception {
+        @DisplayName("sets each party's role from its entity role code")
+        void shouldSetPartyRoleFromEntityRoleCode() throws Exception {
             givenEntityRoleCode("TEST-CLAIMANT-ROLE");
             givenEntityRoleCode("TEST-DEFENDANT-ROLE");
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            partyWithOrgName(pcsCase, "Test Claimant").setEntityRoleCodeKey("TEST-CLAIMANT-ROLE");
+            partyWithFirstName(pcsCase, "John").setEntityRoleCodeKey("TEST-DEFENDANT-ROLE");
             persist(pcsCase);
-            setEntityRoleCode(partyWithOrgName(pcsCase, "Test Claimant"), "TEST-CLAIMANT-ROLE");
-            setEntityRoleCode(partyWithFirstName(pcsCase, "John"), "TEST-DEFENDANT-ROLE");
 
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
                 .andExpect(status().isOk())
@@ -543,19 +543,10 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             .orElseThrow();
     }
 
-    // entity_role_code has no seed data, and claim_party.entity_role_code_key references it
+    // entity_role_code has no seed data, and party.entity_role_code_key references it
     private void givenEntityRoleCode(String key) {
         entityManager.createNativeQuery("INSERT INTO entity_role_code (key, active) VALUES (:key, 'YES')")
             .setParameter("key", key)
-            .executeUpdate();
-    }
-
-    // ClaimPartyEntity has no setters, so set the column directly on the saved row
-    private void setEntityRoleCode(PartyEntity party, String entityRoleCodeKey) {
-        entityManager.createNativeQuery(
-                "UPDATE claim_party SET entity_role_code_key = :key WHERE party_id = :partyId")
-            .setParameter("key", entityRoleCodeKey)
-            .setParameter("partyId", party.getId())
             .executeUpdate();
     }
 

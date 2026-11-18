@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -461,56 +459,37 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldSetPartyRoleFromMainClaim() {
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        ClaimEntity counterclaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
-        defendant.getClaimParties().add(claimParty(counterclaim, defendant, "COUNTERCLAIM-ROLE"));
-        defendant.getClaimParties().add(claimParty(mainClaim, defendant, "MAIN-ROLE"));
-        givenCase(caseWithClaimsAndParty(defendant, mainClaim, counterclaim));
+    void shouldSetPartyRoleFromEntityRoleCode() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).entityRoleCodeKey("DEFENDANT-ROLE").build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getParties()).singleElement()
             .extracting(PartyDetails::getPartyRole)
-            .isEqualTo("MAIN-ROLE");
+            .isEqualTo("DEFENDANT-ROLE");
     }
 
     @Test
     void shouldSetPartyRoleForOrganisationParty() {
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).orgName("Treetops Housing").build();
-        claimant.getClaimParties().add(claimParty(mainClaim, claimant, "MAIN-ROLE"));
-        givenCase(caseWithClaimsAndParty(claimant, mainClaim));
+        PartyEntity claimant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .orgName("Treetops Housing")
+            .entityRoleCodeKey("CLAIMANT-ROLE")
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getParties()).singleElement()
             .extracting(PartyDetails::getPartyRole)
-            .isEqualTo("MAIN-ROLE");
+            .isEqualTo("CLAIMANT-ROLE");
     }
 
     @Test
-    void shouldOmitPartyRoleWhenPartyIsNotOnMainClaim() {
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        ClaimEntity counterclaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+    void shouldOmitPartyRoleWhenPartyHasNoRoleCode() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
-        defendant.getClaimParties().add(claimParty(counterclaim, defendant, "COUNTERCLAIM-ROLE"));
-        givenCase(caseWithClaimsAndParty(defendant, mainClaim, counterclaim));
-
-        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
-
-        assertThat(values.getParties()).singleElement()
-            .extracting(PartyDetails::getPartyRole)
-            .isNull();
-    }
-
-    @Test
-    void shouldOmitPartyRoleWhenMainClaimHasNoRoleCode() {
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
-        defendant.getClaimParties().add(claimParty(mainClaim, defendant, null));
-        givenCase(caseWithClaimsAndParty(defendant, mainClaim));
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -859,24 +838,6 @@ class ServiceHearingValuesMapperTest {
 
     private static PcsCaseEntity.PcsCaseEntityBuilder caseBuilder() {
         return PcsCaseEntity.builder().caseReference(CASE_REFERENCE);
-    }
-
-    private static PcsCaseEntity caseWithClaimsAndParty(PartyEntity party, ClaimEntity... claims) {
-        PcsCaseEntity pcsCase = caseBuilder().claims(new ArrayList<>(List.of(claims))).build();
-        pcsCase.addParty(party);
-        return pcsCase;
-    }
-
-    private static ClaimPartyEntity claimParty(ClaimEntity claim, PartyEntity party, String entityRoleCodeKey) {
-        ClaimPartyId id = new ClaimPartyId();
-        id.setClaimId(claim.getId());
-        id.setPartyId(party.getId());
-        return ClaimPartyEntity.builder()
-            .id(id)
-            .claim(claim)
-            .party(party)
-            .entityRoleCodeKey(entityRoleCodeKey)
-            .build();
     }
 
     private static List<CaseFlagEntity> flags(CaseFlagEntity... flags) {

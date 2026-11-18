@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -197,7 +195,7 @@ public class ServiceHearingValuesMapper {
             return PartyDetails.builder()
                 .partyID(party.getId().toString())
                 .partyType(partyType)
-                .partyRole(partyRole(party))
+                .partyRole(party.getEntityRoleCodeKey())
                 .organisationDetails(OrganisationDetails.builder()
                     .name(party.getOrgName())
                     .organisationType(PARTY_TYPE_ORGANISATION)
@@ -215,7 +213,7 @@ public class ServiceHearingValuesMapper {
         return PartyDetails.builder()
             .partyID(party.getId().toString())
             .partyType(partyType)
-            .partyRole(partyRole(party))
+            .partyRole(party.getEntityRoleCodeKey())
             .individualDetails(details)
             .build();
     }
@@ -225,20 +223,6 @@ public class ServiceHearingValuesMapper {
         return party.getOrgName() == null || party.getOrgName().isBlank()
             ? PARTY_TYPE_INDIVIDUAL
             : PARTY_TYPE_ORGANISATION;
-    }
-
-    private static String partyRole(PartyEntity party) {
-        // entity_role_code_key should come from party in future; until then, read the main claim's claim_party
-        Optional<UUID> mainClaimId = Optional.ofNullable(party.getPcsCase())
-            .map(PcsCaseEntity::getMainClaim)
-            .map(ClaimEntity::getId);
-        return party.getClaimParties().stream()
-            .filter(claimParty -> mainClaimId.isPresent()
-                && mainClaimId.get().equals(claimParty.getId().getClaimId()))
-            .map(ClaimPartyEntity::getEntityRoleCodeKey)
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(null);
     }
 
     private static List<String> contactList(String value) {
