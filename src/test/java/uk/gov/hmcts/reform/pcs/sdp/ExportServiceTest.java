@@ -362,10 +362,11 @@ class ExportServiceTest {
                     new BigDecimal("355.00"),
                     PaymentStatus.PAID.name(),
                     "CLAIM",
-                    LocalDateTime.of(2026, 2, 3, 10, 0)
+                    LocalDateTime.of(2026, 2, 3, 10, 0),
+                    "Fee description"
                 ),
                 new SdpClaimSnapshotPayment(
-                    CLAIM_ID, 11, PARTY_ID, null, " ", null, PaymentStatus.NOT_PAID.name(), "CLAIM", null)
+                    CLAIM_ID, 11, PARTY_ID, null, " ", null, PaymentStatus.NOT_PAID.name(), "CLAIM", null, null)
             ),
             List.of(new SdpClaimSnapshotGround(
                 CLAIM_ID,
@@ -387,6 +388,7 @@ class ExportServiceTest {
         assertThat(json).contains("\"grounds_code\":\"SERIOUS_RENT_ARREARS_GROUND8\"");
         assertThat(json).contains("\"fee_reference\":\"2026-123456\"");
         assertThat(json).contains("\"fee_status\":\"Fully Paid\"");
+        assertThat(json).contains("\"fee_type_description\":\"Fee description\"");
         assertThat(json).contains("\"fee_type_description\":\"CLAIM\"");
         assertThat(json).contains("\"fee_amount\":355.00");
         assertThat(json).contains("\"response_id\":\"12\"");

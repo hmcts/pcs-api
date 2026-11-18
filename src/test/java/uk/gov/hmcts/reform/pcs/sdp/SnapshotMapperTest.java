@@ -290,7 +290,8 @@ class SnapshotMapperTest {
             new BigDecimal("355.00"),
             "PAID",
             "CLAIM",
-            null
+            null,
+            "Fee description"
         );
 
         SnapshotRequestedFee result = claimSnapshotMapper.mapRequestedFee(payment, "2026-02-03T10:00:00Z");
@@ -300,7 +301,7 @@ class SnapshotMapperTest {
         assertThat(result.getFeeReference()).isEqualTo("2026-123456");
         assertThat(result.getFeeTypeId()).isEqualTo(
             UUID.nameUUIDFromBytes("fee-type-CLAIM".getBytes(StandardCharsets.UTF_8)).toString());
-        assertThat(result.getFeeTypeDescription()).isEqualTo("CLAIM");
+        assertThat(result.getFeeTypeDescription()).isEqualTo("Fee description");
         assertThat(result.getFeeAmount()).isEqualByComparingTo("355.00");
         assertThat(result.getFeeStatus()).isEqualTo("Fully Paid");
         assertThat(result.getFeeRequestedOfTheseParties()).singleElement()
@@ -312,22 +313,24 @@ class SnapshotMapperTest {
     @Test
     void shouldMapFeeStatusAndFallbackReference() {
         SdpClaimSnapshotPayment unpaid = new SdpClaimSnapshotPayment(
-            UUID.randomUUID(), 11, null, " ", "RC-9", null, "NOT_PAID", "CLAIM", null);
+            UUID.randomUUID(), 11, null, " ", "RC-9", null, "NOT_PAID", "CLAIM", null, null);
         assertThat(claimSnapshotMapper.mapRequestedFee(unpaid, null).getFeeStatus())
             .isEqualTo("Requested Not Paid");
         assertThat(claimSnapshotMapper.mapRequestedFee(unpaid, null).getFeeReference())
             .isEqualTo("RC-9");
         assertThat(claimSnapshotMapper.mapRequestedFee(unpaid, null).getFeeRequestedOfTheseParties())
             .isEmpty();
+        assertThat(claimSnapshotMapper.mapRequestedFee(unpaid, null).getFeeTypeDescription())
+            .isEqualTo("CLAIM");
 
         SdpClaimSnapshotPayment partial = new SdpClaimSnapshotPayment(
-            UUID.randomUUID(), 12, null, null, null, null, "PARTIALLY_PAID", "CLAIM", null);
+            UUID.randomUUID(), 12, null, null, null, null, "PARTIALLY_PAID", "CLAIM", null, null);
         assertThat(claimSnapshotMapper.mapRequestedFee(partial, null).getFeeStatus())
             .isEqualTo("Partially Paid");
         assertThat(claimSnapshotMapper.mapRequestedFee(partial, null).getFeeReference()).isNull();
 
         SdpClaimSnapshotPayment noStatus = new SdpClaimSnapshotPayment(
-            UUID.randomUUID(), 13, null, null, null, null, null, "CLAIM", null);
+            UUID.randomUUID(), 13, null, null, null, null, null, "CLAIM", null, null);
         assertThat(claimSnapshotMapper.mapRequestedFee(noStatus, null).getFeeStatus())
             .isEqualTo("Requested Not Paid");
     }

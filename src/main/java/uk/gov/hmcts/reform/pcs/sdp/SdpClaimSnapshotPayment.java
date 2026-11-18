@@ -13,6 +13,7 @@ public record SdpClaimSnapshotPayment(
     BigDecimal amount,
     String paymentStatus,
     String paymentCallbackHandlerType,
-    LocalDateTime requestDate
+    LocalDateTime requestDate,
+    String feeDescription
 ) {
 }

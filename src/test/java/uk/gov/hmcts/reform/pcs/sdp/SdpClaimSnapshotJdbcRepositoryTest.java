@@ -107,11 +107,12 @@ class SdpClaimSnapshotJdbcRepositoryTest {
         when(resultSet.getString("status")).thenReturn("PAID");
         when(resultSet.getString("payment_callback_handler_type")).thenReturn("CLAIM");
         when(resultSet.getTimestamp("request_date")).thenReturn(Timestamp.valueOf(SUBMITTED));
+        when(resultSet.getString("fee_description")).thenReturn("Fee description");
 
         assertThat(repository.findPaymentsByClaimId(List.of(CLAIM_ID))).containsExactly(
             new SdpClaimSnapshotPayment(
                 CLAIM_ID, 10, PARTY_ID, "2026-123456", "RC-1",
-                new BigDecimal("355.00"), "PAID", "CLAIM", SUBMITTED
+                new BigDecimal("355.00"), "PAID", "CLAIM", SUBMITTED, "Fee description"
             )
         );
     }

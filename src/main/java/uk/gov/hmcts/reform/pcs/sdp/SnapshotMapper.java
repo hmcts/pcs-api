@@ -125,7 +125,7 @@ public class SnapshotMapper {
             .feeId(stableUuid("fee-payment-" + payment.id()))
             .feeReference(firstNonBlank(payment.serviceRequestReference(), payment.externalReference()))
             .feeTypeId(stableUuid("fee-type-" + payment.paymentCallbackHandlerType()))
-            .feeTypeDescription(payment.paymentCallbackHandlerType())
+            .feeTypeDescription(firstNonBlank(payment.feeDescription(), payment.paymentCallbackHandlerType()))
             .feeAmount(payment.amount())
             .feeStatus(resolveFeeStatus(payment.paymentStatus()))
             .feeRequestedOfTheseParties(partyId == null

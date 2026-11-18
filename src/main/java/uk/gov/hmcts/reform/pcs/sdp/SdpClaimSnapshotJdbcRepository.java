@@ -125,7 +125,8 @@ public class SdpClaimSnapshotJdbcRepository {
                fp.amount,
                fp.status,
                fp.payment_callback_handler_type,
-               fp.request_date
+               fp.request_date,
+               jsonb_extract_path_text(fp.task_data, 'feeDetails', 'description') AS fee_description
         FROM fee_payment fp
         WHERE fp.possession_claim_id IN (:ids)
         """;
@@ -251,7 +252,8 @@ public class SdpClaimSnapshotJdbcRepository {
             rs.getBigDecimal("amount"),
             rs.getString("status"),
             rs.getString("payment_callback_handler_type"),
-            toLocalDateTime(rs, "request_date")
+            toLocalDateTime(rs, "request_date"),
+            rs.getString("fee_description")
         );
     }
 
