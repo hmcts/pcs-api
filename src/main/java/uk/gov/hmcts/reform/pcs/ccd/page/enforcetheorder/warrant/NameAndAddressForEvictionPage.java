@@ -30,16 +30,16 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .label("nameAndAddressForEviction-caption-hr", "<hr>")
             .label("nameAndAddressForEviction-caption",
-                   "<h3 class=\"govuk-heading-s\">Check the name and address for the eviction</h3>")
+                   "<h2 class=\"govuk-!-font-size-19\">Check the name and address for the eviction</h2>")
             .label("nameAndAddressForEviction-defendants-heading",
-                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Defendants</p>")
+                   "<h3 class=\"govuk-!-font-size-19\">Defendants</h3>")
             .label("nameAndAddressForEviction-defendants-value", "${formattedDefendantNames}")
             .label("nameAndAddressForEviction-defendants-unknown",
                    "<div class=\"govuk-!-margin-bottom-2\">Person(s) unknown</div>",
                    "hasUnknownDefendants=\"Yes\"")
             .label("nameAndAddressForEviction-defendants-hr", "<hr>")
             .label("nameAndAddressForEviction-address-heading",
-                   "<p class=\"govuk-body govuk-!-font-weight-bold\">Address</p>")
+                   "<h3 class=\"govuk-!-font-size-19\">Address</h3>")
             .label("nameAndAddressForEviction-address-value", "${formattedPropertyAddress}")
             .label("nameAndAddressForEviction-address-hr", "<hr>")
             .complex(EnforcementOrder::getWarrantDetails)
