@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -213,6 +216,52 @@ class PartyServiceTest {
                 .build();
 
             assertThat(underTest.isActive(partyEntity)).isEqualTo(!removed);
+        }
+
+        @ParameterizedTest
+        @CsvSource(nullValues = "null", value = {"ORG1234, true", "null, false"})
+        void shouldIdentifyClaimCreatorAsOrganisationByOrganisationId(String organisationId, boolean expected) {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .claimCreator(true)
+                .organisationId(organisationId)
+                .claimPartyOrganisationList(List.of(claimPartyOrganisation(YesOrNo.YES)))
+                .build();
+
+            assertThat(underTest.isOrganisation(partyEntity)).isEqualTo(expected);
+        }
+
+        @Test
+        void shouldIdentifyNonClaimCreatorWithActiveClaimPartyOrganisationAsOrganisation() {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .claimCreator(false)
+                .claimPartyOrganisationList(List.of(
+                    claimPartyOrganisation(YesOrNo.NO),
+                    claimPartyOrganisation(YesOrNo.YES)))
+                .build();
+
+            assertThat(underTest.isOrganisation(partyEntity)).isTrue();
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EnumSource(value = YesOrNo.class, names = "NO")
+        void shouldIdentifyNonClaimCreatorWithOnlyInactiveClaimPartyOrganisationAsIndividual(YesOrNo active) {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .claimCreator(false)
+                .claimPartyOrganisationList(List.of(claimPartyOrganisation(active)))
+                .build();
+
+            assertThat(underTest.isOrganisation(partyEntity)).isFalse();
+        }
+
+        @Test
+        void shouldIdentifyNonClaimCreatorWithoutClaimPartyOrganisationAsIndividual() {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .claimCreator(false)
+                .organisationId("ORG1234")
+                .build();
+
+            assertThat(underTest.isOrganisation(partyEntity)).isFalse();
         }
 
         @Test
@@ -1750,5 +1799,9 @@ class PartyServiceTest {
 
             assertThat(caseEntity.getParties()).isEmpty();
         }
+    }
+
+    private static ClaimPartyOrganisationEntity claimPartyOrganisation(YesOrNo active) {
+        return ClaimPartyOrganisationEntity.builder().active(active).build();
     }
 }

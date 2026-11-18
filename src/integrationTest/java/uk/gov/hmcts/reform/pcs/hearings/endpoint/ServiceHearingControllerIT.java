@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -33,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
@@ -243,12 +246,11 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         @DisplayName("sends organisation details for an organisation party and individual details for a person")
         void shouldBuildOrganisationAndIndividualPartyDetails() throws Exception {
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
-            PartyEntity claimant = partyWithOrgName(pcsCase, "Test Claimant");
-            claimant.setOrganisationId("ORG1234");
             PartyEntity defendant = partyWithFirstName(pcsCase, "John");
             defendant.setEmailAddress("john.doe@example.com");
             defendant.setPhoneNumber("07700900123");
             persist(pcsCase);
+            PartyEntity claimant = partyWithOrgName(pcsCase, "Test Claimant");
 
             String organisation = "$.parties[?(@.partyType == 'ORG')]";
             String individual = "$.parties[?(@.partyType == 'IND')]";
@@ -272,17 +274,15 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("leaves out party contact details, organisation ID and role when they are not held")
+        @DisplayName("leaves out party contact details and role when they are not held")
         void shouldOmitPartyDetailsThatAreNotHeld() throws Exception {
             persist(newCase(CASE_REFERENCE, null));
 
-            String organisation = "$.parties[?(@.partyType == 'ORG')]";
             String individual = "$.parties[?(@.partyType == 'IND')]";
 
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.parties[*].partyRole", empty()))
-                .andExpect(jsonPath(organisation + ".organisationDetails.cftOrganisationID", empty()))
                 .andExpect(jsonPath(individual + ".individualDetails.hearingChannelEmail", empty()))
                 .andExpect(jsonPath(individual + ".individualDetails.hearingChannelPhone", empty()))
                 .andExpect(jsonPath(individual + ".individualDetails.custodyStatus", empty()));
@@ -302,6 +302,33 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.parties[?(@.partyType == 'ORG')].partyRole", contains("TEST-CLAIMANT-ROLE")))
                 .andExpect(jsonPath("$.parties[?(@.partyType == 'IND')].partyRole", contains("TEST-DEFENDANT-ROLE")));
+        }
+
+        @Test
+        @DisplayName("treats the claim creator as an individual when it has no organisation ID")
+        void shouldTreatClaimCreatorWithoutOrganisationIdAsIndividual() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            partyWithOrgName(pcsCase, "Test Claimant").setOrganisationId(null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", contains("IND", "IND")));
+        }
+
+        @Test
+        @DisplayName("treats a party linked to a claim party organisation as an organisation")
+        void shouldTreatPartyLinkedToClaimPartyOrganisationAsOrganisation() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            persist(pcsCase);
+            linkToClaimPartyOrganisation(defendant);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", contains("ORG", "ORG")))
+                .andExpect(jsonPath("$.parties[?(@.partyID == '" + defendant.getId() + "')].individualDetails",
+                                    empty()));
         }
 
         @Test
@@ -512,6 +539,8 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
 
         PartyEntity claimant = party(null, null);
         claimant.setOrgName("Test Claimant");
+        claimant.setClaimCreator(true);
+        claimant.setOrganisationId("ORG1234");
         PartyEntity defendant = party("John", "Doe");
         defendant.setNameKnown(VerticalYesNo.YES);
 
@@ -541,6 +570,21 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             .filter(party -> firstName.equals(party.getFirstName()))
             .findFirst()
             .orElseThrow();
+    }
+
+    private void linkToClaimPartyOrganisation(PartyEntity party) {
+        OrganisationEntity organisation = OrganisationEntity.builder()
+            .organisationId("LR-ORG")
+            .organisationName("Legal Rep Firm")
+            .build();
+        organisation.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder()
+            .party(party)
+            .organisation(organisation)
+            .active(YesOrNo.YES)
+            .build());
+        entityManager.persist(organisation);
+        entityManager.flush();
+        entityManager.clear();
     }
 
     // entity_role_code has no seed data, and party.entity_role_code_key references it

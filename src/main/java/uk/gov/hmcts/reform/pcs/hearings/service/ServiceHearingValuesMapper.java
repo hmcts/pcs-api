@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
@@ -63,17 +64,20 @@ public class ServiceHearingValuesMapper {
     private final PcsCaseService pcsCaseService;
     private final CaseNameFormatter caseNameFormatter;
     private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
+    private final PartyService partyService;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
                                       CaseNameFormatter caseNameFormatter,
                                       IndividualDetailsFlagMapper individualDetailsFlagMapper,
+                                      PartyService partyService,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
         this.caseNameFormatter = caseNameFormatter;
         this.individualDetailsFlagMapper = individualDetailsFlagMapper;
+        this.partyService = partyService;
         this.manageCaseUrl = manageCaseUrl;
     }
 
@@ -218,11 +222,9 @@ public class ServiceHearingValuesMapper {
             .build();
     }
 
-    private static String partyType(PartyEntity party) {
+    private String partyType(PartyEntity party) {
         // party.type is not set on model and is null in the database
-        return party.getOrgName() == null || party.getOrgName().isBlank()
-            ? PARTY_TYPE_INDIVIDUAL
-            : PARTY_TYPE_ORGANISATION;
+        return partyService.isOrganisation(party) ? PARTY_TYPE_ORGANISATION : PARTY_TYPE_INDIVIDUAL;
     }
 
     private static List<String> contactList(String value) {
