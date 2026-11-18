@@ -1,0 +1,67 @@
+{
+  "call_back_url" : "DQGZWNMYHH",
+  "case_payment_request" : {
+    "action" : "TYLKSW",
+    "responsible_party" : "XRLUPRV"
+  },
+  "case_reference" : "YEMWRVSKPA",
+  "ccd_case_number" : "HAZXH",
+  "fees" : [ {
+    "calculated_amount" : 9184.71,
+    "ccd_case_number" : "VXUFMINE",
+    "code" : "JJVTLMXHU",
+    "description" : "KOA",
+    "id" : 6874,
+    "jurisdiction1" : "QIJG",
+    "jurisdiction2" : "GUT",
+    "memo_line" : "KHAQB",
+    "natural_account_code" : "AAYMFDJH",
+    "net_amount" : 9427.95,
+    "reference" : "LULYUJPM",
+    "version" : "VHQPS",
+    "volume" : 573
+  }, {
+    "calculated_amount" : 3824.33,
+    "ccd_case_number" : "VVJPA",
+    "code" : "AOGNHS",
+    "description" : "HREQGPDOIS",
+    "id" : 3169,
+    "jurisdiction1" : "LDVXW",
+    "jurisdiction2" : "RXPGCURM",
+    "memo_line" : "SLJDRPH",
+    "natural_account_code" : "ZACMU",
+    "net_amount" : 7772.92,
+    "reference" : "YSDG",
+    "version" : "AHO",
+    "volume" : 657
+  }, {
+    "calculated_amount" : 8413.0,
+    "ccd_case_number" : "QBGGZSSL",
+    "code" : "NBPK",
+    "description" : "MNCXDTDKTC",
+    "id" : 1190,
+    "jurisdiction1" : "NEKIER",
+    "jurisdiction2" : "XPGXYLQJL",
+    "memo_line" : "AJWOZJTQ",
+    "natural_account_code" : "QPFODZIBZ",
+    "net_amount" : 5815.91,
+    "reference" : "HCQMLTSPU",
+    "version" : "AKJRTSCPA",
+    "volume" : 3347
+  }, {
+    "calculated_amount" : 7565.61,
+    "ccd_case_number" : "WLNUE",
+    "code" : "PWO",
+    "description" : "SQY",
+    "id" : 1196,
+    "jurisdiction1" : "ZNXQXIWXJ",
+    "jurisdiction2" : "GLDYFDBTC",
+    "memo_line" : "QVNXYR",
+    "natural_account_code" : "XCT",
+    "net_amount" : 2108.39,
+    "reference" : "IIXGKXNS",
+    "version" : "ZNHMYZK",
+    "volume" : 9576
+  } ],
+  "hmcts_org_id" : "GGUIPGG"
+}

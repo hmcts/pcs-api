@@ -1,0 +1,20 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "caseReference" : "DQGZWNMYHH",
+    "claimantName" : "TYLKSW",
+    "defendantName" : "XRLUPRV",
+    "defendantAddress" : "YEMWRVSKPA",
+    "propertyAddress" : "HAZXH",
+    "respondByPostCourtAddress" : "LVNVX",
+    "accessCode" : "FMINET",
+    "issuedOn" : "1988-09-16",
+    "url" : "VTLMXHUH",
+    "courtName" : "OAVOQ"
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}
