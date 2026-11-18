@@ -75,6 +75,8 @@ public class PartyEntity {
 
     private String orgName;
 
+    private String entityRoleCodeKey;
+
     private String organisationId;
     private String organisationProfileId;
 

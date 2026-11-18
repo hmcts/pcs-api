@@ -23,13 +23,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
@@ -42,6 +48,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -79,6 +86,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     private static final long LINKED_CASE_REFERENCE = 2234567890123456L;
     private static final long CASE_NOT_IN_PCS = 3234567890123456L;
     private static final String CASE_NAME = "Test Claimant vs John Doe";
+    private static final int CASE_MANAGEMENT_LOCATION = 20262;
 
     @Autowired
     private MockMvc mockMvc;
@@ -122,6 +130,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         void shouldReturnHearingValuesForStoredCase() throws Exception {
             // 23:30 UTC in British Summer Time is 00:30 the next day in the UK
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, LocalDateTime.of(2026, 6, 30, 23, 30));
+            pcsCase.setCaseManagementLocation(CASE_MANAGEMENT_LOCATION);
             persist(pcsCase);
 
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
@@ -133,9 +142,90 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.caseDeepLink").value(
                     manageCaseUrl + "/cases/case-details/PCS/PCS/" + CASE_REFERENCE + "#Case%20File%20View"))
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
+                .andExpect(jsonPath("$.caseManagementLocationCode").value(String.valueOf(CASE_MANAGEMENT_LOCATION)))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
+                .andExpect(jsonPath("$.hearingLocations[0].locationId").value(String.valueOf(CASE_MANAGEMENT_LOCATION)))
+                .andExpect(jsonPath("$.hearingType").value("AAA3-FPH"))
+                .andExpect(jsonPath("$.hearingChannels", contains("INTER")))
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"))
+                // Issued 1 July 2026 in the UK: start is 27 days later and end is 57 days later
+                .andExpect(jsonPath("$.hearingWindow.dateRangeStart").value("2026-07-28"))
+                .andExpect(jsonPath("$.hearingWindow.dateRangeEnd").value("2026-08-27"))
+                .andExpect(jsonPath("$.hearingWindow.firstDateTimeMustBe").doesNotExist())
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
                 .andExpect(jsonPath("$.listingComments").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("leaves out the location codes and hearing window when the case has neither")
+        void shouldOmitLocationAndHearingWindowWhenNotAvailable() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.caseManagementLocationCode").doesNotExist())
+                .andExpect(jsonPath("$.hearingLocations[0].locationId").doesNotExist())
+                .andExpect(jsonPath("$.hearingWindow").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("sets an urgent priority when the case has an active Urgent case flag")
+        void shouldSetUrgentPriorityForActiveUrgentFlag() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0007", "Urgent case"), "Active", null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Urgent"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the Urgent case flag is not active")
+        void shouldKeepStandardPriorityForInactiveUrgentFlag() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0007", "Urgent case"), "Inactive", null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
+        }
+
+        @Test
+        @DisplayName("sets an urgent priority when the case has an open general application to suspend")
+        void shouldSetUrgentPriorityForOpenSuspendApplication() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.SUSPEND, GenAppState.GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Urgent"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the application to suspend has not been issued")
+        void shouldKeepStandardPriorityForSuspendApplicationNotYetIssued() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.SUSPEND, GenAppState.PENDING_GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
+        }
+
+        @Test
+        @DisplayName("keeps the standard priority when the open general application is not to suspend")
+        void shouldKeepStandardPriorityForOpenApplicationThatIsNotToSuspend() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addGenApp(pcsCase, GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hearingPriorityType").value("Standard"));
         }
 
         @Test
@@ -151,6 +241,121 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numberOfPhysicalAttendees").value(3))
                 .andExpect(jsonPath("$.caseSLAStartDate").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("sends organisation details for an organisation party and individual details for a person")
+        void shouldBuildOrganisationAndIndividualPartyDetails() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            defendant.setEmailAddress("john.doe@example.com");
+            defendant.setPhoneNumber("07700900123");
+            persist(pcsCase);
+            PartyEntity claimant = partyWithOrgName(pcsCase, "Test Claimant");
+
+            String organisation = "$.parties[?(@.partyType == 'ORG')]";
+            String individual = "$.parties[?(@.partyType == 'IND')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", containsInAnyOrder("ORG", "IND")))
+                .andExpect(jsonPath(organisation + ".partyID", contains(claimant.getId().toString())))
+                .andExpect(jsonPath(organisation + ".organisationDetails.name", contains("Test Claimant")))
+                .andExpect(jsonPath(organisation + ".organisationDetails.organisationType", contains("ORG")))
+                .andExpect(jsonPath(organisation + ".organisationDetails.cftOrganisationID", contains("ORG1234")))
+                .andExpect(jsonPath(organisation + ".individualDetails", empty()))
+                .andExpect(jsonPath(individual + ".partyID", contains(defendant.getId().toString())))
+                .andExpect(jsonPath(individual + ".individualDetails.firstName", contains("John")))
+                .andExpect(jsonPath(individual + ".individualDetails.lastName", contains("Doe")))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelEmail[0]",
+                                    contains("john.doe@example.com")))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelPhone[0]",
+                                    contains("07700900123")))
+                .andExpect(jsonPath(individual + ".organisationDetails", empty()));
+        }
+
+        @Test
+        @DisplayName("leaves out party contact details and role when they are not held")
+        void shouldOmitPartyDetailsThatAreNotHeld() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            String individual = "$.parties[?(@.partyType == 'IND')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyRole", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelEmail", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelPhone", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.custodyStatus", empty()));
+        }
+
+        @Test
+        @DisplayName("sets each party's role from its entity role code")
+        void shouldSetPartyRoleFromEntityRoleCode() throws Exception {
+            givenEntityRoleCode("TEST-CLAIMANT-ROLE");
+            givenEntityRoleCode("TEST-DEFENDANT-ROLE");
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            partyWithOrgName(pcsCase, "Test Claimant").setEntityRoleCodeKey("TEST-CLAIMANT-ROLE");
+            partyWithFirstName(pcsCase, "John").setEntityRoleCodeKey("TEST-DEFENDANT-ROLE");
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[?(@.partyType == 'ORG')].partyRole", contains("TEST-CLAIMANT-ROLE")))
+                .andExpect(jsonPath("$.parties[?(@.partyType == 'IND')].partyRole", contains("TEST-DEFENDANT-ROLE")));
+        }
+
+        @Test
+        @DisplayName("treats the claim creator as an individual when it has no organisation ID")
+        void shouldTreatClaimCreatorWithoutOrganisationIdAsIndividual() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            partyWithOrgName(pcsCase, "Test Claimant").setOrganisationId(null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", contains("IND", "IND")));
+        }
+
+        @Test
+        @DisplayName("sends individual and legal rep organisation details for a represented defendant")
+        void shouldSendIndividualAndLegalRepOrganisationDetailsForRepresentedDefendant() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            persist(pcsCase);
+            linkToClaimPartyOrganisation(defendant);
+
+            String represented = "$.parties[?(@.partyID == '" + defendant.getId() + "')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", containsInAnyOrder("ORG", "IND")))
+                .andExpect(jsonPath(represented + ".partyType", contains("IND")))
+                .andExpect(jsonPath(represented + ".individualDetails.firstName", contains("John")))
+                .andExpect(jsonPath(represented + ".individualDetails.lastName", contains("Doe")))
+                .andExpect(jsonPath(represented + ".organisationDetails.name", contains("Legal Rep Firm")))
+                .andExpect(jsonPath(represented + ".organisationDetails.organisationType", contains("ORG")))
+                .andExpect(jsonPath(represented + ".organisationDetails.cftOrganisationID", contains("LR-ORG")));
+        }
+
+        @Test
+        @DisplayName("sends an underlessee or mortgagee as an individual named from its organisation name")
+        void shouldSendUnderlesseeOrMortgageeAsIndividualNamedFromOrganisationName() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity underlessee = party(null, null);
+            underlessee.setOrgName("Acme Lending");
+            pcsCase.addParty(underlessee);
+            pcsCase.getMainClaim().addParty(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+            persist(pcsCase);
+
+            String underlesseeParty = "$.parties[?(@.partyID == '" + underlessee.getId() + "')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(underlesseeParty + ".partyType", contains("IND")))
+                .andExpect(jsonPath(underlesseeParty + ".individualDetails.firstName", contains("Acme Lending")))
+                .andExpect(jsonPath(underlesseeParty + ".individualDetails.lastName", contains("N/A")))
+                .andExpect(jsonPath(underlesseeParty + ".organisationDetails", empty()));
         }
 
         @Test
@@ -361,6 +566,8 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
 
         PartyEntity claimant = party(null, null);
         claimant.setOrgName("Test Claimant");
+        claimant.setClaimCreator(true);
+        claimant.setOrganisationId("ORG1234");
         PartyEntity defendant = party("John", "Doe");
         defendant.setNameKnown(VerticalYesNo.YES);
 
@@ -376,6 +583,45 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         party.setFirstName(firstName);
         party.setLastName(lastName);
         return party;
+    }
+
+    private static PartyEntity partyWithOrgName(PcsCaseEntity pcsCase, String orgName) {
+        return pcsCase.getParties().stream()
+            .filter(party -> orgName.equals(party.getOrgName()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private static PartyEntity partyWithFirstName(PcsCaseEntity pcsCase, String firstName) {
+        return pcsCase.getParties().stream()
+            .filter(party -> firstName.equals(party.getFirstName()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private void linkToClaimPartyOrganisation(PartyEntity party) {
+        OrganisationEntity organisation = OrganisationEntity.builder()
+            .organisationId("LR-ORG")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .organisationName("Legal Rep Firm")
+            .createdDate(LocalDateTime.now())
+            .build();
+        organisation.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder()
+            .party(party)
+            .organisation(organisation)
+            .active(YesOrNo.YES)
+            .startDate(Instant.now())
+            .build());
+        entityManager.persist(organisation);
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    // entity_role_code has no seed data, and party.entity_role_code_key references it
+    private void givenEntityRoleCode(String key) {
+        entityManager.createNativeQuery("INSERT INTO entity_role_code (key, active) VALUES (:key, 'YES')")
+            .setParameter("key", key)
+            .executeUpdate();
     }
 
     private FlagRefDataEntity refData(String flagCode, String flagName) {
@@ -397,6 +643,16 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
         pcsCase.getCaseFlags().add(flag);
+    }
+
+    /** Adds an application made by the case's first party; type, rank, case and party are the NOT NULL columns. */
+    private static void addGenApp(PcsCaseEntity pcsCase, GenAppType type, GenAppState state) {
+        GenAppEntity genApp = GenAppEntity.builder()
+            .type(type)
+            .state(state)
+            .party(pcsCase.getParties().iterator().next())
+            .build();
+        pcsCase.addGenApp(genApp);
     }
 
     private static void addLink(PcsCaseEntity pcsCase, long linkedCaseReference, String... reasonCodes) {
