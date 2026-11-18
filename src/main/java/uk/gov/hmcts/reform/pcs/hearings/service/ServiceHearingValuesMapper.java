@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,6 +50,8 @@ public class ServiceHearingValuesMapper {
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
     static final String URGENT_CASE_FLAG_CODE = "CF0007";
+    static final String PARTY_TYPE_INDIVIDUAL = "IND";
+    static final String PARTY_TYPE_ORGANISATION = "ORG";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     static final int MAX_COMMENT_LENGTH = 200;
     static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
@@ -187,11 +192,57 @@ public class ServiceHearingValuesMapper {
     }
 
     private PartyDetails partyDetails(PartyEntity party) {
+        String partyType = partyType(party);
+        if (PARTY_TYPE_ORGANISATION.equals(partyType)) {
+            return PartyDetails.builder()
+                .partyID(party.getId().toString())
+                .partyType(partyType)
+                .partyRole(partyRole(party))
+                .organisationDetails(OrganisationDetails.builder()
+                    .name(party.getOrgName())
+                    .organisationType(PARTY_TYPE_ORGANISATION)
+                    .cftOrganisationID(party.getOrganisationId())
+                    .build())
+                .build();
+        }
+
         IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
         details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
+        details.setFirstName(party.getFirstName());
+        details.setLastName(party.getLastName());
+        details.setHearingChannelEmail(contactList(party.getEmailAddress()));
+        details.setHearingChannelPhone(contactList(party.getPhoneNumber()));
         return PartyDetails.builder()
+            .partyID(party.getId().toString())
+            .partyType(partyType)
+            .partyRole(partyRole(party))
             .individualDetails(details)
             .build();
+    }
+
+    private static String partyType(PartyEntity party) {
+        // party.type is not set on model and is null in the database
+        return party.getOrgName() == null || party.getOrgName().isBlank()
+            ? PARTY_TYPE_INDIVIDUAL
+            : PARTY_TYPE_ORGANISATION;
+    }
+
+    private static String partyRole(PartyEntity party) {
+        // entity_role_code_key should come from party in future; until then, read the main claim's claim_party
+        Optional<UUID> mainClaimId = Optional.ofNullable(party.getPcsCase())
+            .map(PcsCaseEntity::getMainClaim)
+            .map(ClaimEntity::getId);
+        return party.getClaimParties().stream()
+            .filter(claimParty -> mainClaimId.isPresent()
+                && mainClaimId.get().equals(claimParty.getId().getClaimId()))
+            .map(ClaimPartyEntity::getEntityRoleCodeKey)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    }
+
+    private static List<String> contactList(String value) {
+        return value == null || value.isBlank() ? null : List.of(value.strip());
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {

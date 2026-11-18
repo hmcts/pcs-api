@@ -240,6 +240,71 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
+        @DisplayName("sends organisation details for an organisation party and individual details for a person")
+        void shouldBuildOrganisationAndIndividualPartyDetails() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity claimant = partyWithOrgName(pcsCase, "Test Claimant");
+            claimant.setOrganisationId("ORG1234");
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            defendant.setEmailAddress("john.doe@example.com");
+            defendant.setPhoneNumber("07700900123");
+            persist(pcsCase);
+
+            String organisation = "$.parties[?(@.partyType == 'ORG')]";
+            String individual = "$.parties[?(@.partyType == 'IND')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyType", containsInAnyOrder("ORG", "IND")))
+                .andExpect(jsonPath(organisation + ".partyID", contains(claimant.getId().toString())))
+                .andExpect(jsonPath(organisation + ".organisationDetails.name", contains("Test Claimant")))
+                .andExpect(jsonPath(organisation + ".organisationDetails.organisationType", contains("ORG")))
+                .andExpect(jsonPath(organisation + ".organisationDetails.cftOrganisationID", contains("ORG1234")))
+                .andExpect(jsonPath(organisation + ".individualDetails", empty()))
+                .andExpect(jsonPath(individual + ".partyID", contains(defendant.getId().toString())))
+                .andExpect(jsonPath(individual + ".individualDetails.firstName", contains("John")))
+                .andExpect(jsonPath(individual + ".individualDetails.lastName", contains("Doe")))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelEmail[0]",
+                                    contains("john.doe@example.com")))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelPhone[0]",
+                                    contains("07700900123")))
+                .andExpect(jsonPath(individual + ".organisationDetails", empty()));
+        }
+
+        @Test
+        @DisplayName("leaves out party contact details, organisation ID and role when they are not held")
+        void shouldOmitPartyDetailsThatAreNotHeld() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            String organisation = "$.parties[?(@.partyType == 'ORG')]";
+            String individual = "$.parties[?(@.partyType == 'IND')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[*].partyRole", empty()))
+                .andExpect(jsonPath(organisation + ".organisationDetails.cftOrganisationID", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelEmail", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.hearingChannelPhone", empty()))
+                .andExpect(jsonPath(individual + ".individualDetails.custodyStatus", empty()));
+        }
+
+        @Test
+        @DisplayName("sets each party's role from its entity role code on the main claim")
+        void shouldSetPartyRoleFromMainClaimEntityRoleCode() throws Exception {
+            givenEntityRoleCode("TEST-CLAIMANT-ROLE");
+            givenEntityRoleCode("TEST-DEFENDANT-ROLE");
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            persist(pcsCase);
+            setEntityRoleCode(partyWithOrgName(pcsCase, "Test Claimant"), "TEST-CLAIMANT-ROLE");
+            setEntityRoleCode(partyWithFirstName(pcsCase, "John"), "TEST-DEFENDANT-ROLE");
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parties[?(@.partyType == 'ORG')].partyRole", contains("TEST-CLAIMANT-ROLE")))
+                .andExpect(jsonPath("$.parties[?(@.partyType == 'IND')].partyRole", contains("TEST-DEFENDANT-ROLE")));
+        }
+
+        @Test
         @DisplayName("puts only active case flags into the listing comments")
         void shouldIncludeOnlyActiveCaseFlagsInListingComments() throws Exception {
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
@@ -462,6 +527,36 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         party.setFirstName(firstName);
         party.setLastName(lastName);
         return party;
+    }
+
+    private static PartyEntity partyWithOrgName(PcsCaseEntity pcsCase, String orgName) {
+        return pcsCase.getParties().stream()
+            .filter(party -> orgName.equals(party.getOrgName()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private static PartyEntity partyWithFirstName(PcsCaseEntity pcsCase, String firstName) {
+        return pcsCase.getParties().stream()
+            .filter(party -> firstName.equals(party.getFirstName()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    // entity_role_code has no seed data, and claim_party.entity_role_code_key references it
+    private void givenEntityRoleCode(String key) {
+        entityManager.createNativeQuery("INSERT INTO entity_role_code (key, active) VALUES (:key, 'YES')")
+            .setParameter("key", key)
+            .executeUpdate();
+    }
+
+    // ClaimPartyEntity has no setters, so set the column directly on the saved row
+    private void setEntityRoleCode(PartyEntity party, String entityRoleCodeKey) {
+        entityManager.createNativeQuery(
+                "UPDATE claim_party SET entity_role_code_key = :key WHERE party_id = :partyId")
+            .setParameter("key", entityRoleCodeKey)
+            .setParameter("partyId", party.getId())
+            .executeUpdate();
     }
 
     private FlagRefDataEntity refData(String flagCode, String flagName) {
