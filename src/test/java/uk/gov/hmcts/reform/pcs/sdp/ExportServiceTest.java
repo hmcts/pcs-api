@@ -78,10 +78,10 @@ class ExportServiceTest {
     }
 
     private ExportService exportService(Optional<BlobUploader> uploader) {
-        return exportService(uploader, "local");
+        return exportService(uploader, "local", "claim_snapshot_");
     }
 
-    private ExportService exportService(Optional<BlobUploader> uploader, String environment) {
+    private ExportService exportService(Optional<BlobUploader> uploader, String environment, String filenamePrefix) {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         return new ExportService(
             sdpClaimSnapshotJdbcRepository,
@@ -90,7 +90,8 @@ class ExportServiceTest {
             uploader,
             objectMapper,
             FIXED_CLOCK,
-            environment
+            environment,
+            filenamePrefix
         );
     }
 
@@ -131,7 +132,7 @@ class ExportServiceTest {
     @Test
     void shouldUsePreviewFilenameWhenExportingFromPreview() {
         stubDefaultClaim();
-        exportService = exportService(Optional.of(blobUploader), "preview");
+        exportService = exportService(Optional.of(blobUploader), "local", "claim_snapshot_preview_");
 
         ExportResult result = exportService.exportClaims();
 

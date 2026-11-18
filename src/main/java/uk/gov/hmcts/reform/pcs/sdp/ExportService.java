@@ -51,9 +51,8 @@ public class ExportService {
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
     private final String environment;
+    private final String filenamePrefix;
     static final int EXPORT_CHUNK_SIZE = 200;
-    private static final String SNAPSHOT_FILENAME_PREFIX = "claim_snapshot_";
-    private static final String PREVIEW_FILENAME_PREFIX = SNAPSHOT_FILENAME_PREFIX + "preview_";
     private static final String JSON_EXTENSION = ".json";
 
     public ExportService(SdpClaimSnapshotJdbcRepository sdpClaimSnapshotJdbcRepository,
@@ -62,7 +61,8 @@ public class ExportService {
                          Optional<BlobUploader> blobUploader,
                          ObjectMapper objectMapper,
                          @Qualifier("utcClock") Clock utcClock,
-                         @Value("${sdp.export.environment}") String environment) {
+                         @Value("${sdp.export.environment}") String environment,
+                         @Value("${sdp.export.filename-prefix}") String filenamePrefix) {
         this.sdpClaimSnapshotJdbcRepository = sdpClaimSnapshotJdbcRepository;
         this.claimSnapshotMapper = claimSnapshotMapper;
         this.claimSnapshotFileWriter = claimSnapshotFileWriter;
@@ -70,6 +70,7 @@ public class ExportService {
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
         this.environment = environment;
+        this.filenamePrefix = filenamePrefix;
     }
 
     public ExportResult exportClaims() {
@@ -95,8 +96,7 @@ public class ExportService {
     }
 
     private String snapshotFilename(String extractDate) {
-        String prefix = "preview".equals(environment) ? PREVIEW_FILENAME_PREFIX : SNAPSHOT_FILENAME_PREFIX;
-        return prefix + extractDate + JSON_EXTENSION;
+        return filenamePrefix + extractDate + JSON_EXTENSION;
     }
 
     private List<SdpClaimSnapshotEntity> writeSnapshotFile(Path snapshotFile,

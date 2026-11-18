@@ -203,6 +203,7 @@ sdp:
     account-url: ${SDP_EXPORT_ACCOUNT_URL:}
     container-name: ${SDP_EXPORT_CONTAINER_NAME:sdp-export}
     environment: ${SDP_EXPORT_ENVIRONMENT:local}
+    filename-prefix: ${SDP_EXPORT_FILENAME_PREFIX:claim_snapshot_}
 
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
