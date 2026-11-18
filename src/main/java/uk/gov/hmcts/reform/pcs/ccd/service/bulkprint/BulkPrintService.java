@@ -27,6 +27,7 @@ import java.util.UUID;
  * Assembles one pack — coversheet then documents, made into a single print-ready PDF by
  * {@link BulkPrintLetterAssembler} — into a Send Letter letter and posts it. Recording the outcome is the caller's job.
  * Defendant claim packs also append the static blank defence and counterclaim forms after the case documents.
+ * The Welsh pack appends each Welsh form after its English one.
  */
 @Service
 public class BulkPrintService {
@@ -36,7 +37,9 @@ public class BulkPrintService {
     private static final String CASE_REFERENCE = "caseReference";
     private static final String APPLICATION_PDF = "application/pdf";
     private static final String BLANK_RESPONSE_FORM_NAME = "ONC-002R-defence-form.pdf";
+    private static final String BLANK_RESPONSE_FORM_WELSH_NAME = "ONC-002RW-defence-form-welsh.pdf";
     private static final String BLANK_COUNTERCLAIM_FORM_NAME = "ONC-003-counterclaim.pdf";
+    private static final String BLANK_COUNTERCLAIM_FORM_WELSH_NAME = "ONC-003-counterclaim-welsh.pdf";
 
     private final CoversheetProvider coversheetProvider;
     private final CoveringLetterProvider coveringLetterProvider;
@@ -83,13 +86,7 @@ public class BulkPrintService {
         documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
             document.getFileName(), document.getContentType(),
             letterDocumentFetcher.fetchBytes(document.getDocumentId()))));
-        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
-            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
-                BLANK_RESPONSE_FORM_NAME, APPLICATION_PDF, blankClaimPackFormsProvider.getBlankResponseForm()));
-            letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
-                BLANK_COUNTERCLAIM_FORM_NAME, APPLICATION_PDF,
-                blankClaimPackFormsProvider.getBlankCounterclaimForm()));
-        }
+        addBlankForms(letterDocuments, letterType);
         byte[] letterPdf = letterAssembler.assemble(
             letterType.getCode() + " " + caseReference, coversheet, letterDocuments);
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(letterPdf), SINGLE_COPY);
@@ -97,6 +94,30 @@ public class BulkPrintService {
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
+    }
+
+    // Blank forms always go last, however many documents come before them; each Welsh form follows its English one.
+    private void addBlankForms(List<BulkPrintLetterAssembler.LetterDocument> letterDocuments, LetterType letterType) {
+        if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
+            addBlankForm(letterDocuments, BLANK_RESPONSE_FORM_NAME,
+                blankClaimPackFormsProvider.getBlankResponseForm());
+            addBlankForm(letterDocuments, BLANK_COUNTERCLAIM_FORM_NAME,
+                blankClaimPackFormsProvider.getBlankCounterclaimForm());
+        } else if (letterType == LetterType.DEFENDANT_CLAIM_PACK_WELSH) {
+            addBlankForm(letterDocuments, BLANK_RESPONSE_FORM_NAME,
+                blankClaimPackFormsProvider.getBlankResponseForm());
+            addBlankForm(letterDocuments, BLANK_RESPONSE_FORM_WELSH_NAME,
+                blankClaimPackFormsProvider.getBlankResponseFormWelsh());
+            addBlankForm(letterDocuments, BLANK_COUNTERCLAIM_FORM_NAME,
+                blankClaimPackFormsProvider.getBlankCounterclaimForm());
+            addBlankForm(letterDocuments, BLANK_COUNTERCLAIM_FORM_WELSH_NAME,
+                blankClaimPackFormsProvider.getBlankCounterclaimFormWelsh());
+        }
+    }
+
+    private void addBlankForm(List<BulkPrintLetterAssembler.LetterDocument> letterDocuments,
+                              String fileName, byte[] content) {
+        letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(fileName, APPLICATION_PDF, content));
     }
 
     private void requirePostalAddress(AddressUK address, PartyEntity recipient) {

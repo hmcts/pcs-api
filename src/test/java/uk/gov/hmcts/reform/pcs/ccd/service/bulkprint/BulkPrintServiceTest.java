@@ -181,6 +181,103 @@ class BulkPrintServiceTest {
         assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN1");
     }
 
+    @Test
+    @DisplayName("Assembles both access-code letters, the claim form, then each English blank form followed by"
+        + " its Welsh twin for the Welsh defendant claim pack")
+    void shouldAssembleWelshDefendantClaimPackInOrder() {
+        final byte[] coversheetBytes = "coversheet".getBytes();
+        final byte[] englishPinBytes = "english-pin".getBytes();
+        final byte[] welshPinBytes = "welsh-pin".getBytes();
+        final byte[] claimFormBytes = "claim-form".getBytes();
+        final byte[] defenceEnglishBytes = "defence-english".getBytes();
+        final byte[] defenceWelshBytes = "defence-welsh".getBytes();
+        final byte[] counterclaimEnglishBytes = "counterclaim-english".getBytes();
+        final byte[] counterclaimWelshBytes = "counterclaim-welsh".getBytes();
+        final byte[] mergedBytes = "merged-pdf".getBytes();
+        final DocumentEntity englishPin = document();
+        final DocumentEntity welshPin = document();
+        final DocumentEntity claimForm = document();
+        stubSend(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(englishPin.getDocumentId())).thenReturn(englishPinBytes);
+        when(letterDocumentFetcher.fetchBytes(welshPin.getDocumentId())).thenReturn(welshPinBytes);
+        when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
+        stubBlankForms(defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
+        when(letterAssembler.assemble(eq("CPD-01-IN4 1234-5678-9012-3456"), eq(coversheetBytes), any()))
+            .thenReturn(mergedBytes);
+
+        UUID letterId = underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK_WELSH, "John Doe",
+            address(), List.of(englishPin, welshPin, claimForm));
+
+        assertThat(letterId).isEqualTo(LETTER_ID);
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> assertThat(document.content()).isEqualTo(englishPinBytes),
+            document -> assertThat(document.content()).isEqualTo(welshPinBytes),
+            document -> assertThat(document.content()).isEqualTo(claimFormBytes),
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002R-defence-form.pdf");
+                assertThat(document.content()).isEqualTo(defenceEnglishBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002RW-defence-form-welsh.pdf");
+                assertThat(document.content()).isEqualTo(defenceWelshBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim.pdf");
+                assertThat(document.content()).isEqualTo(counterclaimEnglishBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim-welsh.pdf");
+                assertThat(document.content()).isEqualTo(counterclaimWelshBytes);
+            }
+        );
+        verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
+        assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN4");
+        assertThat(letterCaptor.getValue().documents).singleElement()
+            .extracting(document -> document.content)
+            .isEqualTo(Base64.getEncoder().encodeToString(mergedBytes));
+    }
+
+    @Test
+    @DisplayName("Puts the Welsh pack's blank forms after every pack document, however many there are")
+    void shouldPutTheWelshBlankFormsAfterEveryPackDocument() {
+        final byte[] coversheetBytes = "coversheet".getBytes();
+        final byte[] englishPinBytes = "english-pin".getBytes();
+        final byte[] welshPinBytes = "welsh-pin".getBytes();
+        final byte[] claimFormBytes = "claim-form".getBytes();
+        final byte[] evidenceBytes = "evidence".getBytes();
+        final byte[] defenceEnglishBytes = "defence-english".getBytes();
+        final byte[] defenceWelshBytes = "defence-welsh".getBytes();
+        final byte[] counterclaimEnglishBytes = "counterclaim-english".getBytes();
+        final byte[] counterclaimWelshBytes = "counterclaim-welsh".getBytes();
+        final DocumentEntity englishPin = document();
+        final DocumentEntity welshPin = document();
+        final DocumentEntity claimForm = document();
+        final DocumentEntity evidence = document();
+        stubSend(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(englishPin.getDocumentId())).thenReturn(englishPinBytes);
+        when(letterDocumentFetcher.fetchBytes(welshPin.getDocumentId())).thenReturn(welshPinBytes);
+        when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
+        when(letterDocumentFetcher.fetchBytes(evidence.getDocumentId())).thenReturn(evidenceBytes);
+        stubBlankForms(defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn("merged-pdf".getBytes());
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK_WELSH, "John Doe", address(),
+            List.of(englishPin, welshPin, claimForm, evidence));
+
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> assertThat(document.content()).isEqualTo(englishPinBytes),
+            document -> assertThat(document.content()).isEqualTo(welshPinBytes),
+            document -> assertThat(document.content()).isEqualTo(claimFormBytes),
+            document -> assertThat(document.content()).isEqualTo(evidenceBytes),
+            document -> assertThat(document.content()).isEqualTo(defenceEnglishBytes),
+            document -> assertThat(document.content()).isEqualTo(defenceWelshBytes),
+            document -> assertThat(document.content()).isEqualTo(counterclaimEnglishBytes),
+            document -> assertThat(document.content()).isEqualTo(counterclaimWelshBytes)
+        );
+    }
+
     @ParameterizedTest(name = "{0} sends letter type {1}")
     @CsvSource({
         "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
@@ -188,7 +285,7 @@ class BulkPrintServiceTest {
         "DEFENCE_PACK_LEGAL_REP, DEF-01-IN1",
         "GEN_APP_PACK, GEN-00-IN0"
     })
-    @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
+    @DisplayName("Sends the letter type code, with no blank forms, for packs other than the defendant claim packs")
     void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
@@ -226,6 +323,7 @@ class BulkPrintServiceTest {
             assertThat(documentsCaptor.getValue()).singleElement()
                 .satisfies(packDocument -> assertThat(packDocument.content()).isEqualTo(documentBytes));
         }
+        verifyNoInteractions(blankClaimPackFormsProvider);
     }
 
     @Test
@@ -265,5 +363,28 @@ class BulkPrintServiceTest {
 
         verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, letterAssembler,
             sendLetterApi);
+    }
+
+    private void stubSend(byte[] coversheetBytes) {
+        when(authTokenGenerator.generate()).thenReturn("s2s");
+        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
+        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
+        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
+    }
+
+    private void stubBlankForms(byte[] defenceEnglishBytes, byte[] defenceWelshBytes,
+                                byte[] counterclaimEnglishBytes, byte[] counterclaimWelshBytes) {
+        when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(defenceEnglishBytes);
+        when(blankClaimPackFormsProvider.getBlankResponseFormWelsh()).thenReturn(defenceWelshBytes);
+        when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(counterclaimEnglishBytes);
+        when(blankClaimPackFormsProvider.getBlankCounterclaimFormWelsh()).thenReturn(counterclaimWelshBytes);
+    }
+
+    private static DocumentEntity document() {
+        return DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
+    }
+
+    private static AddressUK address() {
+        return AddressUK.builder().addressLine1("2 High Street").postTown("London").postCode("W1 2BB").build();
     }
 }

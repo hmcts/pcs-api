@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseDocumentService;
@@ -60,6 +61,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.CLAIMANT_CLAIM_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENCE_PACK;
 import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK;
+import static uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType.DEFENDANT_CLAIM_PACK_WELSH;
 import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT_TASK_NAME;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -226,6 +228,36 @@ class BulkPrintPacksTest extends CftlibTest {
             assertConvertedPage(pdDocument, 3);
         }
 
+    }
+
+    @Test
+    @Order(4)
+    void verifyWelshClaimPacks() throws IOException {
+        Instant testStart = Instant.now();
+
+        long walesRef = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH,
+                                                               LegislativeCountry.WALES);
+
+        // The packs are held until both letters exist for both defendants
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.CLAIM, testStart, 1);
+        caseDocumentService.waitForDocumentsOfType(walesRef, DocumentType.DEFENDANT_ACCESS_CODE, testStart, 4);
+
+        testingSupportClient.executeFutureDbSchedulerTasks(BULK_PRINT_TASK_NAME, Duration.ofDays(2));
+
+        List<Letter> letters = mockSendLetterServer.getSentLetters(walesRef, DEFENDANT_CLAIM_PACK_WELSH, testStart, 2);
+        assertThat(letters)
+            .map(BulkPrintPacksTest::getRecipientName)
+            .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
+
+        for (String recipientName : List.of("Danny Defendant", "Delia Defendant")) {
+            try (PDDocument pack = findPackPdf(recipientName, letters)) {
+                assertThat(getPageContents(pack, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
+                assertThat(pack.getNumberOfPages()).isGreaterThan(1);
+                for (int page = 1; page < pack.getNumberOfPages(); page++) {
+                    assertConvertedPage(pack, page);
+                }
+            }
+        }
     }
 
     private List<Letter> waitForDefencePacks(Instant testStart, int minLetterCount) {
