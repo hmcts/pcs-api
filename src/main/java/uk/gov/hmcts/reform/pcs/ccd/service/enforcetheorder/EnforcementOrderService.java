@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -9,9 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -21,7 +20,6 @@ import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
-import static uk.gov.hmcts.reform.pcs.testingsupport.tasks.HelloWorldTaskConfig.log;
 
 @Service
 @AllArgsConstructor
@@ -74,13 +72,14 @@ public class EnforcementOrderService {
                 EventId.enforceTheOrder
             );
 
+        Logger log;
         log.info(
             "Discarded {} enforcement drafts for case {}",
             discardedDrafts,
             caseReference
         );
 
-        // Preserve AC02: transition live enforcement applications.
+        // Preserve AC02
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
         EnforcementStateEntity enforcementState =
