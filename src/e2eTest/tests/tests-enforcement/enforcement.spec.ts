@@ -39,7 +39,7 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments,cannotApplyForWarrantInfo
+  statementOfTruth, defendantInBreathingSpace, missedPayments,cannotApplyForWarrantInfo,permissionForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -863,3 +863,54 @@ test.describe('[Enforcement - Delete Draft Application] @nightly', () => {
   });
 });
 
+test('Warrant - Given a suspended order with no missed payments, when a Claimant applies for a Warrant of Possession without judge permission, then they are blocked from continuing @enforcement @regression', async () => {
+  await test.step('Given the Claimant starts the Enforce the order event from the case summary', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+  });
+
+  await test.step('When the Claimant selects Warrant of possession as the application type', async () => {
+    await performAction('validateWritOrWarrantFeeAmount', {
+      journey: enforcementApplication.warrantOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationLabelHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
+    });
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
+  });
+
+  await test.step('And the Claimant confirms the name and address for eviction', async () => {
+    await performAction('selectNameAndAddressForEviction', {
+      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+  });
+
+  await test.step('And the Claimant confirms the defendant is not in breathing space', async () => {
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
+  });
+
+  await test.step('And the Claimant selects "No" for whether the defendants have missed any payments', async () => {
+    await performAction('missedPayments', {
+      option: missedPayments.noRadioOption,
+      nextPage: permissionForWarrantInfo.mainHeader
+    });
+  });
+
+  await test.step('Then the Claimant is shown the judge permission required screen and blocked from continuing', async () => {
+    await performAction('validatePermissionRequiredPage', permissionForWarrantInfo);
+    await performAction('errorValidationPermissionRequiredPage', permissionForWarrantInfo);
+  });
+});

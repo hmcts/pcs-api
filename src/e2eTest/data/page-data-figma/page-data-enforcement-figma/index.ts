@@ -40,3 +40,5 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBrea
 export * from '@data/page-data-figma/page-data-enforcement-figma/permissionForWritInfo.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWritInfo.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/permissionForWarrantInfo.page.data';
+

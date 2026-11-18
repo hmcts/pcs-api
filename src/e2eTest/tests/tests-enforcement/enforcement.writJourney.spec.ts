@@ -337,7 +337,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
 
     await test.step('Then the Claimant is shown the judge permission required screen and blocked from continuing', async () => {
       await performAction('validatePermissionRequiredPage', permissionForWritInfo);
-      await performAction('errorValidationPermissionRequiredPage', permissionForWritInfo.errorValidation);
+      await performAction('errorValidationPermissionRequiredPage', permissionForWritInfo);
     });
   });
 
