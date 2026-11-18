@@ -73,7 +73,7 @@ class CounterClaimFormServiceTest {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
 
@@ -89,7 +89,7 @@ class CounterClaimFormServiceTest {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
         doThrow(new RuntimeException("dm-store unreachable"))
