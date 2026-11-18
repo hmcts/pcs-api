@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementStateService;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -23,7 +21,6 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus.PAID;
 @RequiredArgsConstructor
 public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrategy {
 
-    private final EnforcementStateService enforcementStateService;
     private final EnforcementOrderRepository enforcementOrderRepository;
 
     @Override
@@ -35,10 +32,9 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
 
         if (feePaymentEntity.getPaymentStatus() == PAID) {
             EnforcementOrderEntity enforcementOrderEntity = findEnfApplicationEntity(enfApplicationId);
-            EnforcementStateEntity enforcementStateEntity = enforcementOrderEntity.getPcsCase().getEnforcementState();
-            EnforcementState enforcementState = enforcementStateEntity.getState();
+            EnforcementState enforcementState = enforcementOrderEntity.getState();
             if (enforcementState == PENDING_CASE_ISSUED) {
-                enforcementStateService.mapToEntity(enforcementOrderEntity.getPcsCase(), CASE_PROGRESSION);
+                enforcementOrderEntity.setState(CASE_PROGRESSION);
                 enforcementOrderRepository.save(enforcementOrderEntity);
                 log.info("Enforcement app {} state updated to CASE_PROGRESSION", enfApplicationId);
             } else {
