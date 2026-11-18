@@ -175,6 +175,10 @@ class SubmitEventHandlerTest {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
+            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
@@ -183,16 +187,9 @@ class SubmitEventHandlerTest {
             when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
                 .thenReturn(representedParty);
 
-            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
-                .name(CURRENT_ORG_FULL_NAME)
-                .build();
-            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
-
-
             stubLegalRepForParty(representedPartyUuid);
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
-
             stubApplicationFeeCalculation(genAppRequest);
 
             PCSCase caseData = PCSCase.builder()
@@ -276,15 +273,14 @@ class SubmitEventHandlerTest {
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
 
-            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
-                .applicationType(GenAppType.SET_ASIDE)
-                .build();
-
             OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
                 .name(CURRENT_ORG_FULL_NAME)
                 .build();
             given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
 
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
 
             when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
                 .thenReturn(representedParty);
