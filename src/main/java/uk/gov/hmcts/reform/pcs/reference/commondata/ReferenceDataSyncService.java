@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.reference.api.CommonDataApi;
-import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValue;
+import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValues;
 import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValuesResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -122,7 +122,7 @@ public class ReferenceDataSyncService {
         return Optional.of(toRecords(source, response.listOfValues()));
     }
 
-    private List<ReferenceRecord> toRecords(ReferenceDataSource source, List<ListOfValue> values) {
+    private List<ReferenceRecord> toRecords(ReferenceDataSource source, List<ListOfValues> values) {
         Map<String, ReferenceRecord> recordsByKey = new LinkedHashMap<>();
         values.stream()
             .filter(Objects::nonNull)
@@ -141,7 +141,7 @@ public class ReferenceDataSyncService {
         return !first.active() && second.active() ? second : first;
     }
 
-    private ReferenceRecord toRecord(ListOfValue value) {
+    private ReferenceRecord toRecord(ListOfValues value) {
         return new ReferenceRecord(
             clean(value.key()),
             clean(value.valueEn()),

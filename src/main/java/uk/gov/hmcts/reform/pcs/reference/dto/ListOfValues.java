@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ListOfValue(
+public record ListOfValues(
     String key,
     @JsonProperty("value_en") String valueEn,
     @JsonProperty("value_cy") String valueCy,

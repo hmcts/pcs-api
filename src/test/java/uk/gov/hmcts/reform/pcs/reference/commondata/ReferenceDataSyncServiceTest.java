@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.reference.api.CommonDataApi;
-import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValue;
+import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValues;
 import uk.gov.hmcts.reform.pcs.reference.dto.ListOfValuesResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -455,7 +455,7 @@ class ReferenceDataSyncServiceTest {
         verify(cache, times(1)).reload(SOURCE);
     }
 
-    private void stubUpstream(ReferenceDataSource source, ListOfValue... values) {
+    private void stubUpstream(ReferenceDataSource source, ListOfValues... values) {
         doReturn(new ListOfValuesResponse(List.of(values))).when(commonDataApi)
             .getListOfValues(eq(source.getCategoryId()), anyString(), anyString(), anyString());
     }
@@ -487,9 +487,9 @@ class ReferenceDataSyncServiceTest {
         return new Applied(inserts.getValue(), updates.getValue());
     }
 
-    private ListOfValue lov(String key, String valueEn, String valueCy, Long order, String parentCategory,
+    private ListOfValues lov(String key, String valueEn, String valueCy, Long order, String parentCategory,
                             String parentKey, String active) {
-        return new ListOfValue(key, valueEn, valueCy, order, parentCategory, parentKey, active);
+        return new ListOfValues(key, valueEn, valueCy, order, parentCategory, parentKey, active);
     }
 
     private ReferenceRecord record(String key, String valueEn, String valueCy, Integer order,

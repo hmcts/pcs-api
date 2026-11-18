@@ -6,5 +6,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ListOfValuesResponse(@JsonProperty("list_of_values") List<ListOfValue> listOfValues) {
+public record ListOfValuesResponse(@JsonProperty("list_of_values") List<ListOfValues> listOfValues) {
 }

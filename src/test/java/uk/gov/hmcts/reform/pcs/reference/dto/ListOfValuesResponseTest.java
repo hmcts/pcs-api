@@ -39,7 +39,7 @@ class ListOfValuesResponseTest {
 
         // then
         assertThat(response.listOfValues()).containsExactly(
-            new ListOfValue("VIDCVP", "Video - CVP", "Drwy Fideo - CVP", 3L, "HearingChannel", "VID", "Y")
+            new ListOfValues("VIDCVP", "Video - CVP", "Drwy Fideo - CVP", 3L, "HearingChannel", "VID", "Y")
         );
     }
 
@@ -53,7 +53,7 @@ class ListOfValuesResponseTest {
 
         // then
         assertThat(response.listOfValues()).containsExactly(
-            new ListOfValue("A", "Alpha", null, null, null, null, "D")
+            new ListOfValues("A", "Alpha", null, null, null, null, "D")
         );
     }
 }

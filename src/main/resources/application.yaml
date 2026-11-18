@@ -147,7 +147,7 @@ location-reference:
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 common-data:
-  api-url: ${COMMON_DATA_API_URL:http://localhost:8083}
+  api-url: ${RD_COMMON_DATA_API_URL:http://localhost:8083}
   service-id: ${COMMON_DATA_SERVICE_ID:AAA3}
   sync:
     enabled: ${COMMON_DATA_SYNC_ENABLED:false}
