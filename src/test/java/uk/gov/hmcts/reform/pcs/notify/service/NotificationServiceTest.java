@@ -141,6 +141,38 @@ class NotificationServiceTest {
     }
 
     @Nested
+    @DisplayName("Recipient builder tests")
+    class RecipientBuilderTests {
+
+        @Test
+        @DisplayName("Build primary claimant recipient")
+        void shouldBuildPrimaryClaimantRecipient() {
+            // Given
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            PartyEntity primaryClaimantEntity = mock(PartyEntity.class);
+
+            ClaimEntity claimEntity = ClaimEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .build();
+
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantEntity);
+            String claimantEmailAddress = "claimant@test.com";
+            when(primaryClaimantEntity.getEmailAddress()).thenReturn(claimantEmailAddress);
+
+            // When
+            NotificationRecipient notificationRecipient = notificationService.claimantRecipient(claimEntity);
+
+            // Then
+            assertThat(notificationRecipient.email()).isEqualTo(claimantEmailAddress);
+            assertThat(notificationRecipient.party()).isEqualTo(primaryClaimantEntity);
+            assertThat(notificationRecipient.pcsCase()).isEqualTo(pcsCaseEntity);
+            assertThat(notificationRecipient.claim()).isEqualTo(claimEntity);
+            assertThat(notificationRecipient.recipientRole()).isEqualTo(PartyRole.CLAIMANT);
+        }
+    }
+
+
+    @Nested
     @DisplayName("Schedule Email Notification Tests")
     class ScheduleEmailNotificationTests {
 
@@ -663,26 +695,6 @@ class NotificationServiceTest {
             assertThat(secondSave.getStatus()).isEqualTo(NotificationStatus.SCHEDULED);
 
             verify(schedulerClient).scheduleIfNotExists(any());
-        }
-
-        @Test
-        @DisplayName("Should throw PartyNotFoundException when claimant is null in claimantRecipient")
-        void shouldThrowPartyNotFoundExceptionWhenClaimantIsNullInClaimantRecipient() {
-            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(null);
-
-            UUID claimId = UUID.randomUUID();
-            ClaimEntity claim = defendantResponse.getClaim();
-            claim.setId(claimId);
-
-            assertThatThrownBy(
-                () -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim))
-                .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No claimant party found for claim: " + claimId);
-
-            verify(partyService).getPrimaryClaimantPartyEntity(any());
-            verifyNoInteractions(templateConfiguration);
-            verifyNoInteractions(notificationRepository);
-            verifyNoInteractions(schedulerClient);
         }
 
         @Test

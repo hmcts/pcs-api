@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +61,8 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
     @Test
     void makeAnApplication() {
+        Instant testStart = Instant.now();
+
         long caseReference = caseCreationService.createAndIssueCase(solicitorToken, LanguageUsed.ENGLISH);
 
         List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference, 1);
@@ -87,7 +90,8 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
         ccdClient.updateCase(EventId.makeAnApplication, caseReference, caseData, citizenToken);
 
-        List<CapturedNotification> sentNotifications = mockNotificationServer.getSentNotifications(caseReference, 1);
+        List<CapturedNotification> sentNotifications
+            = mockNotificationServer.getSentNotifications(caseReference, 1, testStart);
 
         CapturedNotification sentNotification = sentNotifications.getFirst();
         assertThat(sentNotification.getTemplateId()).isEqualTo(GEN_APP_NOTIFICATION_TEMPLATE_ID);

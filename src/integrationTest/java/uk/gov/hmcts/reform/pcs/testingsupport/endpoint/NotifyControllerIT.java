@@ -81,13 +81,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         mockResponse.setTaskId("task-123");
         mockResponse.setStatus(SCHEDULED_STATUS);
         mockResponse.setNotificationId(1);
-
-        when(notificationService.scheduleEmailNotification(
-            any(EmailNotificationRequest.class),
-            any(PcsCaseEntity.class),
-            any(ClaimEntity.class),
-            any(PartyEntity.class)
-        )).thenReturn(mockResponse);
     }
 
     @Nested

@@ -16,6 +16,7 @@ class NotificationClaimTypeTest {
             case GENERAL_APPLICATION -> "general_application";
             case NOTICE_OF_CHANGE -> "notice_of_change";
             case HEARING -> "hearing";
+            case ENFORCEMENT_APP_DECISION -> "enforcement_decision";
         };
 
         assertThat(claimType.getValue()).isEqualTo(expectedValue);

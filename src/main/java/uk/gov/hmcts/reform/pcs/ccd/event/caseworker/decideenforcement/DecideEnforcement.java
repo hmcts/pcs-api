@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.exception.WarrantNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.WritNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.EnforcementDecisionNotificationService;
 
 import java.util.Set;
 
@@ -48,6 +49,7 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
     private final AddressFormatter addressFormatter;
     private final WarrantRepository warrantRepository;
     private final WritRepository writRepository;
+    private final EnforcementDecisionNotificationService enforcementDecisionNotificationService;
     private final AcceptOrRejectPage acceptOrRejectPage;
 
     @Override
@@ -105,23 +107,23 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
 
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+
         PCSCase caseData = eventPayload.caseData();
         EnforcementDecision enforcementDecision = caseData.getEnforcementDecision();
 
+        if (enforcementDecision.getAcceptReject() == null) {
+            throw new IllegalStateException("No decision provided");
+        }
+
         EnforcementApplicationDecisionEntity decisionEntity = createEnforcementDecisionEntity(enforcementDecision);
 
+        ClaimEntity claimEntity = claimService.loadClaim(caseReference);
+
         if (enforcementDecision.getWarrantId() != null) {
-            Integer warrantId = enforcementDecision.getWarrantId();
-            WarrantEntity warrantEntity = warrantRepository.findById(warrantId)
-                .orElseThrow(() -> new WarrantNotFoundException("Unable to find warrant " + warrantId));
-
-            warrantEntity.setEnforcementApplicationDecision(decisionEntity);
+            handleWarrantDecision(enforcementDecision, claimEntity, decisionEntity);
         } else if (enforcementDecision.getWritId() != null) {
-            Integer writId = enforcementDecision.getWritId();
-            WritEntity writEntity = writRepository.findById(writId)
-                .orElseThrow(() -> new WritNotFoundException("Unable to find writ " + writId));
-
-            writEntity.setEnforcementApplicationDecision(decisionEntity);
+            handleWritDecision(enforcementDecision, claimEntity, decisionEntity);
         } else {
             throw new IllegalStateException("No warrant or writ ID provided");
         }
@@ -131,11 +133,45 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder()
             .confirmationBody(buildConfirmationMarkdown(
                 caseData,
-                eventPayload.caseReference(),
+                caseReference,
                 caseData.getCaseNameHmctsInternal(),
                 enforcementDecision.getAcceptReject()
             ))
             .build();
+    }
+
+    private void handleWarrantDecision(EnforcementDecision enforcementDecision,
+                                       ClaimEntity claimEntity,
+                                       EnforcementApplicationDecisionEntity decisionEntity) {
+
+        Integer warrantId = enforcementDecision.getWarrantId();
+        WarrantEntity warrantEntity = warrantRepository.findById(warrantId)
+            .orElseThrow(() -> new WarrantNotFoundException("Unable to find warrant " + warrantId));
+
+        warrantEntity.setEnforcementApplicationDecision(decisionEntity);
+
+        if (enforcementDecision.getAcceptReject() == AcceptReject.ACCEPT) {
+            enforcementDecisionNotificationService.sendWarrantApprovedEmail(claimEntity);
+        } else {
+            enforcementDecisionNotificationService.sendWarrantRejectedEmail(claimEntity, decisionEntity);
+        }
+    }
+
+    private void handleWritDecision(EnforcementDecision enforcementDecision,
+                                    ClaimEntity claimEntity,
+                                    EnforcementApplicationDecisionEntity decisionEntity) {
+
+        Integer writId = enforcementDecision.getWritId();
+        WritEntity writEntity = writRepository.findById(writId)
+            .orElseThrow(() -> new WritNotFoundException("Unable to find writ " + writId));
+
+        writEntity.setEnforcementApplicationDecision(decisionEntity);
+
+        if (enforcementDecision.getAcceptReject() == AcceptReject.ACCEPT) {
+            enforcementDecisionNotificationService.sendWritApprovedEmail(claimEntity);
+        } else {
+            enforcementDecisionNotificationService.sendWritRejectedEmail(claimEntity, decisionEntity);
+        }
     }
 
     private EnforcementApplicationDecisionEntity createEnforcementDecisionEntity(EnforcementDecision decision) {

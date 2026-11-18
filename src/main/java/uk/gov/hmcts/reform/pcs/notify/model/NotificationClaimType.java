@@ -9,7 +9,8 @@ public enum NotificationClaimType {
     POSSESSION_CLAIM("possession_claim"),
     GENERAL_APPLICATION("general_application"),
     NOTICE_OF_CHANGE("notice_of_change"),
-    HEARING("hearing");
+    HEARING("hearing"),
+    ENFORCEMENT_APP_DECISION("enforcement_app_decision");
 
     private final String value;
 

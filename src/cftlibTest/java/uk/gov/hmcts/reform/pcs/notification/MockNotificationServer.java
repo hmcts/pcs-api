@@ -15,6 +15,7 @@ import wiremock.com.fasterxml.jackson.databind.node.ObjectNode;
 import wiremock.com.fasterxml.jackson.databind.node.TextNode;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,37 +40,48 @@ public class MockNotificationServer {
         stubSendNotification();
     }
 
-    public List<CapturedNotification> getSentNotifications(long caseReference, int minNotificationCount) {
-        waitForMinNotificationCount(caseReference, minNotificationCount);
+    public List<CapturedNotification> getSentNotifications(long caseReference,
+                                                           int minNotificationCount,
+                                                           Instant sentSince) {
 
-        return getLoggedRequests(caseReference).stream()
+        waitForMinNotificationCount(caseReference, minNotificationCount, sentSince);
+
+        return getLoggedRequests(caseReference, sentSince).stream()
             .map(this::toCapturedNotification)
             .toList();
     }
 
-    private void waitForMinNotificationCount(long caseReference, int minNotificationCount) {
+    private void waitForMinNotificationCount(long caseReference, int minNotificationCount, Instant sentSince) {
         await("At least %d notification(s) sent".formatted(minNotificationCount))
             .atMost(Duration.ofSeconds(10))
             .pollInterval(Duration.ofMillis(500))
             .ignoreExceptions()
-            .until(() -> getSentNotificationCount(caseReference), greaterThanOrEqualTo(minNotificationCount));
+            .until(
+                () -> getSentNotificationCount(caseReference, sentSince), greaterThanOrEqualTo(minNotificationCount)
+            );
     }
 
-    private int getSentNotificationCount(long caseReference) {
-        List<LoggedRequest> loggedRequests = getLoggedRequests(caseReference);
+    private int getSentNotificationCount(long caseReference, Instant sentSince) {
+        List<LoggedRequest> loggedRequests = getLoggedRequests(caseReference, sentSince);
         return loggedRequests.size();
     }
 
-    private List<LoggedRequest> getLoggedRequests(long caseReference) {
+    private List<LoggedRequest> getLoggedRequests(long caseReference, Instant sentSince) {
         String caseReferenceWithDashes = caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference);
 
-        return wireMockServer.findAll(newRequestPattern()
-                                          .withUrl(NOTIFICATION_URL)
-                                          .withRequestBody(
-                                              matchingJsonPath("$.personalisation.caseNumber",
-                                                               equalTo(caseReferenceWithDashes))
-                                          )
+        List<LoggedRequest> loggedRequests = wireMockServer.findAll(newRequestPattern()
+                                                             .withUrl(NOTIFICATION_URL)
+                                                             .withRequestBody(
+                                                                 matchingJsonPath(
+                                                                     "$.personalisation.caseNumber",
+                                                                     equalTo(caseReferenceWithDashes)
+                                                                 )
+                                                             )
         );
+
+        return loggedRequests.stream()
+            .filter(loggedRequest -> loggedRequest.getLoggedDate().toInstant().isAfter(sentSince))
+            .toList();
     }
 
     private CapturedNotification toCapturedNotification(LoggedRequest loggedRequest) {

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.WarrantNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.WritNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.EnforcementDecisionNotificationService;
 
 import java.util.Optional;
 import java.util.Set;
@@ -39,6 +41,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +60,8 @@ class DecideEnforcementTest extends BaseEventTest {
     @Mock
     private WritRepository writRepository;
     @Mock
+    private EnforcementDecisionNotificationService enforcementDecisionNotificationService;
+    @Mock
     private AcceptOrRejectPage acceptOrRejectPage;
     @Mock
     private ClaimEntity claimEntity;
@@ -66,6 +73,7 @@ class DecideEnforcementTest extends BaseEventTest {
             addressFormatter,
             warrantRepository,
             writRepository,
+            enforcementDecisionNotificationService,
             acceptOrRejectPage
         );
 
@@ -212,10 +220,49 @@ class DecideEnforcementTest extends BaseEventTest {
     class SubmitHandlerTests {
 
         @Test
+        void shouldThrowExceptionWhenNoDecisionSet() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(EnforcementDecision.builder()
+                                         .acceptReject(AcceptReject.ACCEPT)
+                                         .build())
+                .build();
+
+            ClaimNotFoundException claimException = mock(ClaimNotFoundException.class);
+            when(claimService.loadClaim(CASE_REFERENCE)).thenThrow(claimException);
+
+            // When
+            Throwable throwable = catchThrowable(() -> callSubmitHandler(caseData));
+
+            // Then
+            assertThat(throwable)
+                .isSameAs(claimException);
+        }
+
+        @Test
+        void shouldPropagateExceptionWhenLoadingClaim() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(EnforcementDecision.builder()
+                                         .build())
+                .build();
+
+            // When
+            Throwable throwable = catchThrowable(() -> callSubmitHandler(caseData));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No decision provided");
+        }
+
+        @Test
         void shouldThrowExceptionIfNoWarrantOrWritIdSet() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .enforcementDecision(EnforcementDecision.builder().build())
+                .enforcementDecision(EnforcementDecision.builder()
+                                         .acceptReject(AcceptReject.ACCEPT)
+                                         .build())
                 .build();
 
             // When
@@ -234,6 +281,7 @@ class DecideEnforcementTest extends BaseEventTest {
             PCSCase caseData = PCSCase.builder()
                 .enforcementDecision(EnforcementDecision.builder()
                                          .warrantId(warrantId)
+                                         .acceptReject(AcceptReject.ACCEPT)
                                          .build())
                 .build();
 
@@ -255,6 +303,7 @@ class DecideEnforcementTest extends BaseEventTest {
             PCSCase caseData = PCSCase.builder()
                 .enforcementDecision(EnforcementDecision.builder()
                                          .writId(writId)
+                                         .acceptReject(AcceptReject.ACCEPT)
                                          .build())
                 .build();
 
@@ -524,6 +573,138 @@ class DecideEnforcementTest extends BaseEventTest {
                     RejectionReason.OTHER, "other rejection details"
                 )
             );
+        }
+
+        @Test
+        void shouldSendEmailNotificationForAcceptedWarrant() {
+            // Given
+            int warrantId = 2001;
+            EnforcementDecision enforcementDecision = EnforcementDecision.builder()
+                .warrantId(warrantId)
+                .acceptReject(AcceptReject.ACCEPT)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(enforcementDecision)
+                .build();
+
+            WarrantEntity warrantEntity = WarrantEntity.builder().build();
+            when(warrantRepository.findById(warrantId)).thenReturn(Optional.of(warrantEntity));
+
+            when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(enforcementDecisionNotificationService).sendWarrantApprovedEmail(claimEntity);
+        }
+
+        @Test
+        void shouldSendEmailNotificationForRejectedWarrant() {
+            // Given
+            int warrantId = 2001;
+            RejectionReason rejectionReason = RejectionReason.ORDER_NOT_ENFORCEABLE;
+            String rejectionDetails = "Details about rejection";
+
+            EnforcementDecision enforcementDecision = EnforcementDecision.builder()
+                .warrantId(warrantId)
+                .acceptReject(AcceptReject.REJECT)
+                .rejectionReason(rejectionReason)
+                .orderNotEnforceableDetails(rejectionDetails)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(enforcementDecision)
+                .build();
+
+            WarrantEntity warrantEntity = WarrantEntity.builder().build();
+            when(warrantRepository.findById(warrantId)).thenReturn(Optional.of(warrantEntity));
+
+            when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            ArgumentCaptor<EnforcementApplicationDecisionEntity> decisionEntityCaptor
+                = ArgumentCaptor.forClass(EnforcementApplicationDecisionEntity.class);
+
+            verify(enforcementDecisionNotificationService)
+                .sendWarrantRejectedEmail(eq(claimEntity), decisionEntityCaptor.capture());
+
+            EnforcementApplicationDecisionEntity decisionEntity = decisionEntityCaptor.getValue();
+
+            assertThat(decisionEntity).isNotNull();
+            assertThat(decisionEntity.getDecision()).isEqualTo(AcceptReject.REJECT);
+            assertThat(decisionEntity.getRejectionReason()).isEqualTo(rejectionReason);
+            assertThat(decisionEntity.getRejectionReasonAdditionalDetails()).isEqualTo(rejectionDetails);
+        }
+
+        @Test
+        void shouldSendEmailNotificationForAcceptedWrit() {
+            // Given
+            int writId = 2002;
+            EnforcementDecision enforcementDecision = EnforcementDecision.builder()
+                .writId(writId)
+                .acceptReject(AcceptReject.ACCEPT)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(enforcementDecision)
+                .build();
+
+            WritEntity writEntity = WritEntity.builder().build();
+            when(writRepository.findById(writId)).thenReturn(Optional.of(writEntity));
+
+            when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(enforcementDecisionNotificationService).sendWritApprovedEmail(claimEntity);
+        }
+
+        @Test
+        void shouldSendEmailNotificationForRejectedWrit() {
+            // Given
+            int writId = 2002;
+            RejectionReason rejectionReason = RejectionReason.ORDER_NOT_ENFORCEABLE;
+            String rejectionDetails = "Details about rejection";
+
+            EnforcementDecision enforcementDecision = EnforcementDecision.builder()
+                .writId(writId)
+                .acceptReject(AcceptReject.REJECT)
+                .rejectionReason(rejectionReason)
+                .orderNotEnforceableDetails(rejectionDetails)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .enforcementDecision(enforcementDecision)
+                .build();
+
+            WritEntity writEntity = WritEntity.builder().build();
+            when(writRepository.findById(writId)).thenReturn(Optional.of(writEntity));
+
+            when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            ArgumentCaptor<EnforcementApplicationDecisionEntity> decisionEntityCaptor
+                = ArgumentCaptor.forClass(EnforcementApplicationDecisionEntity.class);
+
+            verify(enforcementDecisionNotificationService)
+                .sendWritRejectedEmail(eq(claimEntity), decisionEntityCaptor.capture());
+
+            EnforcementApplicationDecisionEntity decisionEntity = decisionEntityCaptor.getValue();
+
+            assertThat(decisionEntity).isNotNull();
+            assertThat(decisionEntity.getDecision()).isEqualTo(AcceptReject.REJECT);
+            assertThat(decisionEntity.getRejectionReason()).isEqualTo(rejectionReason);
+            assertThat(decisionEntity.getRejectionReasonAdditionalDetails()).isEqualTo(rejectionDetails);
         }
     }
 

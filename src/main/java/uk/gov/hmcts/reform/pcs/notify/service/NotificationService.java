@@ -385,7 +385,7 @@ public class NotificationService {
      * @return an instance of EmailNotificationResponse containing the task ID, notification status,
      *         and notification ID associated with the scheduled email notification
      */
-    public EmailNotificationResponse scheduleEmailNotification(
+    EmailNotificationResponse scheduleEmailNotification(
         EmailNotificationRequest emailRequest,
         PcsCaseEntity pcsCase,
         ClaimEntity claim,
@@ -680,12 +680,8 @@ public class NotificationService {
         );
     }
 
-    private NotificationRecipient claimantRecipient(ClaimEntity claim) {
+    NotificationRecipient claimantRecipient(ClaimEntity claim) {
         PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase());
-
-        if (claimant == null) {
-            throw new PartyNotFoundException("No claimant party found for claim: " + claim.getId());
-        }
 
         return new NotificationRecipient(
             claimant.getEmailAddress(),
