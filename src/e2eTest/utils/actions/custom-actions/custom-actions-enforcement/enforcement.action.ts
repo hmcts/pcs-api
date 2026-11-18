@@ -15,6 +15,7 @@ import {
 import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import { caseSummary, home } from '@data/page-data';
+import { chooseAnApplication as claimantChooseAnApplication } from '@data/page-data-figma/page-data-genApps-claimant-figma/chooseAnApplication.page.data';
 import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {
   propertyAccessDetails,
@@ -322,14 +323,10 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const [generalApplicationPage] = await Promise.all([
       page.waitForEvent('popup'),
-      await performAction('clickButton', changeNameAddress.askTheJudgeParagraph)
+      performAction('clickButton', changeNameAddress.askTheJudgeParagraph)
     ]);
-    await generalApplicationPage.waitForLoadState();
-    await expect(generalApplicationPage).toHaveTitle(changeNameAddress.titleDynamic);
-    await performValidation('text', {
-      'text': changeNameAddress.mainHeader,
-      'elementType': 'heading'
-    });
+    await expect(generalApplicationPage).toHaveURL(new RegExp(`/cases/case-details/.*${caseInfo.id}/trigger/claimantMakeAnApplication`));
+    await expect(generalApplicationPage.getByRole('heading', { name: claimantChooseAnApplication.mainHeader })).toBeVisible();
     await generalApplicationPage.close();
   }
 

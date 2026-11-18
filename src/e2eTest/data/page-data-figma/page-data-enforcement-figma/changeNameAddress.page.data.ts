@@ -8,7 +8,7 @@ export const changeNameAddress = {
   mustStartAgainList: `must start again, with a new application (if the change is more significant, like a completely different address)`,
   youCannotcontinueParagraph: `You cannot continue with your application until you have asked the judge for permission to make this change.`,
   ifyouWantToProceedParagraph: `If you want to proceed with changing the name or address for the eviction`,
-  askTheJudgeParagraph: `Ask the judge if you can change the name or address for the eviction (GOV.UK, opens in a new tab).`,
+  askTheJudgeParagraph: `Ask the judge if you can change the name or address for the eviction (opens in a new tab).`,
   ifyouWantToKeepParagraph: `If you want to keep the existing name or address`,
   ifYouAreconfidentParagraph: `If you are confident that the name or address is correct, you can go back to the previous page and change your answer to the last question.`,
   ifTheNameAndAddressParagraph: `If the name and address is incorrect, the bailiff will not be able to carry out the eviction.`,
