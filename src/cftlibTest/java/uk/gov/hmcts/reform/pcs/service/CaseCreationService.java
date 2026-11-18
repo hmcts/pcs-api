@@ -28,6 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGr
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
@@ -57,7 +61,11 @@ public class CaseCreationService {
     private final CaseStateService caseStateService;
 
     public long createAndIssueCase(String authorisation, LanguageUsed languageUsed) {
-        long caseReference = createMinimalCase(authorisation, languageUsed);
+        return createAndIssueCase(authorisation, languageUsed, LegislativeCountry.ENGLAND);
+    }
+
+    public long createAndIssueCase(String authorisation, LanguageUsed languageUsed, LegislativeCountry country) {
+        long caseReference = createMinimalCase(authorisation, languageUsed, country);
 
         List<FeePaymentSummary> feePaymentSummaries
             = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
@@ -74,21 +82,22 @@ public class CaseCreationService {
     }
 
     public long createMinimalCase(String authorisation, LanguageUsed languageUsed) {
+        return createMinimalCase(authorisation, languageUsed, LegislativeCountry.ENGLAND);
+    }
+
+    public long createMinimalCase(String authorisation, LanguageUsed languageUsed, LegislativeCountry country) {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(createTestAddress())
-            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .legislativeCountry(country)
             .build();
 
         CaseDetails caseDetails = ccdClient.createCase(caseData, authorisation);
 
         long caseReference = caseDetails.getId();
 
-        caseData = PCSCase.builder()
+        PCSCase.PCSCaseBuilder builder = PCSCase.builder()
             .caseManagementLocationNumber(20262)
             .regionId(1)
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                                       .build())
             .claimantInformation(createClaimant("CftLibTest Claimant"))
             .claimantContactPreferences(ClaimantContactPreferences.builder()
                                             .overriddenClaimantContactAddress(createTestAddress())
@@ -96,12 +105,26 @@ public class CaseCreationService {
             .defendant1(createDefendant("Danny", "Defendant"))
             .addAnotherDefendant(VerticalYesNo.YES)
             .additionalDefendants(ListValueUtils.wrapListItems(List.of(createDefendant("Delia", "Defendant"))))
-            .noticeServed(YesOrNo.NO)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
-            .languageUsed(languageUsed)
-            .build();
+            .languageUsed(languageUsed);
 
-        ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, authorisation);
+        if (country == LegislativeCountry.WALES) {
+            builder
+                .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                                   .occupationLicenceTypeWales(
+                                                       OccupationLicenceTypeWales.STANDARD_CONTRACT)
+                                                   .build())
+                .groundsForPossessionWales(GroundsForPossessionWales.builder().build())
+                .walesNoticeDetails(WalesNoticeDetails.builder().noticeServed(YesOrNo.NO).build());
+        } else {
+            builder
+                .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                           .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                           .build())
+                .noticeServed(YesOrNo.NO);
+        }
+
+        ccdClient.updateCase(resumePossessionClaim, caseReference, builder.build(), authorisation);
 
         return caseReference;
     }
