@@ -107,19 +107,6 @@ public class PartyService {
         return !partyEntity.isRemoved();
     }
 
-    /**
-     * Determines whether a party is an organisation more accurately than checking for an organisation name.
-     * A claim creator is an organisation when it has an organisation ID; any other party is one when it has an
-     * active claim party organisation.
-     */
-    public boolean isOrganisation(PartyEntity partyEntity) {
-        if (partyEntity.isClaimCreator()) {
-            return partyEntity.getOrganisationId() != null;
-        }
-        return partyEntity.getClaimPartyOrganisationList().stream()
-            .anyMatch(claimPartyOrganisation -> claimPartyOrganisation.getActive() == YesOrNo.YES);
-    }
-
     public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
         ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
 

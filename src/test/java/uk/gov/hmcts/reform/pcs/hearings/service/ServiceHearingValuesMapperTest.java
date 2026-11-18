@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -20,10 +21,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
@@ -70,8 +74,6 @@ class ServiceHearingValuesMapperTest {
     private CaseNameFormatter caseNameFormatter;
     @Mock
     private IndividualDetailsFlagMapper individualDetailsFlagMapper;
-    @Mock
-    private PartyService partyService;
 
     private ServiceHearingValuesMapper underTest;
 
@@ -90,7 +92,7 @@ class ServiceHearingValuesMapperTest {
         defaults.setNumberOfDaysOffset(57);
 
         underTest = new ServiceHearingValuesMapper(
-            defaults, pcsCaseService, caseNameFormatter, individualDetailsFlagMapper, partyService, MANAGE_CASE_URL);
+            defaults, pcsCaseService, caseNameFormatter, individualDetailsFlagMapper, MANAGE_CASE_URL);
         lenient().when(individualDetailsFlagMapper.map(any())).thenReturn(new IndividualDetails());
     }
 
@@ -423,9 +425,12 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldTreatPartyAsIndividualWhenPartyServiceSaysItIsNotAnOrganisation() {
-        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).orgName("Treetops Housing").build();
-        when(partyService.isOrganisation(claimant)).thenReturn(false);
+    void shouldTreatClaimCreatorWithoutOrganisationIdAsIndividual() {
+        PartyEntity claimant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .claimCreator(true)
+            .orgName("Treetops Housing")
+            .build();
         givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -437,15 +442,135 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldTreatPartyThatIsNotClaimCreatorAsIndividualEvenWithOrganisationId() {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .claimCreator(false)
+            .organisationId("ORG1234")
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails()).isNotNull();
+            assertThat(party.getOrganisationDetails()).isNull();
+        });
+    }
+
+    @Test
+    void shouldSetIndividualAndLegalRepOrganisationDetailsForRepresentedDefendant() {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("John")
+            .lastName("Doe")
+            .claimPartyOrganisationList(List.of(
+                legalRepLink("Old Firm LLP", "OLD1", YesOrNo.NO),
+                legalRepLink("Smith Solicitors", "LR1234", YesOrNo.YES)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("John");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("Doe");
+            OrganisationDetails details = party.getOrganisationDetails();
+            assertThat(details.getName()).isEqualTo("Smith Solicitors");
+            assertThat(details.getOrganisationType()).isEqualTo("ORG");
+            assertThat(details.getCftOrganisationID()).isEqualTo("LR1234");
+        });
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = YesOrNo.class, names = "NO")
+    void shouldOmitOrganisationDetailsWhenDefendantHasNoActiveLegalRep(YesOrNo active) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .claimPartyOrganisationList(List.of(legalRepLink("Old Firm LLP", "OLD1", active)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails()).isNotNull();
+            assertThat(party.getOrganisationDetails()).isNull();
+        });
+    }
+
+    @Test
+    void shouldUseOrganisationNameAsFirstNameForUnderlesseeOrMortgagee() {
+        PartyEntity underlessee = PartyEntity.builder().id(UUID.randomUUID()).orgName("Acme Lending").build();
+        withRole(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(underlessee))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Acme Lending");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("N/A");
+            assertThat(party.getOrganisationDetails()).isNull();
+        });
+    }
+
+    @Test
+    void shouldSetLegalRepOrganisationDetailsForRepresentedUnderlesseeOrMortgagee() {
+        PartyEntity underlessee = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .orgName("Acme Lending")
+            .claimPartyOrganisationList(List.of(legalRepLink("Smith Solicitors", "LR1234", YesOrNo.YES)))
+            .build();
+        withRole(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(underlessee))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Acme Lending");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("N/A");
+            assertThat(party.getOrganisationDetails().getName()).isEqualTo("Smith Solicitors");
+            assertThat(party.getOrganisationDetails().getCftOrganisationID()).isEqualTo("LR1234");
+        });
+    }
+
+    @Test
+    void shouldTreatLitigationFriendAsIndividualUsingTheirOwnName() {
+        PartyEntity litigationFriend = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Jane")
+            .lastName("Smith")
+            .orgName("Support Charity")
+            .build();
+        withRole(litigationFriend, PartyRole.LITIGATION_FRIEND);
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(litigationFriend))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getPartyType()).isEqualTo("IND");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Jane");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("Smith");
+            assertThat(party.getOrganisationDetails()).isNull();
+        });
+    }
+
+    @Test
     void shouldSetOrganisationDetailsInsteadOfIndividualDetailsForOrganisationParty() {
         UUID partyId = UUID.randomUUID();
         PartyEntity claimant = PartyEntity.builder()
             .id(partyId)
+            .claimCreator(true)
             .orgName("Treetops Housing")
             .organisationId("ORG1234")
             .emailAddress("housing@example.com")
             .build();
-        when(partyService.isOrganisation(claimant)).thenReturn(true);
         givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -478,10 +603,11 @@ class ServiceHearingValuesMapperTest {
     void shouldSetPartyRoleForOrganisationParty() {
         PartyEntity claimant = PartyEntity.builder()
             .id(UUID.randomUUID())
+            .claimCreator(true)
             .orgName("Treetops Housing")
+            .organisationId("ORG1234")
             .entityRoleCodeKey("CLAIMANT-ROLE")
             .build();
-        when(partyService.isOrganisation(claimant)).thenReturn(true);
         givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
@@ -877,5 +1003,17 @@ class ServiceHearingValuesMapperTest {
         PcsCaseEntity pcsCase = caseBuilder().build();
         pcsCase.getGenApps().add(GenAppEntity.builder().type(type).state(state).build());
         return pcsCase;
+    }
+
+    private static ClaimPartyOrganisationEntity legalRepLink(String name, String organisationId, YesOrNo active) {
+        OrganisationEntity organisation = OrganisationEntity.builder()
+            .organisationName(name)
+            .organisationId(organisationId)
+            .build();
+        return ClaimPartyOrganisationEntity.builder().organisation(organisation).active(active).build();
+    }
+
+    private static void withRole(PartyEntity party, PartyRole role) {
+        party.getClaimParties().add(ClaimPartyEntity.builder().party(party).role(role).build());
     }
 }

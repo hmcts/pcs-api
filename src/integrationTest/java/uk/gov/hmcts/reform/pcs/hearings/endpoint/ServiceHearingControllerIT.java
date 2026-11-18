@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -317,18 +318,44 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("treats a party linked to a claim party organisation as an organisation")
-        void shouldTreatPartyLinkedToClaimPartyOrganisationAsOrganisation() throws Exception {
+        @DisplayName("sends individual and legal rep organisation details for a represented defendant")
+        void shouldSendIndividualAndLegalRepOrganisationDetailsForRepresentedDefendant() throws Exception {
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
             PartyEntity defendant = partyWithFirstName(pcsCase, "John");
             persist(pcsCase);
             linkToClaimPartyOrganisation(defendant);
 
+            String represented = "$.parties[?(@.partyID == '" + defendant.getId() + "')]";
+
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.parties[*].partyType", contains("ORG", "ORG")))
-                .andExpect(jsonPath("$.parties[?(@.partyID == '" + defendant.getId() + "')].individualDetails",
-                                    empty()));
+                .andExpect(jsonPath("$.parties[*].partyType", containsInAnyOrder("ORG", "IND")))
+                .andExpect(jsonPath(represented + ".partyType", contains("IND")))
+                .andExpect(jsonPath(represented + ".individualDetails.firstName", contains("John")))
+                .andExpect(jsonPath(represented + ".individualDetails.lastName", contains("Doe")))
+                .andExpect(jsonPath(represented + ".organisationDetails.name", contains("Legal Rep Firm")))
+                .andExpect(jsonPath(represented + ".organisationDetails.organisationType", contains("ORG")))
+                .andExpect(jsonPath(represented + ".organisationDetails.cftOrganisationID", contains("LR-ORG")));
+        }
+
+        @Test
+        @DisplayName("sends an underlessee or mortgagee as an individual named from its organisation name")
+        void shouldSendUnderlesseeOrMortgageeAsIndividualNamedFromOrganisationName() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            PartyEntity underlessee = party(null, null);
+            underlessee.setOrgName("Acme Lending");
+            pcsCase.addParty(underlessee);
+            pcsCase.getMainClaim().addParty(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+            persist(pcsCase);
+
+            String underlesseeParty = "$.parties[?(@.partyID == '" + underlessee.getId() + "')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(underlesseeParty + ".partyType", contains("IND")))
+                .andExpect(jsonPath(underlesseeParty + ".individualDetails.firstName", contains("Acme Lending")))
+                .andExpect(jsonPath(underlesseeParty + ".individualDetails.lastName", contains("N/A")))
+                .andExpect(jsonPath(underlesseeParty + ".organisationDetails", empty()));
         }
 
         @Test
@@ -575,12 +602,15 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
     private void linkToClaimPartyOrganisation(PartyEntity party) {
         OrganisationEntity organisation = OrganisationEntity.builder()
             .organisationId("LR-ORG")
+            .organisationProfileId("SOLICITOR_PROFILE")
             .organisationName("Legal Rep Firm")
+            .createdDate(LocalDateTime.now())
             .build();
         organisation.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder()
             .party(party)
             .organisation(organisation)
             .active(YesOrNo.YES)
+            .startDate(Instant.now())
             .build());
         entityManager.persist(organisation);
         entityManager.flush();

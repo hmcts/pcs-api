@@ -4,16 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
@@ -51,6 +53,7 @@ public class ServiceHearingValuesMapper {
     static final String URGENT_CASE_FLAG_CODE = "CF0007";
     static final String PARTY_TYPE_INDIVIDUAL = "IND";
     static final String PARTY_TYPE_ORGANISATION = "ORG";
+    static final String UNDERLESSEE_OR_MORTGAGEE_LAST_NAME = "N/A";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     static final int MAX_COMMENT_LENGTH = 200;
     static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
@@ -64,20 +67,17 @@ public class ServiceHearingValuesMapper {
     private final PcsCaseService pcsCaseService;
     private final CaseNameFormatter caseNameFormatter;
     private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
-    private final PartyService partyService;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
                                       CaseNameFormatter caseNameFormatter,
                                       IndividualDetailsFlagMapper individualDetailsFlagMapper,
-                                      PartyService partyService,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
         this.caseNameFormatter = caseNameFormatter;
         this.individualDetailsFlagMapper = individualDetailsFlagMapper;
-        this.partyService = partyService;
         this.manageCaseUrl = manageCaseUrl;
     }
 
@@ -210,8 +210,9 @@ public class ServiceHearingValuesMapper {
 
         IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
         details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
-        details.setFirstName(party.getFirstName());
-        details.setLastName(party.getLastName());
+        boolean underlesseeOrMortgagee = isUnderlesseeOrMortgagee(party);
+        details.setFirstName(underlesseeOrMortgagee ? party.getOrgName() : party.getFirstName());
+        details.setLastName(underlesseeOrMortgagee ? UNDERLESSEE_OR_MORTGAGEE_LAST_NAME : party.getLastName());
         details.setHearingChannelEmail(contactList(party.getEmailAddress()));
         details.setHearingChannelPhone(contactList(party.getPhoneNumber()));
         return PartyDetails.builder()
@@ -219,12 +220,37 @@ public class ServiceHearingValuesMapper {
             .partyType(partyType)
             .partyRole(party.getEntityRoleCodeKey())
             .individualDetails(details)
+            .organisationDetails(legalRepOrganisationDetails(party))
             .build();
     }
 
-    private String partyType(PartyEntity party) {
+    private static String partyType(PartyEntity party) {
         // party.type is not set on model and is null in the database
-        return partyService.isOrganisation(party) ? PARTY_TYPE_ORGANISATION : PARTY_TYPE_INDIVIDUAL;
+        return party.isClaimCreator() && party.getOrganisationId() != null
+            ? PARTY_TYPE_ORGANISATION
+            : PARTY_TYPE_INDIVIDUAL;
+    }
+
+    private static boolean isUnderlesseeOrMortgagee(PartyEntity party) {
+        // the underlessee or mortgagee name is a single free-text field stored in orgName
+        return party.getClaimParties().stream()
+            .anyMatch(claimParty -> claimParty.getRole() == PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+    }
+
+    private static OrganisationDetails legalRepOrganisationDetails(PartyEntity party) {
+        if (party.isClaimCreator()) {
+            return null;
+        }
+        return party.getClaimPartyOrganisationList().stream()
+            .filter(claimPartyOrganisation -> claimPartyOrganisation.getActive() == YesOrNo.YES)
+            .map(ClaimPartyOrganisationEntity::getOrganisation)
+            .findFirst()
+            .map(legalRepOrg -> OrganisationDetails.builder()
+                .name(legalRepOrg.getOrganisationName())
+                .organisationType(PARTY_TYPE_ORGANISATION)
+                .cftOrganisationID(legalRepOrg.getOrganisationId())
+                .build())
+            .orElse(null);
     }
 
     private static List<String> contactList(String value) {
