@@ -550,7 +550,7 @@ class PartiesViewTest {
 
         // Then
         assertThat(pcsCase.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">John Doe</div>");
         assertThat(pcsCase.getHasUnknownDefendants()).isEqualTo(YesOrNo.YES);
     }
 
@@ -564,7 +564,7 @@ class PartiesViewTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">John Doe</div>");
         assertThat(caseData.getHasUnknownDefendants()).isEqualTo(YesOrNo.NO);
     }
 
@@ -595,9 +595,9 @@ class PartiesViewTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
-                           + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
-                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">Test Testing</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">Third Def</div>");
     }
 
     @Test
@@ -615,8 +615,8 @@ class PartiesViewTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
-                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">Third Def</div>");
         assertThat(caseData.getHasUnknownDefendants()).isEqualTo(YesOrNo.YES);
     }
 

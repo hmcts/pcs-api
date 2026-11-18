@@ -35,7 +35,7 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
                    "<h3 class=\"govuk-!-font-size-19\">Defendants</h3>")
             .label("nameAndAddressForEvictionWrit-defendants-value", "${formattedDefendantNames}")
             .label("nameAndAddressForEvictionWrit-defendants-unknown",
-                   "<div class=\"govuk-!-margin-bottom-2\">Person(s) unknown</div>",
+                   "<div class=\"govuk-!-margin-bottom-2 govuk-!-font-size-19\">Person(s) unknown</div>",
                    "hasUnknownDefendants=\"Yes\"")
             .label("nameAndAddressForEvictionWrit-defendants-hr", "<hr>")
             .label("nameAndAddressForEvictionWrit-address-heading",
