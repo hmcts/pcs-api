@@ -6,6 +6,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.client.TaskManagementClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.WaTask;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
@@ -42,16 +44,21 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     @Autowired
     private TaskManagementClient taskManagementClient;
 
+    @Autowired
+    private OAuth2AuthorizedClientManager authorizedClientManager;
+
     private String solicitorToken;
     private String hearingCentreTeamLeaderToken;
 
     @BeforeAll
     void setup() {
         solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-        hearingCentreTeamLeaderToken = idamClient.getAccessToken(
+        hearingCentreTeamLeaderToken = new IdamTokenProvider(
+            authorizedClientManager,
+            "system-user",
             "pcs-hearing-centre-team-leader-01@localhost",
             "password"
-        );
+        ).getAuthToken();
     }
 
     @Test

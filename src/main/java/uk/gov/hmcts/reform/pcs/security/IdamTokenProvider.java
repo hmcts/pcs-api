@@ -1,77 +1,64 @@
 package uk.gov.hmcts.reform.pcs.security;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Expiry;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.github.benmanes.caffeine.cache.Ticker;
-import feign.FeignException;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
+import cft.idam.legacy.auth.support.PasswordGrantAuthorizedClientProvider;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
-import java.time.Duration;
-
 /**
- * Caches an IDAM token for one service identity and renews it before expiry.
+ * Fetches an IDAM access token for a specific OAuth2 client-registration id. One instance
+ * is created per service identity (e.g. {@code system-user}, {@code prd-admin}) by
+ * {@link IdamTokenProviderConfig}. Tokens are cached by the underlying
+ * {@link OAuth2AuthorizedClientManager}; IDAM is only hit on cache miss or refresh.
  */
+@Slf4j
 public class IdamTokenProvider {
 
     public static final String BEARER_PREFIX = "Bearer ";
-    private static final String TOKEN_ERROR = "Unable to get access token response";
-    private static final long EXPIRY_SKEW_SECONDS = 60;
 
-    private final IdamClient idamClient;
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
+    private final String clientRegistrationId;
     private final String username;
     private final String password;
-    private final Ticker ticker;
-    private final LoadingCache<String, CachedToken> tokens;
 
-    public IdamTokenProvider(IdamClient idamClient, String username, String password) {
-        this(idamClient, username, password, Ticker.systemTicker());
-    }
-
-    IdamTokenProvider(IdamClient idamClient, String username, String password, Ticker ticker) {
-        this.idamClient = idamClient;
+    public IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
+                                              String clientRegistrationId,
+                                              String username,
+                                              String password) {
+        this.authorizedClientManager = authorizedClientManager;
+        this.clientRegistrationId = clientRegistrationId;
         this.username = username;
         this.password = password;
-        this.ticker = ticker;
-        this.tokens = Caffeine.newBuilder()
-            .maximumSize(1)
-            .ticker(ticker)
-            .expireAfter(Expiry.creating((String key, CachedToken token) -> token.cacheLifetime()))
-            .build(key -> requestToken());
     }
 
     public String getAuthToken() {
-        return tokens.get(username).authorization();
-    }
-
-    private CachedToken requestToken() {
-        long requestedAt = ticker.read();
-        TokenResponse response;
         try {
-            response = idamClient.getAccessTokenResponse(username, password);
-        } catch (FeignException exception) {
-            throw new IdamException(TOKEN_ERROR, exception);
-        }
-        if (response == null || response.accessToken == null || response.accessToken.isBlank()) {
-            throw new IdamException(TOKEN_ERROR);
-        }
+            log.debug("Requesting {} token via OAuth2 (cached if available)", clientRegistrationId);
 
-        try {
-            long lifetimeSeconds = Long.parseLong(response.expiresIn);
-            if (lifetimeSeconds <= 0) {
-                throw new IdamException(TOKEN_ERROR);
+            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId(clientRegistrationId)
+                .principal(username)
+                .attribute(PasswordGrantAuthorizedClientProvider.USERNAME, username)
+                .attribute(PasswordGrantAuthorizedClientProvider.PASSWORD, password)
+                .build();
+
+            OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
+
+            if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
+                log.error("Failed to authorize OAuth2 client for {} - client or token is null",
+                          clientRegistrationId);
+                throw new IdamException("Unable to get access token response");
             }
-            Duration cacheLifetime = Duration.ofSeconds(lifetimeSeconds - EXPIRY_SKEW_SECONDS)
-                .minusNanos(ticker.read() - requestedAt);
-            return new CachedToken(BEARER_PREFIX + response.accessToken,
-                cacheLifetime.isNegative() ? Duration.ZERO : cacheLifetime);
-        } catch (NumberFormatException | ArithmeticException exception) {
-            throw new IdamException(TOKEN_ERROR, exception);
-        }
-    }
 
-    private record CachedToken(String authorization, Duration cacheLifetime) {
+            return BEARER_PREFIX + authorizedClient.getAccessToken().getTokenValue();
+
+        } catch (OAuth2AuthorizationException ex) {
+            log.error("OAuth2 authorization error retrieving {} token. Error: {}",
+                clientRegistrationId, ex.getError().getErrorCode(), ex);
+            throw new IdamException("Unable to get access token response", ex);
+        }
     }
 }
