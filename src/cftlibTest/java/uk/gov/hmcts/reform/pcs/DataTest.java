@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -368,9 +369,9 @@ public class DataTest extends CftlibTest {
             "SELECT COUNT(*) FROM public.document d "
                 + "JOIN public.pcs_case c ON d.case_id = c.id "
                 + "WHERE c.case_reference = '" + caseReference + "'"
-                + "AND d.url = 'http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000' "
+                + "AND d.url = 'http://localhost:9400/documents/00000000-AA00-0000-A000-A0AA000A0000' "
                 + "AND d.file_name = 'rent-statement - Claimant 1.pdf' "
-                + "AND d.binary_url = 'http://localhost:8083/documents/00000000-AA00-0000-A000-A0AA000A0000/binary' "
+                + "AND d.binary_url = 'http://localhost:9400/documents/00000000-AA00-0000-A000-A0AA000A0000/binary' "
                 + "AND d.category_id = 'propertyDocuments' "
                 + "AND d.type = 'RENT_STATEMENT' "
                 + "AND d.document_id = '00000000-aa00-0000-a000-a0aa000a0000' "
