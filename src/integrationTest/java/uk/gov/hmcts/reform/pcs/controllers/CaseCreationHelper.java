@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 
 import java.util.List;
@@ -48,8 +49,14 @@ public class CaseCreationHelper {
 
     PcsCaseEntity createTestCaseWithMultipleDefendants(
         long caseReference, String firstIdamUserId, String secondIdamUserId) {
+        return createTestCaseWithMultipleDefendants(caseReference, firstIdamUserId, secondIdamUserId, null);
+    }
+
+    PcsCaseEntity createTestCaseWithMultipleDefendants(
+        long caseReference, String firstIdamUserId, String secondIdamUserId, LegislativeCountry legislativeCountry) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
+        caseEntity.setLegislativeCountry(legislativeCountry);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
 
