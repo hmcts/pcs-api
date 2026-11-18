@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -282,17 +284,131 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldTruncateListingCommentsLongerThanMaxLength() {
+    void shouldExcludeFlagsWithoutReferenceData() {
+        CaseFlagEntity noRefData = flag("Ignored", "ignored");
+        noRefData.setFlagRefData(null);
+        givenCase(caseBuilder().caseFlags(flags(noRefData, flag("Complex case", null))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments()).isEqualTo("Case Flags: Complex case");
+    }
+
+    @Test
+    void shouldTrimNamesAndCommentsButKeepWhitespaceInsideComment() {
+        givenCase(caseBuilder().caseFlags(flags(
+            flag("  Urgent case ", "  so   urgent \n"),
+            flag(" Complex case ", "")
+        )).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments())
+            .isEqualTo("Case Flags: Urgent case (Comments: so   urgent), Complex case");
+    }
+
+    @Test
+    void shouldCapCommentAtMaxCommentLengthWhenFullTextIsTooLong() {
         String longComment = "x".repeat(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
         givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
-        String expected = ("Case Flags: Urgent case (Comments: " + longComment + ")")
-            .substring(0, ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
+        int keptLength = ServiceHearingValuesMapper.MAX_COMMENT_LENGTH - ServiceHearingValuesMapper.ELLIPSIS.length();
+        assertThat(values.getListingComments())
+            .isEqualTo("Case Flags: Urgent case (Comments: " + "x".repeat(keptLength) + "...)");
+    }
+
+    @Test
+    void shouldKeepFullTextWhenEightOrMoreCommentedFlagsFit() {
+        List<CaseFlagEntity> caseFlags = flags();
+        int flagCount = ServiceHearingValuesMapper.FULL_TEXT_MAX_COMMENTED_FLAGS + 2;
+        for (int i = 1; i <= flagCount; i++) {
+            caseFlags.add(flag("Flag " + i, "comment " + i));
+        }
+        givenCase(caseBuilder().caseFlags(caseFlags).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        String expected = "Case Flags: " + IntStream.rangeClosed(1, flagCount)
+            .mapToObj(i -> "Flag " + i + " (Comments: comment " + i + ")")
+            .collect(Collectors.joining(", "));
+        assertThat(values.getListingComments()).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldShareSpaceFairlyKeepingShortCommentsWholeAndNamesInFull() {
+        // 12 flags: 10 with 200-character comments and 2 with short ones. The full text would be ~2,300 characters.
+        // Fixed text is 274 characters, leaving 1,726 to share: 5 + 5 for the short comments, then 171-172 each.
+        List<CaseFlagEntity> caseFlags = flags();
+        for (int i = 1; i <= 12; i++) {
+            String comment = i == 5 || i == 12 ? "short" : "x".repeat(ServiceHearingValuesMapper.MAX_COMMENT_LENGTH);
+            caseFlags.add(flag(String.format("Flag %02d", i), comment));
+        }
+        givenCase(caseBuilder().caseFlags(caseFlags).build());
+
+        String listingComments = underTest.getServiceHearingValues(CASE_REFERENCE).getListingComments();
+
+        assertThat(listingComments)
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .startsWith("Case Flags: ");
+        List<String> entries = List.of(listingComments.substring("Case Flags: ".length()).split(", "));
+        assertThat(entries).hasSize(12);
+        for (int i = 1; i <= 12; i++) {
+            String entry = entries.get(i - 1);
+            String name = String.format("Flag %02d", i);
+            if (i == 5 || i == 12) {
+                assertThat(entry).isEqualTo(name + " (Comments: short)");
+            } else {
+                assertThat(entry).matches(name + " \\(Comments: x{168,169}\\.\\.\\.\\)");
+            }
+        }
+    }
+
+    @Test
+    void shouldCutListingCommentsAtMaxLengthWhenFlagNamesAloneAreTooLong() {
+        List<CaseFlagEntity> caseFlags = flags();
+        for (int i = 1; i <= 100; i++) {
+            caseFlags.add(flag(String.format("Flag name number %03d", i), "comment"));
+        }
+        givenCase(caseBuilder().caseFlags(caseFlags).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
         assertThat(values.getListingComments())
             .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
-            .isEqualTo(expected);
+            .startsWith("Case Flags: Flag name number 001, Flag name number 002");
+    }
+
+    @Test
+    void shouldNotShortenCommentThatFits() {
+        assertThat(ServiceHearingValuesMapper.shorten("so urgent", 9)).isEqualTo("so urgent");
+    }
+
+    @Test
+    void shouldShortenAtWordBoundaryAndDropTrailingWhitespace() {
+        assertThat(ServiceHearingValuesMapper.shorten("the quick brown fox", 15)).isEqualTo("the quick...");
+        assertThat(ServiceHearingValuesMapper.shorten("hello   world", 10)).isEqualTo("hello...");
+    }
+
+    @Test
+    void shouldShortenMidWordWhenLastWordBoundaryIsTooEarly() {
+        String comment = "a " + "x".repeat(50);
+
+        assertThat(ServiceHearingValuesMapper.shorten(comment, 20))
+            .hasSize(20)
+            .isEqualTo("a " + "x".repeat(15) + "...");
+    }
+
+    @Test
+    void shouldShortenMidWordWhenCommentHasNoWhitespace() {
+        assertThat(ServiceHearingValuesMapper.shorten("x".repeat(50), 10)).isEqualTo("xxxxxxx...");
+    }
+
+    @Test
+    void shouldDropCommentWhenNoRoomForTextBeforeEllipsis() {
+        assertThat(ServiceHearingValuesMapper.shorten("so urgent", 3)).isNull();
+        assertThat(ServiceHearingValuesMapper.shorten("so urgent", 0)).isNull();
     }
 
     @Test

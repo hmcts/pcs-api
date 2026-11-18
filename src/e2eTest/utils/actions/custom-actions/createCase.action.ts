@@ -72,6 +72,7 @@ import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { CaseManagementCommonUtils } from './custom-actions-caseManagement/caseManagementUtils.action';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -192,7 +193,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await page.waitForLoadState('load');
-    await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: MEDIUM_TIMEOUT }).catch(() => {});
+    await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: MEDIUM_TIMEOUT }).catch(() => { });
     await performAction('clickButtonAndVerifyPageNavigation', createCase.start, housingPossessionClaim.mainHeader);
   }
 
@@ -225,29 +226,29 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectResumeClaimOption(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:resumeClaimOptions.resumeClaimQuestion, option: caseData});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: resumeClaimOptions.resumeClaimQuestion, option: caseData });
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantInformation.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:claimantType.whoIsTheClaimantQuestion, option: caseData});
-    if(caseData === claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption || caseData === claimantType.walesCommunityLandlordDynamicRadioOption){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: claimantType.whoIsTheClaimantQuestion, option: caseData });
+    if (caseData === claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption || caseData === claimantType.walesCommunityLandlordDynamicRadioOption) {
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continueButton, claimType.mainHeader);
     }
-    else{
+    else {
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continueButton, userIneligible.mainHeader);
     }
   }
 
   private async selectClaimType(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.yesRadioOption){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: claimType.isThisAClaimAgainstQuestion, option: caseData });
+    if (caseData === claimType.yesRadioOption) {
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     } else {
       await performAction('clickButton', claimType.continueButton);
@@ -262,16 +263,16 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectGroundsForPossession(possessionGrounds: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
     let groundsForPossessionQuestion = groundsForPossession.areYouClaimingPossessionQuestion;
     if (possessionGrounds.rentArrears == groundsForPossession.noRadioOption) {
       groundsForPossessionQuestion = introductoryDemotedOrOtherGroundsForPossession.doYouHaveGroundsForPossessionQuestion;
     }
-    await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
+    await performAction('clickRadioButton', { question: groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput });
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yesRadioOption) {
       if (possessionGrounds.grounds) {
-        await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: possessionGrounds.grounds});
+        await performAction('check', { question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: possessionGrounds.grounds });
         if ((possessionGrounds.grounds as Array<string>).includes(introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox)) {
           await performAction('inputText', introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsHiddenTextLabel, introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsInput);
         }
@@ -281,35 +282,35 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectPreActionProtocol(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
-    if(caseData === 'No' && addressInfo.townCity !== addressDetails.walesTownOrCityTextInput){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData });
+    if (caseData === 'No' && addressInfo.townCity !== addressDetails.walesTownOrCityTextInput) {
       await performAction('inputText', preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextLabel, preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextInput);
     }
     await performAction('clickButton', preactionProtocol.continueButton);
   }
 
   private async selectNoticeOfYourIntention(caseData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:caseData.question, option: caseData.option});
-    if ( caseData.option === checkingNotice.yesRadioOption && caseData.typeOfNotice) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: caseData.question, option: caseData.option });
+    if (caseData.option === checkingNotice.yesRadioOption && caseData.typeOfNotice) {
       await performAction('inputText', checkingNotice.typeOfNoticeHiddenTextLabel, checkingNotice.typeOfNoticeHiddenTextInput);
     }
     await performAction('clickButton', checkingNotice.continueButton);
   }
 
   private async selectBorderPostcode(option: actionData) {
-    await performAction('clickRadioButton', {question:borderPostcode.isProtpertyLocatedInEnglandOrWalesQuestion, option: option});
+    await performAction('clickRadioButton', { question: borderPostcode.isProtpertyLocatedInEnglandOrWalesQuestion, option: option });
     await performAction('clickButton', borderPostcode.continueButton);
   }
 
   private async selectClaimantName(page: Page, caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:claimantInformation.IsCorrectClaimantNameQuestion, option: caseData});
-    if(caseData == claimantInformation.noRadioOption){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: claimantInformation.IsCorrectClaimantNameQuestion, option: caseData });
+    if (caseData == claimantInformation.noRadioOption) {
       await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
@@ -317,8 +318,8 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
     const prefData = preferences as {
       notifications: string;
       correspondenceAddress: string;
@@ -343,7 +344,7 @@ export class CreateCaseAction implements IAction {
         ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
       );
     }
-    if(prefData.phoneNumber) {
+    if (prefData.phoneNumber) {
       await performAction('clickRadioButton', {
         question: contactPreferences.doYouWantToProvideQuestion,
         option: prefData.phoneNumber
@@ -478,7 +479,7 @@ export class CreateCaseAction implements IAction {
               await performAction('check', {question: whatAreYourGroundsForPossessionWales.estateManagementGroundsHiddenQuestion, option: possessionGrounds.discretionaryEstateGrounds});          }
           break;
         case 'mandatory':
-          await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
+          await performAction('check', { question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory });
           if (String(possessionGrounds.mandatory) === 'Antisocial behaviour') {
             await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.absoluteGroundQuestion, option: possessionGrounds.mandatoryAbsolute});
           }
@@ -1607,7 +1608,7 @@ export class CreateCaseAction implements IAction {
     return ((await tdLocator.textContent()) || '').trim();
   }
 
-  public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
+  public async validateCaseFileViewFolders(page: Page, caseFileView: actionData) {
     let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
@@ -1615,29 +1616,29 @@ export class CreateCaseAction implements IAction {
       timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
-    const folder:string[] = caseFileView as string[];
+    const folder: string[] = caseFileView as string[];
 
     const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
     expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
   }
 
-  public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
-
+  public async validateCaseFileViewIndividualFolder(page: Page, caseFile: actionRecord) {
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let ccPayload = caseFile.ccPayload as Record<string, any>;
+    let gaPayload = caseFile.gaPayload as Record<string, any>;
     let userInputFiles:string[]= [];
     const file = caseFile.caseWorkerUpload ?? caseFile.caseWorkerAmend ?? caseFile.genApp ?? caseFile.claimantLRUpload ?? caseFile.defendantLRUpload ?? caseFile.caseWorkerHearing;
 
     switch (folderName) {
       case 'Property documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport, 'Claimant',caseFile.claimantIndex as number|| 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation, 'Claimant',caseFile.claimantIndex as number || 1);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments,'Claimant',caseFile.claimantIndex as number || 1);
         if (caseFile.caseWorkerAmend) {
           userInputFiles.push(...(Array.isArray(caseFile.caseWorkerAmend) ? caseFile.caseWorkerAmend : [caseFile.caseWorkerAmend]));
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
@@ -1647,45 +1648,60 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Statements of case':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Claimant', caseFile.claimantIndex as number || 1 ,'Notice for service out of the jurisdiction');
+        if (ccPayload) {
+          this.readDocFilesFromPayLoad(
+            userInputFiles,
+            ccPayload.event_data.possessionClaimResponse?.defendantResponses?.counterClaimDocuments, `CC${caseFile.defendantIndex} - Defendant`, caseFile.defendantIndex as number
+          );
+        }
+        if (caseFile.caseWorkerAmend) {
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, caseFile.date as string || '',caseFile.app as string || '', `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+        } else if (file) {
+          userInputFiles.push(...(Array.isArray(file) ? file : [file]));
+        }
         break;
 
       case 'Evidence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Inspection or report');
         if (caseFile.caseWorkerAmend) {
-          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Inspection or report');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Correspondence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Legal aid certificate');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Legal aid certificate');
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments,'Claimant', caseFile.claimantIndex as number || 1, 'Other document');
         if (ccPayload)
-          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments)
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments, caseFile.partyType as string || 'Defendant', caseFile.defendantIndex as number)
         if (caseFile.caseWorkerAmend) {
-          const oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
-          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string,);
+          let oldFile = this.getFileNameByType(submitPayLoad?.additionalDocuments, 'Other document');
+          oldFile = CaseManagementCommonUtils.renameDocument(oldFile as string, ``, ``, `Claimant ${caseFile.claimantIndex || 1}`);
+          userInputFiles = this.updateFiles(userInputFiles, file as string, oldFile as string, caseFile.caseWorkerAmend as string);
         } else if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
 
       case 'Applications':
-        if(submitPayLoad){
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (gaPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, gaPayload?.xui_genapp_UploadedDocuments, caseFile.partyType as string || '', undefined, 'All Files');
+          userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
         }
         if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
         }
         break;
-      
+
       case 'Orders and Notice of Hearings':
         if (file) {
           userInputFiles.push(...(Array.isArray(file) ? file : [file]));
@@ -1768,7 +1784,6 @@ export class CreateCaseAction implements IAction {
       : [...new Set(
         filesArray.map(f =>
           f
-            .replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
             .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
             .trim()
         )
@@ -1777,7 +1792,9 @@ export class CreateCaseAction implements IAction {
     return uniqueFiles;
   }
 
-  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[],party?: string,index?: number, multiDocsLabel?: string) {
+
+    const partyLabel = [party, index].filter(Boolean).join(' ');
 
     if (subArray && Array.isArray(subArray)) {
       subArray.forEach(doc => {
@@ -1786,7 +1803,7 @@ export class CreateCaseAction implements IAction {
           const filename = doc.value?.document?.document_filename ?? doc.value?.document_filename;
 
           if (multiDocsLabel === valueLabel && filename) {
-            mainArray.push(filename);
+            mainArray.push(CaseManagementCommonUtils.renameDocument(filename,'','',partyLabel || undefined));
           }
         } else {
           const filename =
@@ -1794,7 +1811,7 @@ export class CreateCaseAction implements IAction {
             doc.value?.document_filename;
 
           if (filename) {
-            mainArray.push(filename);
+            mainArray.push(CaseManagementCommonUtils.renameDocument(filename,'','',partyLabel || undefined));
           }
         }
       });
@@ -1907,7 +1924,7 @@ export class CreateCaseAction implements IAction {
     });
   }
 
-    public async validateTabNotPresent(page: Page, tab: actionRecord) {
+  public async validateTabNotPresent(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.getByRole('tab');
       await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
@@ -1917,17 +1934,15 @@ export class CreateCaseAction implements IAction {
     });
   }
 
-  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number, party: string = 'Defendant'): string[] {
     const result: string[] = [];
 
-    for (let i = 1; i <= defendantCount; i++) {
-      for (const file of filesArray) {
-        result.push(
-          file.replace(/\.pdf$/i, ` GA${i}.pdf`)
-        );
-      }
 
-      result.push(`General Application GA${i}.pdf`);
+    for (const file of filesArray) {
+      result.push(
+        ...CaseManagementCommonUtils.getAllGenApplicationFiles(defendantCount, file, party)
+
+      );
     }
 
     return result;
@@ -2112,7 +2127,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
   }
-  private async checkFolderCount(page:Page){
+  private async checkFolderCount(page: Page) {
     let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
@@ -2154,7 +2169,7 @@ export class CreateCaseAction implements IAction {
       allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
     }
 
-  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string,): string[] {
+  private updateFiles(files: string[], uploadedFile?: string, oldFile?: string, amendedFile?: string): string[] {
     if (oldFile && amendedFile) {
       return files
         .filter(file => file !== oldFile)
