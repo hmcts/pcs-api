@@ -10,10 +10,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
+import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -56,15 +59,18 @@ public class ServiceHearingValuesMapper {
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
     private final CaseNameFormatter caseNameFormatter;
+    private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
                                       CaseNameFormatter caseNameFormatter,
+                                      IndividualDetailsFlagMapper individualDetailsFlagMapper,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
         this.caseNameFormatter = caseNameFormatter;
+        this.individualDetailsFlagMapper = individualDetailsFlagMapper;
         this.manageCaseUrl = manageCaseUrl;
     }
 
@@ -88,6 +94,10 @@ public class ServiceHearingValuesMapper {
         String caseManagementLocation = Objects.toString(pcsCase.getCaseManagementLocation(), null);
         values.setCaseManagementLocationCode(caseManagementLocation);
         values.getHearingLocations().forEach(location -> location.setLocationId(caseManagementLocation));
+        List<PartyDetails> parties = parties(pcsCase);
+        if (!parties.isEmpty()) {
+            values.setParties(parties);
+        }
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -166,6 +176,22 @@ public class ServiceHearingValuesMapper {
         return pcsCase.getGenApps().stream()
             .anyMatch(genApp -> genApp.getType() == GenAppType.SUSPEND
                 && genApp.isOpen());
+    }
+    
+    private List<PartyDetails> parties(PcsCaseEntity pcsCase) {
+        return pcsCase.getParties().stream()
+            .filter(Objects::nonNull)
+            .filter(party -> !party.isRemoved())
+            .map(this::partyDetails)
+            .toList();
+    }
+
+    private PartyDetails partyDetails(PartyEntity party) {
+        IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
+        details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
+        return PartyDetails.builder()
+            .individualDetails(details)
+            .build();
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {
