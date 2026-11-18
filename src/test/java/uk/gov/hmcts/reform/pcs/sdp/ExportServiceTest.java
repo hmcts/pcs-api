@@ -141,12 +141,8 @@ class ExportServiceTest {
             ),
             List.of(),
             List.of(),
-            List.of(
-                new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(),
-                    LocalDateTime.of(2026, 3, 1, 10, 0), LanguageUsed.ENGLISH.name()),
-                new SdpClaimSnapshotResponse(CLAIM_ID, 13, PARTY_ID, VerticalYesNo.NO.name(),
-                    LocalDateTime.of(2026, 3, 2, 10, 0), LanguageUsed.WELSH.name())
-            )
+            List.of(new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(),
+                LocalDateTime.of(2026, 3, 1, 10, 0), LanguageUsed.WELSH.name()))
         );
 
         exportService.exportClaims();
