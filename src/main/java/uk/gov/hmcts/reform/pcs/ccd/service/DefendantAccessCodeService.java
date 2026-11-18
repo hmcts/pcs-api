@@ -112,9 +112,7 @@ public class DefendantAccessCodeService {
 
             partyAccessCodeRepo.save(
                 PartyAccessCodeEntity.builder()
-                    .party(PartyEntity.builder()
-                            .id(defendant.getId())
-                            .build())
+                    .party(defendant)
                     .pcsCase(pcsCaseEntity)
                     .code(hashingService.encodeForStorage(plaintextAccessCode))
                     .role(PartyRole.DEFENDANT)

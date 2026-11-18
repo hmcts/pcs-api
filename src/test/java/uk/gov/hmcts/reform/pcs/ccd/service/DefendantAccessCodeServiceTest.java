@@ -137,7 +137,7 @@ class DefendantAccessCodeServiceTest {
 
         verify(partyAccessCodeRepo).save(accessCodeCaptor.capture());
         PartyAccessCodeEntity savedCode = accessCodeCaptor.getValue();
-        assertThat(savedCode.getParty().getId()).isEqualTo(partyId);
+        assertThat(savedCode.getParty()).isSameAs(savedDoc.getParty());
         assertThat(savedCode.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
