@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
@@ -29,6 +30,7 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
     private BreathingSpaceService breathingSpaceService;
     private AddressFormatter addressFormatter;
+    private EnforcementOrderService enforcementOrderService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -49,8 +51,10 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         PCSCase caseData = eventPayload.caseData();
 
         breathingSpaceService.createBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
+        enforcementOrderService.updateStatesForBreathingSpace(caseReference);
 
         return SubmitResponse.<State>builder()
+            .state(State.BREATHING_SPACE)
             .confirmationBody(this.getConfirmationBodyMarkdown(caseData, caseReference))
             .build();
     }
