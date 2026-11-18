@@ -151,7 +151,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
 
     private List<UUID> partyIdsWithCode(PcsCaseEntity caseEntity) {
         return partyAccessCodeRepository.findAllByPcsCase_Id(caseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(pac -> pac.getParty().getId())
             .toList();
     }
 
