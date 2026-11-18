@@ -107,7 +107,7 @@ public class SnapshotMapper {
             .partyType("CLAIMANT".equals(role) ? resolvePartyType(claimantType) : null)
             .partyRole(resolvePartyRole(role))
             .partyRepresented(represented ? "Yes" : "No")
-            .partyLanguage(resolveLanguage(languageUsed))
+            .partyLanguage(languageUsed == null ? null : resolveLanguage(languageUsed))
             .build();
     }
 

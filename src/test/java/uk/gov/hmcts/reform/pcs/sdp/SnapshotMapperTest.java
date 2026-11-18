@@ -228,6 +228,14 @@ class SnapshotMapperTest {
     }
 
     @Test
+    void shouldLeavePartyLanguageEmptyWhenLanguageIsMissing() {
+        SnapshotParty result = claimSnapshotMapper.mapParty(
+            "party-1", "DEFENDANT", "PRIVATE_LANDLORD", false, null);
+
+        assertThat(result.getPartyLanguage()).isNull();
+    }
+
+    @Test
     void shouldMapClaimantPartyTypeAndRepresentation() {
         SnapshotParty result = claimSnapshotMapper.mapParty(
             "party-1", "CLAIMANT", "PROVIDER_OF_SOCIAL_HOUSING", true, "WELSH");

@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -232,7 +233,7 @@ public class ExportService {
                 .recordedDate(formatDateTime(header.claimSubmittedDate()))
                 .dimensions(dimensions)
                 .milestones(milestones)
-                .parties(mapParties(parties, header.claimantType(), header.languageUsed()))
+                .parties(mapParties(parties, header.claimantType(), header.languageUsed(), responses))
                 .requestedFees(mapRequestedFees(payments))
                 .grounds(mapGrounds(grounds))
                 .responses(mapResponses(responses))
@@ -241,10 +242,11 @@ public class ExportService {
     }
 
     private List<SnapshotParty> mapParties(List<SdpClaimSnapshotParty> parties, String claimantType,
-                                          String languageUsed) {
+                                          String claimLanguage, List<SdpClaimSnapshotResponse> responses) {
         if (parties == null || parties.isEmpty()) {
             return List.of();
         }
+        Map<UUID, String> responseLanguages = latestResponseLanguages(responses);
         List<SnapshotParty> mapped = new ArrayList<>();
         for (SdpClaimSnapshotParty party : parties) {
             if (party.partyId() == null) {
@@ -255,10 +257,21 @@ public class ExportService {
                 party.role(),
                 claimantType,
                 party.represented(),
-                languageUsed
+                "CLAIMANT".equals(party.role()) ? claimLanguage : responseLanguages.get(party.partyId())
             ));
         }
         return mapped;
+    }
+
+    private static Map<UUID, String> latestResponseLanguages(List<SdpClaimSnapshotResponse> responses) {
+        return responses.stream()
+            .filter(response -> response.partyId() != null && response.languageUsed() != null)
+            .sorted(Comparator.comparing(
+                SdpClaimSnapshotResponse::responseSubmittedDate, Comparator.nullsFirst(Comparator.naturalOrder())))
+            .collect(Collectors.toMap(
+                SdpClaimSnapshotResponse::partyId,
+                SdpClaimSnapshotResponse::languageUsed,
+                (earlier, later) -> later));
     }
 
     private List<SnapshotRequestedFee> mapRequestedFees(List<SdpClaimSnapshotPayment> payments) {

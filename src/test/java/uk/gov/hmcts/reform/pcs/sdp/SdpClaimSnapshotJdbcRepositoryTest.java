@@ -137,9 +137,10 @@ class SdpClaimSnapshotJdbcRepositoryTest {
         when(resultSet.getObject("party_id", UUID.class)).thenReturn(PARTY_ID);
         when(resultSet.getString("make_counter_claim")).thenReturn("NO");
         when(resultSet.getTimestamp("response_submitted_date")).thenReturn(Timestamp.valueOf(SUBMITTED));
+        when(resultSet.getString("language_used")).thenReturn("WELSH");
 
         assertThat(repository.findResponsesByClaimId(List.of(CLAIM_ID))).containsExactly(
-            new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, "NO", SUBMITTED)
+            new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, "NO", SUBMITTED, "WELSH")
         );
     }
 

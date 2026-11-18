@@ -146,7 +146,8 @@ public class SdpClaimSnapshotJdbcRepository {
                r.id AS response_id,
                r.party_id,
                r.make_counter_claim,
-               r.response_submitted_date
+               r.response_submitted_date,
+               r.language_used
         FROM defendant_response r
         WHERE r.claim_id IN (:ids)
         """;
@@ -269,7 +270,8 @@ public class SdpClaimSnapshotJdbcRepository {
             rs.getObject("response_id", Integer.class),
             rs.getObject(PARTY_ID, UUID.class),
             rs.getString("make_counter_claim"),
-            toLocalDateTime(rs, "response_submitted_date")
+            toLocalDateTime(rs, "response_submitted_date"),
+            rs.getString("language_used")
         );
     }
 

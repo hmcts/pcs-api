@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,7 +113,6 @@ class ExportServiceTest {
             "\"claim_sub_type\":\"Social\"",
             "\"party_role\":\"Defendant\"",
             "\"party_represented\":\"No\"",
-            "\"party_language\":\"eng\"",
             "\"grounds\":[]",
             "\"property_address\":[]",
             "\"requested_fees\":[]",
@@ -126,7 +126,36 @@ class ExportServiceTest {
             "\"snapshot_version\":1",
             "\"published_date\":\"2026-03-09T12:00:00Z\""
         );
+        assertThat(json).doesNotContain("\"party_language\"");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
+    }
+
+    @Test
+    void shouldUseClaimLanguageForClaimantAndResponseLanguageForDefendant() throws Exception {
+        UUID claimantId = UUID.randomUUID();
+        stubClaimsForExport(
+            List.of(header()),
+            List.of(
+                new SdpClaimSnapshotParty(CLAIM_ID, claimantId, PartyRole.CLAIMANT.name(), false),
+                new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), false)
+            ),
+            List.of(),
+            List.of(),
+            List.of(
+                new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(),
+                    LocalDateTime.of(2026, 3, 1, 10, 0), LanguageUsed.ENGLISH.name()),
+                new SdpClaimSnapshotResponse(CLAIM_ID, 13, PARTY_ID, VerticalYesNo.NO.name(),
+                    LocalDateTime.of(2026, 3, 2, 10, 0), LanguageUsed.WELSH.name())
+            )
+        );
+
+        exportService.exportClaims();
+
+        JsonNode parties = new ObjectMapper().readTree(uploadedJson()).get(0).get("claim").get("parties");
+        assertThat(parties.get(0).get("party_id").asText()).isEqualTo(claimantId.toString());
+        assertThat(parties.get(0).get("party_language").asText()).isEqualTo("eng");
+        assertThat(parties.get(1).get("party_id").asText()).isEqualTo(PARTY_ID.toString());
+        assertThat(parties.get(1).get("party_language").asText()).isEqualTo("cym");
     }
 
     @Test
@@ -346,8 +375,8 @@ class ExportServiceTest {
             )),
             List.of(
                 new SdpClaimSnapshotResponse(
-                    CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(), LocalDateTime.of(2026, 3, 1, 10, 0)),
-                new SdpClaimSnapshotResponse(UUID.randomUUID(), 13, null, null, null)
+                    CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(), LocalDateTime.of(2026, 3, 1, 10, 0), null),
+                new SdpClaimSnapshotResponse(UUID.randomUUID(), 13, null, null, null, null)
             )
         );
 
