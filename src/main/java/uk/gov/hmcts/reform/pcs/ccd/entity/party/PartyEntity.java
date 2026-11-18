@@ -134,6 +134,7 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
+    @Fetch(FetchMode.SUBSELECT)
     private List<ClaimPartyOrganisationEntity> claimPartyOrganisationList = new ArrayList<>();
 
     @OneToMany(mappedBy = "party",
