@@ -25,7 +25,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
             .label("hCEOfficerDetails-line-separator", "---")
             .label(
                 "hCEOfficerDetails-information-text", """
-                    <p class="govuk-body govuk-!-font-weight-bold govuk-!-font-size-24">Who have you hired to carry out
+                    <h2 class="govuk-heading-l">Who have you hired to carry out
                     your eviction?</p>
                     """
             )
