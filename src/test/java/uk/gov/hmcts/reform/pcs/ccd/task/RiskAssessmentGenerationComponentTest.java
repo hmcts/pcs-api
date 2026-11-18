@@ -160,7 +160,7 @@ class RiskAssessmentGenerationComponentTest {
     @DisplayName("Records a retrying failure on the first attempt")
     void firstAttemptRecordsNonTerminalFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
-        when(executionContext.getExecution()).thenReturn(execution); // consecutiveFailures = 0 -> attempt 1
+        when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("transient"))
             .when(riskAssessmentService).generateAndAttach(ENFORCEMENT_ORDER_ID);
 

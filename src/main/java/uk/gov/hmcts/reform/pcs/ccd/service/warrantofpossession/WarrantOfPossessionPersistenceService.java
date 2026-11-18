@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -97,30 +96,21 @@ public class WarrantOfPossessionPersistenceService {
         StatementOfTruthEntity statementOfTruth = enforcementOrder.getStatementOfTruth();
 
         return WarrantOfPossessionPayload.builder()
-            // Title block
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
             .caseName(caseNameFormatter.formatCaseName(pcsCase))
-            // Claimant details
             .claimantName(partyService.getPartyName(claimant))
             .claimantAddress(formatAddress(recipientAddressResolver.resolvePostalAddress(
                 claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress())))
             .claimantTelephoneNumber(claimant.getPhoneNumber())
             .claimantEmailAddress(claimant.getEmailAddress())
-            // TODO: confirm the source of the claimant / applicant reference
-            .claimantReference(null)
-            // Defendant details
             .defendantNames(joinDefendantNames(enforcementOrder))
-            // Application details
             .applicationType(APPLICATION_TYPE)
             .possessionOrderType(warrant.getIsSuspendedOrder() == VerticalYesNo.YES ? SUSPENDED_ORDER : OTHER_ORDER)
-            // TODO: possession order date is not captured at the moment
-            .possessionOrderDate(null)
             .breathingSpaceAnswer(warrant.getDefendantInBreathingSpace() == null
                                       ? null : warrant.getDefendantInBreathingSpace().getLabel())
             .missedPaymentsAnswer(warrant.getDefendantMissedPayments() == null
                                       ? null : warrant.getDefendantMissedPayments().getLabel())
             .propertyAddress(formatAddress(pcsCase.getPropertyAddress()))
-            // Statement of truth
             .statementOfTruthCompletedBy(completedBy(statementOfTruth.getCompletedBy()))
             .signatoryFullName(statementOfTruth.getFullName())
             .signatoryPosition(statementOfTruth.getPositionHeld())
@@ -135,9 +125,6 @@ public class WarrantOfPossessionPersistenceService {
             .collect(Collectors.joining(", "));
     }
 
-    /**
-     * Every defendant on the claim when the claimant chose to evict everyone, otherwise the defendants they selected.
-     */
     private List<PartyEntity> defendantsToEvict(EnforcementOrderEntity enforcementOrder) {
         if (enforcementOrder.getWarrantDetails().getEvictEveryone() == VerticalYesNo.YES) {
             return partiesByRole(enforcementOrder.getPcsCase().getMainClaim(), PartyRole.DEFENDANT);
@@ -151,14 +138,8 @@ public class WarrantOfPossessionPersistenceService {
         if (address == null) {
             return null;
         }
-        return formatAddress(addressMapper.toAddressUK(address));
-    }
-
-    private String formatAddress(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
-        return addressFormatter.formatFullAddress(address, AddressFormatter.NEWLINE_DELIMITER);
+        return addressFormatter.formatFullAddress(addressMapper.toAddressUK(address),
+            AddressFormatter.NEWLINE_DELIMITER);
     }
 
     private String completedBy(StatementOfTruthCompletedBy completedBy) {

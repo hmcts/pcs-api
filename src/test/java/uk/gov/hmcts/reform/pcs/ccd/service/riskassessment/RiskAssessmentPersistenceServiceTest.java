@@ -10,8 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -37,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -171,11 +174,14 @@ class RiskAssessmentPersistenceServiceTest {
     }
 
     @Test
-    void shouldListTheSelectedRisksFromTheDetailsGiven() {
-        RiskProfileEntity risk = new RiskProfileEntity();
-        risk.setViolentDetails("Shouted at agents");
-        risk.setAnimalsDetails("Large dog");
-        stubEnforcementOrder(enforcementOrder(new WarrantEntity(), risk));
+    void shouldListTheRiskCategoriesTheClaimantTicked() {
+        EnforcementOrderEntity enforcementOrder = enforcementOrder(new WarrantEntity(), new RiskProfileEntity());
+        enforcementOrder.setEnforcementOrder(EnforcementOrder.builder()
+            .warrantDetails(WarrantDetails.builder()
+                .riskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS, RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .build())
+            .build());
+        stubEnforcementOrder(enforcementOrder);
 
         RiskAssessmentPayload payload = underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().payload();
 
@@ -231,6 +237,7 @@ class RiskAssessmentPersistenceServiceTest {
             .pcsCase(pcsCase)
             .warrantDetails(warrant)
             .riskProfileDetails(risk)
+            .enforcementOrder(EnforcementOrder.builder().warrantDetails(WarrantDetails.builder().build()).build())
             .selectedDefendants(new ArrayList<>())
             .documents(new ArrayList<>())
             .build();

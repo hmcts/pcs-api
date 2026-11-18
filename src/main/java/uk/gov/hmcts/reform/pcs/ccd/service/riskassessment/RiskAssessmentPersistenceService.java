@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.riskassessment;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -28,10 +27,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.riskassessment.RiskAssessmentPayload;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -87,26 +85,20 @@ public class RiskAssessmentPersistenceService {
         PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(pcsCase);
 
         return RiskAssessmentPayload.builder()
-            // Title block
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
             .caseName(caseNameFormatter.formatCaseName(pcsCase))
-            // Application and property details
             .applicationType(APPLICATION_TYPE)
             .claimantName(partyService.getPartyName(claimant))
-            // TODO: confirm the source of the claimant / applicant reference
-            .claimantReference(null)
             .defendantNames(defendantsToEvict(enforcementOrder).stream()
                                 .map(partyService::getPartyName)
                                 .collect(Collectors.joining(", ")))
             .evictionAddress(formatAddress(pcsCase.getPropertyAddress()))
-            // Defendants and occupants
             .defendantDatesOfBirthKnown(warrant.getDefendantsDOBKnown() == null
                 ? null : warrant.getDefendantsDOBKnown().getLabel())
             .defendantDatesOfBirth(warrant.getDefendantsDOBDetails())
             .propertyRiskResponse(risk.getAnyRiskToBailiff() == null
                 ? null : risk.getAnyRiskToBailiff().getLabel())
-            .selectedPropertyRisks(selectedRisks(risk))
-            // Risk details
+            .selectedPropertyRisks(selectedRisks(enforcementOrder))
             .violentAggressiveDetails(risk.getViolentDetails())
             .firearmHistoryDetails(risk.getFirearmsDetails())
             .criminalAntisocialDetails(risk.getCriminalDetails())
@@ -114,13 +106,11 @@ public class RiskAssessmentPersistenceService {
             .evictionProtestGroupDetails(risk.getProtestGroupDetails())
             .policeVisitDetails(risk.getPoliceSocialServicesDetails())
             .animalDetails(risk.getAnimalsDetails())
-            // Vulnerable adults and children
             .vulnerabilityResponse(risk.getVulnerablePeoplePresent() == null
                 ? null : risk.getVulnerablePeoplePresent().getLabel())
             .vulnerablePeopleType(risk.getVulnerableCategory() == null
                 ? null : risk.getVulnerableCategory().getLabel())
             .vulnerabilityDetails(risk.getVulnerableReasonText())
-            // Access and other information
             .accessDifficultyResponse(warrant.getIsDifficultToAccessProperty() == null
                 ? null : warrant.getIsDifficultToAccessProperty().getLabel())
             .accessDifficultyDetails(warrant.getClarificationOnAccessDifficultyText())
@@ -142,25 +132,13 @@ public class RiskAssessmentPersistenceService {
             .toList();
     }
 
-    /**
-     * The risk categories the claimant ticked. The journey only asks for details of the categories selected, so a
-     * category counts as selected when its details were given.
-     */
-    private String selectedRisks(RiskProfileEntity risk) {
-        Map<RiskCategory, String> detailsByCategory = new LinkedHashMap<>();
-        detailsByCategory.put(RiskCategory.VIOLENT_OR_AGGRESSIVE, risk.getViolentDetails());
-        detailsByCategory.put(RiskCategory.FIREARMS_POSSESSION, risk.getFirearmsDetails());
-        detailsByCategory.put(RiskCategory.CRIMINAL_OR_ANTISOCIAL, risk.getCriminalDetails());
-        detailsByCategory.put(RiskCategory.VERBAL_OR_WRITTEN_THREATS, risk.getVerbalThreatsDetails());
-        detailsByCategory.put(RiskCategory.PROTEST_GROUP_MEMBER, risk.getProtestGroupDetails());
-        detailsByCategory.put(RiskCategory.AGENCY_VISITS, risk.getPoliceSocialServicesDetails());
-        detailsByCategory.put(RiskCategory.AGGRESSIVE_ANIMALS, risk.getAnimalsDetails());
-
-        String selected = detailsByCategory.entrySet().stream()
-            .filter(entry -> StringUtils.isNotBlank(entry.getValue()))
-            .map(entry -> entry.getKey().getLabel())
+    private String selectedRisks(EnforcementOrderEntity enforcementOrder) {
+        Set<RiskCategory> riskCategories =
+            enforcementOrder.getEnforcementOrder().getWarrantDetails().getRiskCategories();
+        return riskCategories == null ? null : riskCategories.stream()
+            .sorted()
+            .map(RiskCategory::getLabel)
             .collect(Collectors.joining("\n"));
-        return selected.isEmpty() ? null : selected;
     }
 
     private String formatAddress(AddressEntity address) {

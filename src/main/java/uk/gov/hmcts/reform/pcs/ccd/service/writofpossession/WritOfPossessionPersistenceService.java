@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.writofpossession;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -95,37 +94,25 @@ public class WritOfPossessionPersistenceService {
         StatementOfTruthEntity statementOfTruth = enforcementOrder.getStatementOfTruth();
 
         return WritOfPossessionPayload.builder()
-            // Title block
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
             .caseName(caseNameFormatter.formatCaseName(pcsCase))
-            // Claimant details
             .claimantName(partyService.getPartyName(claimant))
             .claimantAddress(formatAddress(recipientAddressResolver.resolvePostalAddress(
                 claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress())))
             .claimantTelephoneNumber(claimant.getPhoneNumber())
             .claimantEmailAddress(claimant.getEmailAddress())
-            // TODO: confirm the source of the claimant / applicant reference
-            .claimantReference(null)
-            // Defendant details
             .defendantNames(joinDefendantNames(enforcementOrder))
             .propertyAddress(propertyAddress)
-            // Application details
-            .possessionOrderType(null)
-            .possessionOrderDate(null)
             .breathingSpaceAnswer(writ.getDefendantInBreathingSpace() == null
                                       ? null : writ.getDefendantInBreathingSpace().getLabel())
             .highCourtPermissionAnswer(writ.getHasClaimTransferredToHighCourt() == null
                                            ? null : writ.getHasClaimTransferredToHighCourt().getValue())
-            // TODO: the date High Court permission was given is not captured yet
-            .highCourtPermissionOrderDate(null)
-            // High Court Enforcement Officer
             .hceoHiredAnswer(writ.getHasHiredHighCourtEnforcementOfficer() == null
                                  ? null : writ.getHasHiredHighCourtEnforcementOfficer().getLabel())
             .hceoName(writ.getHasHiredHighCourtEnforcementOfficer() == VerticalYesNo.YES
                           ? writ.getHceoDetails() : null)
             .hceoSelectionOutcome(writ.getHasHiredHighCourtEnforcementOfficer() == VerticalYesNo.NO
                                       ? HCEO_SELECTED_BY_NICE : null)
-            // Statement of truth
             .statementOfTruthCompletedBy(completedBy(statementOfTruth.getCompletedBy()))
             .signatoryFullName(statementOfTruth.getFullName())
             .signatoryPosition(statementOfTruth.getPositionHeld())
@@ -144,14 +131,8 @@ public class WritOfPossessionPersistenceService {
         if (address == null) {
             return null;
         }
-        return formatAddress(addressMapper.toAddressUK(address));
-    }
-
-    private String formatAddress(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
-        return addressFormatter.formatFullAddress(address, AddressFormatter.NEWLINE_DELIMITER);
+        return addressFormatter.formatFullAddress(addressMapper.toAddressUK(address),
+            AddressFormatter.NEWLINE_DELIMITER);
     }
 
     private String completedBy(StatementOfTruthCompletedBy completedBy) {
