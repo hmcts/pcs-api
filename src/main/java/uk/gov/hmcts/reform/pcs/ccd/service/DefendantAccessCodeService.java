@@ -79,7 +79,7 @@ public class DefendantAccessCodeService {
 
         // Idempotent: a re-fired payment or a scheduler retry must not mint a second code for a party
         // that already has one. The UNIQUE(case_id, party_id) constraint is the final backstop.
-        if (partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(pcsCaseEntity.getId(), defendantPartyId)) {
+        if (partyAccessCodeRepo.existsByPcsCase_IdAndParty_Id(pcsCaseEntity.getId(), defendantPartyId)) {
             log.info("Access code already exists for party {} on case {} - skipping", defendantPartyId, caseReference);
             return;
         }

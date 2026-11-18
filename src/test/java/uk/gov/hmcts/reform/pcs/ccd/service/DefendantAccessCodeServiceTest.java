@@ -200,7 +200,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
-        when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
+        when(partyAccessCodeRepo.existsByPcsCase_IdAndParty_Id(caseEntity.getId(), partyId)).thenReturn(true);
 
         underTest.generateForDefendant(1L, partyId, false, true);
 
@@ -397,7 +397,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = walesCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
-        when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
+        when(partyAccessCodeRepo.existsByPcsCase_IdAndParty_Id(caseEntity.getId(), partyId)).thenReturn(true);
 
         underTest.generateForDefendant(1L, partyId, false, true);
 
