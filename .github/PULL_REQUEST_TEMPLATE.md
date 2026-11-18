@@ -38,6 +38,27 @@ Mitigating Factors/Compensating Controls: Describe any measures taken to reduce 
   * [ ] Yes
   * [ ] No
 
+### Feature flag assessment
+
+<!-- Comment:
+If Yes, name the flag(s) (FeatureFlag enum) and what users see with the flag OFF (normally "no change").
+If No, give a short reason (e.g. infra-only, already gated, no user-facing behaviour).
+A CCD showCondition only hides the UI: the event's start, mid-event and submit handlers must also check featureToggleService.
+-->
+
+**Feature flag:** Does this PR introduce or change behaviour that should be behind feature flag(s)?
+
+- [ ] Yes — flag(s):
+- [ ] No — reason:
+
+**If Yes:**
+
+- [ ] What users see with the flag OFF is stated above (normally "no change")
+- [ ] Tested with the flag OFF: existing events, page labels, show conditions, states and tabs are unchanged
+- [ ] Server-side check (`featureToggleService.isEnabled`) in the start, mid-event and submit handlers, not only a CCD showCondition
+- [ ] No unflagged changes to live data (migrations, backfills, scheduled jobs, notifications, WA tasks)
+- [ ] Unit tests cover both flag states
+
 ### Checklist
 
 <!-- Check each box by removing the space and adding an x, e.g. [x] -->
