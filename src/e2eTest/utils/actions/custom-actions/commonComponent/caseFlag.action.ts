@@ -14,11 +14,13 @@ import {
   manageCaseFlags,
   updateFlagComments,
   confirmStatusForFlag,
+  whyDoYouNeedToAccessThisCase,
 
 } from '@data/page-data-figma';
 import { workAccess } from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
 import { createCaseApiData } from "@data/api-data";
 import { formatTheCaseNumber } from "@utils/common/string.utils";
+import { LONG_TIMEOUT } from 'playwright.config';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -39,7 +41,8 @@ export class CaseFlagAction implements IAction {
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
       ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
       ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionData, page)],
-      ['handleJudgeBookingPageForCaseFlags', () => this.handleJudgeBookingPageForCaseFlags(page)],
+      ['handleJudgeBookingPageForCaseFlags', () => this.handleJudgeBookingPageForCaseFlags(page)], 
+      ['handleChallengedAccess', () => this.handleChallengedAccess(fieldName as actionRecord, page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -291,8 +294,8 @@ export class CaseFlagAction implements IAction {
   }
 
   private caseFlagsTabLocator(page: Page) {
-    return page.locator('div.mat-tab-label-content', { hasText: viewCaseFlag.caseFlagsTab });
-  }
+    return page.getByRole('tab', { name: 'Case flags' });
+ }
 
   private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {
     const caseFlagsTab = this.caseFlagsTabLocator(page);
@@ -320,4 +323,16 @@ export class CaseFlagAction implements IAction {
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
     //await performValidation('mainHeader', caseList.mainHeader);
   }
+
+  private async handleChallengedAccess(challengeData: actionRecord, page: Page): Promise<void> {
+    await performAction('clickButton', challengeData.button);
+    await performAction('clickRadioButton', {
+          question: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion,
+          option: challengeData.reason,
+        });
+    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    await page.waitForURL(/challenged-access-request\/success/, { timeout: LONG_TIMEOUT });
+    await performAction('clickLink', challengeData.link);
+  }
+  
 }
