@@ -55,7 +55,6 @@ A CCD showCondition only hides the UI: the event's start, mid-event and submit h
 
 - [ ] What users see with the flag OFF is stated above (normally "no change")
 - [ ] Tested with the flag OFF: existing events, page labels, show conditions, states and tabs are unchanged
-- [ ] Server-side check (`featureToggleService.isEnabled`) in the start, mid-event and submit handlers, not only a CCD showCondition
 - [ ] No unflagged changes to live data (migrations, backfills, scheduled jobs, notifications, WA tasks)
 - [ ] Unit tests cover both flag states
 
