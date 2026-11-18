@@ -206,6 +206,7 @@ public class DecideEnforcement implements CCDConfig<PCSCase, State, UserRole> {
         String title = getConfirmationTitle(decision);
         String whatNextDescription = getWhatNextDescription(decision);
 
+        // TODO: Change to use ConfirmationPanelBuilder
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
