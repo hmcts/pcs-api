@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -457,31 +458,21 @@ class ClaimServiceTest {
     }
 
     @Test
-    void shouldLoadClaim() {
-        // Given
-        ClaimEntity expectedClaimEntity = ClaimEntity.builder().build();
+    void shouldLoadClaimWhenExists() {
+        ClaimEntity expectedClaim = new ClaimEntity();
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(expectedClaim));
 
-        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(expectedClaimEntity));
+        ClaimEntity actualClaim = claimService.loadClaim(CASE_REFERENCE);
 
-        // When
-        ClaimEntity actualClaimEntity = claimService.loadClaim(CASE_REFERENCE);
-
-        // Then
-        assertThat(actualClaimEntity).isSameAs(expectedClaimEntity);
+        assertThat(actualClaim).isSameAs(expectedClaim);
     }
 
     @Test
-    void shouldThrowExceptionLoadingClaimForUnknownCaseReference() {
-        // Given
-        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.empty());
+    void shouldThrowClaimNotFoundExceptionWhenClaimDoesNotExist() {
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
-        // When
-        Throwable throwable = catchThrowable(() -> claimService.loadClaim(CASE_REFERENCE));
-
-        // Then
-        assertThat(throwable).isInstanceOf(ClaimNotFoundException.class);
+        assertThatThrownBy(() -> claimService.loadClaim(CASE_REFERENCE))
+            .isInstanceOf(ClaimNotFoundException.class);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

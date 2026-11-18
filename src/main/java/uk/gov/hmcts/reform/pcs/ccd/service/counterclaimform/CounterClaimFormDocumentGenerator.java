@@ -37,6 +37,14 @@ public class CounterClaimFormDocumentGenerator {
         return payload.isCompletedByLegalRepresentative() ? LR_TEMPLATE_ID : LIP_TEMPLATE_ID;
     }
 
+    public static String expectedCounterClaimFormFilename(Integer counterClaimRank, int defendantNumber) {
+        return counterClaimFormFilename(true, counterClaimRank, defendantNumber);
+    }
+
+    public static String expectedCounterClaimFormFilename(int defendantNumber) {
+        return OUTPUT_FILENAME_PREFIX + defendantNumber;
+    }
+
     /**
      * Name of the counterclaim form PDF. Translation looks the form up by this name before the file exists,
      * so the generator and those lookups must use this method.
@@ -48,9 +56,5 @@ public class CounterClaimFormDocumentGenerator {
             return String.format(OUTPUT_FILENAME_TEMPLATE, counterClaimRank, defendantNumber);
         }
         return expectedCounterClaimFormFilename(defendantNumber);
-    }
-
-    public static String expectedCounterClaimFormFilename(int defendantNumber) {
-        return OUTPUT_FILENAME_PREFIX + defendantNumber;
     }
 }
