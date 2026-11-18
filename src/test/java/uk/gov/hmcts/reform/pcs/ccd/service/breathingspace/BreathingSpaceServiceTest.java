@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.InOrder;
 import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
@@ -206,7 +207,7 @@ class BreathingSpaceServiceTest {
         underTest.enterBreathingSpace(CASE_REFERENCE, details);
 
         // Then
-        var inOrder = inOrder(
+        InOrder inOrder = inOrder(
             breathingSpaceRepository,
             enforcementOrderService
         );
