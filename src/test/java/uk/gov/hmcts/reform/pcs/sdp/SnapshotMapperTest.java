@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.sdp;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.sdp.model.ClaimSnapshot;
@@ -19,8 +22,10 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @ExtendWith(MockitoExtension.class)
 class SnapshotMapperTest {
@@ -181,22 +186,28 @@ class SnapshotMapperTest {
         )).isEmpty();
     }
 
-    @Test
-    void shouldMapPropertyAddressWhenPostcodeIsNull() {
+    @ParameterizedTest
+    @MethodSource("propertyAddressCases")
+    void shouldBuildPropertyAddressFromNonBlankParts(String line1, String line2, String town, String postcode,
+                                                     String expectedAddress, String expectedPostcode) {
         List<SnapshotPropertyAddress> result = claimSnapshotMapper.mapPropertyAddress(
-            "1 High Street",
-            null,
-            null,
-            "Cambridge",
-            null,
-            null,
-            null
-        );
+            line1, line2, null, town, null, null, postcode);
 
         assertThat(result).singleElement().satisfies(address -> {
-            assertThat(address.getAddress()).isEqualTo("1 High Street, Cambridge");
-            assertThat(address.getPostcode()).isEmpty();
+            assertThat(address.getAddress()).isEqualTo(expectedAddress);
+            assertThat(address.getPostcode()).isEqualTo(expectedPostcode);
         });
+    }
+
+    private static Stream<Arguments> propertyAddressCases() {
+        return Stream.of(
+            arguments("1 High Street", "Flat 2", "Cambridge", "cb5 8bl", "1 High Street, Flat 2, Cambridge", "CB5 8BL"),
+            arguments("1 High Street", null, "Cambridge", "CB5 8BL", "1 High Street, Cambridge", "CB5 8BL"),
+            arguments("1 High Street", "   ", "Cambridge", "CB5 8BL", "1 High Street, Cambridge", "CB5 8BL"),
+            arguments("  1 High Street  ", null, " Cambridge ", " cb5 8bl ", "1 High Street, Cambridge", "CB5 8BL"),
+            arguments("1 High Street", null, "Cambridge", null, "1 High Street, Cambridge", ""),
+            arguments(null, null, null, "CB5 8BL", "", "CB5 8BL")
+        );
     }
 
     @Test
