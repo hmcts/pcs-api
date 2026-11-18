@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturn;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.bailiff.recordwarrantreturn.RecordWarrantReturn;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.WarrantReturnService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Optional;
 
@@ -44,6 +46,14 @@ public class RecordWarrantReturnTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(underTest);
+    }
+
+    @Test
+    void shouldBeConfiguredAsShowForFeatureFlagAndCanRecordWarrantReturn() {
+        assertConfiguredShowConditions(ShowConditions.and(
+            ShowConditions.featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN),
+            "enfShowConditions_CanRecordWarrantReturn=\"Yes\""
+        ));
     }
 
     @Test

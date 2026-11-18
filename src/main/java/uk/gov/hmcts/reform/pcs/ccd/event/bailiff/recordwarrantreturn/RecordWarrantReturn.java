@@ -35,7 +35,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     private PcsCaseService pcsCaseService;
     private EnforcementOrderMediator enforcementOrderMediator;
     private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case";
-    private static final String CAN_RECORD_WARRANT_RETURN = "canRecordWarrantReturn=\"Yes\"";
+    private static final String CAN_RECORD_WARRANT_RETURN = "enfShowConditions_CanRecordWarrantReturn=\"Yes\"";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {

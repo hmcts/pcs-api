@@ -11,9 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementStateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.stream.Stream;
@@ -44,10 +41,9 @@ class EnforcementOrderViewTest {
         }
 
         PCSCase pcsCase = PCSCase.builder().build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, state, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, state);
 
         // Then
         if (state == State.CASE_ISSUED) {
@@ -65,44 +61,13 @@ class EnforcementOrderViewTest {
     void shouldNotPopulateEnforcementOrderWhenCaseNotIssued() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.PENDING_CASE_ISSUED);
 
         // Then
         verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         assertThat(pcsCase.getEnforcementOrder()).isNull();
-    }
-
-    @ParameterizedTest
-    @MethodSource("recordWarrantReturnScenarios")
-    void shouldSetCanRecordWarrantReturnFromActiveEnforcementState(EnforcementState enforcementState,
-                                                                   YesOrNo expected) {
-        // Given
-        PCSCase pcsCase = PCSCase.builder().build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .enforcementState(EnforcementStateEntity.builder().state(enforcementState).build())
-            .build();
-
-        // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getCanRecordWarrantReturn()).isEqualTo(expected);
-    }
-
-    @Test
-    void shouldNotAllowRecordWarrantReturnWhenNoEnforcementState() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder().build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
-        // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getCanRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> enforcementDraftScenarios() {
@@ -110,26 +75,6 @@ class EnforcementOrderViewTest {
             Arguments.of(State.CASE_ISSUED, true, YesOrNo.YES),
             Arguments.of(State.CASE_ISSUED, false, YesOrNo.NO),
             Arguments.of(State.PENDING_CASE_ISSUED, false, YesOrNo.NO)
-        );
-    }
-
-    private static Stream<Arguments> recordWarrantReturnScenarios() {
-        return Stream.of(
-            Arguments.of(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS, YesOrNo.NO),
-            Arguments.of(EnforcementState.PENDING_CASE_ISSUED, YesOrNo.NO),
-            Arguments.of(EnforcementState.CASE_PROGRESSION, YesOrNo.YES),
-            Arguments.of(EnforcementState.BREATHING_SPACE, YesOrNo.YES),
-            Arguments.of(EnforcementState.AWAITING_ENFORCEMENT_OUTCOME, YesOrNo.YES),
-            Arguments.of(EnforcementState.AWAITING_PROPERTY_VISIT, YesOrNo.YES),
-            Arguments.of(EnforcementState.AWAITING_SCHEDULING, YesOrNo.YES),
-            Arguments.of(EnforcementState.AWAITING_BAILIFF_ALLOCATION, YesOrNo.YES),
-            Arguments.of(EnforcementState.JUDICIAL_REFERRAL, YesOrNo.YES),
-            Arguments.of(EnforcementState.HEARING_READINESS, YesOrNo.YES),
-            Arguments.of(EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING, YesOrNo.YES),
-            Arguments.of(EnforcementState.CLOSED, YesOrNo.YES),
-            Arguments.of(EnforcementState.CASE_STAYED, YesOrNo.YES),
-            Arguments.of(EnforcementState.REQUESTED_FOR_DELETION, YesOrNo.NO),
-            Arguments.of(EnforcementState.DRAFT_DISCARDED, YesOrNo.NO)
         );
     }
 }

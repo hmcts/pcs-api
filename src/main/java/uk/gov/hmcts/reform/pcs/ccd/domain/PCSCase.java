@@ -1229,6 +1229,7 @@ public class PCSCase {
         searchable = false,
         access = {BailiffAccess.class}
     )
-    private YesOrNo canRecordWarrantReturn;
+    @JsonUnwrapped(prefix = "enfShowConditions_")
+    private EnforcementEventShowConditions enforcementEventShowConditions;
 
 }
