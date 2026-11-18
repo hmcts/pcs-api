@@ -41,7 +41,6 @@ class DraftCaseJsonMergerTest {
         // Given
         PCSCase existingCaseData = Instancio.create(PCSCase.class);
         existingCaseData.setDashboardData(null);
-        existingCaseData.setOrdersMarkdown(null);
         existingCaseData.setApplicationWithClaim(VerticalYesNo.NO);
         String baseJson = objectMapper.writeValueAsString(existingCaseData);
 
