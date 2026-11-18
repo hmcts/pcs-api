@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRe
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
@@ -22,6 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementStat
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EnforcementOrderService {
 
@@ -72,7 +73,7 @@ public class EnforcementOrderService {
                 EventId.enforceTheOrder
             );
 
-        Logger log;
+
         log.info(
             "Discarded {} enforcement drafts for case {}",
             discardedDrafts,
@@ -82,25 +83,27 @@ public class EnforcementOrderService {
         // Preserve AC02
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
-        EnforcementStateEntity enforcementState =
-            pcsCase.getEnforcementState();
+        Set<EnforcementOrderEntity> applications =
+            pcsCase.getEnforcementOrders();
 
-        if (enforcementState == null) {
+        if (CollectionUtils.isEmpty(applications)) {
             log.info("No enforcement state found for case {}", caseReference);
             return;
         }
 
-        EnforcementState currentState = enforcementState.getState();
+        for (EnforcementOrderEntity application : applications) {
+            EnforcementState currentState = application.getState();
 
-        if (currentState == EnforcementState.CASE_PROGRESSION) {
-            enforcementState.setState(EnforcementState.BREATHING_SPACE);
+            if (currentState == EnforcementState.CASE_PROGRESSION) {
+                application.setState(EnforcementState.BREATHING_SPACE);
+                log.info("Updated enforcement state to BREATHING_SPACE for case {}", caseReference);
 
-            log.info("Updated enforcement state to BREATHING_SPACE for case {}", caseReference);
-        } else if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
-            || currentState == EnforcementState.PENDING_CASE_ISSUED) {
+            } else if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+                || currentState == EnforcementState.PENDING_CASE_ISSUED) {
 
-            enforcementState.setState(EnforcementState.DRAFT_DISCARDED);
-            log.info("Updated enforcement state to Draft Discarded for case {}", caseReference);
+                application.setState(EnforcementState.DRAFT_DISCARDED);
+                log.info("Updated enforcement state to Draft Discarded for case {}", caseReference);
+            }
         }
     }
 
