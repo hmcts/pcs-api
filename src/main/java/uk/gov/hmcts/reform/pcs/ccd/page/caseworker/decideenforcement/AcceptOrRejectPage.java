@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -27,6 +28,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnforcementDecision.
 @RequiredArgsConstructor
 public class AcceptOrRejectPage implements CcdPageConfiguration {
 
+    private static final int REJECTION_DETAILS_MAX_LENGTH = 6800;
+
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -41,13 +44,25 @@ public class AcceptOrRejectPage implements CcdPageConfiguration {
             .mandatory(EnforcementDecision::getAcceptReject)
             .mandatory(EnforcementDecision::getRejectionReason, fieldEquals("enfDecision_AcceptReject", REJECT))
             .mandatory(EnforcementDecision::getChangeInPartyCircumstancesDetails,
-                       fieldEquals("enfDecision_RejectionReason", RejectionReason.CHANGE_IN_PARTY_CIRCUMSTANCES))
+                       ShowConditions.and(
+                           fieldEquals("enfDecision_AcceptReject", REJECT),
+                           fieldEquals("enfDecision_RejectionReason", RejectionReason.CHANGE_IN_PARTY_CIRCUMSTANCES)
+                       ))
             .mandatory(EnforcementDecision::getOrderNotEnforceableDetails,
-                fieldEquals("enfDecision_RejectionReason", RejectionReason.ORDER_NOT_ENFORCEABLE))
+                       ShowConditions.and(
+                           fieldEquals("enfDecision_AcceptReject", REJECT),
+                           fieldEquals("enfDecision_RejectionReason", RejectionReason.ORDER_NOT_ENFORCEABLE)
+                       ))
             .mandatory(EnforcementDecision::getSetAsideOrSuspendedDetails,
-                fieldEquals("enfDecision_RejectionReason", RejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED))
+                       ShowConditions.and(
+                           fieldEquals("enfDecision_AcceptReject", REJECT),
+                            fieldEquals("enfDecision_RejectionReason", RejectionReason.ORDER_SET_ASIDE_OR_SUSPENDED)
+                       ))
             .mandatory(EnforcementDecision::getOtherRejectionDetails,
-                fieldEquals("enfDecision_RejectionReason", RejectionReason.OTHER))
+                       ShowConditions.and(
+                           fieldEquals("enfDecision_AcceptReject", REJECT),
+                           fieldEquals("enfDecision_RejectionReason", RejectionReason.OTHER)
+                        ))
             .done();
     }
 
@@ -83,7 +98,7 @@ public class AcceptOrRejectPage implements CcdPageConfiguration {
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
             rejectionDetails,
             textAreaLabel,
-            TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT
+            REJECTION_DETAILS_MAX_LENGTH
         );
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
