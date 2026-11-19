@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,16 +41,19 @@ class DefaultRentalBulkClaimPreparerTest {
     private final BulkClaimXmlCodec codec = new BulkClaimXmlCodec();
     private BulkPropertyEligibility eligibility;
     private BulkClaimantOrganisationResolver resolver;
+    private FeatureToggleService featureToggleService;
     private DefaultRentalBulkClaimPreparer underTest;
 
     @BeforeEach
     void setUp() {
         eligibility = Mockito.mock(BulkPropertyEligibility.class);
         resolver = Mockito.mock(BulkClaimantOrganisationResolver.class);
+        featureToggleService = Mockito.mock(FeatureToggleService.class);
         when(resolver.isPbaAccountValid(any(), any())).thenReturn(true);
         when(eligibility.check(any(), any())).thenReturn(
             new PropertyEligibility(null, LegislativeCountry.ENGLAND, 20262, 1));
-        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, new BulkClaimProperties());
+        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, new BulkClaimProperties(),
+                                                    featureToggleService);
     }
 
     private BulkClaimPreparationResult prepare(String fixtureName) {
@@ -242,7 +247,8 @@ class DefaultRentalBulkClaimPreparerTest {
     }
 
     @Test
-    void shouldRejectWalesPropertiesForNow() {
+    void shouldRejectWalesPropertiesWhileTheWalesFlagIsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)).thenReturn(false);
         when(eligibility.check(any(), any())).thenReturn(
             new PropertyEligibility(null, LegislativeCountry.WALES, 20262, 1));
 
@@ -275,7 +281,7 @@ class DefaultRentalBulkClaimPreparerTest {
     void shouldRejectClaimantTypeThatIsNotEnabled() {
         BulkClaimProperties properties = new BulkClaimProperties();
         properties.setEnabledClaimantTypes(List.of(uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.MORTGAGE_LENDER));
-        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, properties);
+        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, properties, featureToggleService);
 
         Rejected rejected = (Rejected) prepare("rental-england-assured-arrears-valid.xml");
 

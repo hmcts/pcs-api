@@ -49,7 +49,7 @@ class BulkClaimXmlCodecTest {
         assertThat(claim.getPaymentAccountNumber()).isEqualTo("PBA1111111");
         assertThat(claim.getClaimParticulars().getTenancyType()).isEqualTo(TenancyTypeCode.SECURE_CONTRACT);
         assertThat(claim.getClaimParticulars().getGrounds().getGround().getFirst().getEstateManagementReason())
-            .containsExactly("BUILDING_WORKS", "REDEVELOPMENT");
+            .containsExactly("BUILDING_WORKS", "REDEVELOPMENT_SCHEMES");
     }
 
     @Test

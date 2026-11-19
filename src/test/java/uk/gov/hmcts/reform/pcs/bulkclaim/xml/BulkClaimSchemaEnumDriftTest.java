@@ -1,15 +1,19 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.xml;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.DemotionHousingActSectionType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.LanguageUsedType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.LegislativeCountryType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.NoticeServiceMethodType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentArrearsOrBreachType;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SuspensionHousingActSectionType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.TenancyTypeCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -57,6 +61,18 @@ class BulkClaimSchemaEnumDriftTest {
     void rentArrearsOrBreachShouldMatchJavaEnum() {
         assertThat(xsdValues(RentArrearsOrBreachType.values()))
             .containsExactlyInAnyOrderElementsOf(names(RentArrearsOrBreachOfTenancy.values()));
+    }
+
+    @Test
+    void suspensionHousingActSectionShouldMatchJavaEnum() {
+        assertThat(xsdValues(SuspensionHousingActSectionType.values()))
+            .containsExactlyInAnyOrderElementsOf(names(SuspensionOfRightToBuyHousingAct.values()));
+    }
+
+    @Test
+    void demotionHousingActSectionShouldMatchJavaEnum() {
+        assertThat(xsdValues(DemotionHousingActSectionType.values()))
+            .containsExactlyInAnyOrderElementsOf(names(DemotionOfTenancyHousingAct.values()));
     }
 
     @Test

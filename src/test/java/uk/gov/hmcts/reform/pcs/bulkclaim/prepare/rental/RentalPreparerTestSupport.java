@@ -15,6 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.routing.AssuredTenancyRentSectionRout
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.IntroductoryDemotedOtherRentSectionRoutingPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.SecureFlexibleRentSectionRoutingPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.SecureWalesRentSectionRoutingPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.StandardOrOtherWalesRentSectionRoutingPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRoutingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.AlternativesRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.DailyRentCalculator;
@@ -23,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,11 +47,14 @@ final class RentalPreparerTestSupport {
 
     static DefaultRentalBulkClaimPreparer preparer(BulkPropertyEligibility eligibility,
                                                    BulkClaimantOrganisationResolver resolver,
-                                                   BulkClaimProperties properties) {
+                                                   BulkClaimProperties properties,
+                                                   FeatureToggleService featureToggleService) {
         PostcodeValidator postcodeValidator = new PostcodeValidator();
         BulkAddressMapper addressMapper = new BulkAddressMapper(postcodeValidator);
         GroundsRules groundsRules = new GroundsRules();
         AlternativesRules alternativesRules = new AlternativesRules();
+        TenancyDateRules tenancyDateRules = new TenancyDateRules(CLOCK);
+        RentalNoticeMapper noticeMapper = new RentalNoticeMapper(properties, CLOCK);
         return new DefaultRentalBulkClaimPreparer(
             properties,
             new BulkClaimXmlCodec(),
@@ -60,15 +67,23 @@ final class RentalPreparerTestSupport {
             new BulkStatementOfTruthMapper(CLOCK),
             new BulkCommonParticularsMapper(),
             new GroundRouter(groundsRules),
-            new RentalNoticeMapper(properties, CLOCK),
+            noticeMapper,
             new RentalRentMapper(new DailyRentCalculator(new MoneyFormatter())),
             new RentalAlternativesMapper(alternativesRules),
             new ClaimantEligibilityRules(),
-            new TenancyDateRules(CLOCK),
+            tenancyDateRules,
             new RentSectionRoutingService(List.of(
                 new AssuredTenancyRentSectionRoutingPolicy(),
                 new IntroductoryDemotedOtherRentSectionRoutingPolicy(),
-                new SecureFlexibleRentSectionRoutingPolicy()))
+                new SecureFlexibleRentSectionRoutingPolicy())),
+            featureToggleService,
+            new WalesGroundRouter(groundsRules),
+            new WalesNoticeMapper(noticeMapper),
+            new WalesOccupationContractMapper(tenancyDateRules),
+            new WalesDetailsMapper(),
+            new WalesRentSectionRoutingService(List.of(
+                new StandardOrOtherWalesRentSectionRoutingPolicy(),
+                new SecureWalesRentSectionRoutingPolicy()))
         );
     }
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>WALES-SECURE-ASB</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Cardiff</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH_AND_WELSH</LanguageUsed>
+      <TenancyType>SECURE_CONTRACT</TenancyType>
+      <TenancyCommenceDate>2015-06-01</TenancyCommenceDate>
+      <Grounds>
+        <Ground><Code>ANTISOCIAL_BEHAVIOUR_S157</Code></Ground>
+      </Grounds>
+      <WalesNotice>
+        <Served>false</Served>
+        <NoticeStatement>I am a landlord under a tenancy or license which is not an occupation contract because the notice was waived.</NoticeStatement>
+      </WalesNotice>
+      <Wales>
+        <IsExemptLandlord>false</IsExemptLandlord>
+        <ProhibitedConduct>
+          <Claim>true</Claim>
+          <AgreedTermsOfPeriodicContract>true</AgreedTermsOfPeriodicContract>
+          <DetailsOfTerms>Pets are not allowed.</DetailsOfTerms>
+          <Details>The defendant has repeatedly harassed neighbours.</Details>
+        </ProhibitedConduct>
+        <AntisocialBehaviour><Answer>true</Answer><Details>Loud parties and threats to neighbours.</Details></AntisocialBehaviour>
+        <IllegalPurposesUse><Answer>false</Answer></IllegalPurposesUse>
+        <OtherProhibitedConduct><Answer>true</Answer><Details>Damage to communal areas.</Details></OtherProhibitedConduct>
+        <EnergyPerformanceCertificate><Provided>true</Provided></EnergyPerformanceCertificate>
+        <GasSafetyReport><Provided>true</Provided></GasSafetyReport>
+        <ElectricalInstallationConditionReport><Provided>true</Provided></ElectricalInstallationConditionReport>
+      </Wales>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>
