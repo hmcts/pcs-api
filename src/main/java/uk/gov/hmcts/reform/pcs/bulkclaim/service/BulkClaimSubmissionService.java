@@ -141,11 +141,9 @@ public class BulkClaimSubmissionService {
                                       boolean validateOnly) {
         final String cui = claim.customerUniqueIdentifier();
 
-        if (!validateOnly) {
-            Optional<ClaimResponseType> existing = respondToExisting(organisationId, claim);
-            if (existing.isPresent()) {
-                return existing.get();
-            }
+        Optional<ClaimResponseType> existing = respondToExisting(organisationId, claim, validateOnly);
+        if (existing.isPresent()) {
+            return existing.get();
         }
 
         BulkClaimPreparationResult preparation = claim.preparation().get();
@@ -168,13 +166,25 @@ public class BulkClaimSubmissionService {
         if (result.isCreated()) {
             return responseBuilder.claimSuccess(cui, String.valueOf(result.caseReference()));
         }
-        if (!result.retryable()) {
-            markFailed(submissionId, result.failReason(), result.errors());
+        if (result.retryable()) {
+            return afterUnavailableCcd(submissionId, cui);
         }
+        markFailed(submissionId, result.failReason(), result.errors());
         return responseBuilder.claimFailure(cui, result.failReason(), result.errors());
     }
 
-    private Optional<ClaimResponseType> respondToExisting(String organisationId, ClaimInput claim) {
+    private ClaimResponseType afterUnavailableCcd(UUID submissionId, String cui) {
+        Long caseReference = repository.findById(submissionId)
+            .map(BulkClaimSubmissionEntity::getCaseReference)
+            .orElse(null);
+        return caseReference != null
+            ? responseBuilder.claimSuccess(cui, String.valueOf(caseReference))
+            : responseBuilder.claimPending(cui);
+    }
+
+    private Optional<ClaimResponseType> respondToExisting(String organisationId,
+                                                          ClaimInput claim,
+                                                          boolean validateOnly) {
         String cui = claim.customerUniqueIdentifier();
         Optional<BulkClaimSubmissionEntity> found =
             repository.findByOrganisationIdAndCustomerUniqueIdentifier(organisationId, cui);
@@ -188,14 +198,15 @@ public class BulkClaimSubmissionService {
             case CASE_CREATED -> Optional.of(sameClaim
                 ? responseBuilder.claimSuccess(cui, String.valueOf(existing.getCaseReference()))
                 : identifierReused(cui));
-            case PENDING -> pendingOutcome(existing, cui, sameClaim);
+            case PENDING -> pendingOutcome(existing, cui, sameClaim, validateOnly);
             case FAILED_VALIDATION, FAILED -> Optional.empty();
         };
     }
 
     private Optional<ClaimResponseType> pendingOutcome(BulkClaimSubmissionEntity existing,
                                                        String cui,
-                                                       boolean sameClaim) {
+                                                       boolean sameClaim,
+                                                       boolean validateOnly) {
         if (existing.getCaseReference() != null) {
             return Optional.of(sameClaim
                 ? responseBuilder.claimSuccess(cui, String.valueOf(existing.getCaseReference()))
@@ -204,7 +215,10 @@ public class BulkClaimSubmissionService {
         if (isStale(existing)) {
             return Optional.empty();
         }
-        return Optional.of(sameClaim ? responseBuilder.claimPending(cui) : identifierReused(cui));
+        if (sameClaim) {
+            return validateOnly ? Optional.empty() : Optional.of(responseBuilder.claimPending(cui));
+        }
+        return Optional.of(identifierReused(cui));
     }
 
     private boolean isStale(BulkClaimSubmissionEntity submission) {

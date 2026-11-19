@@ -44,6 +44,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -243,14 +244,85 @@ class BulkClaimSubmissionServiceTest {
     }
 
     @Test
-    void shouldLeaveRowPendingWhenCcdIsUnavailable() {
+    void shouldReportPendingAndLeaveRowUntouchedWhenCcdIsUnavailableAndNoCaseExists() {
         when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.unavailable());
 
         ClaimResponseType response = submitOne(prepared(CUI, HASH));
 
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(BulkFailReason.CLAIM_PENDING.getStatusCode());
+        BulkClaimSubmissionEntity row = rows.values().iterator().next();
+        assertThat(row.getStatus()).isEqualTo(BulkClaimSubmissionStatus.PENDING);
+        assertThat(row.getCaseReference()).isNull();
+        verify(repository, times(1)).save(any());
+    }
+
+    @Test
+    void shouldReportSuccessWhenCcdIsUnavailableButTheCaseWasCommitted() {
+        when(ccdClient.createCase(any())).thenAnswer(invocation -> {
+            BulkClaimSubmissionEntity row = rows.get(invocation.<UUID>getArgument(0));
+            row.setStatus(BulkClaimSubmissionStatus.CASE_CREATED);
+            row.setCaseReference(CASE_REFERENCE);
+            return BulkClaimCcdResult.unavailable();
+        });
+
+        ClaimResponseType response = submitOne(prepared(CUI, HASH));
+
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+        assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+    }
+
+    @Test
+    void shouldReplayStoredSuccessWhenValidatingOnlyAndSameClaimAlreadyCreated() {
+        existing(BulkClaimSubmissionStatus.CASE_CREATED, CASE_REFERENCE, Instant.now());
+
+        ClaimResponseType response = submit(true, unexpectedPreparation()).getFirst();
+
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+        assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        verifyNoWrites();
+    }
+
+    @Test
+    void shouldReplayStoredSuccessWhenValidatingOnlyAndPendingClaimHasACase() {
+        existing(BulkClaimSubmissionStatus.PENDING, CASE_REFERENCE, Instant.now());
+
+        ClaimResponseType response = submit(true, unexpectedPreparation()).getFirst();
+
+        assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        verifyNoWrites();
+    }
+
+    @Test
+    void shouldReportIdentifierReusedWhenValidatingOnlyWithDifferentClaimAlreadyCreated() {
+        existing(BulkClaimSubmissionStatus.CASE_CREATED, CASE_REFERENCE, Instant.now());
+
+        ClaimResponseType response =
+            submit(true, input(CUI, "other-hash", unexpectedPreparation().preparation())).getFirst();
+
         assertThat(response.getClaimStatus().getFailReasonCode())
-            .isEqualTo(BulkFailReason.SAVE_FAILED.getFailReasonCode());
-        assertThat(rows.values().iterator().next().getStatus()).isEqualTo(BulkClaimSubmissionStatus.PENDING);
+            .isEqualTo(BulkFailReason.IDENTIFIER_REUSED.getFailReasonCode());
+        verifyNoWrites();
+    }
+
+    @Test
+    void shouldReportIdentifierReusedWhenValidatingOnlyWithDifferentClaimRecentlyPending() {
+        existing(BulkClaimSubmissionStatus.PENDING, null, Instant.now());
+
+        ClaimResponseType response =
+            submit(true, input(CUI, "other-hash", unexpectedPreparation().preparation())).getFirst();
+
+        assertThat(response.getClaimStatus().getFailReasonCode())
+            .isEqualTo(BulkFailReason.IDENTIFIER_REUSED.getFailReasonCode());
+        verifyNoWrites();
+    }
+
+    @Test
+    void shouldPrepareWhenValidatingOnlyAndNoRowExists() {
+        ClaimResponseType response = submit(true, prepared(CUI, HASH)).getFirst();
+
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+        assertThat(response.getCaseReference()).isNull();
+        verifyNoWrites();
     }
 
     @Test
@@ -373,6 +445,13 @@ class BulkClaimSubmissionServiceTest {
             .build();
         rows.put(row.getId(), row);
         return row;
+    }
+
+    private void verifyNoWrites() {
+        verify(repository, never()).save(any());
+        verify(repository, never()).saveAll(any());
+        verify(repository, never()).delete(any());
+        verifyNoInteractions(ccdClient);
     }
 
     private ClaimResponseType submitOne(ClaimInput input) {
