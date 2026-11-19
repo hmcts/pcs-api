@@ -46,7 +46,8 @@ public class RentalAlternativesMapper {
         if (suspension != null) {
             alternatives.add(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY);
             String actPath = path + "/SuspensionOfRightToBuy";
-            suspensionAct = housingAct(SuspensionOfRightToBuyHousingAct.class, suspension.getHousingActSection(),
+            suspensionAct = housingAct(SuspensionOfRightToBuyHousingAct.class,
+                                       suspension.getHousingActSection().value(),
                                        actPath + "/HousingActSection", errors);
             errors.requiredWithMaxLength(actPath + "/Reason", suspension.getReason(), BulkLimits.SHORT_TEXT,
                                          SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL);
@@ -54,7 +55,7 @@ public class RentalAlternativesMapper {
         if (demotion != null) {
             alternatives.add(AlternativesToPossession.DEMOTION_OF_TENANCY);
             String actPath = path + "/DemotionOfTenancy";
-            demotionAct = housingAct(DemotionOfTenancyHousingAct.class, demotion.getHousingActSection(),
+            demotionAct = housingAct(DemotionOfTenancyHousingAct.class, demotion.getHousingActSection().value(),
                                      actPath + "/HousingActSection", errors);
             errors.requiredWithMaxLength(actPath + "/Reason", demotion.getReason(), BulkLimits.SHORT_TEXT,
                                          DemotionOfTenancy.DEMOTION_OF_TENANCY_REASON_LABEL);

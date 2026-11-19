@@ -53,11 +53,16 @@ public class RentalNoticeMapper {
         }
 
         target.setNoticeServed(YesOrNo.YES);
-        target.setNoticeServedDetails(details(notice, path, errors));
+        target.setNoticeServedDetails(servedDetails(notice, path, errors));
         return notice.getNoticeType();
     }
 
-    private NoticeServedDetails details(NoticeType notice, String path, BulkErrorCollector errors) {
+    /**
+     * Maps how and when a served notice was served.
+     *
+     * @param path path of the notice element relative to the claim
+     */
+    public NoticeServedDetails servedDetails(NoticeType notice, String path, BulkErrorCollector errors) {
         NoticeServedDetails.NoticeServedDetailsBuilder builder = NoticeServedDetails.builder()
             .ableToUploadDocument(CanUploadNoticeServedDocument.No)
             .unableToUploadReason(properties.getSystemReasonNoDocuments());

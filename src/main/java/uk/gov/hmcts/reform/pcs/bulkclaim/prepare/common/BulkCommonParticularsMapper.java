@@ -28,8 +28,8 @@ public class BulkCommonParticularsMapper {
     }
 
     /**
-     * Sets pre-action protocol (England only), language, application with claim, defendant circumstances and
-     * additional reasons on the case.
+     * Sets pre-action protocol (its explanation is England only), language, application with claim, defendant
+     * circumstances and additional reasons on the case.
      *
      * @param path path of the particulars element relative to the claim, for example {@code ClaimParticulars}
      */
@@ -39,9 +39,7 @@ public class BulkCommonParticularsMapper {
                                    String path,
                                    BulkErrorCollector errors) {
 
-        if (country == LegislativeCountry.ENGLAND) {
-            applyPreActionProtocol(particulars, target, path, errors);
-        }
+        applyPreActionProtocol(particulars, country, target, path, errors);
 
         target.setLanguageUsed(LanguageUsed.valueOf(particulars.getLanguageUsed().name()));
         target.setApplicationWithClaim(VerticalYesNo.from(Boolean.TRUE.equals(particulars.isApplicationWithClaim())));
@@ -63,12 +61,13 @@ public class BulkCommonParticularsMapper {
     }
 
     private void applyPreActionProtocol(ParticularsOfClaimType particulars,
+                                        LegislativeCountry country,
                                         PCSCase target,
                                         String path,
                                         BulkErrorCollector errors) {
         boolean completed = particulars.isPreActionProtocolCompleted();
         target.setPreActionProtocolCompleted(VerticalYesNo.from(completed));
-        if (!completed) {
+        if (!completed && country == LegislativeCountry.ENGLAND) {
             String explanationPath = path + "/PreActionProtocolIncompleteExplanation";
             String explanation = particulars.getPreActionProtocolIncompleteExplanation();
             if (errors.required(explanationPath, explanation,

@@ -36,11 +36,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRoutingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
@@ -48,8 +52,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Prepares England rental claims. Wales claims are rejected until the Welsh preparation is added at
- * {@link #prepareWales}.
+ * Prepares rental claims for properties in England (tenancies) and Wales (occupation contracts). Wales claims are
+ * rejected while the Wales make a claim feature is off.
  */
 @Service
 public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
@@ -73,6 +77,12 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
     private final ClaimantEligibilityRules claimantEligibilityRules;
     private final TenancyDateRules tenancyDateRules;
     private final RentSectionRoutingService rentSectionRoutingService;
+    private final FeatureToggleService featureToggleService;
+    private final WalesGroundRouter walesGroundRouter;
+    private final WalesNoticeMapper walesNoticeMapper;
+    private final WalesOccupationContractMapper walesContractMapper;
+    private final WalesDetailsMapper walesDetailsMapper;
+    private final WalesRentSectionRoutingService walesRentSectionRoutingService;
 
     @SuppressWarnings("checkstyle:ParameterNumber")
     public DefaultRentalBulkClaimPreparer(BulkClaimProperties properties,
@@ -91,7 +101,13 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
                                           RentalAlternativesMapper alternativesMapper,
                                           ClaimantEligibilityRules claimantEligibilityRules,
                                           TenancyDateRules tenancyDateRules,
-                                          RentSectionRoutingService rentSectionRoutingService) {
+                                          RentSectionRoutingService rentSectionRoutingService,
+                                          FeatureToggleService featureToggleService,
+                                          WalesGroundRouter walesGroundRouter,
+                                          WalesNoticeMapper walesNoticeMapper,
+                                          WalesOccupationContractMapper walesContractMapper,
+                                          WalesDetailsMapper walesDetailsMapper,
+                                          WalesRentSectionRoutingService walesRentSectionRoutingService) {
         this.properties = properties;
         this.codec = codec;
         this.pbaCheck = pbaCheck;
@@ -109,6 +125,12 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         this.claimantEligibilityRules = claimantEligibilityRules;
         this.tenancyDateRules = tenancyDateRules;
         this.rentSectionRoutingService = rentSectionRoutingService;
+        this.featureToggleService = featureToggleService;
+        this.walesGroundRouter = walesGroundRouter;
+        this.walesNoticeMapper = walesNoticeMapper;
+        this.walesContractMapper = walesContractMapper;
+        this.walesDetailsMapper = walesDetailsMapper;
+        this.walesRentSectionRoutingService = walesRentSectionRoutingService;
     }
 
     @Override
@@ -130,19 +152,21 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
             return reject(cui, eligibility.failReason(), errors, "Property");
         }
 
-        if (eligibility.legislativeCountry() == LegislativeCountry.WALES) {
-            return prepareWales(cui, errors);
+        LegislativeCountry country = eligibility.legislativeCountry();
+        if (country == LegislativeCountry.WALES
+            && !featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)) {
+            return reject(cui, BulkFailReason.CLAIM_KIND_NOT_ENABLED, errors, "Property");
         }
 
-        ClaimantType claimantType = claimantType(claim.getClaimantDesignation());
-        if (!isClaimantTypeEligible(eligibility.legislativeCountry(), claimantType)) {
+        ClaimantType claimantType = claimantType(claim.getClaimantDesignation(), country);
+        if (!isClaimantTypeEligible(country, claimantType)) {
             return reject(cui, BulkFailReason.CLAIMANT_TYPE_NOT_ELIGIBLE, errors, "ClaimantDesignation");
         }
 
         PCSCase pcsCase = PCSCase.builder().build();
         eligibility.applyTo(pcsCase);
-        pcsCase.setClaimantType(claimantTypeList(claimantType, eligibility.legislativeCountry()));
-        BulkClaimExtras extras = populate(claimSet, claim, organisation, pcsCase, errors);
+        pcsCase.setClaimantType(claimantTypeList(claimantType, country));
+        BulkClaimExtras extras = populate(claimSet, claim, organisation, country, pcsCase, errors);
 
         if (errors.hasErrors()) {
             return new Rejected(cui, BulkFailReason.VALIDATION_FAILED, errors.errors());
@@ -159,11 +183,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         ));
     }
 
-    /** Seam for the Welsh occupation contract preparation, which is not enabled yet. */
-    private BulkClaimPreparationResult prepareWales(String cui, BulkErrorCollector errors) {
-        return reject(cui, BulkFailReason.CLAIM_KIND_NOT_ENABLED, errors, "Property");
-    }
-
     private BulkClaimPreparationResult reject(String cui, BulkFailReason reason, BulkErrorCollector errors,
                                               String path) {
         return new Rejected(cui, reason, List.of(new BulkValidationError(
@@ -173,6 +192,7 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
     private BulkClaimExtras populate(RentalClaimSet claimSet,
                                      RentalClaimSet.RentalClaim claim,
                                      OrganisationDetailsResponse organisation,
+                                     LegislativeCountry country,
                                      PCSCase pcsCase,
                                      BulkErrorCollector errors) {
         final ParticularsRentedType particulars = claim.getClaimParticulars();
@@ -194,27 +214,16 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         pcsCase.setCompletionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW);
 
         final var common = commonParticularsMapper.apply(
-            particulars, LegislativeCountry.ENGLAND, pcsCase, particularsPath, errors);
+            particulars, country, pcsCase, particularsPath, errors);
         underlesseeMapper.map(particulars.getUnderlesseeOrMortgagee(), particularsPath + "/UnderlesseeOrMortgagee",
                               errors).applyTo(pcsCase);
         pcsCase.setStatementOfTruth(statementOfTruthMapper.map(
             particulars.getClaimStatementOfTruth(), particularsPath + "/ClaimStatementOfTruth", errors));
 
-        TenancyLicenceType tenancy = tenancy(particulars, pcsCase, particularsPath, errors);
-        if (tenancy != null) {
-            groundRouter.route(tenancy, particulars.getGrounds(), pcsCase, particularsPath + "/Grounds", errors);
-        }
-
-        final String noticeType = noticeMapper.apply(
-            particulars.getNotice(), pcsCase, particularsPath + "/Notice", errors);
-
-        boolean rentApplies = tenancy != null
-            && rentSectionRoutingService.shouldShowRentSection(pcsCase) == YesOrNo.YES;
-        rentMapper.apply(particulars, rentApplies, pcsCase, particularsPath, errors);
-
+        final String noticeType = country == LegislativeCountry.WALES
+            ? populateWales(particulars, pcsCase, particularsPath, errors)
+            : populateEngland(particulars, pcsCase, particularsPath, errors);
         applyClaimantAndSettlementDetails(particulars, pcsCase, particularsPath, errors);
-        alternativesMapper.apply(particulars.getSuspensionOfRightToBuy(), particulars.getDemotionOfTenancy(),
-                                 pcsCase, particularsPath, errors);
 
         return new BulkClaimExtras(
             SCHEMA_VERSION,
@@ -230,6 +239,80 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
             null,
             List.of()
         );
+    }
+
+    private String populateEngland(ParticularsRentedType particulars,
+                                   PCSCase pcsCase,
+                                   String path,
+                                   BulkErrorCollector errors) {
+        rejectNotAllowedInEngland(particulars, path, errors);
+
+        TenancyLicenceType tenancy = tenancy(particulars, pcsCase, path, errors);
+        if (tenancy != null) {
+            groundRouter.route(tenancy, particulars.getGrounds(), pcsCase, path + "/Grounds", errors);
+        }
+
+        String noticeType = noticeMapper.apply(particulars.getNotice(), pcsCase, path + "/Notice", errors);
+
+        boolean rentApplies = tenancy != null
+            && rentSectionRoutingService.shouldShowRentSection(pcsCase) == YesOrNo.YES;
+        rentMapper.apply(particulars, rentApplies, pcsCase, path, errors);
+
+        alternativesMapper.apply(particulars.getSuspensionOfRightToBuy(), particulars.getDemotionOfTenancy(),
+                                 pcsCase, path, errors);
+        return noticeType;
+    }
+
+    private static void rejectNotAllowedInEngland(ParticularsRentedType particulars,
+                                                  String path,
+                                                  BulkErrorCollector errors) {
+        if (particulars.getWalesNotice() != null) {
+            errors.add(path + "/WalesNotice", BulkErrorCollector.NOT_ALLOWED,
+                       "WalesNotice only applies to a property in Wales; use Notice");
+        }
+        if (particulars.getWales() != null) {
+            errors.add(path + "/Wales", BulkErrorCollector.NOT_ALLOWED, "Wales only applies to a property in Wales");
+        }
+    }
+
+    private String populateWales(ParticularsRentedType particulars,
+                                 PCSCase pcsCase,
+                                 String path,
+                                 BulkErrorCollector errors) {
+        rejectNotAllowedInWales(particulars, path, errors);
+
+        OccupationLicenceTypeWales contract = walesContractMapper.apply(particulars, pcsCase, path, errors);
+        if (contract != null) {
+            walesGroundRouter.route(contract, particulars.getGrounds(), pcsCase, path + "/Grounds", errors);
+        }
+
+        String noticeType = walesNoticeMapper.apply(
+            particulars.getWalesNotice(), pcsCase, path + "/WalesNotice", errors);
+
+        boolean asbApplies = pcsCase.getShowASBQuestionsPageWales() == YesOrNo.YES;
+        walesDetailsMapper.apply(particulars.getWales(), asbApplies, pcsCase, path + "/Wales", errors);
+
+        boolean rentApplies = contract != null
+            && walesRentSectionRoutingService.shouldShowRentSection(pcsCase) == YesOrNo.YES;
+        rentMapper.apply(particulars, rentApplies, pcsCase, path, errors);
+        return noticeType;
+    }
+
+    private static void rejectNotAllowedInWales(ParticularsRentedType particulars,
+                                                String path,
+                                                BulkErrorCollector errors) {
+        if (particulars.getNotice() != null) {
+            errors.add(path + "/Notice", BulkErrorCollector.NOT_ALLOWED,
+                       "Notice only applies to a property in England; use WalesNotice");
+        }
+        if (particulars.getSuspensionOfRightToBuy() != null) {
+            errors.add(path + "/SuspensionOfRightToBuy", BulkErrorCollector.NOT_ALLOWED,
+                       "Suspension of right to buy only applies to a property in England");
+        }
+        if (particulars.getDemotionOfTenancy() != null) {
+            errors.add(path + "/DemotionOfTenancy", BulkErrorCollector.NOT_ALLOWED,
+                       "Demotion of tenancy only applies to a property in England");
+        }
     }
 
     private TenancyLicenceType tenancy(ParticularsRentedType particulars,
@@ -296,9 +379,10 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
             && properties.getEnabledClaimantTypes().contains(type);
     }
 
-    private static ClaimantType claimantType(ClaimantDesignationRentalType designation) {
+    private static ClaimantType claimantType(ClaimantDesignationRentalType designation, LegislativeCountry country) {
         return switch (designation) {
-            case SOCIAL_LANDLORD -> ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
+            case SOCIAL_LANDLORD -> country == LegislativeCountry.WALES
+                ? ClaimantType.COMMUNITY_LANDLORD : ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
             case PRIVATE_LANDLORD -> ClaimantType.PRIVATE_LANDLORD;
         };
     }

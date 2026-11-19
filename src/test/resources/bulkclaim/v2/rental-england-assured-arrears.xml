@@ -34,7 +34,7 @@
       </Name>
       <AddressSameAsProperty>true</AddressSameAsProperty>
     </Defendant>
-    <ClaimantDesignation>PrivateLandlord</ClaimantDesignation>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
     <ClaimParticulars>
       <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
       <RecoverySteps>Letters and phone calls.</RecoverySteps>
@@ -73,11 +73,8 @@
       </CurrentRent>
       <DailyRent>26.30</DailyRent>
       <Grounds>
-        <Ground>
-          <Code>RENT_ARREARS_OR_BREACH_OF_TENANCY</Code>
-          <Reason>Rent is more than two months in arrears.</Reason>
-        </Ground>
-        <RentArrearsOrBreach>RENT_ARREARS</RentArrearsOrBreach>
+        <Ground><Code>SERIOUS_RENT_ARREARS_GROUND8</Code></Ground>
+        <Ground><Code>RENT_ARREARS_GROUND10</Code></Ground>
       </Grounds>
       <Notice>
         <Served>true</Served>

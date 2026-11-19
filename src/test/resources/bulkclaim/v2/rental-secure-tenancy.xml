@@ -52,11 +52,11 @@
       <TenancyType>SECURE_CONTRACT</TenancyType>
       <Grounds>
         <Ground>
-          <Code>ESTATE_MANAGEMENT</Code>
+          <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
+          <Reason>The block is being redeveloped.</Reason>
           <EstateManagementReason>BUILDING_WORKS</EstateManagementReason>
-          <EstateManagementReason>REDEVELOPMENT</EstateManagementReason>
+          <EstateManagementReason>REDEVELOPMENT_SCHEMES</EstateManagementReason>
         </Ground>
-        <RentArrearsOrBreach>BREACH_OF_TENANCY</RentArrearsOrBreach>
       </Grounds>
       <WalesNotice>
         <Served>true</Served>
