@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>${pba}</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>${customerUniqueIdentifier}</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>${addressLine1}</AddressLine1>
+        <PostTown>London</PostTown>
+        <PostCode>W3 7RX</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>${claimantDesignation}</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <RecoverySteps>Letters and phone calls.</RecoverySteps>
+      <ReasonForPossession>Further reasons.</ReasonForPossession>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <ClaimingCosts>true</ClaimingCosts>
+      <UnderlesseeOrMortgagee><Name>Lender plc</Name><Address><AddressLine1>1 Bank St</AddressLine1><PostTown>Leeds</PostTown><PostCode>LS1 1AA</PostCode></Address></UnderlesseeOrMortgagee>
+      <TotalArrears>2400.50</TotalArrears>
+      <TenancyType>ASSURED_TENANCY</TenancyType>
+      <TenancyCommenceDate>2022-03-01</TenancyCommenceDate>
+      <CurrentRent><Amount>800.00</Amount><Frequency>Month</Frequency></CurrentRent>
+      <DailyRent>26.00</DailyRent>
+      <Grounds>
+        <Ground><Code>SERIOUS_RENT_ARREARS_GROUND8</Code></Ground>
+        <Ground><Code>RENT_ARREARS_GROUND10</Code></Ground>
+        <Ground><Code>OWNER_OCCUPIER_GROUND1</Code><Reason>Landlord needs the home.</Reason></Ground>
+        <Ground><Code>NUISANCE_ANNOYANCE_GROUND14</Code><Reason>Nuisance to neighbours.</Reason></Ground>
+      </Grounds>
+      <Notice>
+        <Served>true</Served>
+        <ServiceMethod>FIRST_CLASS_POST</ServiceMethod>
+        <ServedDate>2026-10-05</ServedDate>
+        <NoticeType>Section 8</NoticeType>
+      </Notice>
+      <HasExpenseClaim>true</HasExpenseClaim>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>
