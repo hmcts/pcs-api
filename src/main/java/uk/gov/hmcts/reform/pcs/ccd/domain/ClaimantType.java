@@ -32,6 +32,10 @@ public enum ClaimantType implements HasLabel {
         return legislativeCountries.contains(legislativeCountry);
     }
 
+    public boolean isMortgageLender() {
+        return this == MORTGAGE_LENDER;
+    }
+
     public static ClaimantType fromName(String code) {
 
         return Arrays.stream(values())

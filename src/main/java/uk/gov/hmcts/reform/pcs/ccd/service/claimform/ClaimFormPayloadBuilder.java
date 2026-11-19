@@ -92,6 +92,8 @@ public class ClaimFormPayloadBuilder {
 
         mapCase(pcsCase, payloadBuilder);
         mapClaim(claim, payloadBuilder);
+        payloadBuilder.isMortgageClaim(
+            claim.getClaimantType() != null && claim.getClaimantType().isMortgageLender() ? "Yes" : "No");
 
         final List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         final List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);

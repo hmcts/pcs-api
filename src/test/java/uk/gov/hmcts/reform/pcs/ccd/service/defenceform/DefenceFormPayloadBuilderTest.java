@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertedBy;
@@ -87,6 +88,22 @@ class DefenceFormPayloadBuilderTest {
             new DefenceCorrespondenceAddressResolver(assertionRepository, objectMapper, addressMapper),
             UK_CLOCK);
         stubAssertions();
+    }
+
+    @Nested
+    class MortgageClaim {
+
+        @Test
+        void buildsForAClaimWithNoGroundsNoticeOrTenancy() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getClaim().setClaimantType(ClaimantType.MORTGAGE_LENDER);
+            response.getClaim().setNoticeOfPossession(null);
+            response.getClaim().getClaimGrounds().clear();
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-1234-5678");
+        }
     }
 
     @Nested

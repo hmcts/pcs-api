@@ -101,6 +101,17 @@ class ClaimWaTaskServiceTest {
     }
 
     @Test
+    void shouldTreatMissingLanguageAsEnglish() {
+        ClaimEntity claim = ClaimEntity.builder().build();
+        stubCaseWithClaim(claim);
+
+        underTest.createTasksForIssuedClaim(CASE_REFERENCE);
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        verifyNoInteractions(translationWAService);
+    }
+
+    @Test
     void shouldNotCreateTranslateTaskWhenLanguageIsEnglish() {
         // Given
         ClaimEntity claim = ClaimEntity.builder().languageUsed(LanguageUsed.ENGLISH).build();
