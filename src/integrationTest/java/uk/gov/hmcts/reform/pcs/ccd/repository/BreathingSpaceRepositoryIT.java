@@ -33,9 +33,6 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     private PcsCaseRepository pcsCaseRepository;
 
     @Autowired
-    private ClaimRepository claimRepository;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -44,16 +41,16 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     @Test
     void shouldReturnNewestBreathingSpaceFirst() {
         // Given
-        ClaimEntity claim = createClaim();
+        PcsCaseEntity pcsCase = createPcsCase();
 
         insertBreathingSpace(
-            claim.getId(),
+            pcsCase.getId(),
             "BS-OLD",
             LocalDateTime.of(2026, 10, 1, 10, 0)
         );
 
         insertBreathingSpace(
-            claim.getId(),
+            pcsCase.getId(),
             "BS-NEW",
             LocalDateTime.of(2026, 11, 12, 10, 0)
         );
@@ -74,11 +71,11 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     @Test
     void shouldPopulateCreatedAtWhenSavingNewBreathingSpace() {
         // Given
-        ClaimEntity claim = createClaim();
+        PcsCaseEntity pcsCase = createPcsCase();
 
         BreathingSpaceEntity entity =
             BreathingSpaceEntity.builder()
-                .claim(claim)
+                .pcsCase(pcsCase)
                 .referenceNumber("BS-DEFAULT")
                 .build();
 
@@ -97,33 +94,28 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
         assertThat(reloaded.getCreatedAt()).isNotNull();
     }
 
-    private ClaimEntity createClaim() {
-        PcsCaseEntity pcsCase =
-            pcsCaseRepository.saveAndFlush(
-                PcsCaseEntity.builder()
-                    .caseReference(CASE_REFERENCE)
-                    .build()
-            );
 
-        return claimRepository.saveAndFlush(
-            ClaimEntity.builder()
-                .pcsCase(pcsCase)
+    private PcsCaseEntity createPcsCase() {
+        return pcsCaseRepository.saveAndFlush(
+            PcsCaseEntity.builder()
+                .caseReference(CASE_REFERENCE)
                 .build()
         );
     }
 
+
     private void insertBreathingSpace(
-        UUID claimId,
+        UUID pcsCaseId,
         String referenceNumber,
         LocalDateTime createdAt
     ) {
         jdbcTemplate.update("""
             INSERT INTO breathing_space
-                (id, claim_id, reference_number, created_at)
+                (id, pcs_case_id, reference_number, created_at)
             VALUES (?, ?, ?, ?)
             """,
                             UUID.randomUUID(),
-                            claimId,
+                            pcsCaseId,
                             referenceNumber,
                             createdAt
         );
