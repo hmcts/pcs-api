@@ -56,7 +56,6 @@ class CaseworkerDocumentListServiceTest {
             .build();
 
         DynamicStringList result = underTest.buildRelatedSubmissionsList(
-            PcsCaseEntity.builder().build(),
             List.of(ListValue.<GeneralApplication>builder()
                 .id(GEN_APP_ID)
                 .value(GeneralApplication.builder()
@@ -71,6 +70,30 @@ class CaseworkerDocumentListServiceTest {
 
         assertThat(result.getValue().getCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
         assertThat(result.getValue().getLabel()).isEqualTo("General Application GA1 - submitted 1 July 2026");
+    }
+
+    @Test
+    void shouldBuildCounterClaimRelatedSubmissionsListWithRank() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        UUID ccId = UUID.fromString("44444444-4444-4444-4444-444444444444");
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(ccId)
+            .rank(2)
+            .status(uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState
+                .COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 8, 15, 10, 0))
+            .build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            List.of(),
+            List.of(counterClaim),
+            null
+        );
+
+        assertThat(result.getListItems()).hasSize(2);
+        assertThat(result.getListItems().getFirst().getCode()).isEqualTo("COUNTERCLAIM:" + ccId);
+        assertThat(result.getListItems().getFirst().getLabel())
+            .isEqualTo("Counter claim CC2 - submitted 15 August 2026");
     }
 
     @Test

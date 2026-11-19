@@ -63,14 +63,14 @@ export default defineConfig({
     ],
   ],
   projects: [
-  
+
     {
       name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+        screenshot: process.env.RUN_E2E_IN_WELSH === 'true'? 'on' : 'only-on-failure',
+        video: process.env.RUN_E2E_IN_WELSH === 'true'? 'on' : 'retain-on-failure',
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
@@ -140,7 +140,7 @@ export default defineConfig({
             },
           },
           {
-            name: 'mobile-ipad',            
+            name: 'mobile-ipad',
             use: {
               ...devices['iPad Pro 11'],
               screenshot: 'only-on-failure' as const,

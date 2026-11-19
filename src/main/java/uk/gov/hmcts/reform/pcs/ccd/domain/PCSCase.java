@@ -416,9 +416,16 @@ public class PCSCase {
     )
     private String summaryLegalRepresentativeMarkdownLabel;
 
-    @CCD(ignore = true)
-    @JsonIgnore
-    private String ordersMarkdown;
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String orderListMarkdown;
+
+    @CCD(
+        label = "${orderListMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private String orderListMarkdownLabel;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
