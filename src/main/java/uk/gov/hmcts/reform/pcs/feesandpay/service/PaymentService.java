@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.BulkPbaDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.BulkPbaPaymentTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.BulkPbaPaymentTaskComponent.BULK_PBA_PAYMENT_TASK_DESCRIPTOR;
 
@@ -217,7 +219,9 @@ public class PaymentService {
 
     /**
      * Pays the fee for a service request from the PBA account recorded against it, as the system user.
-     * The service request reference is used as the idempotency key so that a replay cannot charge twice.
+     * Every attempt sends a fresh idempotency key, because the payments API replays the stored response for a
+     * repeated key. It guards against double charging itself by rejecting a new attempt with 409 while an earlier
+     * one is pending or has succeeded.
      */
     public PbaPaymentResponse createSystemPbaPayment(BulkPbaPaymentTaskData taskData) {
         String serviceRequestReference = taskData.getServiceRequestReference();
@@ -227,7 +231,7 @@ public class PaymentService {
             .accountNumber(taskData.getPbaAccountNumber())
             .amount(feePaymentEntity.getAmount())
             .customerReference(taskData.getPbaCustomerReference())
-            .idempotencyKey(serviceRequestReference)
+            .idempotencyKey(serviceRequestReference + "-" + UUID.randomUUID())
             .organisationName(taskData.getOrganisationName())
             .build();
 
@@ -242,6 +246,43 @@ public class PaymentService {
             .status(pbaPaymentResponse.getStatus())
             .dateCreated(pbaPaymentResponse.getDateCreated())
             .build();
+    }
+
+    /**
+     * Whether the fee for the service request has already been paid in full or in part.
+     */
+    public boolean isServiceRequestPaid(String serviceRequestReference) {
+        PaymentStatus status = getFeePayment(serviceRequestReference).getPaymentStatus();
+        return status == PaymentStatus.PAID || status == PaymentStatus.PARTIALLY_PAID;
+    }
+
+    /**
+     * Schedules a fresh PBA payment attempt for an existing service request whose earlier attempt failed.
+     * The earlier task has been removed, so the service request reference is free to use as the instance id again;
+     * if a task is somehow still scheduled it is left alone.
+     *
+     * @return whether a new task was scheduled
+     */
+    public boolean rescheduleBulkPbaPayment(String serviceRequestReference,
+                                            long caseReference,
+                                            BulkPbaDetails pbaDetails) {
+        FeePaymentEntity feePayment = getFeePayment(serviceRequestReference);
+        BulkPbaPaymentTaskData taskData = BulkPbaPaymentTaskData.builder()
+            .serviceRequestReference(serviceRequestReference)
+            .caseReference(caseReference)
+            .pbaAccountNumber(pbaDetails.pbaAccountNumber())
+            .pbaCustomerReference(pbaDetails.pbaCustomerReference())
+            .organisationName(pbaDetails.organisationName())
+            .bulkClaimSubmissionId(pbaDetails.bulkClaimSubmissionId())
+            .amount(feePayment.getAmount())
+            .build();
+
+        return schedulerClient.scheduleIfNotExists(
+            BULK_PBA_PAYMENT_TASK_DESCRIPTOR
+                .instance(serviceRequestReference)
+                .data(taskData)
+                .scheduledTo(Instant.now())
+        );
     }
 
     private void scheduleBulkPbaPayment(FeesAndPayTaskData feesAndPayTaskData, String serviceRequestReference) {

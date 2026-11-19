@@ -227,8 +227,8 @@ class CreateBulkPossessionClaimIT extends AbstractPostgresContainerIT {
             .build();
         BulkClaimExtras extras = new BulkClaimExtras(
             "2.0", "Landlord", "PCOL-C-1", "PCOL-S-1", "Firm LLP", true, null,
-            new PartyExtras(null, null, null, "DX 1", "0207", null),
-            List.of(new PartyExtras("Mr", "J", "Quentin", null, null, true)),
+            new PartyExtras(null, null, null, "DX 1", "0207", null, null, null),
+            List.of(new PartyExtras("Mr", "J", "Quentin", null, null, true, null, null)),
             List.of(new PaymentHistoryLine(LocalDate.of(2026, 1, 1), new BigDecimal("100.00"),
                                            new BigDecimal("0.00"), new BigDecimal("100.00")),
                     new PaymentHistoryLine(LocalDate.of(2026, 2, 1), new BigDecimal("110.00"),
@@ -240,7 +240,7 @@ class CreateBulkPossessionClaimIT extends AbstractPostgresContainerIT {
                 null, null,
                                     List.of(new AdditionalPayment(new BigDecimal("12.00"), "Insurance",
                                                                   new BigDecimal("12.00")))),
-            List.of(new Occupant("Mrs", "Olive", "Occupier", null, "O")));
+            List.of(new Occupant("Mrs", "Olive", "Occupier", null, "O")), false);
 
         BulkClaimSubmissionEntity row = BulkClaimSubmissionEntity.builder()
             .organisationId(ORGANISATION_ID)

@@ -19,8 +19,8 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 
 /**
- * Maps the rent and rent arrears sections. They apply only when the grounds claimed involve rent arrears; the
- * rent statement document is never required on this path.
+ * Maps the rent and rent arrears sections. They are mandatory only when the grounds claimed involve rent arrears,
+ * but any rent data supplied is stored either way. The rent statement document is never required on this path.
  */
 @Component
 public class RentalRentMapper {
@@ -32,7 +32,8 @@ public class RentalRentMapper {
     }
 
     /**
-     * Maps the rent and arrears sections when they apply, otherwise marks them not shown.
+     * Maps the rent and arrears sections. When the sections do not apply, whatever rent data the claim supplies is
+     * still mapped and validated, but nothing is required.
      *
      * @param rentApplies whether the grounds claimed make the rent sections applicable
      * @param path path of the particulars element relative to the claim
@@ -44,23 +45,43 @@ public class RentalRentMapper {
                       BulkErrorCollector errors) {
 
         target.setShowRentSectionPage(YesOrNo.from(rentApplies));
-        if (!rentApplies) {
+        if (!rentApplies && !hasRentData(particulars)) {
             target.setRentArrears(RentArrearsSection.builder().build());
             return;
         }
 
-        target.setRentDetails(rentDetails(particulars, path, errors));
-        target.setRentSectionPaymentFrequency(target.getRentDetails().getFrequency());
-        target.setRentArrears(rentArrears(particulars, path, errors));
-        target.setArrearsJudgmentWanted(VerticalYesNo.from(Boolean.TRUE.equals(particulars.isHasExpenseClaim())));
+        RentDetails details = rentDetails(particulars, rentApplies, path, errors);
+        if (details != null) {
+            target.setRentDetails(details);
+            target.setRentSectionPaymentFrequency(details.getFrequency());
+        }
+        target.setRentArrears(rentArrears(particulars, rentApplies, path, errors));
+        if (rentApplies || particulars.isHasExpenseClaim() != null) {
+            target.setArrearsJudgmentWanted(
+                VerticalYesNo.from(Boolean.TRUE.equals(particulars.isHasExpenseClaim())));
+        }
     }
 
-    private RentDetails rentDetails(ParticularsRentedType particulars, String path, BulkErrorCollector errors) {
+    private static boolean hasRentData(ParticularsRentedType particulars) {
+        return particulars.getCurrentRent() != null
+            || particulars.getDailyRent() != null
+            || particulars.getTotalArrears() != null
+            || StringUtils.isNotBlank(particulars.getRecoverySteps())
+            || particulars.isHasExpenseClaim() != null
+            || (particulars.getPaymentHistory() != null
+                && !particulars.getPaymentHistory().getPaymentLine().isEmpty());
+    }
+
+    private RentDetails rentDetails(ParticularsRentedType particulars, boolean mandatory, String path,
+                                    BulkErrorCollector errors) {
         ValueFrequencyType rent = particulars.getCurrentRent();
         if (rent == null) {
-            errors.add(path + "/CurrentRent", BulkErrorCollector.REQUIRED,
-                       "Current rent is required when rent arrears are claimed");
-            return RentDetails.builder().build();
+            if (mandatory) {
+                errors.add(path + "/CurrentRent", BulkErrorCollector.REQUIRED,
+                           "Current rent is required when rent arrears are claimed");
+                return RentDetails.builder().build();
+            }
+            return null;
         }
 
         RentPaymentFrequency frequency = switch (rent.getFrequency()) {
@@ -78,7 +99,7 @@ public class RentalRentMapper {
 
         if (frequency == RentPaymentFrequency.OTHER) {
             details.setOtherFrequency(otherFrequency(rent, path, errors));
-            if (errors.required(path + "/DailyRent", suppliedDaily,
+            if (!mandatory || errors.required(path + "/DailyRent", suppliedDaily,
                                 "Daily rent is required when rent is not paid weekly, fortnightly or monthly")) {
                 details.setDailyCharge(suppliedDaily);
             }
@@ -108,12 +129,14 @@ public class RentalRentMapper {
         return text;
     }
 
-    private RentArrearsSection rentArrears(ParticularsRentedType particulars, String path,
+    private RentArrearsSection rentArrears(ParticularsRentedType particulars, boolean mandatory, String path,
                                            BulkErrorCollector errors) {
         BigDecimal total = particulars.getTotalArrears() != null
             ? particulars.getTotalArrears() : latestCumulativeArrears(particulars.getPaymentHistory());
-        errors.required(path + "/TotalArrears", total,
-                        "Total arrears (or a payment history to derive it from) is required");
+        if (mandatory) {
+            errors.required(path + "/TotalArrears", total,
+                            "Total arrears (or a payment history to derive it from) is required");
+        }
 
         String recoverySteps = StringUtils.trimToNull(particulars.getRecoverySteps());
         errors.maxLength(path + "/RecoverySteps", recoverySteps, BulkLimits.MEDIUM_TEXT,

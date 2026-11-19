@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult.Prepar
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.PreparedBulkClaim;
 import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimantOrganisationResolver;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental.DefaultRentalBulkClaimPreparer;
+import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimExtrasService;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -64,6 +67,8 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
     private BulkClaimXmlCodec codec;
     @Autowired
     private PcsCaseService pcsCaseService;
+    @Autowired
+    private BulkClaimExtrasService extrasService;
     @MockitoBean
     private EligibilityService eligibilityService;
     @MockitoBean
@@ -152,6 +157,56 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
                        .filter(p -> p.getRole() == PartyRole.CLAIMANT)
                        .findFirst().orElseThrow().getParty().getOrgName())
             .isEqualTo("Example Housing Association");
+    }
+
+    @Test
+    void persistsDefendantPhoneAndEmailAndTheEnglandNoticeType() {
+        final OrganisationDetailsResponse organisation = organisation();
+        RentalClaimSet claimSet = codec.parseRental(read("rental-england-assured-arrears-valid.xml"));
+        RentalClaimSet.RentalClaim rentalClaim = claimSet.getRentalClaim().getFirst();
+        var contact = new ContactDetailsType();
+        rentalClaim.getDefendant().getFirst().setContactDetails(contact);
+        var address = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.AddressType();
+        address.setAddressLine1("1 Street");
+        address.setPostTown("Leeds");
+        address.setPostCode("LS1 1AA");
+        contact.setAddress(address);
+        contact.setTelephoneNumber("0113 222 3333");
+        contact.setEmailAddress("defendant@example.org");
+        PreparedBulkClaim prepared = ((Prepared) preparer.prepare(claimSet, rentalClaim, organisation)).claim();
+
+        ClaimEntity claim = persistWithExtras(prepared, organisation);
+
+        PartyEntity defendant = claim.getClaimParties().stream()
+            .filter(p -> p.getRole() == PartyRole.DEFENDANT)
+            .findFirst().orElseThrow().getParty();
+        assertThat(defendant.getPhoneNumber()).isEqualTo("01132223333");
+        assertThat(defendant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(defendant.getEmailAddress()).isEqualTo("defendant@example.org");
+        assertThat(claim.getNoticeOfPossession().getNoticeType()).isEqualTo("Section 8");
+    }
+
+    @Test
+    void persistsRentForAnAssuredClaimWithoutRentArrearsGrounds() {
+        OrganisationDetailsResponse organisation = organisation();
+        RentalClaimSet claimSet = codec.parseRental(read("rental-england-assured-no-arrears.xml"));
+        PreparedBulkClaim prepared = ((Prepared) preparer.prepare(
+            claimSet, claimSet.getRentalClaim().getFirst(), organisation)).claim();
+        assertThat(prepared.pcsCase().getShowRentSectionPage()).isEqualTo(YesOrNo.NO);
+
+        ClaimEntity claim = persistWithExtras(prepared, organisation);
+
+        assertThat(claim.getRentArrears().getTotalRentArrears()).isEqualByComparingTo("10.00");
+        assertThat(claim.getPcsCase().getTenancyLicence().getRentAmount()).isEqualByComparingTo("800.00");
+    }
+
+    private ClaimEntity persistWithExtras(PreparedBulkClaim prepared, OrganisationDetailsResponse organisation) {
+        long caseReference = CASE_REFERENCES.incrementAndGet();
+        pcsCaseService.createCase(caseReference, prepared.pcsCase().getPropertyAddress(),
+                                  prepared.pcsCase().getLegislativeCountry(), organisation);
+        pcsCaseService.createMainClaimOnCase(caseReference, prepared.pcsCase(), organisation);
+        extrasService.apply(caseReference, prepared.extras());
+        return pcsCaseService.loadCase(caseReference).getClaims().getFirst();
     }
 
     static Stream<String> validWalesFixtures() {

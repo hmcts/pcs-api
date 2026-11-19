@@ -64,6 +64,29 @@ public class BulkClaimPaymentStatusUpdater implements BulkPaymentStatusListener 
         });
     }
 
+    /**
+     * Moves a FAILED payment back to PENDING for an explicit retry with a new PBA account. This is the only way out
+     * of FAILED; ordinary notifications never leave it.
+     *
+     * @return false when the submission has no case, or its payment is not FAILED (for example because a
+     *     concurrent retry already restarted it)
+     */
+    public boolean restartFailedPayment(UUID bulkClaimSubmissionId, String pbaAccountNumber, String customerReference) {
+        return Boolean.TRUE.equals(newTransaction.execute(status ->
+            repository.findByIdForUpdate(bulkClaimSubmissionId)
+                .filter(submission -> submission.getCaseReference() != null
+                    && submission.getPaymentStatus() == BulkClaimPaymentStatus.FAILED)
+                .map(submission -> {
+                    submission.setPaymentStatus(BulkClaimPaymentStatus.PENDING);
+                    submission.setPaymentFailureReason(null);
+                    submission.setPbaAccountNumber(pbaAccountNumber);
+                    submission.setPaymentCustomerReference(customerReference);
+                    repository.save(submission);
+                    return true;
+                })
+                .orElse(false)));
+    }
+
     @Override
     public void onPaymentConfirmed(String serviceRequestReference) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {

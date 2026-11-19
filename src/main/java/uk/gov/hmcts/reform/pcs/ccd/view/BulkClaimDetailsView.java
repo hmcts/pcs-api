@@ -103,6 +103,8 @@ public class BulkClaimDetailsView {
         add(rows, "Other names", party.getOtherNames());
         add(rows, "DX number", party.getDxNumber());
         add(rows, "Fax number", party.getFaxNumber());
+        add(rows, "Telephone number", party.getPhoneNumber());
+        add(rows, "Email address", party.getEmailAddress());
         add(rows, "Occupant", yesNo(party.getIsOccupant()));
         String heading = role == PartyRole.CLAIMANT ? "Claimant" : "Defendant";
         return new Section(heading + ": " + partyName(party), rows);

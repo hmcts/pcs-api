@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.Occupant;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.PartyExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.PaymentHistoryLine;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SubmissionChannel;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimOccupantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimPaymentHistoryLineEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.MortgageAdditionalPaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.MortgageParticularsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -47,6 +49,7 @@ public class BulkClaimExtrasService {
         claim.setLegacyPcolSolicitorReference(extras.legacyPcolSolicitorReference());
         claim.setSolicitorFirmName(extras.solicitorFirmName());
         claim.setClaimCosts(yesOrNo(extras.claimingCosts()));
+        applyNoticeType(claim, extras.noticeType());
 
         applyPartyExtras(claim, extras);
         applyPaymentHistory(claim, extras.paymentHistory());
@@ -70,7 +73,10 @@ public class BulkClaimExtrasService {
                                                 .formatted(defendantExtras.size(), defendants.size()));
         }
         for (int i = 0; i < defendantExtras.size(); i++) {
-            applyTo(defendants.get(i), defendantExtras.get(i));
+            PartyEntity defendant = defendants.get(i);
+            PartyExtras extra = defendantExtras.get(i);
+            applyTo(defendant, extra);
+            defendant.setPhoneNumberProvided(VerticalYesNo.from(extra.phoneNumber() != null));
         }
     }
 
@@ -89,6 +95,19 @@ public class BulkClaimExtrasService {
         party.setDxNumber(extras.dxNumber());
         party.setFaxNumber(extras.faxNumber());
         party.setIsOccupant(yesOrNo(extras.isOccupant()));
+        if (extras.phoneNumber() != null) {
+            party.setPhoneNumber(extras.phoneNumber());
+        }
+        if (extras.emailAddress() != null) {
+            party.setEmailAddress(extras.emailAddress());
+        }
+    }
+
+    private static void applyNoticeType(ClaimEntity claim, String noticeType) {
+        NoticeOfPossessionEntity notice = claim.getNoticeOfPossession();
+        if (notice != null && noticeType != null && notice.getNoticeType() == null) {
+            notice.setNoticeType(noticeType);
+        }
     }
 
     private static void applyPaymentHistory(ClaimEntity claim, List<PaymentHistoryLine> lines) {

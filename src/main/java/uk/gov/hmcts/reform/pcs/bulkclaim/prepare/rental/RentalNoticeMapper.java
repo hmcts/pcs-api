@@ -45,7 +45,7 @@ public class RentalNoticeMapper {
             return null;
         }
 
-        errors.maxLength(path + "/NoticeType", notice.getNoticeType(), BulkLimits.SIGNATORY, "Notice type");
+        errors.maxLength(path + "/NoticeType", notice.getNoticeType(), BulkLimits.NOTICE_TYPE, "Notice type");
 
         if (!notice.isServed()) {
             target.setNoticeServed(YesOrNo.NO);

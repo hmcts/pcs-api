@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.PlatformTransactionManager;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
+import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimPaymentStatus;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimSubmissionEntity;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimSubmissionStatus;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
@@ -62,6 +63,8 @@ class BulkClaimSubmissionServiceTest {
     private BulkClaimSubmissionRepository repository;
     @Mock
     private BulkClaimCcdClient ccdClient;
+    @Mock
+    private BulkClaimPaymentRetryService paymentRetryService;
 
     private final Map<UUID, BulkClaimSubmissionEntity> rows = new HashMap<>();
     private final BulkClaimResponseBuilder responseBuilder = new BulkClaimResponseBuilder();
@@ -97,8 +100,8 @@ class BulkClaimSubmissionServiceTest {
         JacksonConfiguration jackson = new JacksonConfiguration();
         BulkClaimStagingSerializer serializer = new BulkClaimStagingSerializer(
             jackson.draftCaseDataObjectMapper(), jackson.getMapper());
-        return new BulkClaimSubmissionService(repository, ccdClient, serializer, responseBuilder, properties,
-                                              mock(PlatformTransactionManager.class));
+        return new BulkClaimSubmissionService(repository, ccdClient, serializer, responseBuilder,
+                                              paymentRetryService, properties, mock(PlatformTransactionManager.class));
     }
 
     @AfterEach
@@ -462,6 +465,85 @@ class BulkClaimSubmissionServiceTest {
         verify(ccdClient, timeout(5000).times(2)).createCase(any());
     }
 
+    @Test
+    void shouldRescheduleFailedPaymentOnceAndReplayTheSuccess() {
+        BulkClaimSubmissionEntity row = existingWithFailedPayment();
+        when(paymentRetryService.canRetry(row)).thenReturn(true);
+
+        ClaimResponseType response = submitOne(prepared(CUI, HASH));
+
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+        assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        verify(paymentRetryService, times(1)).retry(row, "PBA1", "REF1", "Org One");
+        verifyNoInteractions(ccdClient);
+    }
+
+    @Test
+    void shouldNotRescheduleFailedPaymentWhenValidatingOnly() {
+        existingWithFailedPayment();
+
+        ClaimResponseType response = submit(true, unexpectedPreparation()).getFirst();
+
+        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+        verify(paymentRetryService, never()).retry(any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldJustReplayWhenTheCaseIsNoLongerAwaitingPayment() {
+        BulkClaimSubmissionEntity row = existingWithFailedPayment();
+        when(paymentRetryService.canRetry(row)).thenReturn(false);
+
+        ClaimResponseType response = submitOne(unexpectedPreparation());
+
+        assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        verify(paymentRetryService, never()).retry(any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldNotRetryPaymentWhenTheNewPaymentAccountIsNotValid() {
+        BulkClaimSubmissionEntity row = existingWithFailedPayment();
+        when(paymentRetryService.canRetry(row)).thenReturn(true);
+        BulkValidationError error = new BulkValidationError(
+            "/RentalClaimSet/RentalClaim[1]/PaymentAccountNumber", "INVALID_VALUE", "not valid");
+
+        ClaimResponseType response = submitOne(input(CUI, HASH, () -> new BulkClaimPreparationResult.Rejected(
+            CUI, BulkFailReason.PBA_OVERRIDE_NOT_VALID, List.of(error))));
+
+        assertThat(response.getClaimStatus().getFailReasonCode())
+            .isEqualTo(BulkFailReason.PBA_OVERRIDE_NOT_VALID.getFailReasonCode());
+        verify(paymentRetryService, never()).retry(any(), any(), any(), any());
+        assertThat(row.getStatus()).isEqualTo(BulkClaimSubmissionStatus.CASE_CREATED);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void shouldReportNoticeOfActingReasonForNonSolicitorSolicitorBlockAndReplayIt() {
+        when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
+        ClaimInput claim = input(CUI, HASH, () -> preparedResult(CUI, HASH, true));
+
+        final ClaimResponseType first = submitOne(claim);
+        BulkClaimSubmissionEntity row = rows.values().iterator().next();
+        assertThat(row.isNoticeOfActingRequired()).isTrue();
+        row.setStatus(BulkClaimSubmissionStatus.CASE_CREATED);
+        row.setCaseReference(CASE_REFERENCE);
+        ClaimResponseType replay = submitOne(unexpectedPreparation());
+
+        for (ClaimResponseType response : List.of(first, replay)) {
+            assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
+            assertThat(response.getClaimStatus().getReason())
+                .isEqualTo(BulkFailReason.CLAIM_SUCCESS_NOTICE_OF_ACTING.getStatusReason())
+                .contains("notice of acting");
+            assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        }
+    }
+
+    private BulkClaimSubmissionEntity existingWithFailedPayment() {
+        BulkClaimSubmissionEntity row = existing(BulkClaimSubmissionStatus.CASE_CREATED, CASE_REFERENCE, Instant.now());
+        row.setPaymentStatus(BulkClaimPaymentStatus.FAILED);
+        row.setServiceRequestReference("2026-1");
+        return row;
+    }
+
     private BulkClaimSubmissionEntity existing(BulkClaimSubmissionStatus status, Long caseReference,
                                                Instant lastModified) {
         BulkClaimSubmissionEntity row = BulkClaimSubmissionEntity.builder()
@@ -499,9 +581,14 @@ class BulkClaimSubmissionServiceTest {
     }
 
     private static BulkClaimPreparationResult preparedResult(String cui, String hash) {
+        return preparedResult(cui, hash, false);
+    }
+
+    private static BulkClaimPreparationResult preparedResult(String cui, String hash, boolean noticeOfActing) {
         return new BulkClaimPreparationResult.Prepared(new PreparedBulkClaim(
             PCSCase.builder().build(),
-            new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null),
+            new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null,
+                                noticeOfActing),
             "PBA1", "REF1"));
     }
 
