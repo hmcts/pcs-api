@@ -31,7 +31,11 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
     },
     excludeName = {
         "uk.gov.hmcts.reform.ccd.client.CoreCaseDataClientAutoConfiguration",
-        "uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration"
+        "uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration",
+        // idam-legacy-auth-support is used only for its password-grant provider (see OAuth2ClientConfig).
+        // Keep its auto-configurations off so a future property can't swap in its S2S token generator.
+        "cft.rpe.legacy.s2s.support.config.RpeS2SAutoConfiguration",
+        "cft.idam.legacy.auth.support.config.DefaultPasswordGrantAutoConfiguration"
     }
 )
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
