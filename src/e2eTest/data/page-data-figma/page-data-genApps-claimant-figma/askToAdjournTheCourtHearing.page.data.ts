@@ -17,7 +17,7 @@ export const askToAdjournTheCourtHearing = {
   howLongItTakesHeader: `How long it takes`,
   yourApplicationWillBeAssessedParagraph:`Your application will be assessed on an urgency basis and will be considered by a judge before the hearing date.`,
   howMuchItWillCostHeader: `How much it will cost`,
-  itsFreeToApplyParagraph: `It’s free to apply if the court hearing is at least 14 days away.`,
+  itsFreeToApplyParagraph: `It’s free to apply if the court hearing is at least 14 days away and all the other parties have agreed to it.`,
   ifYourCourtHearingIsSoonerParagraph: `If your court hearing is sooner, you will need to pay £126.`,
   theFeeWillIncreaseParagraph: `The fee will increase to £321 if:`,
   defendantHaveAlreadyToldList: `you have already told the other party that you are making this application, and`,
