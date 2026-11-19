@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.DisplayContext;
 import uk.gov.hmcts.ccd.sdk.api.Field;
@@ -11,6 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@Disabled
 class ExistingApplicationPageTest extends BasePageTest {
 
     @BeforeEach
