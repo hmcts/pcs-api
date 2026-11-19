@@ -191,7 +191,8 @@ class DefaultMortgageBulkClaimPreparerTest {
 
         assertThat(claim.pcsCase().getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
         assertThat(claim.pcsCase().getClaimantType().getValueCode()).isEqualTo("MORTGAGE_LENDER");
-        assertThat(claim.pcsCase().getPreActionProtocolCompleted()).isNull();
+        assertThat(claim.pcsCase().getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claim.pcsCase().getPreActionProtocolIncompleteExplanation()).isNull();
         assertThat(claim.extras().mortgageParticulars()).isNotNull();
     }
 
