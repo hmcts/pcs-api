@@ -34,6 +34,7 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowChangeNameAddressPage, NEVER_SHOW)
             .done()
+            .readonly(EnforcementOrder::getMakeAnApplicationUrl, NEVER_SHOW, true)
             .done()
             .label("changeNameAddress-line-separator", "---")
             .label(
@@ -53,9 +54,10 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                 <p class="govuk-body govuk-!-font-weight-bold">If you want to proceed with changing the name or
                     address for the eviction</p>
                 <p class="govuk-body">
-                    <a id="changeNameAddress-link" class="govuk-link">
+                    <a id="changeNameAddress-link" class="govuk-link" href="${makeAnApplicationUrl}"
+                        target="_blank" rel="noopener noreferrer">
                         Ask the judge if you can change the name or address for the eviction
-                        (GOV.UK, opens in a new tab)</a>.
+                        (opens in a new tab)</a>.
                 </p>
                 <p class="govuk-body govuk-!-font-weight-bold">If you want to keep the existing name or address</p>
                 <p class="govuk-body">If you are confident that the name or address is correct, you can go back to the
