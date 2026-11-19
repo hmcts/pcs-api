@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseHardDeleteRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
@@ -37,6 +39,8 @@ import java.util.Objects;
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseHardDeleteRepository pcsCaseHardDeleteRepository;
+    private final NotificationRepository notificationRepository;
     private final ClaimService claimService;
     private final PartyService partyService;
     private final DocumentService documentService;
@@ -160,8 +164,12 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    @Transactional
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        // Claim-less notifications are outside claim cascade; SoftDelete docs need a native wipe.
+        notificationRepository.deleteByPcsCase_Id(pcsCaseEntity.getId());
+        pcsCaseHardDeleteRepository.deleteBlockingDependencies(pcsCaseEntity.getId());
         pcsCaseRepository.delete(pcsCaseEntity);
         log.debug("Deleted case with reference: {}", caseReference);
     }
