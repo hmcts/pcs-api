@@ -25,6 +25,15 @@ import uk.gov.hmcts.reform.payments.client.PaymentsApi;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
 
+/**
+ * Spring Boot 4 dropped the health check API that the HMCTS ccd, payments and send-letter client libraries
+ * still use, so we don't scan their packages or load their auto-configurations. Instead we register the
+ * Feign clients and PaymentsClient we need ourselves, and our own health checks live in pcs.health and
+ * CoreCaseDataHealthConfiguration.
+ *
+ * <p>We only use idam-legacy-auth-support for its password grant (see OAuth2ClientConfig), so its
+ * auto-configurations are turned off. Our code doesn't call IdamApi, but the CCD SDK's IdamClient needs it.
+ */
 @SpringBootApplication(
     scanBasePackages = {
         "uk.gov.hmcts.reform.docassembly",
@@ -33,10 +42,7 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
     },
     excludeName = {
         "uk.gov.hmcts.reform.ccd.client.CoreCaseDataClientAutoConfiguration",
-        // Registers a Spring Boot 3 health indicator; replaced by pcs.health.SendLetterHealthIndicator
         "uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration",
-        // idam-legacy-auth-support is used only for its password-grant provider (see OAuth2ClientConfig).
-        // Keep its auto-configurations off so a future property can't swap in its S2S token generator.
         "cft.rpe.legacy.s2s.support.config.RpeS2SAutoConfiguration",
         "cft.idam.legacy.auth.support.config.DefaultPasswordGrantAutoConfiguration"
     }
@@ -47,7 +53,7 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamUserInfoApi.class,
-        IdamApi.class, // not used by pcs-api code; required so ccd-sdk's IdamClient can wire.
+        IdamApi.class,
         RdProfessionalApi.class,
         FeesApi.class,
         CoreCaseDataApi.class,
