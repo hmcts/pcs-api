@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
-import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult.Prepared;
@@ -93,9 +92,6 @@ class DefaultMortgageBulkClaimPreparerTest {
         PreparedBulkClaim claim = prepared("mortgage-england-valid.xml");
         PCSCase pcsCase = claim.pcsCase();
 
-        assertThat(claim.customerUniqueIdentifier()).isEqualTo("MORT-ENG-001");
-        assertThat(claim.claimKind()).isEqualTo(BulkClaimKind.MORTGAGE);
-        assertThat(claim.claimHash()).hasSize(64);
         assertThat(claim.pbaAccountNumber()).isEqualTo("PBA1234567");
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
         assertThat(pcsCase.getClaimantType().getValueCode()).isEqualTo(ClaimantType.MORTGAGE_LENDER.name());

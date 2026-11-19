@@ -153,6 +153,26 @@ class CreateBulkPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(pcsCases.count()).isEqualTo(casesBefore);
     }
 
+    @Test
+    @DisplayName("rolls back the case already written when a later step fails")
+    void rollsBackEverythingWhenAStagedFieldCannotBeRead() {
+        UUID id = stage();
+        BulkClaimSubmissionEntity row = submissions.findById(id).orElseThrow();
+        row.setStagedExtras("[]");
+        submissions.save(row);
+        long casesBefore = pcsCases.count();
+
+        var rejected = events.create(createBulkPossessionClaim.name(), State.PENDING_CASE_ISSUED,
+                                     PCSCase.builder().bulkClaimSubmissionId(id.toString()).build())
+            .as(systemUser).submitExpectingErrors();
+
+        assertThat(rejected.errors()).singleElement().asString().startsWith("BULK|");
+        assertThat(pcsCases.count()).isEqualTo(casesBefore);
+        assertThat(scheduledTasks(FEE_TASK)).isZero();
+        assertThat(submissions.findById(id).orElseThrow().getStatus())
+            .isEqualTo(BulkClaimSubmissionStatus.PENDING);
+    }
+
     private void assertStoredCase(long caseReference) {
         PcsCaseEntity pcsCase = pcsCases.findByCaseReference(caseReference).orElseThrow();
         ClaimEntity claim = pcsCase.getMainClaim();
