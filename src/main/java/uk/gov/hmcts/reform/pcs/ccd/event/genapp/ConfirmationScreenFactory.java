@@ -4,14 +4,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class ConfirmationScreenFactory {
+
+    private static final String STANDARD_FEE_FIELD_ID = "xui_genapp_StandardFee";
+    private static final String MAX_FEE_FIELD_ID = "xui_genapp_MaxFee";
 
     private final MoneyFormatter moneyFormatter;
 
@@ -21,7 +27,7 @@ public class ConfirmationScreenFactory {
 
         String confirmationMarkdown;
         if (feeDetails != null) {
-            confirmationMarkdown = buildFeeConfirmationMarkdown(feeDetails, caseReference);
+            confirmationMarkdown = buildFeeConfirmationMarkdown(genAppRequest, feeDetails);
         } else {
             confirmationMarkdown = buildNoFeeConfirmationMarkdown(genAppRequest);
         }
@@ -31,8 +37,10 @@ public class ConfirmationScreenFactory {
             .build();
     }
 
-    private String buildFeeConfirmationMarkdown(FeeDetails feeDetails, long caseReference) {
-        String formattedFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
+    private String buildFeeConfirmationMarkdown(GenAppRequest genAppRequest, FeeDetails feeDetails) {
+        String fee = getFeeFieldId(genAppRequest)
+            .map("${%s}"::formatted)
+            .orElseGet(() -> moneyFormatter.formatFee(feeDetails.getFeeAmount()));
 
         return """
             ---
@@ -45,10 +53,23 @@ public class ConfirmationScreenFactory {
             <p class="govuk-body">Your application will not progress until this fee has been paid.</p>
 
             <p class="govuk-body">
-            <a href="/cases/case-details/%d#Service%%20Request"
+            <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%%20Request"
                     class="govuk-link govuk-link--no-visited-state">Pay your application fee</a>
             </p>
-            """.formatted(formattedFee, formattedFee, caseReference);
+            """.formatted(fee, fee);
+    }
+
+    private static Optional<String> getFeeFieldId(GenAppRequest genAppRequest) {
+        if (genAppRequest.getApplicationType() == GenAppType.SUSPEND) {
+            return Optional.empty();
+        }
+
+        if (genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.YES
+            || genAppRequest.getWithoutNotice() == VerticalYesNo.YES) {
+            return Optional.of(STANDARD_FEE_FIELD_ID);
+        } else {
+            return Optional.of(MAX_FEE_FIELD_ID);
+        }
     }
 
     private String buildNoFeeConfirmationMarkdown(GenAppRequest genAppRequest) {
