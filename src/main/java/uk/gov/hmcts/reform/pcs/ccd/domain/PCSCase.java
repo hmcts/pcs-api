@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemUserOnlyAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -126,6 +127,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false, access = {SystemUserOnlyAccess.class})
+    private String bulkClaimSubmissionId;
 
     @CCD(searchable = false)
     @JsonUnwrapped(prefix = "reindexCases_")
