@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>SECURE-1</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Manchester</PostTown>
+        <PostCode>M1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <PaymentHistory>
+        <PaymentLine><PaymentDueDate>2026-09-01</PaymentDueDate><AmountDue>300.00</AmountDue><AmountPaid>0.00</AmountPaid><CumulativeArrears>300.00</CumulativeArrears></PaymentLine>
+        <PaymentLine><PaymentDueDate>2026-10-01</PaymentDueDate><AmountDue>300.00</AmountDue><AmountPaid>0.00</AmountPaid><CumulativeArrears>600.00</CumulativeArrears></PaymentLine>
+      </PaymentHistory>
+      <TenancyType>SECURE_TENANCY</TenancyType>
+      <TenancyCommenceDate>2015-06-01</TenancyCommenceDate>
+      <CurrentRent><Amount>300.00</Amount><Frequency>Quarter</Frequency></CurrentRent>
+      <DailyRent>3.29</DailyRent>
+      <Grounds>
+        <Ground><Code>RENT_ARREARS_OR_BREACH_OF_TENANCY</Code><Reason>Breach of the tenancy.</Reason></Ground>
+        <Ground><Code>S84A_CONDITION_1</Code><Reason>Antisocial behaviour.</Reason></Ground>
+        <Ground><Code>OVERCROWDING</Code><Reason>Property is overcrowded.</Reason></Ground>
+        <RentArrearsOrBreach>RENT_ARREARS</RentArrearsOrBreach>
+        <RentArrearsOrBreach>BREACH_OF_TENANCY</RentArrearsOrBreach>
+      </Grounds>
+      <Notice>
+        <Served>true</Served>
+        <ServiceMethod>PERSONALLY_HANDED</ServiceMethod>
+        <ServedDateTime>2026-10-05T10:30:00</ServedDateTime>
+        <PersonName>Ann Tenant</PersonName>
+      </Notice>
+      <MediationAttempted>true</MediationAttempted>
+      <SettlementAttempted>false</SettlementAttempted>
+      <SuspensionOfRightToBuy><HousingActSection>SECTION_82A_2</HousingActSection><Reason>Antisocial behaviour.</Reason></SuspensionOfRightToBuy>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>
