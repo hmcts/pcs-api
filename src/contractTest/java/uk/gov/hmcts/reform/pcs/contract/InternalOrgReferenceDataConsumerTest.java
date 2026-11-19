@@ -50,7 +50,7 @@ public class InternalOrgReferenceDataConsumerTest {
 
     private final RdProfessionalApi rdProfessionalApi;
 
-    static PactDslJsonBody buildOrganisationResponseDsl() {
+    public static PactDslJsonBody buildOrganisationResponseDsl() {
         return (PactDslJsonBody) new PactDslJsonBody()
             .stringType("name", "Possession Claims Solicitor Org")
             .stringType("organisationIdentifier", "E71FH4Q")

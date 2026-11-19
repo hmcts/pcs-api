@@ -59,6 +59,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
@@ -1749,6 +1750,61 @@ class PartyServiceTest {
                 .hasMessageContaining("No organisation profile id found for organisation");
 
             assertThat(caseEntity.getParties()).isEmpty();
+        }
+    }
+
+    @Nested
+    class ExplicitOrganisationTests {
+
+        private static final String EXPLICIT_ORG_ID = "BULKORG";
+
+        private OrganisationDetailsResponse explicitOrg() {
+            return OrganisationDetailsResponse.builder()
+                .organisationIdentifier(EXPLICIT_ORG_ID)
+                .organisationProfileIds(List.of("ORGANISATION_PROFILE"))
+                .build();
+        }
+
+        @Test
+        void shouldCreateClaimantStubFromExplicitOrganisationWithoutCurrentUser() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            underTest.createClaimantStub(caseEntity, explicitOrg());
+
+            assertThat(caseEntity.getParties()).singleElement().satisfies(party -> {
+                assertThat(party.getOrganisationId()).isEqualTo(EXPLICIT_ORG_ID);
+                assertThat(party.getOrganisationProfileId()).isEqualTo("ORGANISATION_PROFILE");
+                assertThat(party.isClaimCreator()).isTrue();
+            });
+            verifyNoInteractions(organisationService);
+        }
+
+        @Test
+        void shouldRejectNullExplicitOrganisation() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Organisation must be provided");
+            verifyNoInteractions(organisationService);
+        }
+
+        @Test
+        void shouldCreateAllPartiesFromExplicitOrganisationWithoutCurrentUser() {
+            PartyEntity stub = new PartyEntity();
+            stub.setClaimCreator(true);
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(stub));
+            when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
+            when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
+                .claimantName("Claimant name").isClaimantNameCorrect(VerticalYesNo.YES).build());
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com").claimantProvidePhoneNumber(VerticalYesNo.NO).build());
+
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, explicitOrg());
+
+            assertThat(stub.getOrganisationId()).isEqualTo(EXPLICIT_ORG_ID);
+            assertThat(stub.getOrganisationProfileId()).isEqualTo("ORGANISATION_PROFILE");
+            verifyNoInteractions(organisationService);
         }
     }
 }
