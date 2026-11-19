@@ -135,7 +135,7 @@ class WarrantOfRestitutionMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(result.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     @Test
@@ -224,7 +224,7 @@ class WarrantOfRestitutionMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+        assertThat(result.getEnfApplication()).isEqualTo(enforcementOrderEntity);
     }
 
     private EnforcementOrder createCompleteEnforcementOrder() {

@@ -256,7 +256,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("occupationContractOrLicenceHeading", "summaryTab_OccupationContractOrLicenceDetails!=\"\"")
             .field("summaryTab_OccupationContractOrLicenceDetails")
             .field("noticeHeading", "summaryTab_NoticeDetails!=\"\"")
-            .field("summaryTab_NoticeDetails");
+            .field("summaryTab_NoticeDetails")
+            .field("summaryTab_BreathingSpaceDetails", "summaryTab_BreathingSpaceDetails!=\"\"");
     }
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

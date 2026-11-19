@@ -69,8 +69,8 @@ public class SavingPageBuilder extends PageBuilder {
 
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .data(details.getData())
-                    .build());
+                        .data(details.getData())
+                        .build());
         }
 
         private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
@@ -79,7 +79,5 @@ public class SavingPageBuilder extends PageBuilder {
 
             draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
         }
-
     }
-
 }

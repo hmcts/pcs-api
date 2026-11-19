@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -112,7 +111,7 @@ public class PaymentService {
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             systemUpdateUserTokenProvider.getAuthToken(), requestDto);
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+        ClaimEntity claimEntity = pcsCaseService.retrieveClaimEntity(caseReference);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
@@ -257,12 +256,6 @@ public class PaymentService {
             .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
         feePaymentRepository.save(feePaymentEntity);
-    }
-
-    private ClaimEntity retrieveClaimEntity(Long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        // Assuming 1 claim per PcsCase
-        return pcsCaseEntity.getClaims().getFirst();
     }
 
     private Optional<FeePaymentEntity> getFeePaymentEntity(String serviceRequestReference) {

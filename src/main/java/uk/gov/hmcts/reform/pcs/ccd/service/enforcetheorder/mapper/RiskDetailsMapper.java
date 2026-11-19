@@ -24,10 +24,10 @@ public class RiskDetailsMapper {
     public RiskProfileEntity toEntity(EnforcementOrderEntity enforcementOrderEntity,
                                       EnforcementOrder enforcementOrder) {
         RiskProfileEntity riskProfileEntity = new RiskProfileEntity();
-        riskProfileEntity.setEnforcementOrder(enforcementOrderEntity);
+        riskProfileEntity.setEnfApplication(enforcementOrderEntity);
 
         SelectEnforcementType enforcementType =
-                SelectEnforcementType.getSelectEnforcementTypeFromName(
+                SelectEnforcementType.valueOf(
                         enforcementOrder.getChooseEnforcementType().getValueCode());
         switch (enforcementType) {
             case WARRANT -> {

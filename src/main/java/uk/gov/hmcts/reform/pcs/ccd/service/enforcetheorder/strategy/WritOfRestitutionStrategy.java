@@ -16,7 +16,7 @@ public class WritOfRestitutionStrategy implements EnforcementTypeStrategy {
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
-        writOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
+        writOfRestitutionEntity.setEnfApplication(enforcementOrderEntity);
         writOfRestitutionRepository.save(writOfRestitutionEntity);
     }
 

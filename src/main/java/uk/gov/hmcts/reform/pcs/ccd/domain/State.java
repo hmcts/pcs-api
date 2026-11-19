@@ -53,14 +53,6 @@ public enum State {
     CASE_ISSUED,
 
     @CCD(
-        label = "Pending Enforcement Issued",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    PENDING_ENFORCEMENT_ISSUED,
-
-    @CCD(
         label = "Judicial Referral",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
             InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
@@ -125,40 +117,9 @@ public enum State {
     BREATHING_SPACE,
 
     @CCD(
-        label = "Awaiting Bailiff Allocation",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    AWAITING_BAILIFF_ALLOCATION,
-
-    @CCD(
-        label = "Awaiting Scheduling",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    AWAITING_SCHEDULING,
-
-    @CCD(
-        label = "Awaiting Property Visit",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    AWAITING_PROPERTY_VISIT,
-
-    @CCD(
-        label = "Awaiting Enforcement Outcome",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    AWAITING_ENFORCEMENT_OUTCOME,
-
-    @CCD(
         label = "Closed",
         hint = "${caseTitleMarkdown}"
     )
-    CLOSED
+    CLOSED,
+
 }

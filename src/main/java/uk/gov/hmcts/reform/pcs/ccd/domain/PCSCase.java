@@ -1225,4 +1225,11 @@ public class PCSCase {
     )
     private WarrantReturn warrantReturn;
 
+    @CCD(
+        searchable = false,
+        access = {BailiffAccess.class}
+    )
+    @JsonUnwrapped(prefix = "enfShowConditions_")
+    private EnforcementEventShowConditions enforcementEventShowConditions;
+
 }

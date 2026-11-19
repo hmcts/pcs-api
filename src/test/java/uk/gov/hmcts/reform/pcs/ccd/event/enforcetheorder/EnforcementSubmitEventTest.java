@@ -1,8 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,15 +17,27 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementSubmitEventTest {
@@ -31,6 +48,16 @@ class EnforcementSubmitEventTest {
     private EventPayload<PCSCase, State> payload;
     @Mock
     private PCSCase caseData;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private SchedulerClient schedulerClient;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
 
     @InjectMocks
     private EnforcementSubmitEvent event;
@@ -51,14 +78,30 @@ class EnforcementSubmitEventTest {
         when(payload.caseReference()).thenReturn(caseReference);
         when(payload.caseData()).thenReturn(caseData);
         when(caseData.getEnforcementOrder()).thenReturn(enforcementOrder);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(partyEntity);
+        UUID enforcementApplicationId = UUID.randomUUID();
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setId(enforcementApplicationId);
+        when(enforcementOrderService.submitEnforcementOrder(caseReference, enforcementOrder))
+            .thenReturn(enforcementOrderEntity);
 
         // When
         SubmitResponse<State> response = event.submit(payload);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(caseReference, enforcementOrder);
+        verify(enforcementOrderService).submitEnforcementOrder(caseReference, enforcementOrder);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo(PENDING_ENFORCEMENT_ISSUED);
+        verify(feeService).getFee(any());
+        verify(pcsCaseService).loadCase(anyLong());
+        verify(partyService).getPrimaryClaimantPartyEntity(any());
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        TaskInstance<FeesAndPayTaskData> taskInstance =
+            schedulableInstanceCaptor.getValue().getTaskInstance();
+        assertThat(taskInstance.getData().getRelatedEntityId()).isEqualTo(enforcementApplicationId);
+        assertThat(taskInstance.getData().getPaymentCallbackHandlerType()).isEqualTo(ENFORCEMENT);
     }
 
     @ParameterizedTest

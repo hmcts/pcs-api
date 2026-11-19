@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -34,6 +35,7 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
     private PcsCaseService pcsCaseService;
     private EnforcementOrderMediator enforcementOrderMediator;
     private static final String NO_WARRANT_ERROR_MESSAGE = "There is no warrant on this case";
+    private static final String CAN_RECORD_WARRANT_RETURN = "enfShowConditions_CanRecordWarrantReturn=\"Yes\"";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -41,7 +43,10 @@ public class RecordWarrantReturn implements CCDConfig<PCSCase, State, UserRole> 
             .decentralisedEvent("ext:recordWarrantReturn", this::submit)
             .forStates(EventStates.recordWarrantOutcome())
             .name("Record warrant return")
-            .showCondition(featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN))
+            .showCondition(ShowConditions.and(
+                featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN),
+                CAN_RECORD_WARRANT_RETURN
+            ))
             .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
