@@ -42,6 +42,12 @@ java:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
+    # The bulk claims v2 functional tests call pcs-api as APIM using this stand-in S2S identity. The default
+    # S2S whitelist is repeated because setting it replaces the default list.
+    BULK_CLAIMS_APIM_SERVICE_NAMES: "civil_service"
+    S2S_NAMES_WHITELIST: "pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app,civil_service"
+    # Only the fallback served when LaunchDarkly has no value for the flag; a LaunchDarkly rule takes precedence.
+    JAVA_TOOL_OPTIONS: "-Dfeature.bulk-claims-v2-enabled=true -Dfeature.bulk-claims-v2-mortgage-enabled=true"
     SDP_EXPORT_UPLOAD_ENABLED: true
     SDP_EXPORT_ENVIRONMENT: preview
     SDP_EXPORT_CONTAINER_NAME: sdp-export
