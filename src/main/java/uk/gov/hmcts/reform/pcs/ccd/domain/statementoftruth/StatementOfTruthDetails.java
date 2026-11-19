@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
@@ -68,5 +69,8 @@ public class StatementOfTruthDetails {
     )
     protected String positionLegalRep;
 
-}
+    /** Date a bulk claim's statement of truth was signed; the make a claim journey leaves it unset. */
+    @CCD(ignore = true)
+    protected LocalDate signedDate;
 
+}

@@ -95,6 +95,37 @@ class StatementOfTruthServiceTest {
         }
 
         @Test
+        void shouldSetCompletedDateFromSignedDateWhenPresent() {
+            // Given
+            when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+            when(statementOfTruthDetails.getCompletedBy()).thenReturn(CLAIMANT);
+            when(statementOfTruthDetails.getAgreementClaimant())
+                    .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
+            when(statementOfTruthDetails.getSignedDate()).thenReturn(java.time.LocalDate.of(2026, 11, 3));
+
+            // When
+            StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
+
+            // Then
+            assertThat(result.getCompletedDate()).isEqualTo(java.time.LocalDate.of(2026, 11, 3).atStartOfDay());
+        }
+
+        @Test
+        void shouldLeaveCompletedDateUnsetWhenNoSignedDate() {
+            // Given
+            when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+            when(statementOfTruthDetails.getCompletedBy()).thenReturn(CLAIMANT);
+            when(statementOfTruthDetails.getAgreementClaimant())
+                    .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
+
+            // When
+            StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
+
+            // Then
+            assertThat(result.getCompletedDate()).isNull();
+        }
+
+        @Test
         void shouldBuildStatementOfTruthForLegalRepresentative() {
             // Given
             when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
