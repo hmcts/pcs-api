@@ -43,6 +43,7 @@ import {
   payTheClaimFeeConfirm,
   checkYourAnswersEnforcement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import {
   statementOfTruth, defendantInBreathingSpace, missedPayments
 } from '@data/index.selector.enforcement';
 
@@ -90,7 +91,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
   payClaimFeeWarrant = payTheClaimFeeConfirm(test.info().title);
   sotWarrant = statementOfTruth(test.info().title);
-  
+
   if (process.env.RUN_E2E_IN_WELSH === 'true') {
     await performAction('clickButton', home.cymraegLink);
   }
@@ -932,7 +933,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         continueButton: sotWarrant.continueButton
       });
   });
-  
+
   test('Warrant of Possession - Missed payment: claimant selects No and is directed to the judge permission screen @enforcement @regression', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);

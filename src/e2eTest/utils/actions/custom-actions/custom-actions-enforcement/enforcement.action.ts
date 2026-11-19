@@ -30,10 +30,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
-  cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
-
+import{
   statementOfTruth,
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
   cannotApplyForWarrantInfo
@@ -573,7 +571,6 @@ export class EnforcementAction implements IAction{
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
-
     if (Array.isArray(validationArr.inputArray)) {
       for (const item of validationArr.inputArray) {
         switch (validationArr.validationType) {
@@ -674,11 +671,6 @@ export class EnforcementAction implements IAction{
 
           case 'upLoad':
             await expect(async () => {
-              await performAction('check', validationArr.checkBox);
-              break;
-
-            case 'pageLevel':
-              await expect(async () => {
               await performAction('clickButton', validationArr.button);
               if (item.type === 'invalid') {
                 const fileInput = page.locator('input[type="file"].form-control.bottom-30');
