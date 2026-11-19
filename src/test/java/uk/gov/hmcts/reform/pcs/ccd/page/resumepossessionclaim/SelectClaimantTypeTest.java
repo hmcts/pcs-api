@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -43,7 +44,7 @@ class SelectClaimantTypeTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new SelectClaimantType(draftCaseDataService));
+        setPageUnderTest(new SelectClaimantType(draftCaseDataService, new ClaimantEligibilityRules()));
     }
 
     @ParameterizedTest

@@ -4,23 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 
@@ -28,6 +23,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 @Component
 @Slf4j
 public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
+
+    private final GroundsRules groundsRules;
+
+    public GroundsForPossessionWalesPage() {
+        this(new GroundsRules());
+    }
+
+    public GroundsForPossessionWalesPage(GroundsRules groundsRules) {
+        this.groundsRules = groundsRules;
+    }
 
     private static final String DISCRETIONARY_GROUNDS = "possessionGroundsWales_DiscretionaryGrounds";
 
@@ -69,7 +74,6 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         CaseDetails<PCSCase, State> before) {
 
         PCSCase data = details.getData();
-        List<String> errors = new ArrayList<>();
 
         GroundsForPossessionWales grounds = data.getGroundsForPossessionWales();
         if (grounds == null) {
@@ -77,29 +81,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
             data.setGroundsForPossessionWales(grounds);
         }
 
-        Set<DiscretionaryGroundWales> discretionaryGrounds =
-            Objects.requireNonNullElse(grounds.getDiscretionaryGrounds(), Set.of());
-        Set<MandatoryGroundWales> mandatoryGrounds =
-            Objects.requireNonNullElse(grounds.getMandatoryGrounds(), Set.of());
-        Set<EstateManagementGroundsWales> estateManagementGrounds =
-            Objects.requireNonNullElse(grounds.getEstateManagementGrounds(), Set.of());
-
-        boolean hasDiscretionary = !discretionaryGrounds.isEmpty();
-        boolean hasMandatory = !mandatoryGrounds.isEmpty();
-
-        // at least one from Discretionary OR Mandatory
-        if (!hasDiscretionary && !hasMandatory) {
-            errors.add("Please select at least one ground.");
-        }
-
-        // if Estate management parent ticked, require sub-selection
-        if (discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160)) {
-            boolean hasEstate = !estateManagementGrounds.isEmpty();
-
-            if (!hasEstate) {
-                errors.add("Please select at least one ground in ‘Estate management grounds (section 160)’.");
-            }
-        }
+        List<String> errors = groundsRules.validateWalesGrounds(grounds);
 
         if (!errors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -108,35 +90,10 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
                 .build();
         }
 
-        // ASB/Reasons routing (from master)
-        boolean hasRentArrears = discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_S157)
-                || mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181)
-                || mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
-        boolean hasASB = hasDiscretionary
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
-        boolean hasOtherBreach = hasDiscretionary
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157);
-        boolean hasEstateManagement = hasDiscretionary
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160);
-
-        boolean hasMandatoryWithoutArrears = mandatoryGrounds.stream()
-                .anyMatch(ground -> ground != MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
-                        && ground != MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
-
-        // Determine if there are "other options" (anything that's not rent arrears or ASB)
-        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryWithoutArrears;
-
-        // Routing rules based on options selected
-        if (hasRentArrears && !hasASB && !hasOtherOptions) {
-            data.setShowASBQuestionsPageWales(YesOrNo.NO);
-            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
-        } else if (hasASB && !hasOtherOptions) {
-            data.setShowASBQuestionsPageWales(YesOrNo.YES);
-            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
-        } else if (hasOtherOptions) {
-            data.setShowASBQuestionsPageWales(YesOrNo.NO);
-            data.setShowReasonsForGroundsPageWales(YesOrNo.YES);
-        }
+        groundsRules.deriveWalesGroundsRouting(grounds).ifPresent(routing -> {
+            data.setShowASBQuestionsPageWales(routing.showAsbQuestionsPage());
+            data.setShowReasonsForGroundsPageWales(routing.showReasonsPage());
+        });
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

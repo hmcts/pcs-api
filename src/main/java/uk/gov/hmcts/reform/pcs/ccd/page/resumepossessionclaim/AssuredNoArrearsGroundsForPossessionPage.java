@@ -3,22 +3,16 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
-
-import java.util.Set;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
@@ -28,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 @Component
 public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfiguration {
 
-    private final PossessionGroundsValidationUtil possessionGroundsValidationUtil;
+    private final GroundsRules groundsRules;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -67,33 +61,19 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         PCSCase caseData = details.getData();
         AssuredNoArrearsPossessionGrounds groundsForPossession = caseData.getNoRentArrearsGroundsOptions();
 
-        Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
-        Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getOtherGround();
-
-        if (!PossessionGroundsValidationUtil.hasAtLeastOneGround(mandatoryGrounds, discretionaryGrounds,
-                additionalOtherGrounds)) {
+        if (!groundsRules.hasAtLeastOneAssuredNoArrearsGround(groundsForPossession)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride("Please select at least one ground")
+                .errorMessageOverride(GroundsRules.AT_LEAST_ONE_GROUND_ERROR)
                 .build();
         }
 
-        boolean hasOtherMandatoryGrounds = !CollectionUtils.isEmpty(mandatoryGrounds)
-                && mandatoryGrounds.stream()
-            .anyMatch(ground -> ground
-                != AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
+        groundsForPossession.setShowGroundReasonPage(
+            groundsRules.showReasonsForAssuredNoArrearsGrounds(groundsForPossession));
 
-        boolean hasOtherDiscretionaryGrounds =  !CollectionUtils.isEmpty(discretionaryGrounds)
-                && discretionaryGrounds.stream()
-            .anyMatch(ground -> ground != AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
-                && ground != AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
-
-        boolean hasOtherGrounds = !CollectionUtils.isEmpty(additionalOtherGrounds);
-
-        boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds || hasOtherGrounds;
-        groundsForPossession.setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
-
-        return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,
-                groundsForPossession.getOtherGroundDescription());
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", groundsRules.validateOtherGroundDescription(
+                groundsForPossession.getOtherGroundDescription())))
+            .build();
     }
 }

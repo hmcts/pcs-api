@@ -7,16 +7,12 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
-
-import java.util.Set;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
@@ -28,7 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 @Component
 public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageConfiguration {
 
-    private final PossessionGroundsValidationUtil possessionGroundsValidationUtil;
+    private final GroundsRules groundsRules;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -66,19 +62,16 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         PCSCase caseData = details.getData();
         AssuredRentArrearsPossessionGrounds groundsForPossession = caseData.getAssuredRentArrearsPossessionGrounds();
 
-        Set<AssuredAdditionalMandatoryGrounds> mandatoryGrounds = groundsForPossession.getAdditionalMandatoryGrounds();
-        Set<AssuredAdditionalDiscretionaryGrounds> discretionaryGrounds
-                = groundsForPossession.getAdditionalDiscretionaryGrounds();
-        Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getAdditionalOtherGround();
-
-        if (!PossessionGroundsValidationUtil.hasAtLeastOneGround(mandatoryGrounds, discretionaryGrounds,
-                additionalOtherGrounds)) {
+        if (!groundsRules.hasAtLeastOneAssuredAdditionalGround(groundsForPossession)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride("Please select at least one ground")
+                .errorMessageOverride(GroundsRules.AT_LEAST_ONE_GROUND_ERROR)
                 .build();
         }
 
-        return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,
-                groundsForPossession.getAdditionalOtherGroundDescription());
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", groundsRules.validateOtherGroundDescription(
+                groundsForPossession.getAdditionalOtherGroundDescription())))
+            .build();
     }
 }

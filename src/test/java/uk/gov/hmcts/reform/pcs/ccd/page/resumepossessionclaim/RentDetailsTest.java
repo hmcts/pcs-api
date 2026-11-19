@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.DailyRentCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
@@ -23,7 +24,7 @@ class RentDetailsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetailsPage(moneyFormatter));
+        setPageUnderTest(new RentDetailsPage(new DailyRentCalculator(moneyFormatter)));
     }
 
     @Test
