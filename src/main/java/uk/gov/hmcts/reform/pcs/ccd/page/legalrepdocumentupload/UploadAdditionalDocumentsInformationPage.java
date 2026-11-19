@@ -123,6 +123,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
             .label(pageKey + "-file-types-info", FILE_TYPES_INFO)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .readonly(LegalRepDocumentUploadDetails::getPartyType, NEVER_SHOW)
+            .readonly(LegalRepDocumentUploadDetails::getExistingApplicationDocumentLinks, NEVER_SHOW, true)
             .done();
     }
 
