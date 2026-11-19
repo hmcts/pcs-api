@@ -19,12 +19,11 @@ public class WritStrategy implements EnforcementTypeStrategy {
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         processWrit(enforcementOrder, enforcementOrderEntity);
         statementOfTruthService.processStatementOfTruth(enforcementOrder.getWritDetails().getStatementOfTruth(),
-                enforcementOrderEntity);
+                                                        enforcementOrderEntity);
     }
 
     private void processWrit(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
-        WritEntity writEntity = writDetailsMapper.toEntity(enforcementOrder,
-                enforcementOrderEntity);
+        WritEntity writEntity = writDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity);
         enforcementOrderEntity.setWritDetails(writEntity);
     }
 }

@@ -53,7 +53,7 @@ public class EnforcementOrderService {
         ClaimEntity claimEntity = pcsCaseService.retrieveClaimEntity(caseReference);
 
         EnforcementOrderEntity enforcementOrderEntity = mapToEntity(enforcementOrder, claimEntity);
-        strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
+        strategyFactory.getStrategy(SelectEnforcementType.valueOf(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enforcementOrderEntity, enforcementOrder);
         enforcementOrderRepository.save(enforcementOrderEntity);

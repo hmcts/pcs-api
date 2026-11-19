@@ -42,5 +42,6 @@ public enum EventId {
     // Must match the system event id CCD data-store sends for CFV moves
     DocumentUpdated,
     resumeEnforcementOrder,
-    deleteDraftApplication
+    deleteDraftApplication,
+    enforcementPayment
 }
