@@ -227,7 +227,19 @@ class WalesRentalBulkClaimPreparerTest {
     }
 
     @Test
-    void shouldRejectPrivateLandlordInWales() {
+    void shouldAcceptPrivateLandlordInWales() {
+        Prepared prepared = (Prepared) prepare("rental-wales-standard-arrears.xml", claim ->
+            claim.setClaimantDesignation(ClaimantDesignationRentalType.PRIVATE_LANDLORD));
+
+        assertThat(prepared.claim().pcsCase().getClaimantType().getValueCode()).isEqualTo("PRIVATE_LANDLORD");
+    }
+
+    @Test
+    void shouldRejectPrivateLandlordInWalesWhenNotEnabled() {
+        BulkClaimProperties properties = new BulkClaimProperties();
+        properties.setEnabledClaimantTypes(List.of(ClaimantType.COMMUNITY_LANDLORD));
+        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, properties, featureToggleService);
+
         Rejected rejected = (Rejected) prepare("rental-wales-standard-arrears.xml", claim ->
             claim.setClaimantDesignation(ClaimantDesignationRentalType.PRIVATE_LANDLORD));
 

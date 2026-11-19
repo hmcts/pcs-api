@@ -27,6 +27,7 @@ class BulkClaimPropertiesTest {
             assertThat(properties.getParallelism()).isEqualTo(4);
             assertThat(properties.getEnabledClaimantTypes()).containsExactly(
                 ClaimantType.PROVIDER_OF_SOCIAL_HOUSING, ClaimantType.COMMUNITY_LANDLORD,
+                ClaimantType.PRIVATE_LANDLORD,
                 ClaimantType.MORTGAGE_LENDER);
             assertThat(properties.getPendingRetryAfter()).isEqualTo(Duration.ofMinutes(10));
             assertThat(properties.getSystemReasonNoDocuments()).isEqualTo("Not supplied via bulk interface");

@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRoutingService;
-import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -71,7 +70,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
     private final RentalNoticeMapper noticeMapper;
     private final RentalRentMapper rentMapper;
     private final RentalAlternativesMapper alternativesMapper;
-    private final ClaimantEligibilityRules claimantEligibilityRules;
     private final TenancyDateRules tenancyDateRules;
     private final RentSectionRoutingService rentSectionRoutingService;
     private final FeatureToggleService featureToggleService;
@@ -95,7 +93,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
                                           RentalNoticeMapper noticeMapper,
                                           RentalRentMapper rentMapper,
                                           RentalAlternativesMapper alternativesMapper,
-                                          ClaimantEligibilityRules claimantEligibilityRules,
                                           TenancyDateRules tenancyDateRules,
                                           RentSectionRoutingService rentSectionRoutingService,
                                           FeatureToggleService featureToggleService,
@@ -117,7 +114,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         this.noticeMapper = noticeMapper;
         this.rentMapper = rentMapper;
         this.alternativesMapper = alternativesMapper;
-        this.claimantEligibilityRules = claimantEligibilityRules;
         this.tenancyDateRules = tenancyDateRules;
         this.rentSectionRoutingService = rentSectionRoutingService;
         this.featureToggleService = featureToggleService;
@@ -368,8 +364,7 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
     }
 
     private boolean isClaimantTypeEligible(LegislativeCountry country, ClaimantType type) {
-        return claimantEligibilityRules.isClaimantTypeAllowedOnline(country, type)
-            && properties.getEnabledClaimantTypes().contains(type);
+        return type.isApplicableFor(country) && properties.getEnabledClaimantTypes().contains(type);
     }
 
     private static ClaimantType claimantType(ClaimantDesignationRentalType designation, LegislativeCountry country) {

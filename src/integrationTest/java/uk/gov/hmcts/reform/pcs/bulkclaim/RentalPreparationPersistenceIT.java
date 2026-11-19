@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimExtrasService;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -101,7 +102,8 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
             "rental-england-flexible.xml",
             "rental-england-introductory.xml",
             "rental-england-demoted-no-grounds.xml",
-            "rental-england-other-tenancy.xml"
+            "rental-england-other-tenancy.xml",
+            "rental-england-private-landlord.xml"
         );
     }
 
@@ -198,6 +200,18 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
 
         assertThat(claim.getRentArrears().getTotalRentArrears()).isEqualByComparingTo("10.00");
         assertThat(claim.getPcsCase().getTenancyLicence().getRentAmount()).isEqualByComparingTo("800.00");
+    }
+
+    @Test
+    void persistsPrivateLandlordAsTheClaimantType() {
+        OrganisationDetailsResponse organisation = organisation();
+        RentalClaimSet claimSet = codec.parseRental(read("rental-england-private-landlord.xml"));
+        PreparedBulkClaim prepared = ((Prepared) preparer.prepare(
+            claimSet, claimSet.getRentalClaim().getFirst(), organisation)).claim();
+
+        ClaimEntity claim = persistWithExtras(prepared, organisation);
+
+        assertThat(claim.getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
     }
 
     private ClaimEntity persistWithExtras(PreparedBulkClaim prepared, OrganisationDetailsResponse organisation) {

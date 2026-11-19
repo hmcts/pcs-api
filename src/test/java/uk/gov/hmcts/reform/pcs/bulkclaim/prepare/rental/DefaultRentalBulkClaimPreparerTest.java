@@ -333,12 +333,27 @@ class DefaultRentalBulkClaimPreparerTest {
     }
 
     @Test
-    void shouldRejectPrivateLandlordInEngland() {
+    void shouldAcceptPrivateLandlordInEngland() {
+        Prepared prepared = (Prepared) prepare("rental-england-assured-arrears-valid.xml", claim ->
+            claim.setClaimantDesignation(
+                uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimantDesignationRentalType.PRIVATE_LANDLORD));
+
+        assertThat(prepared.claim().pcsCase().getClaimantType().getValueCode()).isEqualTo("PRIVATE_LANDLORD");
+    }
+
+    @Test
+    void shouldRejectPrivateLandlordInEnglandWhenNotEnabled() {
+        BulkClaimProperties properties = new BulkClaimProperties();
+        properties.setEnabledClaimantTypes(List.of(
+            uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING));
+        underTest = RentalPreparerTestSupport.preparer(eligibility, resolver, properties, featureToggleService);
+
         Rejected rejected = (Rejected) prepare("rental-england-assured-arrears-valid.xml", claim ->
             claim.setClaimantDesignation(
                 uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimantDesignationRentalType.PRIVATE_LANDLORD));
 
         assertThat(rejected.reason()).isEqualTo(BulkFailReason.CLAIMANT_TYPE_NOT_ELIGIBLE);
+        assertThat(rejected.errors()).extracting(error -> error.code()).containsExactly("CLAIMANT_TYPE_NOT_ELIGIBLE");
     }
 
     @Test
