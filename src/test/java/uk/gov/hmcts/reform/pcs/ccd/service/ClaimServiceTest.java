@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -130,6 +131,44 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ClaimantType.class)
+    void shouldSkipTenancyDependentSectionsOnlyForMortgageLender(ClaimantType claimantType) {
+        PCSCase englandCase = PCSCase.builder()
+            .legislativeCountry(ENGLAND)
+            .claimantType(DynamicStringList.builder()
+                              .value(DynamicStringListElement.builder().code(claimantType.name()).build())
+                              .build())
+            .build();
+
+        ClaimEntity created = claimService.createMainClaimEntity(englandCase);
+
+        assertThat(created.getClaimantType()).isEqualTo(claimantType);
+        int expectedCalls = claimantType == ClaimantType.MORTGAGE_LENDER ? 0 : 1;
+        verify(claimGroundService, times(expectedCalls)).createClaimGroundEntities(englandCase);
+        verify(possessionAlternativesService, times(expectedCalls)).createPossessionAlternativesEntity(englandCase);
+        verify(rentArrearsService, times(expectedCalls)).createRentArrearsEntity(englandCase);
+        verify(noticeOfPossessionService, times(expectedCalls)).createNoticeOfPossessionEntity(englandCase);
+        verify(statementOfTruthService).createStatementOfTruthEntity(englandCase);
+        verify(claimRepository).save(created);
+    }
+
+    @Test
+    void shouldSkipWalesSectionsForMortgageLenderInWales() {
+        PCSCase walesCase = PCSCase.builder()
+            .legislativeCountry(WALES)
+            .claimantType(DynamicStringList.builder()
+                              .value(DynamicStringListElement.builder()
+                                         .code(ClaimantType.MORTGAGE_LENDER.name()).build())
+                              .build())
+            .build();
+
+        claimService.createMainClaimEntity(walesCase);
+
+        verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(walesCase);
+        verify(claimGroundService, never()).createClaimGroundEntities(walesCase);
     }
 
     @Test
