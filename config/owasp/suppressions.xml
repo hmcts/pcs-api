@@ -19,8 +19,6 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
     <cve>CVE-2025-7962</cve>
-    <cve>CVE-2026-63263</cve>
-    <cve>CVE-2026-63144</cve>
   </suppress>
   <suppress until="2027-01-15">
     <notes><![CDATA[
