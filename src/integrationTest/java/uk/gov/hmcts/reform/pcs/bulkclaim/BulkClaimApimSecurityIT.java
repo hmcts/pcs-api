@@ -55,7 +55,7 @@ class BulkClaimApimSecurityIT extends AbstractPostgresContainerIT {
                 .header("X-Organisation-Id", "ORG123")
                 .contentType(MediaType.APPLICATION_XML)
                 .content("<a/>"))
-            .andExpect(status().isNotImplemented());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
