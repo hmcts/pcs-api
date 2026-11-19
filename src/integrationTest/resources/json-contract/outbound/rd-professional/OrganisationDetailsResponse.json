@@ -1,0 +1,40 @@
+{
+  "name" : "DQGZWNMYHH",
+  "status" : "ZSSLR",
+  "organisationIdentifier" : "TYLKSW",
+  "organisationProfileIds" : [ "EMWRVSKP", "RLUPRVU" ],
+  "contactInformation" : [ {
+    "uprn" : "LVNVX",
+    "created" : "FMINET",
+    "county" : "AAYMFDJH",
+    "country" : "KZLULYUJPM",
+    "addressId" : "HAZXH",
+    "addressLine1" : "JVTLMXHUHK",
+    "addressLine2" : "AVOQI",
+    "addressLine3" : "GBGUTM",
+    "townCity" : "HAQB",
+    "postCode" : "VHQPS"
+  }, {
+    "uprn" : "JPAUAOG",
+    "created" : "HSCHREQGP",
+    "county" : "ZACMU",
+    "country" : "EFYSDGOAH",
+    "addressId" : "WZTV",
+    "addressLine1" : "OISGUL",
+    "addressLine2" : "VXW",
+    "addressLine3" : "RXPGCURM",
+    "townCity" : "SLJDRPH",
+    "postCode" : "YSREQBG"
+  } ],
+  "sraRegulated" : true,
+  "superUser" : {
+    "email" : "KIERSXP",
+    "firstName" : "KNMNCXDTD",
+    "lastName" : "TCDUN"
+  },
+  "paymentAccount" : [ "JWOZJTQ", "YLQJLS" ],
+  "pendingPaymentAccount" : [ "BZERI", "PFODZ" ],
+  "dateReceived" : "CQMLTSPUWA",
+  "dateApproved" : "JRT",
+  "lastUpdated" : "CPAANV"
+}

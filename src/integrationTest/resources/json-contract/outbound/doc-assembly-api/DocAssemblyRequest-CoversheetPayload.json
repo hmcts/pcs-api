@@ -1,0 +1,21 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "caseReference" : "DQGZWNMYHH",
+    "recipientName" : "TYLKSW",
+    "recipientAddressLine1" : "XRLUPRV",
+    "recipientAddressLine2" : "YEMWRVSKPA",
+    "recipientAddressLine3" : "HAZXH",
+    "recipientPostTown" : "LVNVX",
+    "recipientCounty" : "FMINET",
+    "recipientPostcode" : "JVTLMXHUHK",
+    "hasAddressLine2" : true,
+    "hasAddressLine3" : true,
+    "hasCounty" : true
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}

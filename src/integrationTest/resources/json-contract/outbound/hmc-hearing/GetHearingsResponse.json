@@ -1,0 +1,58 @@
+{
+  "caseRef" : "TYLKSW",
+  "caseHearings" : [ {
+    "hearingRequestDateTime" : "2084-01-04T01:16:58.939726444",
+    "hearingType" : "RVUYEMWRV",
+    "hmcStatus" : "KPAQ",
+    "lastResponseReceivedDateTime" : "2016-05-01T11:29:10.975282125",
+    "requestVersion" : 9140,
+    "hearingListingStatus" : "OLVNVXUF",
+    "listAssistCaseStatus" : "INETJJVTL",
+    "hearingDaySchedule" : [ {
+      "hearingStartDateTime" : "1987-07-19T15:41:44.345336882",
+      "hearingEndDateTime" : "2041-06-26T09:26:32.646146216",
+      "hearingVenueId" : "UTMKH",
+      "hearingRoomId" : "QBG",
+      "hearingJudgeId" : "AYMFD",
+      "panelMemberIds" : [ "LKZLULYU", "PMJVHQPSYW" ],
+      "attendees" : [ {
+        "hearingSubChannel" : "AOGNHS",
+        "partyID" : "VVJPA"
+      }, {
+        "hearingSubChannel" : "ULDVXWZRXP",
+        "partyID" : "HREQGPDOIS"
+      } ],
+      "listAssistSessionID" : "VOQIJGB"
+    } ],
+    "hearingGroupRequestId" : "CURMAS",
+    "hearingIsLinkedFlag" : false,
+    "hearingChannels" : [ "PHF" ],
+    "hearingID" : 7910
+  }, {
+    "hearingRequestDateTime" : "2048-03-08T10:18:58.275489162",
+    "hearingType" : "JEFY",
+    "hmcStatus" : "DGOAHOY",
+    "lastResponseReceivedDateTime" : "2050-03-30T21:27:30.57017669",
+    "requestVersion" : 9355,
+    "hearingListingStatus" : "GGZSSLRNBP",
+    "listAssistCaseStatus" : "NMNCXDTDK",
+    "hearingDaySchedule" : [ {
+      "hearingStartDateTime" : "2067-07-22T11:32:54.848581416",
+      "hearingEndDateTime" : "1981-02-23T08:28:04.683682178",
+      "hearingVenueId" : "GXYLQJLS",
+      "hearingRoomId" : "JWOZJTQ",
+      "hearingJudgeId" : "QPFODZIBZ",
+      "panelMemberIds" : [ "IHCQM", "TSPUWAKJ" ],
+      "attendees" : [ {
+        "hearingSubChannel" : "NUEDPWODS",
+        "partyID" : "SCPAANVUW"
+      } ],
+      "listAssistSessionID" : "ERSX"
+    } ],
+    "hearingGroupRequestId" : "YVCZNXQX",
+    "hearingIsLinkedFlag" : true,
+    "hearingChannels" : [ "QVNXYR", "ZGLDYFDBTC" ],
+    "hearingID" : 774
+  } ],
+  "hmctsServiceCode" : "DQGZWNMYHH"
+}

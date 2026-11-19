@@ -1,0 +1,112 @@
+{
+  "hearingDetails" : {
+    "listingAutoChangeReasonCode" : "GZWNMYH",
+    "hearingType" : "GTYLK",
+    "hearingWindow" : {
+      "dateRangeStart" : "2012-03-31",
+      "dateRangeEnd" : "2046-07-11",
+      "firstDateTimeMustBe" : "1996-03-23T19:39:45.912515855"
+    },
+    "duration" : 1850,
+    "nonStandardHearingDurationReasons" : [ "RVUYEMWRV" ],
+    "hearingPriorityType" : "KPAQ",
+    "numberOfPhysicalAttendees" : 5700,
+    "hearingInWelshFlag" : false,
+    "hearingLocations" : [ {
+      "locationType" : "OLVNVXUF",
+      "locationId" : "INETJJVTL"
+    } ],
+    "facilitiesRequired" : [ "HUHKOAVOQI" ],
+    "listingComments" : "GBGUTM",
+    "hearingRequester" : "HAQB",
+    "privateHearingRequiredFlag" : false,
+    "leadJudgeContractType" : "YMFDJ",
+    "panelRequirements" : {
+      "roleType" : [ "KZLULYUJPM", "VHQPS" ],
+      "authorisationTypes" : [ "ZTVVJP" ],
+      "authorisationSubType" : [ "AOGNHS", "HREQGPDOIS" ],
+      "panelPreferences" : [ {
+        "memberID" : "LDVXW",
+        "memberType" : "RXPGCURM",
+        "requirementType" : "SLJDRPH"
+      }, {
+        "memberID" : "ZACMU",
+        "memberType" : "EFYSDGOAH",
+        "requirementType" : "YSREQBG"
+      } ],
+      "panelSpecialisms" : [ "SSLRNBPKNM" ]
+    },
+    "hearingIsLinkedFlag" : true,
+    "amendReasonCodes" : [ "CDUNE", "TDK" ],
+    "hearingChannels" : [ "ERSX" ],
+    "multiDayHearing" : false,
+    "autolistFlag" : false
+  },
+  "caseDetails" : {
+    "hmctsServiceCode" : "YLQJLS",
+    "caseRef" : "JWOZJTQ",
+    "externalCaseReference" : "QPFODZIBZ",
+    "caseDeepLink" : "RIHCQML",
+    "hmctsInternalCaseName" : "SPUWAKJ",
+    "publicCaseName" : "TSCPA",
+    "caseAdditionalSecurityFlag" : false,
+    "caseInterpreterRequiredFlag" : false,
+    "caseCategories" : [ {
+      "categoryType" : "NUEDPWODS",
+      "categoryValue" : "YVCZNXQX",
+      "categoryParent" : "WXJZG"
+    }, {
+      "categoryType" : "DYFDBTCQ",
+      "categoryValue" : "VNXYRGX",
+      "categoryParent" : "TCENIIXG"
+    } ],
+    "caseManagementLocationCode" : "XNSXZNHMYZ",
+    "caserestrictedFlag" : false,
+    "caseSLAStartDate" : "2072-01-25"
+  },
+  "partyDetails" : [ {
+    "partyID" : "UIPGGN",
+    "partyType" : "LLKTRPMHD",
+    "partyRole" : "QEPECNF",
+    "individualDetails" : {
+      "title" : "JHK",
+      "firstName" : "NTMECT",
+      "lastName" : "EVQOIM",
+      "preferredHearingChannel" : "TLHYSDRV",
+      "interpreterLanguage" : "JNULD",
+      "reasonableAdjustments" : [ "AEJORPQB", "EGTNP" ],
+      "vulnerableFlag" : false,
+      "vulnerabilityDetails" : "EAGRVP",
+      "hearingChannelEmail" : [ "WEY", "ZRCSZPKU" ],
+      "hearingChannelPhone" : [ "OUKQOUKCMC" ],
+      "relatedParties" : [ {
+        "relatedPartyID" : "AUNCCM",
+        "relationshipType" : "OCU"
+      } ],
+      "custodyStatus" : "IMC",
+      "otherReasonableAdjustmentDetails" : "HJLPSJO"
+    },
+    "organisationDetails" : {
+      "name" : "GHX",
+      "organisationType" : "WTVDXEBZVJ",
+      "cftOrganisationID" : "LNVHNEWF"
+    },
+    "unavailabilityRanges" : [ {
+      "unavailableFromDate" : "2031-03-23",
+      "unavailableToDate" : "2054-10-08",
+      "unavailabilityType" : "PPMN"
+    }, {
+      "unavailableFromDate" : "2080-09-02",
+      "unavailableToDate" : "1971-07-15",
+      "unavailabilityType" : "KDYLFNGDVH"
+    } ],
+    "partyChannelSubType" : "BSHI",
+    "unavailabilityDOW" : [ {
+      "DOW" : "QOLNGQ",
+      "DOWUnavailabilityType" : "XIBNKGCGC"
+    } ]
+  } ],
+  "requestDetails" : {
+    "versionNumber" : 9044
+  }
+}

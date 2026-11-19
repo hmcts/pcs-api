@@ -1,0 +1,27 @@
+{
+  "templateId" : "DQGZWNMYHH",
+  "outputType" : "DOC",
+  "formPayload" : {
+    "recipientName" : "DQGZWNMYHH",
+    "recipientAddressLine1" : "TYLKSW",
+    "recipientAddressLine2" : "XRLUPRV",
+    "recipientAddressLine3" : "YEMWRVSKPA",
+    "recipientPostTown" : "HAZXH",
+    "recipientCounty" : "LVNVX",
+    "recipientPostcode" : "FMINET",
+    "hasAddressLine2" : false,
+    "hasAddressLine3" : false,
+    "hasCounty" : true,
+    "courtName" : "HUHKOAVOQI",
+    "caseReference" : "GBGUTM",
+    "claimantName" : "HAQB",
+    "defendantName" : "AAYMFDJH",
+    "hearingTime" : "KZLULYUJPM",
+    "hearingDate" : "VHQPS",
+    "url" : "WZTV"
+  },
+  "outputFilename" : "YLKSW",
+  "secureDocStoreEnabled" : false,
+  "caseTypeId" : "LUPRVU",
+  "jurisdictionId" : "EMWRVSKP"
+}

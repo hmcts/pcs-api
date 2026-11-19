@@ -769,6 +769,14 @@ cftlibTest {
   systemProperty 'logging.level.root', 'INFO'
 }
 
+// Use the setup runtime rather than the test runtime, which can hide dependency conflicts.
+def highLevelDataSetupHttpClientCheck = tasks.register('highLevelDataSetupHttpClientCheck', JavaExec) {
+  dependsOn testClasses
+  mainClass.set('uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupHttpClientCheck')
+  classpath = sourceSets.main.runtimeClasspath + sourceSets.test.output
+}
+check.dependsOn highLevelDataSetupHttpClientCheck
+
 tasks.register('highLevelDataSetup', JavaExec) {
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
