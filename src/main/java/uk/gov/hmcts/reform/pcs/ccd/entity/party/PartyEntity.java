@@ -75,6 +75,20 @@ public class PartyEntity {
 
     private String orgName;
 
+    private String title;
+
+    private String initials;
+
+    private String otherNames;
+
+    private String dxNumber;
+
+    private String faxNumber;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo isOccupant;
+
     private String organisationId;
     private String organisationProfileId;
 

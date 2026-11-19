@@ -27,7 +27,11 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SubmissionChannel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimOccupantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimPaymentHistoryLineEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.MortgageParticularsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -73,6 +77,22 @@ public class ClaimEntity {
     private ClaimantType claimantType;
 
     private String claimTypeKey;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private SubmissionChannel submissionChannel = SubmissionChannel.UI;
+
+    private String claimantDesignation;
+
+    private String legacyPcolClaimantReference;
+
+    private String legacyPcolSolicitorReference;
+
+    private String solicitorFirmName;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo claimCosts;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -201,6 +221,22 @@ public class ClaimEntity {
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private MortgageParticularsEntity mortgageParticulars;
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    @OrderBy("rank ASC")
+    private List<ClaimPaymentHistoryLineEntity> paymentHistoryLines = new ArrayList<>();
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    @OrderBy("rank ASC")
+    private List<ClaimOccupantEntity> occupants = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isExemptLandlord;
@@ -286,6 +322,28 @@ public class ClaimEntity {
         if (this.statementOfTruth != null) {
             this.statementOfTruth.setClaim(this);
         }
+    }
+
+    public void setMortgageParticulars(MortgageParticularsEntity mortgageParticulars) {
+        if (this.mortgageParticulars != null) {
+            this.mortgageParticulars.setClaim(null);
+        }
+
+        this.mortgageParticulars = mortgageParticulars;
+
+        if (this.mortgageParticulars != null) {
+            this.mortgageParticulars.setClaim(this);
+        }
+    }
+
+    public void addPaymentHistoryLine(ClaimPaymentHistoryLineEntity line) {
+        paymentHistoryLines.add(line);
+        line.setClaim(this);
+    }
+
+    public void addOccupant(ClaimOccupantEntity occupant) {
+        occupants.add(occupant);
+        occupant.setClaim(this);
     }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
