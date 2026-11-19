@@ -104,11 +104,4 @@ public class EnforcementOrderService {
         return enforcementOrder == null || enforcementOrder.getChooseEnforcementType() == null
             ? null : enforcementOrder.getChooseEnforcementType().getValueCode();
     }
-
-    private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, PcsCaseEntity pcsCaseEntity) {
-        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-        enforcementOrderEntity.setPcsCase(pcsCaseEntity);
-        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
-        return enforcementOrderEntity;
-    }
 }
