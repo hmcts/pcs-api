@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.time.Instant;
@@ -43,7 +42,7 @@ class DocumentSelectionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentSelectionService(pcsCaseService);
     }
 
     @Test
@@ -80,8 +79,6 @@ class DocumentSelectionServiceTest {
 
         underTest.initialise(CASE_REFERENCE, caseData, caseData.getDocumentAmendDetails());
 
-        assertThat(caseData.getDocumentAmendDetails().getPropertyAddressSummary())
-            .isEqualTo("15 Garden Drive, Luton, LU1 1AB");
         assertThat(caseData.getApplicationsDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("application.pdf");

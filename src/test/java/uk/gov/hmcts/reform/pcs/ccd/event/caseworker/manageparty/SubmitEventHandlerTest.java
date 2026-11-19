@@ -19,27 +19,29 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class SubmitEventHandlerTest {
@@ -49,20 +51,20 @@ class SubmitEventHandlerTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private AddressFormatter addressFormatter;
-    @Mock
     private AddPartyService addPartyService;
     @Mock
     private UpdatePartyService updatePartyService;
     @Mock
     private RemovePartyService removePartyService;
+    @Mock
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new SubmitEventHandler(
-            pcsCaseService, addressFormatter, addPartyService, updatePartyService, removePartyService);
+            pcsCaseService, addPartyService, updatePartyService, removePartyService, confirmationPanelBuilder);
     }
 
     @ParameterizedTest
@@ -75,14 +77,15 @@ class SubmitEventHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
-        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
-            .thenReturn("1 Test Street, Test Town");
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(partyDetails)
             .propertyAddress(propertyAddress)
             .caseNameHmctsInternal("Smith v Jones")
             .build();
+
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
 
         // When
@@ -91,11 +94,11 @@ class SubmitEventHandlerTest {
         // Then
         verify(addPartyService).addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel(expectedPartyDescription + " added", caseData, TEST_CASE_REFERENCE);
+
         assertThat(response.getConfirmationBody())
-            .contains(expectedPartyDescription + " added")
-            .contains("Case number: " + TEST_CASE_REFERENCE)
-            .contains("1 Test Street, Test Town")
-            .contains("Smith v Jones");
+            .contains(confirmationPanelMarkup);
     }
 
     @ParameterizedTest
@@ -111,8 +114,6 @@ class SubmitEventHandlerTest {
             .build();
 
         AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
-        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
-            .thenReturn("1 Test Street, Test Town");
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(partyDetails)
@@ -120,6 +121,9 @@ class SubmitEventHandlerTest {
             .propertyAddress(propertyAddress)
             .caseNameHmctsInternal("Smith v Jones")
             .build();
+
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
 
         // When
@@ -128,11 +132,12 @@ class SubmitEventHandlerTest {
         // Then
         verify(updatePartyService).updateParty(updatePartyDetails, TEST_CASE_REFERENCE);
 
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel(expectedPartyDescription + " details updated",
+                                            caseData, TEST_CASE_REFERENCE);
+
         assertThat(response.getConfirmationBody())
-            .contains(expectedPartyDescription + " details updated")
-            .contains("Case number: " + TEST_CASE_REFERENCE)
-            .contains("1 Test Street, Test Town")
-            .contains("Smith v Jones");
+            .contains(confirmationPanelMarkup);
     }
 
     @ParameterizedTest
@@ -144,9 +149,6 @@ class SubmitEventHandlerTest {
             .build();
         RemovePartyDetails removePartyDetails = RemovePartyDetails.builder().build();
 
-        AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
-        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
-            .thenReturn("1 Test Street, Test Town");
         when(removePartyService.removeParty(removePartyDetails, TEST_CASE_REFERENCE))
             .thenReturn(new RemovePartyService.RemovedParty(partyName, partyRole, partyRole.name()));
 
@@ -154,9 +156,11 @@ class SubmitEventHandlerTest {
             .addPartyDetails(partyDetails)
             .removePartyDetails(removePartyDetails)
             .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
-            .propertyAddress(propertyAddress)
             .caseNameHmctsInternal("Smith v Jones")
             .build();
+
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
 
         // When
@@ -164,11 +168,12 @@ class SubmitEventHandlerTest {
 
         // Then
         verify(removePartyService).removeParty(removePartyDetails, TEST_CASE_REFERENCE);
+
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel(expectedPartyDescription + " removed", caseData, TEST_CASE_REFERENCE);
+
         assertThat(response.getConfirmationBody())
-            .contains(expectedPartyDescription + " removed")
-            .contains("Case number: " + TEST_CASE_REFERENCE)
-            .contains("1 Test Street, Test Town")
-            .contains("Smith v Jones");
+            .contains(confirmationPanelMarkup);
     }
 
     @Test
@@ -246,6 +251,15 @@ class SubmitEventHandlerTest {
                 "Litigation friend Bob Jones"
             )
         );
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 
 }

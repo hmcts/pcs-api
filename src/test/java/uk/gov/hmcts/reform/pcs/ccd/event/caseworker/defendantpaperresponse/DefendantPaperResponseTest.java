@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.LocalDate;
@@ -41,6 +42,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,6 +62,9 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
     @Mock
     private DefendantResponseService defendantResponseService;
+
+    @Mock
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @Mock
     private AddressMapper addressMapper;
@@ -85,6 +91,7 @@ public class DefendantPaperResponseTest extends BaseEventTest {
             partyService,
             claimResponseService,
             defendantResponseService,
+            confirmationPanelBuilder,
             addressMapper,
             selectDefendant
         );
@@ -177,13 +184,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         stubPartyDetails(partyId);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -233,13 +246,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         when(partyService.getPartyEntityByEntityId(partyId, TEST_CASE_REFERENCE)).thenReturn(partyEntity);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -299,13 +318,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         stubPartyDetails(partyId);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -365,13 +390,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         stubPartyDetails(partyId);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -431,13 +462,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         stubPartyDetails(partyId);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -497,13 +534,19 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         stubPartyDetails(partyId);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
+        verify(confirmationPanelBuilder).buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #" + TEST_CASE_REFERENCE)
+        );
+
         assertThat(response.getConfirmationBody())
-            .contains("Response submitted")
-            .contains("Case number: " + TEST_CASE_REFERENCE);
+            .contains(confirmationPanelMarkup);
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
@@ -543,5 +586,12 @@ public class DefendantPaperResponseTest extends BaseEventTest {
         when(partyEntity.getAddress()).thenReturn(addressEntity);
         when(addressMapper.toAddressUK(addressEntity))
             .thenReturn(AddressUK.builder().addressLine1("Address line 1").build());
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder.buildConfirmationPanel(anyString(), anyList()))
+            .thenReturn(confirmationPanelMarkup);
+        return confirmationPanelMarkup;
     }
 }

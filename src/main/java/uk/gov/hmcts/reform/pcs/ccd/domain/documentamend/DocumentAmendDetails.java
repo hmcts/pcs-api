@@ -44,10 +44,6 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     @JsonProperty(PREFIX + "_SelectedFolder")
     private CaseFileCategory selectedFolder;
 
-    @CCD(searchable = false)
-    @JsonProperty(PREFIX + "_PropertyAddressSummary")
-    private String propertyAddressSummary;
-
     @CCD(
         label = "File name",
         hint = "File name should only be edited in exceptional circumstances, for example if it contains profanity",

@@ -16,12 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.changecasestate.ChangeCaseStatePage;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.changeCaseState;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
@@ -29,8 +28,8 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 @AllArgsConstructor
 public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final AddressFormatter addressFormatter;
     private final CamundaService camundaService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -72,19 +71,18 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    private String buildConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
-        String address = addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
+    private String buildConfirmationMarkdown(PCSCase caseData, long caseReference) {
+
+        String confirmationPanel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel("Case state changed", caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Case state changed</span><br>
-            <span class="govuk-panel__body">Case number: %s</span><br>
-            <span class="govuk-panel__body">Property address: %s</span>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">The case will progress according to the state it has been
             changed to.</p>
-            """.formatted(caseReference, address);
+            """.formatted(confirmationPanel);
     }
 }
