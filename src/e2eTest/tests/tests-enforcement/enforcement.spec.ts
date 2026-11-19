@@ -643,31 +643,32 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 
   // It will be enabled as part of HDPI-9502
   test.skip('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
-    annotation: {
-      type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      annotation: {
+        type: 'issue',
+        description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      },
     },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
 
-     await performAction('selectApplicationType', {
+      await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.warrantOfPossessionRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
-     await performAction('selectNameAndAddressForEviction', {
+      await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: defendantInBreathingSpace.mainHeader
       });
-     await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-     await performAction('missedPayments', {option: missedPayments.noRadioOption,  nextPage: cannotApplyForWarrantInfo.mainHeader});
-     await performAction('clickButton', changeNameAddress.continueButton);
-     await performValidation('errorMessage', { header: cannotApplyForWarrantInfo.eventCouldNotBeCreatedHeader, message: cannotApplyForWarrantInfo.errorValidationField });
-  });
+      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.noRadioOption,  nextPage: cannotApplyForWarrantInfo.mainHeader});
+      await performAction('clickButton', changeNameAddress.continueButton);
+      await performValidation('errorMessage', { header: cannotApplyForWarrantInfo.eventCouldNotBeCreatedHeader, message: cannotApplyForWarrantInfo.errorValidationField });
+    });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder no defendants added @noDefendants @enforcement',
     async () => {
