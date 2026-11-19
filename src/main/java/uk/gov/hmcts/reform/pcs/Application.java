@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
 import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.camunda.WorkAllocationWorkflowApi;
+import uk.gov.hmcts.reform.pcs.health.PaymentsHealthApi;
+import uk.gov.hmcts.reform.pcs.health.SendLetterHealthApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
@@ -31,7 +33,12 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
     },
     excludeName = {
         "uk.gov.hmcts.reform.ccd.client.CoreCaseDataClientAutoConfiguration",
-        "uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration"
+        // Registers a Spring Boot 3 health indicator; replaced by pcs.health.SendLetterHealthIndicator
+        "uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration",
+        // idam-legacy-auth-support is used only for its password-grant provider (see OAuth2ClientConfig).
+        // Keep its auto-configurations off so a future property can't swap in its S2S token generator.
+        "cft.rpe.legacy.s2s.support.config.RpeS2SAutoConfiguration",
+        "cft.idam.legacy.auth.support.config.DefaultPasswordGrantAutoConfiguration"
     }
 )
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
@@ -47,6 +54,8 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         CaseAssignmentApi.class,
         PaymentsApi.class,
         SendLetterApiProxy.class,
+        PaymentsHealthApi.class,
+        SendLetterHealthApi.class,
         CaseDocumentClientApi.class,
         WorkAllocationWorkflowApi.class,
         TaskManagementApi.class,
