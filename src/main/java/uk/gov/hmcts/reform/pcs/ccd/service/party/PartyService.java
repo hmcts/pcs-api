@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantNameRules;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -261,16 +262,9 @@ public class PartyService {
     }
 
     private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
-        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
-            claimantParty.setNameOverridden(YesOrNo.YES);
-            claimantParty.setOrgName(claimantInformation.getFallbackClaimantName());
-        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
-            claimantParty.setNameOverridden(YesOrNo.YES);
-            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
-        } else {
-            claimantParty.setNameOverridden(YesOrNo.NO);
-            claimantParty.setOrgName(claimantInformation.getClaimantName());
-        }
+        ClaimantNameRules.ResolvedClaimantName resolved = ClaimantNameRules.resolveClaimantName(claimantInformation);
+        claimantParty.setNameOverridden(YesOrNo.from(resolved.overridden()));
+        claimantParty.setOrgName(resolved.name());
     }
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {

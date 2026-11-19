@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import java.time.Clock;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 
@@ -32,12 +31,8 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
     private static final String SHOW_OTHER_DETAILS_CONDITION = "occupationLicenceTypeWales=\"OTHER\"";
     private static final String OCCUPATION_CONTRACT_DETAILS = "OccupationLicenceDetailsWales";
     private static final String OCCUPATION_CONTRACT_DETAILS_LABEL = "Occupation contract or licence details";
-    private static final String DATE_NOT_TODAY_ERROR_MESSAGE =
-        "Occupation contract or licence start date cannot be today";
-    private static final String DATE_NOT_FUTURE_ERROR_MESSAGE =
-        "Occupation contract or licence start date cannot be in the future";
 
-    private final Clock ukClock;
+    private final TenancyDateRules tenancyDateRules;
     private final TextAreaValidationService textAreaValidationService;
     private final FileUploadValidationService fileUploadValidationService;
 
@@ -103,7 +98,8 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
             ));
 
             // Validate date fields
-            validationErrors.addAll(validateOccupationLicenceDetailsWales(occupationLicenceDetailsWales));
+            validationErrors.addAll(
+                tenancyDateRules.validateWalesLicenceStartDate(occupationLicenceDetailsWales.getLicenceStartDate()));
 
             // Validate uploaded documents for disallowed file types
             validationErrors.addAll(fileUploadValidationService.validateDocuments(
@@ -111,29 +107,5 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
-    }
-
-    /**
-     * Validates the occupation contract details according to the acceptance criteria.
-     */
-    private List<String> validateOccupationLicenceDetailsWales(
-        OccupationLicenceDetailsWales details) {
-        List<String> errors = new ArrayList<>();
-
-        // Date field validation
-        LocalDate contractStartDate = details.getLicenceStartDate();
-        if (contractStartDate != null) {
-            LocalDate currentDate = LocalDate.now(ukClock);
-
-            // Date cannot be current date
-            if (contractStartDate.isEqual(currentDate)) {
-                errors.add(DATE_NOT_TODAY_ERROR_MESSAGE);
-            } else if (contractStartDate.isAfter(currentDate)) {
-                // Date cannot be in the future
-                errors.add(DATE_NOT_FUTURE_ERROR_MESSAGE);
-            }
-        }
-
-        return errors;
     }
 }

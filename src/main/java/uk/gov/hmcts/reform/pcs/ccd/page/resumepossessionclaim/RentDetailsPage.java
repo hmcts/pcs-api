@@ -11,10 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.DailyRentCalculator;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -26,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class RentDetailsPage implements CcdPageConfiguration {
 
-    private final MoneyFormatter moneyFormatter;
+    private final DailyRentCalculator dailyRentCalculator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -58,15 +55,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
 
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
-            if (rentFrequency != RentPaymentFrequency.OTHER) {
-                // Calculate daily rent, if currentRent is also set
-                if (rentDetails.getCurrentRent() != null) {
-                    BigDecimal rentAmount = rentDetails.getCurrentRent();
-                    BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
-                    rentDetails.setCalculatedDailyCharge(dailyAmount);
-                    rentDetails.setFormattedCalculatedDailyCharge(moneyFormatter.formatFee(dailyAmount));
-                }
-            }
+            dailyRentCalculator.applyCalculatedDailyCharge(rentDetails);
 
             caseData.setRentSectionPaymentFrequency(rentFrequency);
         }
@@ -74,17 +63,5 @@ public class RentDetailsPage implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();
-    }
-
-    private BigDecimal calculateDailyRent(BigDecimal rentAmount, RentPaymentFrequency frequency) {
-        BigDecimal divisor = switch (frequency) {
-            case WEEKLY -> new BigDecimal("7.0");
-            case FORTNIGHTLY -> new BigDecimal("14.0");
-            case MONTHLY -> new BigDecimal("30.44");
-            default ->
-                throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
-        };
-
-        return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
 }

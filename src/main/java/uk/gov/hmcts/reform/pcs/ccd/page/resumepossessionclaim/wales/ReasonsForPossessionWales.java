@@ -12,19 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
@@ -41,6 +38,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
     private static final String SECURE_ESTATE_MANAGEMENT_GROUNDS = "secureGroundsWales_EstateManagementGrounds";
 
     private final TextAreaValidationService textAreaValidationService;
+    private final GroundsRules groundsRules;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -269,7 +267,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                        ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
                                                     MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2))
 
-
             // ---------- Secure Contract - Discretionary grounds ----------
             .label("wales-secure-otherBreachOfContract-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -479,41 +476,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             validationErrors.addAll(validateWalesGrounds(walesGrounds));
         }
 
-        boolean hasASB = hasASBSelected(caseData);
-        caseData.setShowASBQuestionsPageWales(YesOrNo.from(hasASB));
+        caseData.setShowASBQuestionsPageWales(YesOrNo.from(groundsRules.hasWalesAntisocialBehaviourGround(
+            caseData.getGroundsForPossessionWales(), caseData.getSecureContractGroundsForPossessionWales())));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
 
-    }
-
-    private boolean hasASBSelected(PCSCase caseData) {
-
-        GroundsForPossessionWales groundsForPossessionWales =
-            Optional.ofNullable(caseData.getGroundsForPossessionWales())
-                .orElse(GroundsForPossessionWales.builder()
-                            .discretionaryGrounds(Set.of())
-                            .mandatoryGrounds(Set.of())
-                            .estateManagementGrounds(Set.of())
-                            .build());
-        var discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGrounds();
-
-
-        SecureContractGroundsForPossessionWales grounds =
-            Optional.ofNullable(caseData.getSecureContractGroundsForPossessionWales())
-                .orElse(SecureContractGroundsForPossessionWales.builder()
-                            .discretionaryGrounds(Set.of())
-                            .mandatoryGrounds(Set.of())
-                            .estateManagementGrounds(Set.of())
-                            .build());
-
-        var secureDiscretionaryGrounds = grounds.getDiscretionaryGrounds();
-
-        boolean hasASBStandard = discretionaryGrounds != null
-            && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
-        boolean hasASBSecure = secureDiscretionaryGrounds != null
-            && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157);
-
-        return hasASBStandard || hasASBSecure;
     }
 
     private List<String> validateWalesGrounds(GroundsReasonsWales grounds) {
