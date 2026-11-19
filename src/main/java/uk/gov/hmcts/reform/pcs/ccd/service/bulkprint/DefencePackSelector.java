@@ -27,9 +27,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 
 /**
  * Selects defence-phase envelopes per recipient. Defence packs go to defendants who opted into postal contact;
- * claimants are not included. The current rollout flag gates that rule and, while off, keeps the previous
- * all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are included, so late
- * counter-claims follow without re-sending.
+ * claimants are not included while an eligible defendant exists. When there is no eligible defendant - e.g. a
+ * represented LR defendant with no postal co-defendant (HDPI-9007 scenario 9) - the pack falls back to the postal
+ * claimant so bulk print is still notified ("any of the parties"), unless the release 1.4 claimant exclusion is on.
+ * The current rollout flag gates that rule and, while off, keeps the previous all-party fan-out. Only documents not
+ * covered by a {@code PACK_SENT} success row are included, so late counter-claims follow without re-sending.
  */
 @Service
 public class DefencePackSelector {
@@ -109,9 +111,21 @@ public class DefencePackSelector {
 
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
-            return defendants.stream()
+            List<PartyEntity> postalDefendants = defendants.stream()
                 .filter(this::wantsPost)
                 .filter(defendant -> !isRepresented(defendant))
+                .toList();
+            if (!postalDefendants.isEmpty()) {
+                return postalDefendants;
+            }
+            // HDPI-9007 scenario 9: when every defendant is represented (served via their legal rep) or has
+            // opted out of post there is no eligible defendant, yet the defence pack must still reach a party.
+            // Fall back to the postal claimant so bulk print is notified - unless the release 1.4 exclusion is on.
+            if (packSkipRules.shouldExcludeClaimant()) {
+                return List.of();
+            }
+            return claimants.stream()
+                .filter(this::wantsPost)
                 .toList();
         }
 

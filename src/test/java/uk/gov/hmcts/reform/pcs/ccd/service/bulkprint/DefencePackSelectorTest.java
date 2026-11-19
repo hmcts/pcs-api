@@ -324,8 +324,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Does not send defence packs when a pending-review counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenPendingReviewCounterClaimHasHwf() {
+    @DisplayName("Still sends defence packs when a pending-review counterclaim has only an HWF reference")
+    void shouldStillSendDefencePackWhenPendingReviewCounterClaimHasOnlyHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
         DocumentEntity postalDefence = defenceForm(postalDefendant);
@@ -339,12 +339,13 @@ class DefencePackSelectorTest {
             .hwfReferenceNumber("HWF-123")
             .build()));
 
-        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isNotEmpty();
     }
 
     @Test
-    @DisplayName("Does not send defence packs when an issued counterclaim has an HWF reference")
-    void shouldSkipDefencePackWhenIssuedCounterClaimHasHwf() {
+    @DisplayName("Still sends defence packs when an issued counterclaim has only an HWF reference "
+        + "(HDPI-9007: HWF alone does not hold the defence pack for RTAC Pro)")
+    void shouldStillSendDefencePackWhenIssuedCounterClaimHasOnlyHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
         DocumentEntity postalDefence = defenceForm(postalDefendant);
@@ -353,7 +354,7 @@ class DefencePackSelectorTest {
         pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.ENGLISH)));
         pcsCase.setCounterClaims(List.of(issuedCounterClaim(postalDefendant, LanguageUsed.ENGLISH, "HWF-123")));
 
-        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isNotEmpty();
     }
 
     @Test
@@ -469,6 +470,48 @@ class DefencePackSelectorTest {
             assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
             assertThat(candidate.documents()).containsExactly(lrCounterClaim);
         });
+    }
+
+    @Test
+    @DisplayName("HDPI-9007 scenario 9: serves the LR defence pack on the claimant when the only defendant is "
+        + "represented, an HWF reference is present and the counterclaim is pending with no translation")
+    void shouldServeDefencePackToClaimantWhenOnlyDefendantRepresentedAndCounterClaimPendingWithHwf() {
+        PartyEntity representedDefendant = representedParty(YesOrNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
+        pcsCase.setDefendantResponses(List.of(submittedDefence(representedDefendant, LanguageUsed.ENGLISH)));
+        pcsCase.setCounterClaims(List.of(CounterClaimEntity.builder()
+            .party(representedDefendant)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .hwfReferenceNumber("HWF-123")
+            .build()));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(claimant);
+            assertThat(candidate.role()).isEqualTo(PartyRole.CLAIMANT);
+            assertThat(candidate.documents()).containsExactlyInAnyOrder(lrDefence, lrCounterClaim);
+        });
+    }
+
+    @Test
+    @DisplayName("Excludes the claimant fallback when the release 1.4 claimant exclusion is on")
+    void shouldNotServeClaimantFallbackWhenClaimantExclusionOn() {
+        PartyEntity representedDefendant = representedParty(YesOrNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence));
+        pcsCase.setDefendantResponses(List.of(submittedDefence(representedDefendant, LanguageUsed.ENGLISH)));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
     }
 
     @Test
