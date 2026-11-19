@@ -4,14 +4,15 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.ValidationEvent;
+import jakarta.xml.bind.ValidationEventLocator;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimResponse;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusResponse;
@@ -21,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -36,7 +36,6 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 @Component
 public class BulkClaimXmlCodec {
@@ -99,55 +98,37 @@ public class BulkClaimXmlCodec {
     }
 
     private <T> T parse(byte[] xml, Schema schema, Class<T> rootType) {
-        List<String> errors = validate(xml, schema);
-        if (!errors.isEmpty()) {
-            throw new BulkClaimSchemaValidationException(errors);
-        }
+        List<String> errors = new ArrayList<>();
         try {
-            Object result = context.createUnmarshaller()
-                .unmarshal(new SAXSource(hardenedReader(), new InputSource(new ByteArrayInputStream(xml))));
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            unmarshaller.setSchema(schema);
+            unmarshaller.setEventHandler(event -> {
+                if (event.getSeverity() != ValidationEvent.WARNING) {
+                    errors.add(describe(event));
+                }
+                return true;
+            });
+            Object result = unmarshaller.unmarshal(
+                new SAXSource(hardenedReader(), new InputSource(new ByteArrayInputStream(xml))));
+            if (!errors.isEmpty()) {
+                throw new BulkClaimSchemaValidationException(errors);
+            }
             if (rootType.isInstance(result)) {
                 return rootType.cast(result);
             }
             throw new BulkClaimSchemaValidationException(
                 List.of("Unexpected root element, expected " + rootType.getSimpleName()));
         } catch (JAXBException e) {
-            throw new BulkClaimSchemaValidationException(List.of(e.getMessage()));
+            if (errors.isEmpty()) {
+                errors.add(e.getMessage());
+            }
+            throw new BulkClaimSchemaValidationException(errors);
         }
     }
 
-    private List<String> validate(byte[] xml, Schema schema) {
-        List<String> errors = new ArrayList<>();
-        Validator validator = schema.newValidator();
-        validator.setErrorHandler(new ErrorHandler() {
-            @Override
-            public void warning(SAXParseException e) {
-                // warnings do not affect validity
-            }
-
-            @Override
-            public void error(SAXParseException e) {
-                errors.add(describe(e));
-            }
-
-            @Override
-            public void fatalError(SAXParseException e) throws SAXException {
-                errors.add(describe(e));
-                throw e;
-            }
-        });
-        try {
-            validator.validate(new SAXSource(hardenedReader(), new InputSource(new ByteArrayInputStream(xml))));
-        } catch (SAXParseException e) {
-            // already recorded by the error handler
-        } catch (SAXException | IOException e) {
-            errors.add(e.getMessage());
-        }
-        return errors;
-    }
-
-    private static String describe(SAXParseException e) {
-        return e.getLineNumber() + ":" + e.getColumnNumber() + " " + e.getMessage();
+    private static String describe(ValidationEvent event) {
+        ValidationEventLocator locator = event.getLocator();
+        return locator.getLineNumber() + ":" + locator.getColumnNumber() + " " + event.getMessage();
     }
 
     private XMLReader hardenedReader() {

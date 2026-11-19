@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.mortgage;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
-import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.PaymentHistoryLine;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
@@ -22,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility.PropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkStatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkUnderlesseeMapper;
-import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.MortgageClaimSet;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ParticularsMortgagedType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -49,7 +47,6 @@ public class DefaultMortgageBulkClaimPreparer implements MortgageBulkClaimPrepar
     private static final String PARTICULARS_PATH = "ParticularsOfClaim";
 
     private final BulkClaimProperties properties;
-    private final BulkClaimXmlCodec codec;
     private final FeatureToggleService featureToggleService;
     private final BulkPbaCheck pbaCheck;
     private final BulkPropertyEligibility propertyEligibility;
@@ -63,7 +60,6 @@ public class DefaultMortgageBulkClaimPreparer implements MortgageBulkClaimPrepar
 
     @SuppressWarnings("checkstyle:ParameterNumber")
     public DefaultMortgageBulkClaimPreparer(BulkClaimProperties properties,
-                                            BulkClaimXmlCodec codec,
                                             FeatureToggleService featureToggleService,
                                             BulkPbaCheck pbaCheck,
                                             BulkPropertyEligibility propertyEligibility,
@@ -75,7 +71,6 @@ public class DefaultMortgageBulkClaimPreparer implements MortgageBulkClaimPrepar
                                             BulkCommonParticularsMapper commonParticularsMapper,
                                             MortgageParticularsMapper mortgageParticularsMapper) {
         this.properties = properties;
-        this.codec = codec;
         this.featureToggleService = featureToggleService;
         this.pbaCheck = pbaCheck;
         this.propertyEligibility = propertyEligibility;
@@ -126,9 +121,6 @@ public class DefaultMortgageBulkClaimPreparer implements MortgageBulkClaimPrepar
         }
 
         return new Prepared(new PreparedBulkClaim(
-            cui,
-            BulkClaimKind.MORTGAGE,
-            codec.claimHash(claim),
             pcsCase,
             extras,
             BulkPbaCheck.effectiveAccount(claimSet.getPaymentAccountNumber(), claim.getPaymentAccountNumber()),

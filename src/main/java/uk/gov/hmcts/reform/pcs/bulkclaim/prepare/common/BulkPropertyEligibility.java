@@ -1,18 +1,16 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkFailReason;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.AddressType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.LegislativeCountryType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-
-import java.util.List;
 
 /**
  * Decides whether a property can be claimed on in this service and which court and region manage the case.
@@ -21,12 +19,11 @@ import java.util.List;
 public class BulkPropertyEligibility {
 
     private final EligibilityService eligibilityService;
-    private final LocationReferenceService locationReferenceService;
+    private final PcsCaseService pcsCaseService;
 
-    public BulkPropertyEligibility(EligibilityService eligibilityService,
-                                   LocationReferenceService locationReferenceService) {
+    public BulkPropertyEligibility(EligibilityService eligibilityService, PcsCaseService pcsCaseService) {
         this.eligibilityService = eligibilityService;
-        this.locationReferenceService = locationReferenceService;
+        this.pcsCaseService = pcsCaseService;
     }
 
     /**
@@ -67,7 +64,7 @@ public class BulkPropertyEligibility {
         }
 
         return switch (result.getStatus()) {
-            case ELIGIBLE -> eligible(result);
+            case ELIGIBLE -> eligible(result, property);
             case LEGISLATIVE_COUNTRY_REQUIRED ->
                 PropertyEligibility.rejected(BulkFailReason.LEGISLATIVE_COUNTRY_REQUIRED);
             case NO_MATCH_FOUND -> PropertyEligibility.rejected(BulkFailReason.NO_COURT_FOR_POSTCODE);
@@ -76,13 +73,16 @@ public class BulkPropertyEligibility {
         };
     }
 
-    private PropertyEligibility eligible(EligibilityResult result) {
-        Integer epimsId = result.getEpimsId();
-        List<CourtVenue> venues = epimsId == null
-            ? List.of() : locationReferenceService.getCourtVenues(List.of(epimsId));
-        Integer regionId = venues == null || venues.isEmpty() || venues.getFirst().regionId() == null
-            ? null : Integer.valueOf(venues.getFirst().regionId());
-        return new PropertyEligibility(null, result.getLegislativeCountry(), epimsId, regionId);
+    private PropertyEligibility eligible(EligibilityResult result, AddressType property) {
+        PCSCase located = PCSCase.builder()
+            .propertyAddress(AddressUK.builder()
+                                 .postCode(BulkAddressMapper.normalisePostcode(property.getPostCode()))
+                                 .build())
+            .legislativeCountry(result.getLegislativeCountry())
+            .build();
+        pcsCaseService.allocateRegionId(located);
+        return new PropertyEligibility(
+            null, result.getLegislativeCountry(), result.getEpimsId(), located.getRegionId());
     }
 
     private static LegislativeCountry toCountry(LegislativeCountryType country) {

@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
-import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult.Prepared;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility.PropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkStatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkUnderlesseeMapper;
-import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimantDesignationRentalType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ParticularsRentedType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
@@ -61,7 +59,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
     private static final String SCHEMA_VERSION = "2";
 
     private final BulkClaimProperties properties;
-    private final BulkClaimXmlCodec codec;
     private final BulkPbaCheck pbaCheck;
     private final BulkPropertyEligibility propertyEligibility;
     private final BulkAddressMapper addressMapper;
@@ -86,7 +83,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
 
     @SuppressWarnings("checkstyle:ParameterNumber")
     public DefaultRentalBulkClaimPreparer(BulkClaimProperties properties,
-                                          BulkClaimXmlCodec codec,
                                           BulkPbaCheck pbaCheck,
                                           BulkPropertyEligibility propertyEligibility,
                                           BulkAddressMapper addressMapper,
@@ -109,7 +105,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
                                           WalesDetailsMapper walesDetailsMapper,
                                           WalesRentSectionRoutingService walesRentSectionRoutingService) {
         this.properties = properties;
-        this.codec = codec;
         this.pbaCheck = pbaCheck;
         this.propertyEligibility = propertyEligibility;
         this.addressMapper = addressMapper;
@@ -173,9 +168,6 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         }
 
         return new Prepared(new PreparedBulkClaim(
-            cui,
-            BulkClaimKind.RENTAL,
-            codec.claimHash(claim),
             pcsCase,
             extras,
             BulkPbaCheck.effectiveAccount(claimSet.getPaymentAccountNumber(), claim.getPaymentAccountNumber()),

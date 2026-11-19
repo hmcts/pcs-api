@@ -73,7 +73,11 @@ class BulkClaimXmlCodecTest {
         assertThatThrownBy(() -> codec.parseRental(invalid))
             .isInstanceOfSatisfying(BulkClaimSchemaValidationException.class, e ->
                 assertThat(e.getErrors()).hasSizeGreaterThan(1).allSatisfy(error ->
-                    assertThat(error).matches("\\d+:\\d+ .+")));
+                    assertThat(error).matches("\\d+:\\d+ .+"))
+                    .anySatisfy(error -> assertThat(error).startsWith("3:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("5:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("8:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("14:")));
     }
 
     @Test

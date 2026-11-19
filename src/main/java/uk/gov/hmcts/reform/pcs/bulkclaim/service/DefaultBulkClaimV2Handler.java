@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimSubmissionEntity;
-import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkFailReason;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkValidationError;
 import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimOrganisationException;
@@ -72,8 +70,8 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
     private final BulkClaimSubmissionService submissionService;
     private final BulkClaimSubmissionRepository submissionRepository;
     private final BulkClaimCaseStateReader caseStateReader;
-    private final ObjectProvider<RentalBulkClaimPreparer> rentalPreparer;
-    private final ObjectProvider<MortgageBulkClaimPreparer> mortgagePreparer;
+    private final RentalBulkClaimPreparer rentalPreparer;
+    private final MortgageBulkClaimPreparer mortgagePreparer;
 
     @Override
     public ResponseEntity<byte[]> submitRental(byte[] xml, String organisationId, boolean validateOnly) {
@@ -87,15 +85,12 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
         }
 
-        RentalBulkClaimPreparer preparer = rentalPreparer.getIfAvailable();
         return process(organisationId, claimSet.getPaymentAccountNumber(), validateOnly,
             organisation -> claimSet.getRentalClaim().stream()
                 .map(claim -> new ClaimInput(
                     claim.getCustomerUniqueIdentifier(), codec.claimHash(claim), BulkClaimKind.RENTAL,
                     claimSet.getVersion(),
-                    () -> preparer == null
-                        ? notEnabled(claim.getCustomerUniqueIdentifier())
-                        : preparer.prepare(claimSet, claim, organisation)))
+                    () -> rentalPreparer.prepare(claimSet, claim, organisation)))
                 .toList());
     }
 
@@ -111,15 +106,12 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
         }
 
-        MortgageBulkClaimPreparer preparer = mortgagePreparer.getIfAvailable();
         return process(organisationId, claimSet.getPaymentAccountNumber(), validateOnly,
             organisation -> claimSet.getMortgageClaim().stream()
                 .map(claim -> new ClaimInput(
                     claim.getCustomerUniqueIdentifier(), codec.claimHash(claim), BulkClaimKind.MORTGAGE,
                     claimSet.getVersion(),
-                    () -> preparer == null
-                        ? notEnabled(claim.getCustomerUniqueIdentifier())
-                        : preparer.prepare(claimSet, claim, organisation)))
+                    () -> mortgagePreparer.prepare(claimSet, claim, organisation)))
                 .toList());
     }
 
@@ -162,7 +154,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         }
 
         List<ClaimResponseType> responses = submissionService.submit(
-            organisationId, organisation, setPbaAccountNumber, claimInputs.apply(organisation), validateOnly);
+            organisationId, organisation, claimInputs.apply(organisation), validateOnly);
 
         boolean allSucceeded = responses.stream()
             .allMatch(response -> response.getClaimStatus().getStatusCode() == BulkFailReason.CLAIM_SUCCESS
@@ -191,11 +183,6 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
                 "line " + located.group(1) + ", column " + located.group(2), SCHEMA_ERROR_CODE, located.group(3));
         }
         return new BulkValidationError("/", SCHEMA_ERROR_CODE, error);
-    }
-
-    private static BulkClaimPreparationResult notEnabled(String customerUniqueIdentifier) {
-        return new BulkClaimPreparationResult.Rejected(
-            customerUniqueIdentifier, BulkFailReason.CLAIM_KIND_NOT_ENABLED, List.of());
     }
 
     private BulkClaimStatusResponse statusOf(BulkClaimSubmissionEntity submission) {
