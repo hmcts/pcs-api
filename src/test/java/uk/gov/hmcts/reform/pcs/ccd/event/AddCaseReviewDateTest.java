@@ -8,17 +8,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +31,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     @Mock
     private CaseReviewDateService caseReviewDateService;
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @InjectMocks
     private AddCaseReviewDate addCaseReviewDate;
@@ -43,13 +44,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     @Test
     void shouldConfigurePages() {
         // Given
-        AddressUK address = AddressUK.builder().build();
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(address)
-            .build();
-
-        when(addressFormatter.formatMediumAddress(address, AddressFormatter.COMMA_DELIMITER))
-            .thenReturn("address");
+        PCSCase pcsCase = PCSCase.builder().build();
 
         // When
         callSubmitHandler(pcsCase);
@@ -89,34 +84,48 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     @Test
     void shouldCallCaseReviewDateServiceOnSubmit() {
         // Given
-        AddressUK address = AddressUK.builder().build();
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(address)
-            .caseNameHmctsInternal("Claimant v Defendant")
-            .build();
+        PCSCase pcsCase = PCSCase.builder().build();
 
-        when(addressFormatter.formatMediumAddress(address, AddressFormatter.COMMA_DELIMITER))
-            .thenReturn("address");
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(caseReviewDateService).addCaseReviewDates(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldReturnConfirmationScreen() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
 
         // When
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
         // Then
-        verify(caseReviewDateService).addCaseReviewDates(TEST_CASE_REFERENCE, pcsCase);
+
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel("Review dates added", pcsCase, TEST_CASE_REFERENCE);
+
         assertThat(submitResponse.getConfirmationBody()).isEqualTo(
             """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Review dates added</span><br>
-            <span class="govuk-panel__body">Case number #1234</span><br>
-            <span class="govuk-panel__body">address</span><br>
-            <span class="govuk-panel__body">Claimant v Defendant</span><br>
-            </div>
+            %s
 
             <h3>What happens next</h3>
 
             Work allocation tasks will be created for court staff to complete on the review dates.
-            """
-        );
+            """, confirmationPanelMarkup);
+
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 }

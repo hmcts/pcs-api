@@ -13,13 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class SubmitHandlerTest {
@@ -29,13 +31,13 @@ class SubmitHandlerTest {
     @Mock
     private CaseworkerDocumentService caseworkerDocumentService;
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     private SubmitHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitHandler(caseworkerDocumentService, addressFormatter);
+        underTest = new SubmitHandler(caseworkerDocumentService, confirmationPanelBuilder);
     }
 
     @Test
@@ -70,9 +72,6 @@ class SubmitHandlerTest {
             .caseworkerDocument(caseworkerDocument)
             .build();
 
-        String formattedAddress = "test formatted address";
-        when(addressFormatter.formatMediumAddress(propertyAddresss, COMMA_DELIMITER)).thenReturn(formattedAddress);
-
         String baseFilename = "test document filename";
         DocumentEntity documentEntity = DocumentEntity.builder()
             .fileName(baseFilename + ".pdf")
@@ -81,22 +80,32 @@ class SubmitHandlerTest {
         when(caseworkerDocumentService.saveNewDocument(caseworkerDocument, CASE_REFERENCE))
             .thenReturn(documentEntity);
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
 
         // When
         SubmitResponse<State> submitResponse = underTest.submit(toEventPayload(caseData));
 
         // Then
+        String expectedTitle = "‘%s’ uploaded".formatted(baseFilename);
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel(expectedTitle, caseData, CASE_REFERENCE);
+
         String confirmationBody = submitResponse.getConfirmationBody();
         assertThat(confirmationBody)
-            .contains("‘%s’ uploaded".formatted(baseFilename))
-            .contains("Case number #%s".formatted(CASE_REFERENCE))
-            .contains(formattedAddress)
-            .contains(caseName);
-
+            .contains(confirmationPanelMarkup);
     }
 
     private static EventPayload<PCSCase, State> toEventPayload(PCSCase caseData) {
         return new EventPayload<>(CASE_REFERENCE, caseData, null);
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 
 }

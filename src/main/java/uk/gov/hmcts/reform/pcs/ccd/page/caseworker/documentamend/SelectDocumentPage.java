@@ -41,7 +41,6 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
         page
             .complex(PCSCase::getDocumentAmendDetails)
-                .readonly(DocumentAmendDetails::getPropertyAddressSummary, NEVER_SHOW, true)
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .label("emptyFolderDocumentError", "", NEVER_SHOW)
                 .label("selectedFolderEmptyErrorMessage", "", NEVER_SHOW)

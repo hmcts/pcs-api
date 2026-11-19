@@ -7,9 +7,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -18,7 +22,7 @@ class ConfirmationBodyRendererTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
     @Mock
     private AddressUK propertyAddress;
 
@@ -26,7 +30,7 @@ class ConfirmationBodyRendererTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new ConfirmationBodyRenderer(addressFormatter);
+        underTest = new ConfirmationBodyRenderer(confirmationPanelBuilder);
     }
 
     @Test
@@ -37,39 +41,44 @@ class ConfirmationBodyRendererTest {
             .caseNameHmctsInternal("internal case name")
             .build();
 
-        when(addressFormatter.formatMediumAddress(propertyAddress, AddressFormatter.COMMA_DELIMITER))
-            .thenReturn("formatted property address");
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
 
         // When
         String confirmationBody = underTest.renderHearingAddedConfirmationBody(caseData, CASE_REFERENCE);
 
         // Then
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel("Hearing added", caseData, CASE_REFERENCE);
+
         assertThat(confirmationBody)
-            .contains("<span class=\"govuk-panel__title govuk-!-font-size-36\">Hearing added</span>")
-            .contains("<span class=\"govuk-panel__body\">Case number #1234</span>")
-            .contains("<span class=\"govuk-panel__body\">formatted property address</span>")
-            .contains("<span class=\"govuk-panel__body\">internal case name</span>");
+            .contains(confirmationPanelMarkup);
     }
 
     @Test
     void shouldRenderCancelHearingConfirmationBody() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
-            .caseNameHmctsInternal("internal case name")
             .build();
 
-        when(addressFormatter.formatMediumAddress(propertyAddress, AddressFormatter.COMMA_DELIMITER))
-            .thenReturn("formatted property address");
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
 
         // When
         String confirmationBody = underTest.renderHearingCancelledConfirmationBody(caseData, CASE_REFERENCE);
 
         // Then
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel("Hearing cancelled", caseData, CASE_REFERENCE);
+
         assertThat(confirmationBody)
-            .contains("<span class=\"govuk-panel__title govuk-!-font-size-36\">Hearing cancelled</span>")
-            .contains("<span class=\"govuk-panel__body\">Case number #1234</span>")
-            .contains("<span class=\"govuk-panel__body\">formatted property address</span>")
-            .contains("<span class=\"govuk-panel__body\">internal case name</span>");
+            .contains(confirmationPanelMarkup);
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 }

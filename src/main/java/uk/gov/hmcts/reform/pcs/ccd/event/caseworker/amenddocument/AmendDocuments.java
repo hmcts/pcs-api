@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.AmendDocumentDe
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -33,7 +33,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentSelectionService documentSelectionService;
     private final DocumentAmendService documentAmendService;
-    private final AddressFormatter addressFormatter;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
     private final SelectDocumentPage selectDocumentPage;
     private final AmendDocumentDetailsPage amendDocumentDetailsPage;
 
@@ -75,32 +75,27 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
         DocumentAmendService.AmendedDocument amendedDocument = documentAmendService
             .amendDocument(caseData, caseReference);
 
-        String address = addressFormatter
-            .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
-
         return SubmitResponse.<State>builder()
             .confirmationBody(getConfirmationBody(
+                caseData,
                 amendedDocument.fileName(),
-                caseReference,
-                address,
-                amendedDocument.partyName()
+                caseReference
             ))
             .build();
     }
 
-    private String getConfirmationBody(String fileName, long caseReference, String address, String partyName) {
+    private String getConfirmationBody(PCSCase caseData, String fileName, long caseReference) {
+
+        String confirmationPanel = confirmationPanelBuilder.buildStandardConfirmationPanel(
+            "Document %s amended".formatted(fileName), caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-32">Document %s amended</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            </div>
+            %s
 
             <h3>What happens next</h3>
 
             The amended document is available to view in case file view.
-            """.formatted(fileName, caseReference, address, partyName);
+            """.formatted(confirmationPanel);
     }
 }

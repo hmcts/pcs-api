@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.LocalDate;
@@ -62,6 +63,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     private final PartyService partyService;
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
     private final AddressMapper addressMapper;
     private final SelectDefendant selectDefendant;
 
@@ -268,12 +270,14 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     }
 
     private String buildConfirmationMarkdown(long caseReference) {
+        String confirmationPanel = confirmationPanelBuilder.buildConfirmationPanel(
+            "Response submitted",
+            List.of("Case number #%s".formatted(caseReference))
+        );
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Response submitted</span><br>
-            <span class="govuk-panel__body">Case number: %s</span><br>
-            </div>
-            """.formatted(caseReference);
+            %s
+            """.formatted(confirmationPanel);
     }
 }

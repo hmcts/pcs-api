@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.AmendDocumentDe
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.time.Clock;
 import java.util.Map;
@@ -26,6 +25,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,14 +39,14 @@ class AmendDocumentsTest extends BaseEventTest {
     @Mock
     private DocumentAmendService documentAmendService;
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @BeforeEach
     void setUp() {
         setEventUnderTest(new AmendDocuments(
             documentSelectionService,
             documentAmendService,
-            addressFormatter,
+            confirmationPanelBuilder,
             new SelectDocumentPage(documentSelectionService, documentAmendService),
             new AmendDocumentDetailsPage(Clock.systemUTC())
         ));
@@ -140,27 +142,33 @@ class AmendDocumentsTest extends BaseEventTest {
 
     @Test
     void shouldReturnConfirmationWhenSubmitted() {
-        AddressUK propertyAddress = AddressUK.builder()
-            .addressLine1("1 Street")
-            .postTown("London")
-            .postCode("SW1A 1AA")
-            .build();
+        // Given
         PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
             .build();
 
         when(documentAmendService.amendDocument(caseData, TEST_CASE_REFERENCE))
             .thenReturn(new DocumentAmendService.AmendedDocument("rent statement 16042021", "Defendant One"));
-        when(addressFormatter.formatMediumAddress(propertyAddress, AddressFormatter.COMMA_DELIMITER))
-            .thenReturn("1 Street, London, SW1A 1AA");
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
+        // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
+        // Then
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel("Document rent statement 16042021 amended", caseData, TEST_CASE_REFERENCE);
+
         assertThat(response.getConfirmationBody())
-            .contains("Document rent statement 16042021 amended")
-            .contains("Case number #1234")
-            .contains("1 Street, London, SW1A 1AA")
-            .contains("Defendant One")
+            .contains(confirmationPanelMarkup)
             .contains("The amended document is available to view in case file view.");
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 }

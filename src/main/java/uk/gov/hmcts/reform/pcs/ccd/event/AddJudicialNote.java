@@ -14,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addjudicialnote.AddJudicialNotePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.JudicialNoteService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialNoteRoles.JUDICIAL_NOTES_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addJudicialNote;
@@ -24,13 +27,11 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddJudicialNotePage addJudicialNotePage;
     private final JudicialNoteService judicialNoteService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     private static final String CONFIRMATION_BODY = """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Judicial note added</span><br>
-            <span class="govuk-panel__body">You do not need to do anything else</span><br>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">The judicial note has been added. It can be viewed in the
@@ -57,8 +58,13 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
         judicialNoteService.addJudicialNote(caseReference, pcsCase);
 
+        String confirmationPanel = confirmationPanelBuilder.buildConfirmationPanel(
+            "Judicial note added",
+            List.of("You do not need to do anything else")
+        );
+
         return SubmitResponse.<State>builder()
-            .confirmationBody(CONFIRMATION_BODY)
+            .confirmationBody(CONFIRMATION_BODY.formatted(confirmationPanel))
             .build();
     }
 }

@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -59,8 +58,7 @@ class SelectDocumentPageTest extends BasePageTest {
     void setUp() {
         setPageUnderTest(new SelectDocumentPage(
             new DocumentSelectionService(
-                pcsCaseService,
-                new AddressFormatter()
+                pcsCaseService
             ),
             new DocumentAmendService(
                 pcsCaseService,

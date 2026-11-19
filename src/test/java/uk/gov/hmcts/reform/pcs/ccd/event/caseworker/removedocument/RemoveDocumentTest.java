@@ -14,12 +14,17 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RemoveDocumentTest extends BaseEventTest {
@@ -30,11 +35,13 @@ class RemoveDocumentTest extends BaseEventTest {
     private DocumentRemovalService documentRemovalService;
     @Mock
     private SelectDocumentToRemovePage selectDocumentToRemovePage;
+    @Mock
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @BeforeEach
     void setUp() {
         RemoveDocument underTest = new RemoveDocument(
-            documentSelectionService, documentRemovalService, selectDocumentToRemovePage
+            documentSelectionService, documentRemovalService, confirmationPanelBuilder, selectDocumentToRemovePage
         );
 
         setEventUnderTest(underTest);
@@ -68,13 +75,13 @@ class RemoveDocumentTest extends BaseEventTest {
 
     @Test
     void shouldBuildConfirmationPageWithRemovedDocumentDetails() {
+        // Given
         UUID documentId = UUID.randomUUID();
         String reason = "No longer required";
         DocumentRemovalDetails details = DocumentRemovalDetails.builder()
             .selectedFolder(CaseFileCategory.EVIDENCE)
             .selectedDocumentId(documentId.toString())
             .selectedDocumentFileName("evidence.pdf")
-            .propertyAddressSummary("123 Test Street, Testville, TE1 1ST")
             .evidenceReason(reason)
             .build();
         PCSCase caseData = PCSCase.builder()
@@ -82,13 +89,26 @@ class RemoveDocumentTest extends BaseEventTest {
             .caseNameHmctsInternal("Smith v Jones")
             .build();
 
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
+        // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
+        // Then
         verify(documentRemovalService).removeDocument(documentId, reason);
+        verify(confirmationPanelBuilder)
+            .buildStandardConfirmationPanel("evidence.pdf removed", caseData, TEST_CASE_REFERENCE);
+
         assertThat(response.getConfirmationBody())
-            .contains("evidence.pdf")
-            .contains("Case number: " + TEST_CASE_REFERENCE)
-            .contains("123 Test Street, Testville, TE1 1ST")
-            .contains("Smith v Jones");
+            .contains(confirmationPanelMarkup);
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel(anyString(), any(PCSCase.class), anyLong()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 }

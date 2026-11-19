@@ -34,9 +34,6 @@ public class DocumentRemovalDetails implements DocumentSelectionDetails {
     private CaseFileCategory selectedFolder;
 
     @CCD(searchable = false)
-    private String propertyAddressSummary;
-
-    @CCD(searchable = false)
     private YesOrNo statementsOfCaseEmpty;
 
     @CCD(searchable = false)

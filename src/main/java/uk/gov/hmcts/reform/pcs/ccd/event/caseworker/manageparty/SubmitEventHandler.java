@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,21 +20,19 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.util.UUID;
-
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @Component("managePartySubmitEventHandler")
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
-    private final AddressFormatter addressFormatter;
     private final AddPartyService addPartyService;
     private final UpdatePartyService updatePartyService;
     private final RemovePartyService removePartyService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -93,9 +90,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                 partyDetails.getLitigationFriendFirstName(), partyDetails.getLitigationFriendLastName()));
         };
 
-        return buildConfirmationMarkdown(
-            partyDescription + " added", caseReference,
-            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+        return buildConfirmationMarkdown(partyDescription + " added", caseReference, pcsCase);
     }
 
     private String buildUpdateConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
@@ -107,9 +102,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             case LITIGATION_FRIEND -> "Litigation friend's";
         };
 
-        return buildConfirmationMarkdown(
-            partyDescription + " details updated", caseReference,
-            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+        return buildConfirmationMarkdown(partyDescription + " details updated", caseReference, pcsCase);
     }
 
     private String buildRemoveConfirmationMarkdown(PCSCase pcsCase, long caseReference,
@@ -118,30 +111,25 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             ? "Claimant %s".formatted(removedParty.partyName())
             : "Defendant %s".formatted(removedParty.partyName());
 
-        return buildConfirmationMarkdown(
-            partyDescription + " removed", caseReference,
-            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+        return buildConfirmationMarkdown(partyDescription + " removed", caseReference, pcsCase);
     }
 
     private String joinFirstAndLastName(String firstName, String lastName) {
         return firstName + " " + lastName;
     }
 
-    private String buildConfirmationMarkdown(String title, long caseReference, AddressUK address,
-                                              String caseName) {
-        String formatAddress = addressFormatter.formatShortAddress(address, COMMA_DELIMITER);
+    private String buildConfirmationMarkdown(String title, long caseReference, PCSCase caseData) {
+
+        String confirmationPanel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel(title, caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">The case record will be updated.</p>
-            """.formatted(title, caseReference, formatAddress, caseName);
+            """.formatted(confirmationPanel);
     }
 
 }
