@@ -20,5 +20,3 @@ servicebus:
             correlationFilter:
               - name: "hmctsServiceId"
                 value: "AAA3"
-              - name: "hmctsDeploymentId"
-                value: "deployment-${SERVICE_NAME}"
