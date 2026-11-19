@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
@@ -153,8 +152,7 @@ class StatementOfTruthServiceTest {
         @Test
         void shouldPersistStatementOfTruthForEnforcement() {
             // Given
-            StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement
-                    = new StatementOfTruthDetailsEnforcement();
+            StatementOfTruthDetails statementOfTruthDetailsEnforcement = new StatementOfTruthDetails();
             EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
             StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
             StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
