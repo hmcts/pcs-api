@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>CLAIM-0001</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+      <ContactDetails>
+        <Address>
+          <AddressLine1>1 Landlord Street</AddressLine1>
+          <PostTown>London</PostTown>
+          <PostCode>SW1A 1AA</PostCode>
+        </Address>
+        <TelephoneNumber>02075550100</TelephoneNumber>
+      </ContactDetails>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <AddressLine2>Flat 2</AddressLine2>
+        <PostTown>Manchester</PostTown>
+        <County>Greater Manchester</County>
+        <PostCode>M1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <Title>Mr</Title>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>PrivateLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <RecoverySteps>Letters and phone calls.</RecoverySteps>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>LegalRepresentative</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Solicitor</SignedName>
+        <FirmName>Example Solicitors</FirmName>
+        <Position>Partner</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <ApplicationWithClaim>false</ApplicationWithClaim>
+      <ClaimingCosts>true</ClaimingCosts>
+      <TotalArrears>2400.50</TotalArrears>
+      <PaymentHistory>
+        <PaymentLine>
+          <PaymentDueDate>2026-09-01</PaymentDueDate>
+          <AmountDue>800.00</AmountDue>
+          <AmountPaid>0.00</AmountPaid>
+          <CumulativeArrears>800.00</CumulativeArrears>
+        </PaymentLine>
+        <PaymentLine>
+          <PaymentDueDate>2026-10-01</PaymentDueDate>
+          <AmountDue>800.00</AmountDue>
+          <AmountPaid>0.00</AmountPaid>
+          <CumulativeArrears>1600.00</CumulativeArrears>
+        </PaymentLine>
+      </PaymentHistory>
+      <TenancyType>ASSURED_TENANCY</TenancyType>
+      <TenancyCommenceDate>2022-03-01</TenancyCommenceDate>
+      <CurrentRent>
+        <Amount>800.00</Amount>
+        <Frequency>Month</Frequency>
+      </CurrentRent>
+      <DailyRent>26.30</DailyRent>
+      <Grounds>
+        <Ground>
+          <Code>RENT_ARREARS_OR_BREACH_OF_TENANCY</Code>
+          <Reason>Rent is more than two months in arrears.</Reason>
+        </Ground>
+        <RentArrearsOrBreach>RENT_ARREARS</RentArrearsOrBreach>
+      </Grounds>
+      <Notice>
+        <Served>true</Served>
+        <ServiceMethod>FIRST_CLASS_POST</ServiceMethod>
+        <ServedDate>2026-10-05</ServedDate>
+      </Notice>
+      <HasExpenseClaim>false</HasExpenseClaim>
+      <MediationAttempted>false</MediationAttempted>
+      <SettlementAttempted>false</SettlementAttempted>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>
