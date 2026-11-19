@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           elementFormDefault="qualified">
+
+  <xs:simpleType name="MoneyType">
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="2"/>
+      <xs:totalDigits value="18"/>
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RateType">
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="4"/>
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="EmailType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="60"/>
+      <xs:pattern value="[^@\s]+@[^@\s]+\.[^@\s]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text60">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="60"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text100">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text250">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="250"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text500">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="500"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Text950">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="950"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PaymentAccountNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="PBA[0-9A-Z]{7}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CustomerUniqueIdentifierType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="64"/>
+      <xs:pattern value="[A-Za-z0-9._\-]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="LineType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="AddressLine1" type="LineType"/>
+      <xs:element name="AddressLine2" type="LineType" minOccurs="0"/>
+      <xs:element name="AddressLine3" type="LineType" minOccurs="0"/>
+      <xs:element name="PostTown" type="LineType"/>
+      <xs:element name="County" type="LineType" minOccurs="0"/>
+      <xs:element name="PostCode">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]{1,2}[0-9R][0-9A-Z]? [0-9][A-Z]{2}"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Country" type="LineType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NameType">
+    <xs:sequence>
+      <xs:element name="Title" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="35"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="FirstName" type="Text60"/>
+      <xs:element name="LastName" type="Text60"/>
+      <xs:element name="OtherNames" type="Text60" minOccurs="0"/>
+      <xs:element name="Initials" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="10"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ContactDetailsType">
+    <xs:sequence>
+      <xs:element name="Address" type="AddressType"/>
+      <xs:element name="DX" type="Text60" minOccurs="0"/>
+      <xs:element name="TelephoneNumber" type="Text60" minOccurs="0"/>
+      <xs:element name="FaxNumber" type="Text60" minOccurs="0"/>
+      <xs:element name="EmailAddress" type="EmailType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="FrequencyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Week"/>
+      <xs:enumeration value="Fortnight"/>
+      <xs:enumeration value="Month"/>
+      <xs:enumeration value="Quarter"/>
+      <xs:enumeration value="Year"/>
+      <xs:enumeration value="Other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ValueFrequencyType">
+    <xs:sequence>
+      <xs:element name="Amount" type="MoneyType"/>
+      <xs:element name="Frequency" type="FrequencyType"/>
+      <xs:element name="OtherFrequencyDescription" type="Text60" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="SigneeStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Claimant"/>
+      <xs:enumeration value="LegalRepresentative"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="StatementOfTruthType">
+    <xs:sequence>
+      <xs:element name="SigneeStatus" type="SigneeStatusType"/>
+      <xs:element name="Agreed" type="xs:boolean"/>
+      <xs:element name="SignedDate" type="xs:date"/>
+      <xs:element name="SignedName" type="Text100"/>
+      <xs:element name="FirmName" type="Text100" minOccurs="0"/>
+      <xs:element name="Position" type="Text100" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ClaimantType">
+    <xs:sequence>
+      <xs:choice>
+        <xs:element name="IndividualName" type="NameType"/>
+        <xs:element name="CompanyName" type="Text60"/>
+      </xs:choice>
+      <xs:element name="ContactEmailAddress" type="EmailType"/>
+      <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Overrides the address held for the claimant's organisation, for example a branch office.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="PCOLReferenceNumber" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="SolicitorType">
+    <xs:sequence>
+      <xs:element name="Firm" type="Text100"/>
+      <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="PCOLReferenceNumber" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="DefendantType">
+    <xs:sequence>
+      <xs:element name="Name" type="NameType"/>
+      <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0"/>
+      <xs:element name="AddressSameAsProperty" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="MortgageDefendantType">
+    <xs:complexContent>
+      <xs:extension base="DefendantType">
+        <xs:attribute name="isOccupant" type="xs:boolean" default="true"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="LegislativeCountryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ENGLAND"/>
+      <xs:enumeration value="WALES"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="PropertyType">
+    <xs:sequence>
+      <xs:element name="Address" type="AddressType"/>
+      <xs:element name="LegislativeCountry" type="LegislativeCountryType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PaymentHistoryType">
+    <xs:sequence>
+      <xs:element name="PaymentLine" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="PaymentDueDate" type="xs:date"/>
+            <xs:element name="AmountDue" type="MoneyType"/>
+            <xs:element name="AmountPaid" type="MoneyType"/>
+            <xs:element name="CumulativeArrears" type="MoneyType"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UnderlesseeOrMortgageeType">
+    <xs:sequence>
+      <xs:element name="Name" type="Text60" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Absent when the name is not known.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Address" type="AddressType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Absent when the address is not known.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="LanguageUsedType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ENGLISH"/>
+      <xs:enumeration value="WELSH"/>
+      <xs:enumeration value="ENGLISH_AND_WELSH"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ParticularsOfClaimType" abstract="true">
+    <xs:sequence>
+      <xs:element name="DefendantsCircumstances" type="Text950" minOccurs="0"/>
+      <xs:element name="RecoverySteps" type="Text500" minOccurs="0"/>
+      <xs:element name="ReasonForPossession" type="Text950" minOccurs="0"/>
+      <xs:element name="ClaimStatementOfTruth" type="StatementOfTruthType"/>
+      <xs:element name="PreActionProtocolCompleted" type="xs:boolean"/>
+      <xs:element name="PreActionProtocolIncompleteExplanation" type="Text250" minOccurs="0"/>
+      <xs:element name="LanguageUsed" type="LanguageUsedType"/>
+      <xs:element name="ApplicationWithClaim" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="ClaimingCosts" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="UnderlesseeOrMortgagee" type="UnderlesseeOrMortgageeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="TotalArrears" type="MoneyType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="StatusType">
+    <xs:sequence>
+      <xs:element name="StatusCode" type="xs:int"/>
+      <xs:element name="Reason" type="xs:string"/>
+      <xs:element name="FailReasonCode" type="xs:int" minOccurs="0"/>
+      <xs:element name="FailReason" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

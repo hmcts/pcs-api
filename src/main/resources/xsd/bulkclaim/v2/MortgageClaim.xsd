@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="Common.xsd"/>
+
+  <xs:simpleType name="ClaimantDesignationMortgageType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LocalAuthority"/>
+      <xs:enumeration value="Commercial"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="AdditionalPaymentType">
+    <xs:sequence>
+      <xs:element name="AdditionalPaymentAmount" type="MoneyType"/>
+      <xs:element name="AdditionalPaymentReason" type="Text250"/>
+      <xs:element name="AdditionalPaymentArrears" type="MoneyType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OriginalMortgageProviderType">
+    <xs:sequence>
+      <xs:element name="MortgageProviderName" type="Text100"/>
+      <xs:element name="MortgageBoughtDate" type="xs:date"/>
+      <xs:element name="DateDefendantNotified" type="xs:date"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ParticularsMortgagedType">
+    <xs:complexContent>
+      <xs:extension base="ParticularsOfClaimType">
+        <xs:sequence>
+          <xs:element name="PaymentHistory" type="PaymentHistoryType"/>
+          <xs:element name="NoticeServedDate" type="xs:date" minOccurs="0"/>
+          <xs:element name="MortgageDate" type="xs:date"/>
+          <xs:element name="DefaultNoticeDate" type="xs:date" minOccurs="0"/>
+          <xs:element name="LoanAmount" type="MoneyType"/>
+          <xs:element name="CurrentRepaymentTerms" type="Text950"/>
+          <xs:element name="FullRepaymentDate" type="xs:date"/>
+          <xs:element name="FullRepaymentAmount" type="MoneyType"/>
+          <xs:element name="CostsAndAdministration" type="MoneyType"/>
+          <xs:element name="OutstandingAmount" type="MoneyType" minOccurs="0"/>
+          <xs:element name="StartInterestRate" type="RateType"/>
+          <xs:element name="PreArrearsInterestRate" type="RateType"/>
+          <xs:element name="ClaimStartInterestRate" type="RateType"/>
+          <xs:element name="InterestedParty" type="Text250" minOccurs="0"/>
+          <xs:element name="TenancyDate" type="xs:date" minOccurs="0"/>
+          <xs:element name="AdditionalPayments" type="AdditionalPaymentType" minOccurs="0" maxOccurs="3"/>
+          <xs:element name="HasMonetaryJudgement" type="xs:boolean" minOccurs="0"/>
+          <xs:element name="OriginalMortgageProvider" type="OriginalMortgageProviderType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="MortgageClaimSet">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Version" type="xs:string" minOccurs="0"/>
+        <xs:element name="PaymentAccountNumber" type="PaymentAccountNumberType"/>
+        <xs:element name="MortgageClaim" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="CustomerUniqueIdentifier" type="CustomerUniqueIdentifierType"/>
+              <xs:element name="Claimant" type="ClaimantType"/>
+              <xs:element name="Solicitor" type="SolicitorType" minOccurs="0"/>
+              <xs:element name="Property" type="PropertyType"/>
+              <xs:element name="Defendant" type="MortgageDefendantType" maxOccurs="unbounded"/>
+              <xs:element name="ClaimantDesignation" type="ClaimantDesignationMortgageType"/>
+              <xs:element name="PaymentAccountNumber" type="PaymentAccountNumberType" minOccurs="0"/>
+              <xs:element name="PaymentCustomerReference" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="250"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ParticularsOfClaim" type="ParticularsMortgagedType"/>
+              <xs:element name="Occupant" type="NameType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
