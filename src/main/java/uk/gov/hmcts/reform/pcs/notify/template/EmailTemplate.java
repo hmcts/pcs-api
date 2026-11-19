@@ -22,6 +22,9 @@ public enum EmailTemplate {
 
     // Gen App Email Templates
     GENERAL_APPLICATION_RECEIVED("general-application-received"),
+    GENERAL_APPLICATION_RECEIVED_LEGAL_REP("general-application-received-legal-rep"),
+    GENERAL_APPLICATION_RESPONDENT("general-application-respondent"),
+    GENERAL_APPLICATION_RESPONDENT_LEGAL_REP("general-application-respondent-legal-rep"),
 
     // Hearing Notice Email Template
     NOTICE_OF_HEARING("notice-of-hearing"),

@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -33,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.GenAppPersonalisation;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -44,6 +47,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @DisplayName("NotificationPersonalisationFactory Tests")
@@ -76,6 +80,83 @@ class NotificationPersonalisationFactoryTest {
             partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter(), featureToggleService);
         ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
         ReflectionTestUtils.setField(factory, "manageCaseUrl", "manageCaseUrl");
+    }
+
+    @Nested
+    @DisplayName("forGenApp")
+    class ForGenAppTests {
+
+        @Test
+        @DisplayName("Applicant (citizen) adjourn email: applicant subject, phrase and CUI sign-in link")
+        void applicantCitizenAdjourn() {
+            stubClaimantParty();
+            stubDefendantParty();
+            GenAppEntity genApp = stubGenApp(GenAppType.ADJOURN);
+            PartyEntity recipient = createParty("Alex", "Jones");
+
+            GenAppPersonalisation result = factory.forGenApp(recipient, genApp, false, false);
+
+            assertThat(result.toMap())
+                .containsEntry("firstName", "Alex")
+                .containsEntry("lastName", "Jones")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("caseName", "Jane Smith vs John Doe")
+                .containsEntry("subjectLine", "Request to adjourn (delay) the hearing received")
+                .containsEntry("applicationTypePhrase", " to adjourn (delay) the hearing")
+                .containsEntry("signInUrl", "frontEndUrl");
+        }
+
+        @Test
+        @DisplayName("Applicant (LR) uses XUI manage-case sign-in link")
+        void applicantLegalRepUsesManageCaseUrl() {
+            stubClaimantParty();
+            stubDefendantParty();
+            GenAppEntity genApp = stubGenApp(GenAppType.SET_ASIDE);
+            PartyEntity recipient = createParty("Alex", "Jones");
+
+            GenAppPersonalisation result = factory.forGenApp(recipient, genApp, false, true);
+
+            assertThat(result.toMap())
+                .containsEntry("subjectLine", "Request to cancel (set aside) the order received")
+                .containsEntry("signInUrl", "manageCaseUrl");
+        }
+
+        @Test
+        @DisplayName("Respondent uses respondent subject line")
+        void respondentSubject() {
+            stubClaimantParty();
+            stubDefendantParty();
+            GenAppEntity genApp = stubGenApp(GenAppType.ADJOURN);
+            PartyEntity recipient = createParty("Alex", "Jones");
+
+            GenAppPersonalisation result = factory.forGenApp(recipient, genApp, true, false);
+
+            assertThat(result.toMap())
+                .containsEntry("subjectLine", "A party has made an application to adjourn (delay) the hearing")
+                .containsEntry("applicationTypePhrase", " to adjourn (delay) the hearing");
+        }
+
+        @Test
+        @DisplayName("Something else has empty phrase and generic subject")
+        void somethingElse() {
+            stubClaimantParty();
+            stubDefendantParty();
+            GenAppEntity genApp = stubGenApp(GenAppType.SOMETHING_ELSE);
+            PartyEntity recipient = createParty("Alex", "Jones");
+
+            GenAppPersonalisation result = factory.forGenApp(recipient, genApp, false, false);
+
+            assertThat(result.toMap())
+                .containsEntry("subjectLine", "Application received")
+                .containsEntry("applicationTypePhrase", "");
+        }
+
+        private GenAppEntity stubGenApp(GenAppType type) {
+            GenAppEntity genApp = mock(GenAppEntity.class);
+            when(genApp.getType()).thenReturn(type);
+            when(genApp.getPcsCase()).thenReturn(pcsCaseEntity);
+            return genApp;
+        }
     }
 
     @Nested
