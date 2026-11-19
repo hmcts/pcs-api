@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import io.restassured.path.xml.XmlPath;
+import lombok.extern.slf4j.Slf4j;
 import io.restassured.response.Response;
 import net.serenitybdd.annotations.Issue;
 import net.serenitybdd.annotations.Title;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
+import uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsTestOrganisation;
 import uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsV2Client;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 
@@ -22,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsV2Client.BASE_PATH;
 
+@Slf4j
 @Issue("HDPI-10171")
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
@@ -43,10 +46,16 @@ class BulkClaimsV2Tests extends BaseApi {
 
     @BeforeAll
     void checkPrerequisites() {
-        assumeTrue(BulkClaimsV2Client.organisationId().isPresent(),
-                   "BULK_CLAIMS_TEST_ORGANISATION_ID is not set");
-        organisationId = BulkClaimsV2Client.organisationId().orElseThrow();
-        pba = BulkClaimsV2Client.pbaAccount();
+        BulkClaimsTestOrganisation organisation = null;
+        try {
+            organisation = BulkClaimsTestOrganisation.resolve();
+        } catch (BulkClaimsTestOrganisation.Unavailable e) {
+            assumeTrue(false, "No bulk claims test organisation: " + e.getMessage()
+                + ". Set BULK_CLAIMS_TEST_ORGANISATION_ID to choose one explicitly");
+        }
+        organisationId = organisation.organisationId();
+        pba = organisation.pba();
+        log.info("Bulk claims v2 tests use organisation {} with PBA {}", organisationId, pba);
 
         try {
             client.apimToken();
