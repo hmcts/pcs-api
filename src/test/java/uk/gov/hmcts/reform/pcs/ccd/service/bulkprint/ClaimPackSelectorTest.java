@@ -150,20 +150,39 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Puts application evidence after the claim form for a Welsh defendant")
-    void shouldIncludeApplicationEvidenceForAWelshDefendant() {
+    @DisplayName("Puts application evidence after the claim form in a Welsh defendant's bilingual pack")
+    void shouldIncludeApplicationEvidenceInAWelshBilingualPack() {
+        enableBulkPrint2();
+        DocumentEntity englishPinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity welshPinA = welshPin(defendantA);
+        DocumentEntity laterNotice = evidence("notice.pdf", Instant.parse("2026-10-02T10:00:00Z"));
+        DocumentEntity earlierRent = evidence("rent.pdf", Instant.parse("2026-10-01T10:00:00Z"));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(welshPinA, englishPinA), claimantAnd(defendantA));
+        attachEvidence(pcsCase, laterNotice, earlierRent);
+
+        assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+            assertThat(candidate.party()).isEqualTo(defendantA);
+            assertThat(candidate.documents())
+                .containsExactly(englishPinA, welshPinA, claimForm, earlierRent, laterNotice);
+            assertThat(candidate.bilingual()).isTrue();
+        });
+    }
+
+    @Test
+    @DisplayName("Puts application evidence in the English pack sent to a Wales defendant with no Welsh letter")
+    void shouldIncludeApplicationEvidenceInTheEnglishFallbackPackOnAWalesCase() {
         enableBulkPrint2();
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity notice = evidence("notice.pdf", Instant.parse("2026-10-01T10:00:00Z"));
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA), List.of(
-            claimParty(claimant, PartyRole.CLAIMANT, 1),
-            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
-        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+        PcsCaseEntity pcsCase = walesCaseWith(List.of(pinA), claimantAnd(defendantA));
         attachEvidence(pcsCase, notice);
 
-        assertThat(underTest.findClaimPackCandidates(pcsCase).get(1).documents())
-            .containsExactly(pinA, claimForm, notice);
+        assertThat(defendantCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+            assertThat(candidate.documents()).containsExactly(pinA, claimForm, notice);
+            assertThat(candidate.bilingual()).isFalse();
+        });
     }
 
     @Test
