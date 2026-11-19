@@ -8,6 +8,8 @@ import { ValidationRegistry } from './registry/registry-caseManagement/validatio
 import { axe_Exclusions } from '@config/axe_exclusions.config';
 import { CYA_CAPTURE_ACTIONS, CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cya-actions-constants';
 import {ActionEnforcementRegistry} from "@utils/registry/registry-enforcement";
+import { axe_Exclusions } from '@config/axe_exclusions.config';
+
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';

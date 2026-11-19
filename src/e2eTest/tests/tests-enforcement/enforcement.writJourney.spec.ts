@@ -2,7 +2,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
 import {
   yourHCEO,
   theNICEWillChoose,
@@ -16,6 +15,17 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { changeNameAddress, confirmHCEOfficer, enforcementApplication, languageUsed, nameAndAddressForEviction, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
 import { checkYourAnswersEnforcement } from '@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
 import { payTheClaimFeeConfirm } from '@data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data';
+import {
+  caseSummary,
+  changeNameAddress,
+  confirmHCEOfficer,
+  defendantInBreathingSpace,
+  enforcementApplication,
+  languageUsed, missedPayments,
+  nameAndAddressForEviction,
+  statementOfTruth
+} from '@data/index.selector.enforcement';
+import {home} from "@data/page-data-cy";
 
 let payClaimFeeWrit: ReturnType<typeof payTheClaimFeeConfirm>;
 let sotWrit: ReturnType<typeof statementOfTruth>;
@@ -62,6 +72,10 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   payClaimFeeWrit = payTheClaimFeeConfirm(test.info().title);
   sotWrit = statementOfTruth(test.info().title);
+  
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {
@@ -316,11 +330,10 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
-      annotation: {
-        type: 'issue',
-        description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
-      },
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey @enforcement', {
+    annotation: {
+      type: 'issue',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
     },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);

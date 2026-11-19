@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalDocumentMoveAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
@@ -16,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.jackson.NestedComplexTypeDeserializer;
 
 import java.util.List;
 
@@ -38,16 +42,22 @@ public class CaseDetailsTab {
     @CCD(label = "Date claim Submitted")
     private String dateClaimSubmitted;
 
-    @CCD(label = "Tenancy, occupation contract or licence details")
+    @CCD(label = "Tenancy, occupation contract or licence details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private TenancyLicenceTabDetails tenancyLicenceDetails;
 
-    @CCD(label = "Notice details")
+    @CCD(label = "Notice details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private NoticeTabDetails noticeDetails;
 
     @CCD(label = "Actions already taken")
     private ActionsTakenTabDetails actionsTakenDetails;
 
-    @CCD(label = "Details of rent arrears")
+    @CCD(label = "Details of rent arrears",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private RentArrearsTabDetails rentArrearsDetails;
 
     @CCD(label = "Reasons for possession")
@@ -89,7 +99,9 @@ public class CaseDetailsTab {
     @CCD(label = "Suspension of right to buy claim")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
 
-    @CCD(label = "Occupation contract or licence details")
+    @CCD(label = "Occupation contract or licence details",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private OccupationContractOrLicenceTabDetails occupationContractLicenceDetails;
 
     @CCD(label = "Antisocial behaviour and illegal or prohibited conduct")
@@ -101,7 +113,9 @@ public class CaseDetailsTab {
     @CCD(label = "Prohibited conduct standard contract claim")
     private ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractDetails;
 
-    @CCD(label = "Required documents")
+    @CCD(label = "Required documents",
+        access = {PartyVisibleTabAccess.class, InternalDocumentMoveAccess.class})
+    @JsonDeserialize(using = NestedComplexTypeDeserializer.class)
     private RequiredDocumentsTabDetails requiredDocumentsDetails;
 
     @CCD(label = "Documents you've uploaded")

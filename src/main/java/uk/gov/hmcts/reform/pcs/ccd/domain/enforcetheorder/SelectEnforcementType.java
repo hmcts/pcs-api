@@ -21,6 +21,6 @@ public enum SelectEnforcementType implements HasLabel {
         return Arrays.stream(values())
                 .filter(type -> type.name().equals(code))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Unknown enforcement type: " + code));
     }
 }

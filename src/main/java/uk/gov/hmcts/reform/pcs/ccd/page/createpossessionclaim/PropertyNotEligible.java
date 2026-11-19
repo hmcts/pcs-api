@@ -34,8 +34,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
 
             // England and Wales guidance section
             .label("propertyNotEligible-england-wales", """
-                    <section tabindex="0">
-                    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                    <hr aria-hidden="true">
                     <h2 class="govuk-heading-m">What to do next</h2>
                     <p class="govuk-body">
                       This service is not available in your area yet.
@@ -59,7 +58,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                     <p class="govuk-body">
                       <a class="govuk-link" href="https://www.gov.uk/government/collections/property-possession-forms" target="_blank" rel="noopener noreferrer">
                         View the full list of property possessions forms (opens in new tab)
-                      </a>.
+                      </a>
                     </p>
 
                     <div class="govuk-warning-text">
@@ -69,14 +68,12 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                           To exit back to the case list, select ‘Cancel’
                       </strong>
                     </div>
-                    </section>
                     """, ENGLAND + " OR " + WALES)
 
 
             // Scotland-specific guidance section
             .label("propertyNotEligible-scotland", """
-                <section tabindex="0">
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                <hr aria-hidden="true">
                 <h2 class="govuk-heading-m">What to do next</h2>
                 <p class="govuk-body">
                   This service is only available for claimants claiming possession of a property in England or Wales.
@@ -92,13 +89,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
-                </section>
                 """, "legislativeCountry=\"Scotland\"")
 
             // Northern Ireland guidance section
             .label("propertyNotEligible-northern-ireland", """
-                <section tabindex="0">
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                <hr aria-hidden="true">
                 <h2 class="govuk-heading-m">What to do next</h2>
                 <p class="govuk-body">
                   This service is only available for claimants claiming possession of a property in England or Wales.
@@ -114,13 +109,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
-                </section>
                 """, "legislativeCountry=\"Northern Ireland\"")
 
             // Channel Islands and Isle of Man guidance section
             .label("propertyNotEligible-channel-islands-iom", """
-                <section tabindex="0">
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                <hr aria-hidden="true">
                 <p class="govuk-body">
                   This service is only available for claimants claiming possession of a property in England or Wales.
                 </p>
@@ -131,7 +124,6 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
-                </section>
                 """, "legislativeCountry=\"Channel Islands\" OR legislativeCountry=\"Isle of Man\"");
     }
 

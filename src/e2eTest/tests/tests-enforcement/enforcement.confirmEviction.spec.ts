@@ -9,8 +9,9 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { confirmEvictionDetails, evictionDate } from '@data/page-data-figma/page-data-enforcement-figma';
+import {home} from "@data/page-data-cy";
 
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({ page } ) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   defendantDetails.length = 0;
@@ -32,6 +33,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {
@@ -44,7 +48,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe.skip('[Enforcement - Confirm Eviction]', async () => {
+test.describe('[Enforcement - Confirm Eviction] @nightly', async () => {
   test('Confirm Eviction - Eviction data provide by Bailiff @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.confirmEvictionEvent);

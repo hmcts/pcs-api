@@ -5,7 +5,7 @@ import io.pebbletemplates.pebble.extension.core.DisallowExtensionCustomizerBuild
 import io.pebbletemplates.pebble.loader.ClasspathLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.hmcts.reform.pcs.ccd.config.CurrencyFormatterExtension;
+import uk.gov.hmcts.reform.pcs.ccd.config.PebbleFiltersExtension;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class PebbleConfiguration {
         loader.setSuffix(".peb");
         return new PebbleEngine.Builder()
             .loader(loader)
-            .extension(new CurrencyFormatterExtension())
+            .extension(new PebbleFiltersExtension())
             .registerExtensionCustomizer(new DisallowExtensionCustomizerBuilder()
                                              .disallowedTokenParserTags(List.of("include"))
                                              .build())

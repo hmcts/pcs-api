@@ -53,6 +53,14 @@ public enum State {
     CASE_ISSUED,
 
     @CCD(
+        label = "Pending Enforcement Issued",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    PENDING_ENFORCEMENT_ISSUED,
+
+    @CCD(
         label = "Judicial Referral",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
             InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},

@@ -100,8 +100,23 @@ export class ActionCMRegistry {
     ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
     ['validateFullPartyDetails', new CaseManagementAction()],
     ['confirmRemoveParty', new CaseManagementAction()],
-
-  ]);
+    ['validateEnterBreathingSpacePage', new CaseManagementAction()],
+    ['selectBreathingSpaceType', new CaseManagementAction()],
+    ['validateEnterBreathingSpacePage', new CaseManagementAction()],
+    ['fillBreathingSpaceStartDate', new CaseManagementAction()],
+    ['fillBreathingSpaceStartDateWithToday', new CaseManagementAction()],
+    ['completeBreathingSpaceFormHappyPath', new CaseManagementAction()],
+    ['fillExpectedEndDateWithFutureDate', new CaseManagementAction()],
+    ['enterBreathingSpaceDetailsAndCancel', new CaseManagementAction()],
+    ['reopenBreathingSpaceEvent', new CaseManagementAction()],
+    ['validateReferenceNumberLengthError', new CaseManagementAction()],
+    ['validateFutureStartDateError', new CaseManagementAction()],
+    ['validateCheckYourAnswersPage', new CaseManagementAction()],
+    ['changeReferenceNumberAndValidate', new CaseManagementAction()],
+    ['submitCheckYourAnswers', new CaseManagementAction()],
+    ['clickPreviousAndValidateAnswersRetained', new CaseManagementAction()],
+    ['cancelCheckYourAnswersAndValidate', new CaseManagementAction()],
+      ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);

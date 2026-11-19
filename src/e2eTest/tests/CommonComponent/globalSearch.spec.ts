@@ -1,7 +1,7 @@
 import { test } from '@utils/test-fixtures';
 import { Page, BrowserContext } from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { globalSearch} from '@data/page-data-figma';
+import { globalSearch, whyDoYouNeedToAccessThisCase } from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -74,6 +74,55 @@ test.afterEach(async () => {
   }
 });
 
+test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
+  test('Challenged access - Hearing centre team leader user can view the case after submitting a request', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      staff.pcs_hearing_centre_team_leader_other_wales_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toDetermineIfTheCaseNeedsToBeConsolidated
+    });
+  });
+
+  test('Challenged access - Hearing centre administrator user can view the case after submitting a request', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      staff.pcs_hearing_centre_administrator_other_wales_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.otherReasonRadioOption,
+      text: whyDoYouNeedToAccessThisCase.otherReasonInputText
+    });
+  });
+
+  test('Challenged access - Judge user can view the case after submitting a request', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      judicial.walesRegion_Judge_email
+    );
+
+    await performAction('updatePaymentAPI');
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer
+    });
+  });
+});
+
 const runFieldSearch = async (label: string, value: string) => {
   await performAction('accessingTheSearch');
   await performAction('inputText', label, value);
@@ -83,7 +132,7 @@ const runFieldSearch = async (label: string, value: string) => {
 };
 
 const runGlobalSearchScenarios = () => {
-  test('Global search menu @smoke', async () => {
+  test('Global search menu', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });

@@ -10,6 +10,8 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
+import { caseSummary, home } from '@data/page-data';
+import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {
   propertyAccessDetails,
   livingInTheProperty,
@@ -32,6 +34,13 @@ import {
   cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
+  statementOfTruth,
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
+  cannotApplyForWarrantInfo
+} from '@data/index.selector.enforcement';
+import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
+import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
+import Axios from "axios";
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -79,12 +88,51 @@ export class EnforcementAction implements IAction{
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
+
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
+  }
+
+  private async deleteDraftApplication(): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('errorMessage', {
+      header: deleteThisDraftApplication.errorMessageHeader,
+      message: deleteThisDraftApplication.deleteDraftApplicationRequiredError,
+    });
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.noRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+    await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.yesRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.continueButton);
+    await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
+    await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+  }
+
+  private async resumeDraftApplication(page: Page): Promise<void> {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await expect(page.getByText('Resume draft application', { exact: true })).toBeVisible();
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
   }
 
   private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
@@ -112,10 +160,10 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
+    if (applicationType.option === enforcementApplication.writOfPossessionRadioOption && applicationType.option1 !== enforcementApplication.noRadioOptionHidden) {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
+    } else if (applicationType.option === enforcementApplication.writOfPossessionRadioOption || applicationType.option === enforcementApplication.warrantOfRestitutionRadioOptionDynamic) {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
@@ -223,14 +271,15 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
+      // HDPI-9502, Defendant name and address are not showing up on Welsh page
+      // await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
 
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
     );
-
-    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
+    // HDPI-9502, Defendant name and address are not showing up on Welsh page
+    // await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
@@ -625,6 +674,11 @@ export class EnforcementAction implements IAction{
 
           case 'upLoad':
             await expect(async () => {
+              await performAction('check', validationArr.checkBox);
+              break;
+
+            case 'pageLevel':
+              await expect(async () => {
               await performAction('clickButton', validationArr.button);
               if (item.type === 'invalid') {
                 const fileInput = page.locator('input[type="file"].form-control.bottom-30');

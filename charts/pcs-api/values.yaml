@@ -34,6 +34,8 @@ java:
           alias: ELASTIC_SEARCH_HOSTS
         - name: launchdarkly-sdk-key
           alias: LAUNCHDARKLY_SDK_KEY
+        - name: docmosis-access-key
+          alias: DOCMOSIS_ACCESS_KEY
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin

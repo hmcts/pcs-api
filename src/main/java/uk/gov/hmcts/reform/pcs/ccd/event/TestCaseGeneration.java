@@ -92,7 +92,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             return SubmitResponse.<State>builder().state(PENDING_CASE_ISSUED).build();
         } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
             makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-            enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
+            enforceTheOrder.submit(new EventPayload<>(caseReference, loadTestPcsCase(label), null));
             return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
         }
         return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();

@@ -60,7 +60,7 @@ public enum TaskType {
             """
     ),
     REVIEW_SET_ASIDE_GEN_APP(
-        "ReviewAdjournGenApp",
+        "ReviewSetAsideGenApp",
         "Review set aside gen app",
         """
             Review the general application to set aside, decide what action is needed, and take the appropriate
@@ -136,6 +136,22 @@ public enum TaskType {
         """
             Court staff returned your order with a query. Change the order and submit it for review again.
             The task will close when you submit it.
+            """
+    ),
+    REVIEW_MESSAGE_JUDGE(
+        "ReviewMessageJudge",
+        "Review message",
+        """
+            Court staff sent you a message. Read it on the case's Messages tab, then reply to it or close it.
+            The task will close when you reply to or close the message.
+            """
+    ),
+    REVIEW_MESSAGE_STAFF(
+        "ReviewMessageStaff",
+        "Review message",
+        """
+            You have a message on the case. Read it on the case's Messages tab, then reply to it or close it.
+            The task will close when you reply to or close the message.
             """
     );
 

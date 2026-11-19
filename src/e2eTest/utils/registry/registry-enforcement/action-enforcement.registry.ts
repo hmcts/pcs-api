@@ -35,6 +35,7 @@ export class ActionEnforcementRegistry {
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
+    ['deleteDraftApplication', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['confirmClaimTransferredToHighCourt', new EnforcementAction()],
     ['selectHaveHiredHCEO', new EnforcementAction()],
@@ -95,6 +96,12 @@ export class ActionEnforcementRegistry {
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['continueFromCYAPage', new EnforcementAction()],
     ['selectPayClaimFee', new EnforcementAction()],
+    ['resumeDraftApplication', new EnforcementAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
+    ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
+    ['cannotApplyForWarrantInfo', new EnforcementAction()],
+    ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {

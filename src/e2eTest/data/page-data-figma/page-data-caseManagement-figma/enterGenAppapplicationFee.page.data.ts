@@ -1,7 +1,7 @@
 export const enterGenAppapplicationFee = {
   mainHeader: `Application fee`,
   appFeeReceivedQuestion: `Has HMCTS received the application fee?`,
-  referenceNumberIncludedQuestion: `Has the applicant included a Help With Fees reference number on their application?`,
+  referenceNumberIncludedQuestion: `Has the applicant included a Help with Fees reference number on their application?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   errorValidation: `YES`,
@@ -17,7 +17,7 @@ export const enterGenAppapplicationFee = {
       { type: `none`, input: ``, errMessage: `Has HMCTS received the application fee? is required`, errInlineMessage: `Has HMCTS received the application fee? is required` },
     ],
     errorRadioOption2: [
-      { type: `none`, input: ``, errMessage: `Has the applicant included a Help With Fees reference number on their application? is required`, errInlineMessage: `Has the applicant included a Help With Fees reference number on their application? is required` },
+      { type: `none`, input: ``, errMessage: `Has the applicant included a Help with Fees reference number on their application? is required`, errInlineMessage: `Has the applicant included a Help with Fees reference number on their application? is required` },
     ],
     errorMoneyField: [
       { type: `max`, input: `100000000`, errMessage: `Should be less than or equal to £10,000,000.00` },

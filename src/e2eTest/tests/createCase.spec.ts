@@ -1,14 +1,12 @@
 import {
   initializeExecutor,
   performAction,
-  performValidation,
-  performValidations
+  performValidation
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,
   addressDetails,
   checkYourAnswers,
-  propertyDetails,
   reasonsForPossession,
   whatAreYourGroundsForPossession,
   home
@@ -26,7 +24,6 @@ import {
   preactionProtocol,
   alternativesToPossession,
   claimantCircumstances,
-  dailyRentAmount,
   defendantCircumstances,
   mediationAndSettlement,
   moneyJudgment,
@@ -192,8 +189,8 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  //This test must be run only in the Nightly/Release jobs as it contains an exhaustive test sceanrio for 'Upload additional documents' page
-  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Nightly/Release only (Contains exhaustive test scenario)', async () => {
+  //This test must be run only in the Release jobs as it contains an exhaustive test scenario for 'Upload additional documents' page
+  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Release only (Contains exhaustive test scenario) @release', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex

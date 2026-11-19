@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -9,7 +10,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.WaTaskEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.WaTaskRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -22,8 +25,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
@@ -32,12 +37,15 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Service
 public class CamundaService {
 
+    private static final String PROCESS_CATEGORY = "__processCategory__";
+
     private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final WaTaskRepository waTaskRepository;
 
     private static final String CREATE = "createTaskMessage";
     private static final String CANCEL = "cancelTasks";
@@ -54,7 +62,8 @@ public class CamundaService {
                           FeatureToggleService featureToggleService,
                           LocationReferenceService locationReferenceService,
                           PcsCaseRepository pcsCaseRepository,
-                          Clock utcClock,
+                          WaTaskRepository waTaskRepository,
+                          @Qualifier("utcClock") Clock utcClock,
                           @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
         this.workAllocationWorkflowApi = workAllocationWorkflowApi;
         this.authTokenGenerator = authTokenGenerator;
@@ -62,43 +71,96 @@ public class CamundaService {
         this.featureToggleService = featureToggleService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseRepository = pcsCaseRepository;
+        this.waTaskRepository = waTaskRepository;
         this.utcClock = utcClock;
         this.pcsApiEnvironment = pcsApiEnvironment;
     }
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock), Map.of(), null);
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay));
+        createTask(
+            caseId,
+            taskType,
+            taskType.getDefaultDescription(),
+            Instant.now(utcClock).plus(delay),
+            Map.of(),
+            null
+        );
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock));
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), null);
+    }
+
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Map<String, Object> taskDetails) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), taskDetails, null);
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+        createTask(caseId, taskType, taskDescription, scheduledTo, Map.of(), null);
     }
 
     /** Creates a task assigned to one user. */
     public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), assignee);
+    }
+
+    /**
+     * Creates a task for a role's pool about a message, urgent or not, which the configuration DMN prioritises and
+     * names the message on.
+     */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, boolean urgent, UUID messageId) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), Map.of(), null, urgent,
+            messageId == null ? null : messageId.toString());
+    }
+
+    public void createTask(
+        long caseId,
+        TaskType taskType,
+        String taskDescription,
+        Instant scheduledTo,
+        Map<String, Object> taskDetails,
+        String assignee
+    ) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, taskDetails, assignee, null, null);
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            String assignee) {
+                            Map<String, Object> taskDetails, String assignee, Boolean urgent, String messageId) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
+            .taskDetails(taskDetails)
             .assignee(assignee)
+            .urgent(urgent)
+            .messageId(messageId)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
+    }
+
+    /**
+     * Cancels one side's task about the message, once the message is answered without it. The other side's task about
+     * the same message, such as the one the answer creates, is left alone.
+     */
+    public void cancelMessageTask(long caseId, UUID messageId, TaskType side) {
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(caseId)
+            .messageId(messageId.toString())
+            .taskType(side)
+            .build();
+        scheduleCamundaRequest(taskData, Instant.now(utcClock));
+    }
+
+    private static String messageCategory(String messageId) {
+        return "message_" + messageId;
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
@@ -117,11 +179,17 @@ public class CamundaService {
                 taskData.getTaskType(),
                 taskData.getTaskDescription(),
                 taskData.getIdempotencyKey(),
-                taskData.getAssignee()
+                taskData.getTaskDetails(),
+                taskData.getAssignee(),
+                taskData.getUrgent(),
+                taskData.getMessageId()
             );
             case CANCEL -> requestTaskCancellation(
                 taskData.getCaseReference(),
-                taskData.getTaskType()
+                taskData.getTaskType(),
+                Stream.of(taskData.getTaskType() == null ? null : taskData.getTaskType().getId(),
+                        taskData.getMessageId() == null ? null : messageCategory(taskData.getMessageId()))
+                    .filter(Objects::nonNull).toList()
             );
         }
     }
@@ -139,8 +207,15 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     String assignee) {
+    private void requestTaskCreation(
+        long caseId, TaskType taskType,
+        String taskDescription,
+        UUID idempotencyKey,
+        Map<String, Object> taskDetails,
+        String assignee,
+        Boolean urgent,
+        String messageId
+    ) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -167,7 +242,7 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
-        processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put(PROCESS_CATEGORY + taskType.getId(), dmnBooleanValue(true));
         processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
         if (idempotencyKey != null) {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
@@ -178,13 +253,26 @@ public class CamundaService {
         if (assignee != null) {
             processVariables.put("assigneeId", dmnStringValue(assignee));
         }
+        if (urgent != null) {
+            processVariables.put("urgent", dmnStringValue(urgent ? "Yes" : "No"));
+        }
+        if (messageId != null) {
+            processVariables.put("messageId", dmnStringValue(messageId));
+            // So the task can be cancelled on its own when its message is closed without it.
+            processVariables.put(PROCESS_CATEGORY + messageCategory(messageId), dmnBooleanValue(true));
+        }
 
         // Default values - WA task due date is configured in configuration dmn
         LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
 
-        addLocationDataToTask(caseId, processVariables);
+        PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+
+        addLocationDataToTask(pcsCaseEntity, processVariables);
+
+        WaTaskEntity waTaskEntity = saveWaTaskRequest(pcsCaseEntity, taskType, Action.CREATE, taskDetails);
+        processVariables.put("pcsTaskId", dmnIntegerValue(waTaskEntity.getId()));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -195,7 +283,8 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, TaskType taskType) {
+    /** Cancels the case's tasks in every one of the process categories. */
+    private void requestTaskCancellation(Long caseId, TaskType taskType, List<String> processCategories) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -203,7 +292,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processCategories.forEach(category -> correlationKeys.put(PROCESS_CATEGORY + category, dmnBooleanValue(true)));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
@@ -215,6 +304,9 @@ public class CamundaService {
             .all(true)
             .build();
 
+        PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+        WaTaskEntity waTaskEntity = saveWaTaskRequest(pcsCaseEntity, taskType, Action.CANCEL, null);
+        processVariables.put("pcsTaskId", dmnIntegerValue(waTaskEntity.getId()));
         sendCamundaRequest(request, caseId);
     }
 
@@ -247,9 +339,8 @@ public class CamundaService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables) {
+    private void addLocationDataToTask(PcsCaseEntity pcsCaseEntity, Map<String, DmnValue<?>> processVariables) {
         try {
-            PcsCaseEntity pcsCaseEntity = loadCase(caseId);
             Integer locationId = pcsCaseEntity.getBaseLocation();
             List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
             String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
@@ -264,6 +355,23 @@ public class CamundaService {
             processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
             processVariables.put("taskRegion", dmnIntegerValue(1));
         }
+    }
+
+    private WaTaskEntity saveWaTaskRequest(
+        PcsCaseEntity pcsCaseEntity,
+        TaskType taskType,
+        Action action,
+        Map<String, Object> taskDetails
+    ) {
+        WaTaskEntity waTaskEntity = WaTaskEntity.builder()
+            .action(action)
+            .taskType(taskType)
+            .taskDetails(taskDetails)
+            .requestedAt(Instant.now(utcClock))
+            .pcsCase(pcsCaseEntity)
+            .build();
+
+        return waTaskRepository.save(waTaskEntity);
     }
 
 }

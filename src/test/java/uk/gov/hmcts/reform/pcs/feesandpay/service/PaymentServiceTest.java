@@ -157,7 +157,7 @@ class PaymentServiceTest {
         void shouldCreateServiceRequest_NoPCSCase() {
             // Given
             FeeDetails feeDetails = Instancio.create(FeeDetails.class);
-            when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(222L));
+            when(pcsCaseService.retrieveClaimEntity(anyLong())).thenThrow(new CaseNotFoundException(222L));
 
             // When
             assertThatThrownBy(() -> underTest.createServiceRequest(createFeesAndPayTaskData(feeDetails)))
@@ -169,11 +169,10 @@ class PaymentServiceTest {
             // Given
             FeeDetails feeDetails = createFeeDetails();
             paymentsClientDependencies(feeDetails);
-            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
-            when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
             when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+            PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
 
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
@@ -183,9 +182,10 @@ class PaymentServiceTest {
             verify(feePaymentRepository).save(captor.capture());
             FeePaymentEntity saved = captor.getValue();
 
+            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
-            assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
+            assertThat(saved.getClaim().getLastModified()).isNull();
         }
 
         @Test
@@ -220,7 +220,9 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(status.getValue())
                 .payment(payment).build();
 
+            ClaimEntity claimEntity = new ClaimEntity();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(claimEntity)
                 .paymentStatus(status)
                 .serviceRequestReference(requestReference)
                 .externalReference(paymentReference)
@@ -244,6 +246,7 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
+            assertThat(claimEntity.getLastModified()).isNull();
         }
 
         @Test
@@ -275,8 +278,12 @@ class PaymentServiceTest {
             PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
-            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
-                .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
+            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
             when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
@@ -299,8 +306,11 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
-                .paymentCallbackHandlerType(CLAIM).build();
+                .claim(new ClaimEntity())
+                .paymentStatus(PaymentStatus.PAID)
+                .serviceRequestReference(requestReference)
+                .paymentCallbackHandlerType(CLAIM)
+                .build();
             when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
@@ -334,6 +344,7 @@ class PaymentServiceTest {
             FeePaymentEntity saved = captor.getValue();
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
+            assertThat(claimEntity.getLastModified()).isNull();
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }
@@ -730,8 +741,7 @@ class PaymentServiceTest {
 
     private void stubPcsCaseEntity() {
         ClaimPartyEntity claimPartyEntity = claimPartyEntity();
-        PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        setupPcsCase(claimPartyEntity);
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {
@@ -745,6 +755,7 @@ class PaymentServiceTest {
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {
         ClaimEntity claimEntity = ClaimEntity.builder()
                 .claimParties(List.of(claimPartyEntity)).build();
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
         return PcsCaseEntity.builder()
             .claims(List.of(claimEntity)).build();
     }

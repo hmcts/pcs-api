@@ -16,11 +16,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -54,4 +56,7 @@ public class ClaimPartyOrganisationEntity {
     private Instant startDate;
 
     private Instant endDate;
+
+    @UpdateTimestamp
+    private LocalDateTime lastModified;
 }
