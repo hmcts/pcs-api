@@ -69,6 +69,7 @@ public class BulkClaimSubmissionService {
     private final BulkClaimCcdClient ccdClient;
     private final BulkClaimStagingSerializer serializer;
     private final BulkClaimResponseBuilder responseBuilder;
+    private final BulkClaimPaymentRetryService paymentRetryService;
     private final BulkClaimProperties properties;
     private final TransactionTemplate newTransaction;
     private final ExecutorService executor;
@@ -77,12 +78,14 @@ public class BulkClaimSubmissionService {
                                       BulkClaimCcdClient ccdClient,
                                       BulkClaimStagingSerializer serializer,
                                       BulkClaimResponseBuilder responseBuilder,
+                                      BulkClaimPaymentRetryService paymentRetryService,
                                       BulkClaimProperties properties,
                                       PlatformTransactionManager transactionManager) {
         this.repository = repository;
         this.ccdClient = ccdClient;
         this.serializer = serializer;
         this.responseBuilder = responseBuilder;
+        this.paymentRetryService = paymentRetryService;
         this.properties = properties;
         this.newTransaction = new TransactionTemplate(transactionManager);
         this.newTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -194,7 +197,7 @@ public class BulkClaimSubmissionService {
                                       boolean validateOnly) {
         final String cui = claim.customerUniqueIdentifier();
 
-        Optional<ClaimResponseType> existing = respondToExisting(organisationId, claim, validateOnly);
+        Optional<ClaimResponseType> existing = respondToExisting(organisationId, organisation, claim, validateOnly);
         if (existing.isPresent()) {
             return existing.get();
         }
@@ -205,32 +208,34 @@ public class BulkClaimSubmissionService {
         }
         PreparedBulkClaim prepared = ((Prepared) preparation).claim();
 
+        boolean noticeOfActing = noticeOfActingRequired(prepared);
         if (validateOnly) {
-            return responseBuilder.claimSuccess(cui, null);
+            return responseBuilder.claimSuccess(cui, null, noticeOfActing);
         }
 
         UUID submissionId = stage(organisationId, organisation, claim, prepared);
         BulkClaimCcdResult result = ccdClient.createCase(submissionId);
         if (result.isCreated()) {
-            return responseBuilder.claimSuccess(cui, String.valueOf(result.caseReference()));
+            return responseBuilder.claimSuccess(cui, String.valueOf(result.caseReference()), noticeOfActing);
         }
         if (result.retryable()) {
-            return afterUnavailableCcd(submissionId, cui);
+            return afterUnavailableCcd(submissionId, cui, noticeOfActing);
         }
         markFailed(submissionId, result.failReason(), result.errors());
         return responseBuilder.claimFailure(cui, result.failReason(), result.errors());
     }
 
-    private ClaimResponseType afterUnavailableCcd(UUID submissionId, String cui) {
+    private ClaimResponseType afterUnavailableCcd(UUID submissionId, String cui, boolean noticeOfActing) {
         Long caseReference = repository.findById(submissionId)
             .map(BulkClaimSubmissionEntity::getCaseReference)
             .orElse(null);
         return caseReference != null
-            ? responseBuilder.claimSuccess(cui, String.valueOf(caseReference))
+            ? responseBuilder.claimSuccess(cui, String.valueOf(caseReference), noticeOfActing)
             : responseBuilder.claimPending(cui);
     }
 
     private Optional<ClaimResponseType> respondToExisting(String organisationId,
+                                                          OrganisationDetailsResponse organisation,
                                                           ClaimInput claim,
                                                           boolean validateOnly) {
         String cui = claim.customerUniqueIdentifier();
@@ -244,11 +249,47 @@ public class BulkClaimSubmissionService {
 
         return switch (existing.getStatus()) {
             case CASE_CREATED -> Optional.of(sameClaim
-                ? responseBuilder.claimSuccess(cui, String.valueOf(existing.getCaseReference()))
+                ? resubmitted(existing, claim, organisation, validateOnly)
                 : identifierReused(cui));
             case PENDING -> pendingOutcome(existing, cui, sameClaim, validateOnly);
             case FAILED_VALIDATION, FAILED -> Optional.empty();
         };
+    }
+
+    /**
+     * A resubmission of a claim whose case exists replays the original success. When its PBA payment failed it
+     * also schedules the payment again, from the payment account in this request.
+     */
+    private ClaimResponseType resubmitted(BulkClaimSubmissionEntity existing,
+                                          ClaimInput claim,
+                                          OrganisationDetailsResponse organisation,
+                                          boolean validateOnly) {
+        ClaimResponseType replay = replay(existing);
+        if (validateOnly || !paymentRetryService.canRetry(existing)) {
+            return replay;
+        }
+
+        BulkClaimPreparationResult preparation = claim.preparation().get();
+        if (preparation instanceof Rejected rejected) {
+            return responseBuilder.claimFailure(
+                claim.customerUniqueIdentifier(), rejected.reason(), rejected.errors());
+        }
+        PreparedBulkClaim prepared = ((Prepared) preparation).claim();
+        if (prepared.pbaAccountNumber() != null) {
+            paymentRetryService.retry(existing, prepared.pbaAccountNumber(), prepared.pbaCustomerReference(),
+                                      organisation.getName());
+        }
+        return replay;
+    }
+
+    private ClaimResponseType replay(BulkClaimSubmissionEntity submission) {
+        return responseBuilder.claimSuccess(
+            submission.getCustomerUniqueIdentifier(), String.valueOf(submission.getCaseReference()),
+            submission.isNoticeOfActingRequired());
+    }
+
+    private static boolean noticeOfActingRequired(PreparedBulkClaim prepared) {
+        return prepared.extras() != null && Boolean.TRUE.equals(prepared.extras().noticeOfActingRequired());
     }
 
     private Optional<ClaimResponseType> pendingOutcome(BulkClaimSubmissionEntity existing,
@@ -257,7 +298,7 @@ public class BulkClaimSubmissionService {
                                                        boolean validateOnly) {
         if (existing.getCaseReference() != null) {
             return Optional.of(sameClaim
-                ? responseBuilder.claimSuccess(cui, String.valueOf(existing.getCaseReference()))
+                ? replay(existing)
                 : identifierReused(cui));
         }
         if (isStale(existing)) {
@@ -315,6 +356,7 @@ public class BulkClaimSubmissionService {
             row.setStatusCode(BulkFailReason.CLAIM_PENDING.getStatusCode());
             row.setFailReasonCode(null);
             row.setFailReason(null);
+            row.setNoticeOfActingRequired(noticeOfActingRequired(prepared));
             row.setValidationErrors(null);
             row.setStagedCaseData(serializer.writeCase(prepared.pcsCase()));
             row.setStagedExtras(serializer.writeExtras(prepared.extras()));

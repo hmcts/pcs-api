@@ -22,6 +22,10 @@ public enum BulkFailReason {
                   "One or more claims failed to process"),
 
     CLAIM_SUCCESS(1, "This claim was processed successfully", null, null),
+    CLAIM_SUCCESS_NOTICE_OF_ACTING(
+        1,
+        "This claim was accepted however solicitors must submit a notice of acting before their details are stored",
+        null, null),
     CLAIM_PENDING(3, "This claim is still being processed", null, null),
 
     CLAIM_REF_GENERATION_FAILED(2, BulkFailReason.CLAIM_FAILED_TEXT, 5,

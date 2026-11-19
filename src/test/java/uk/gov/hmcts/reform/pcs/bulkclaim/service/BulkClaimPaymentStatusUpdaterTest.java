@@ -196,6 +196,47 @@ class BulkClaimPaymentStatusUpdaterTest {
         verifyNoMoreInteractions(repository);
     }
 
+    @Test
+    void shouldRestartFailedPaymentAsPendingWithTheNewAccount() {
+        BulkClaimSubmissionEntity submission = failedSubmission();
+        when(repository.findByIdForUpdate(ID)).thenReturn(Optional.of(submission));
+
+        boolean restarted = underTest.restartFailedPayment(ID, "PBA2", "REF2");
+
+        assertThat(restarted).isTrue();
+        assertThat(submission.getPaymentStatus()).isEqualTo(BulkClaimPaymentStatus.PENDING);
+        assertThat(submission.getPaymentFailureReason()).isNull();
+        assertThat(submission.getPbaAccountNumber()).isEqualTo("PBA2");
+        assertThat(submission.getPaymentCustomerReference()).isEqualTo("REF2");
+        verify(repository).save(submission);
+    }
+
+    @Test
+    void shouldNotRestartPaymentThatIsNotFailed() {
+        BulkClaimSubmissionEntity submission = failedSubmission();
+        submission.setPaymentStatus(BulkClaimPaymentStatus.PENDING);
+        when(repository.findByIdForUpdate(ID)).thenReturn(Optional.of(submission));
+
+        assertThat(underTest.restartFailedPayment(ID, "PBA2", "REF2")).isFalse();
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void shouldStillIgnorePendingNotificationsForFailedPayment() {
+        BulkClaimSubmissionEntity submission = failedSubmission();
+        when(repository.findByIdForUpdate(ID)).thenReturn(Optional.of(submission));
+
+        underTest.onPbaPaymentSubmitted(ID, SERVICE_REQUEST);
+
+        assertThat(submission.getPaymentStatus()).isEqualTo(BulkClaimPaymentStatus.FAILED);
+    }
+
+    private static BulkClaimSubmissionEntity failedSubmission() {
+        return BulkClaimSubmissionEntity.builder().id(ID).caseReference(1L)
+            .paymentStatus(BulkClaimPaymentStatus.FAILED).paymentFailureReason("rejected").build();
+    }
+
     private static BulkClaimSubmissionEntity submission() {
         return BulkClaimSubmissionEntity.builder().id(ID).build();
     }

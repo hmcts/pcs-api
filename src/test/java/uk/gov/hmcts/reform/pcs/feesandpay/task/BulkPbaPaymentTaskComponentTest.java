@@ -101,8 +101,19 @@ class BulkPbaPaymentTaskComponentTest {
         verify(listener).onPbaPaymentSubmitted(SUBMISSION_ID, SERVICE_REQUEST);
     }
 
+    @Test
+    void shouldTreatConflictAsAlreadySubmittedAndLeaveThePaymentPending() {
+        doThrow(feignException(409)).when(paymentService).createSystemPbaPayment(data);
+
+        CompletionHandler<BulkPbaPaymentTaskData> result = task.execute(taskInstance, executionContext);
+
+        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        verify(listener).onPbaPaymentSubmitted(SUBMISSION_ID, SERVICE_REQUEST);
+        verify(listener, never()).onPbaPaymentFailed(any(), anyString(), anyString());
+    }
+
     @ParameterizedTest
-    @ValueSource(ints = {400, 402, 403, 404, 409, 422})
+    @ValueSource(ints = {400, 402, 404, 410, 412, 422})
     void shouldFailFinallyOnDefiniteRejections(int status) {
         doThrow(feignException(status)).when(paymentService).createSystemPbaPayment(data);
 
@@ -114,7 +125,7 @@ class BulkPbaPaymentTaskComponentTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {401, 408, 425, 429, 500, 502, 503, 504})
+    @ValueSource(ints = {401, 403, 408, 425, 429, 500, 502, 503, 504})
     void shouldRethrowRetryableStatusesWithoutNotifying(int status) {
         FeignException error = feignException(status);
         doThrow(error).when(paymentService).createSystemPbaPayment(data);

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -62,7 +63,7 @@ public class BulkDefendantMapper {
             DefendantType defendant = defendants.get(i);
             String path = BulkErrorCollector.indexed(elementName, i);
             details.add(mapDefendant(defendant, path, errors));
-            extras.add(mapExtras(defendant));
+            extras.add(mapExtras(defendant, path, errors));
         }
 
         if (details.isEmpty()) {
@@ -108,16 +109,31 @@ public class BulkDefendantMapper {
         return builder.build();
     }
 
-    private static PartyExtras mapExtras(DefendantType defendant) {
+    private static PartyExtras mapExtras(DefendantType defendant, String path, BulkErrorCollector errors) {
         NameType name = defendant.getName();
         ContactDetailsType contact = defendant.getContactDetails();
+        String phone = contact != null && StringUtils.isNotBlank(contact.getTelephoneNumber())
+            ? contact.getTelephoneNumber().replaceAll("\\s", "") : null;
+        String email = contact != null ? StringUtils.trimToNull(contact.getEmailAddress()) : null;
+        if (phone != null && !BulkLimits.PHONE_PATTERN.matcher(phone).matches()) {
+            errors.add(path + "/ContactDetails/TelephoneNumber", BulkErrorCollector.INVALID_VALUE,
+                       "Telephone number must be an 11 digit UK number starting with 0");
+        }
+        if (email != null
+            && errors.maxLength(path + "/ContactDetails/EmailAddress", email, BulkLimits.EMAIL, "Defendant email")
+            && !BulkLimits.EMAIL_PATTERN.matcher(email).matches()) {
+            errors.add(path + "/ContactDetails/EmailAddress", BulkErrorCollector.INVALID_VALUE,
+                       "Email address is not valid");
+        }
         return new PartyExtras(
             name.getTitle(),
             name.getInitials(),
             name.getOtherNames(),
             contact != null ? contact.getDX() : null,
             contact != null ? contact.getFaxNumber() : null,
-            defendant instanceof MortgageDefendantType mortgageDefendant ? mortgageDefendant.isIsOccupant() : null
+            defendant instanceof MortgageDefendantType mortgageDefendant ? mortgageDefendant.isIsOccupant() : null,
+            phone,
+            email
         );
     }
 }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimantType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.NameType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,19 +19,18 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkErrorCollector.INVALID_VALUE;
 
 /**
  * Maps the claimant (and optional solicitor) to the claimant sections of a {@link PCSCase}. The claimant name
- * and contact details come from the PRD organisation unless the claim supplies its own.
+ * and contact details come from the PRD organisation unless the claim supplies its own. Only a solicitor
+ * organisation may supply a Solicitor block; for any other organisation it is ignored apart from the firm name and
+ * PCOL reference, which are kept as legacy data.
  */
 @Component
 public class BulkClaimantMapper {
-
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^0\\d{10}$");
 
     private final BulkAddressMapper addressMapper;
 
@@ -48,7 +48,8 @@ public class BulkClaimantMapper {
                                   PartyExtras claimantExtras,
                                   String solicitorFirmName,
                                   String legacyPcolClaimantReference,
-                                  String legacyPcolSolicitorReference) {
+                                  String legacyPcolSolicitorReference,
+                                  boolean noticeOfActingRequired) {
 
         public void applyTo(PCSCase pcsCase) {
             pcsCase.setClaimantInformation(claimantInformation);
@@ -71,7 +72,9 @@ public class BulkClaimantMapper {
 
         ClaimantInformation information = mapInformation(claimant, organisation, path, errors);
 
-        ContactDetailsType solicitorContact = solicitor != null ? solicitor.getContactDetails() : null;
+        boolean solicitorIgnored = solicitor != null && !isSolicitorOrganisation(organisation);
+        ContactDetailsType solicitorContact = solicitor != null && !solicitorIgnored
+            ? solicitor.getContactDetails() : null;
         ContactDetailsType claimantContact = claimant.getContactDetails();
         ClaimantContactPreferences preferences = mapContactPreferences(
             claimant, solicitorContact, claimantContact, organisation, path, solicitorPath, errors);
@@ -87,8 +90,14 @@ public class BulkClaimantMapper {
             claimantExtras(claimant),
             solicitor != null ? solicitor.getFirm() : null,
             claimant.getPCOLReferenceNumber(),
-            solicitor != null ? solicitor.getPCOLReferenceNumber() : null
+            solicitor != null ? solicitor.getPCOLReferenceNumber() : null,
+            solicitorIgnored
         );
+    }
+
+    private static boolean isSolicitorOrganisation(OrganisationDetailsResponse organisation) {
+        return organisation != null && organisation.getOrganisationProfileIds() != null
+            && organisation.getOrganisationProfileIds().contains(OrganisationProfile.SOLICITOR_PROFILE.getId());
     }
 
     private ClaimantInformation mapInformation(ClaimantType claimant,
@@ -168,7 +177,7 @@ public class BulkClaimantMapper {
             builder.claimantProvidePhoneNumber(VerticalYesNo.NO);
         } else {
             builder.claimantProvidePhoneNumber(VerticalYesNo.YES).claimantContactPhoneNumber(phone);
-            if (!PHONE_PATTERN.matcher(phone).matches()) {
+            if (!BulkLimits.PHONE_PATTERN.matcher(phone).matches()) {
                 errors.add(path + "/ContactDetails/TelephoneNumber", INVALID_VALUE,
                            "Telephone number must be an 11 digit UK number starting with 0");
             }
@@ -217,6 +226,8 @@ public class BulkClaimantMapper {
             name != null ? name.getOtherNames() : null,
             contact != null ? contact.getDX() : null,
             contact != null ? contact.getFaxNumber() : null,
+            null,
+            null,
             null
         );
     }

@@ -139,8 +139,74 @@ class DefaultRentalBulkClaimPreparerTest {
             .isEqualTo("Antisocial behaviour reported.");
         assertThat(pcsCase.getNoticeServed()).isEqualTo(YesOrNo.NO);
         assertThat(pcsCase.getShowRentSectionPage()).isEqualTo(YesOrNo.NO);
-        assertThat(pcsCase.getRentArrears()).isNotNull();
+        assertThat(pcsCase.getRentDetails().getCurrentRent()).isEqualByComparingTo("800.00");
+        assertThat(pcsCase.getRentDetails().getFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY);
+        assertThat(pcsCase.getRentArrears().getTotal()).isEqualByComparingTo("10.00");
+    }
+
+    @Test
+    void shouldNotRequireRentDataWhenTheRentSectionDoesNotApply() {
+        PCSCase pcsCase = ((Prepared) prepare("rental-england-assured-no-arrears.xml", claim -> {
+            claim.getClaimParticulars().setCurrentRent(null);
+            claim.getClaimParticulars().setTotalArrears(null);
+        })).claim().pcsCase();
+
+        assertThat(pcsCase.getShowRentSectionPage()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getRentDetails()).isNull();
         assertThat(pcsCase.getRentArrears().getTotal()).isNull();
+        assertThat(pcsCase.getArrearsJudgmentWanted()).isNull();
+    }
+
+    @Test
+    void shouldMapHasExpenseClaimWhenTheRentSectionDoesNotApply() {
+        PCSCase pcsCase = ((Prepared) prepare("rental-england-assured-no-arrears.xml", claim ->
+            claim.getClaimParticulars().setHasExpenseClaim(true))).claim().pcsCase();
+
+        assertThat(pcsCase.getShowRentSectionPage()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getArrearsJudgmentWanted()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldIgnoreTheSolicitorBlockForANonSolicitorOrganisation() {
+        RentalClaimSet set = codec.parseRental(fixture("rental-england-assured-arrears-valid.xml"));
+        final RentalClaimSet.RentalClaim claim = set.getRentalClaim().getFirst();
+        var solicitor = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType();
+        solicitor.setFirm("Firm LLP");
+        solicitor.setPCOLReferenceNumber("S-1");
+        final var contact = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType();
+        var address = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.AddressType();
+        address.setAddressLine1("1 Firm Street");
+        address.setPostTown("Leeds");
+        address.setPostCode("LS1 1AA");
+        contact.setAddress(address);
+        solicitor.setContactDetails(contact);
+        claim.setSolicitor(solicitor);
+        var organisation = RentalPreparerTestSupport.organisation();
+        organisation.setOrganisationProfileIds(List.of("ORGANISATION_PROFILE"));
+
+        PreparedBulkClaim prepared = ((Prepared) underTest.prepare(set, claim, organisation)).claim();
+
+        assertThat(prepared.extras().noticeOfActingRequired()).isTrue();
+        assertThat(prepared.extras().solicitorFirmName()).isEqualTo("Firm LLP");
+        assertThat(prepared.extras().legacyPcolSolicitorReference()).isEqualTo("S-1");
+        assertThat(prepared.pcsCase().getClaimantContactPreferences().getOverriddenClaimantContactAddress())
+            .satisfiesAnyOf(a -> assertThat(a).isNull(),
+                            a -> assertThat(a.getPostCode()).isNotEqualTo("LS1 1AA"));
+    }
+
+    @Test
+    void shouldHonourTheSolicitorBlockForASolicitorOrganisation() {
+        RentalClaimSet set = codec.parseRental(fixture("rental-england-assured-arrears-valid.xml"));
+        RentalClaimSet.RentalClaim claim = set.getRentalClaim().getFirst();
+        var solicitor = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType();
+        solicitor.setFirm("Firm LLP");
+        claim.setSolicitor(solicitor);
+
+        PreparedBulkClaim prepared = ((Prepared) underTest.prepare(
+            set, claim, RentalPreparerTestSupport.organisation())).claim();
+
+        assertThat(prepared.extras().noticeOfActingRequired()).isFalse();
+        assertThat(prepared.extras().solicitorFirmName()).isEqualTo("Firm LLP");
     }
 
     @Test

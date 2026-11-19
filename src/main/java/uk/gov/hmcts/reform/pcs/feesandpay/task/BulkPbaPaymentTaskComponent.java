@@ -27,7 +27,7 @@ public class BulkPbaPaymentTaskComponent {
     public static final TaskDescriptor<BulkPbaPaymentTaskData> BULK_PBA_PAYMENT_TASK_DESCRIPTOR =
         TaskDescriptor.of(BULK_PBA_PAYMENT_TASK_NAME, BulkPbaPaymentTaskData.class);
 
-    private static final Set<Integer> FINAL_REJECTION_STATUSES = Set.of(400, 402, 403, 404, 409, 422);
+    private static final Set<Integer> FINAL_REJECTION_STATUSES = Set.of(400, 402, 404, 410, 412, 422);
 
     private final PaymentService paymentService;
     private final BulkPaymentStatusListener statusListener;
@@ -47,10 +47,12 @@ public class BulkPbaPaymentTaskComponent {
     }
 
     /**
-     * One-time task paying a claim issue fee from a PBA account. Definite rejections (400, 402, 403, 404, 409,
-     * 422) are final; any other failure, including 401, 408, 425, 429, server errors, IO errors and timeouts, is
-     * retried with exponential backoff up to the configured maximum, after which the
-     * payment is reported as failed. A duplicate payment response is treated as success.
+     * One-time task paying a claim issue fee from a PBA account. Definite rejections (400, 402, 404, 410,
+     * 412, 422) are final. A 409 means the payment is already in progress or made for this service request, so it is
+     * treated as submitted and the payment callback settles it. Any other failure, including 401, 403, 408, 425, 429,
+     * server errors, IO errors and timeouts, is retried with exponential backoff up to the configured maximum, after
+     * which the payment is reported as failed. Each attempt uses a fresh idempotency key. A duplicate payment
+     * response is treated as success.
      */
     @Bean
     public CustomTask<BulkPbaPaymentTaskData> bulkPbaPaymentTask() {
@@ -79,6 +81,13 @@ public class BulkPbaPaymentTaskComponent {
                     log.info("Duplicate PBA payment for service request {}, treating as submitted",
                              data.getServiceRequestReference());
                 } catch (FeignException e) {
+                    if (e.status() == 409) {
+                        log.info("PBA payment for service request {} is already in progress or made, "
+                                     + "treating as submitted", data.getServiceRequestReference());
+                        statusListener.onPbaPaymentSubmitted(data.getBulkClaimSubmissionId(),
+                                                             data.getServiceRequestReference());
+                        return new CompletionHandler.OnCompleteRemove<>();
+                    }
                     if (isDefiniteRejection(e)) {
                         log.error("PBA payment rejected for service request {} with status {}",
                                   data.getServiceRequestReference(), e.status(), e);

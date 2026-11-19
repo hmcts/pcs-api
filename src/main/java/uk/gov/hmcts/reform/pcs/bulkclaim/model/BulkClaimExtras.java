@@ -20,7 +20,8 @@ public record BulkClaimExtras(
     List<PartyExtras> defendants,
     List<PaymentHistoryLine> paymentHistory,
     MortgageParticulars mortgageParticulars,
-    List<Occupant> occupants
+    List<Occupant> occupants,
+    Boolean noticeOfActingRequired
 ) {
 
     public record PartyExtras(
@@ -29,7 +30,9 @@ public record BulkClaimExtras(
         String otherNames,
         String dxNumber,
         String faxNumber,
-        Boolean isOccupant
+        Boolean isOccupant,
+        String phoneNumber,
+        String emailAddress
     ) {
     }
 
