@@ -117,6 +117,7 @@ bulk-claims:
   parallelism: ${BULK_CLAIMS_PARALLELISM:4}
   enabled-claimant-types: ${BULK_CLAIMS_ENABLED_CLAIMANT_TYPES:PROVIDER_OF_SOCIAL_HOUSING,COMMUNITY_LANDLORD,MORTGAGE_LENDER}
   pending-retry-after: ${BULK_CLAIMS_PENDING_RETRY_AFTER:10m}
+  request-timeout: ${BULK_CLAIMS_REQUEST_TIMEOUT:120s}
   system-reason-no-documents: ${BULK_CLAIMS_SYSTEM_REASON_NO_DOCUMENTS:Not supplied via bulk interface}
 flyway:
   noop:

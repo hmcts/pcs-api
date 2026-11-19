@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -68,6 +69,8 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private LocationReferenceService locationReferenceService;
     @MockitoBean
+    private PostCodeCourtService postCodeCourtService;
+    @MockitoBean
     private BulkClaimantOrganisationResolver organisationResolver;
     @MockitoBean
     private FeatureToggleService featureToggleService;
@@ -79,6 +82,7 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
                 .legislativeCountry(LegislativeCountry.ENGLAND).build());
         CourtVenue venue = mock(CourtVenue.class);
         when(venue.regionId()).thenReturn("1");
+        when(postCodeCourtService.getCourtManagementLocation(any(), any())).thenReturn(20262);
         when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(venue));
         when(organisationResolver.isPbaAccountValid(any(), any())).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)).thenReturn(true);
@@ -270,7 +274,10 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
             "BUILDING_WORKS", "REDEVELOPMENT_SCHEMES");
         assertThat(groundsByCode(claim).get("BUILDING_WORKS").getCategory())
             .isEqualTo(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT);
-        assertThat(groundsByCode(claim).get("BUILDING_WORKS").getReason()).isEqualTo("The block is being redeveloped.");
+        assertThat(groundsByCode(claim).get("BUILDING_WORKS").getReason())
+            .isEqualTo("The block is being redeveloped.");
+        assertThat(groundsByCode(claim).get("REDEVELOPMENT_SCHEMES").getReason())
+            .isEqualTo("The estate is part of a regeneration scheme.");
         assertThat(groundsByCode(claim).get("OTHER_BREACH_OF_CONTRACT_S157").getReason())
             .isEqualTo("Sub-letting without consent.");
         assertThat(groundsByCode(claim).get("LANDLORD_NOTICE_PERIODIC_S178").getReason())

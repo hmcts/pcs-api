@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.transaction.TransactionStatus;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
@@ -62,7 +60,6 @@ public class CreateBulkPossessionClaim implements CCDConfig<PCSCase, State, User
     private final ClaimIssueFeeScheduler claimIssueFeeScheduler;
     private final SchedulerClient schedulerClient;
     private final SecurityContextService securityContextService;
-    private final TransactionTemplate transactionTemplate;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -85,29 +82,28 @@ public class CreateBulkPossessionClaim implements CCDConfig<PCSCase, State, User
         String submissionId = eventPayload.caseData().getBulkClaimSubmissionId();
 
         try {
-            return transactionTemplate.execute(status -> createCase(caseReference, submissionId, status));
+            return createCase(caseReference, submissionId);
         } catch (IllegalArgumentException | IllegalStateException | NullPointerException
                  | DataIntegrityViolationException e) {
             log.error("Bulk claim submission {} could not be created as case {}", submissionId, caseReference, e);
-            return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH, "The claim could not be saved", null);
+            return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH, "The claim could not be saved");
         }
     }
 
-    private SubmitResponse<State> createCase(long caseReference, String submissionId,
-                                             TransactionStatus transactionStatus) {
+    private SubmitResponse<State> createCase(long caseReference, String submissionId) {
         UUID id = parseId(submissionId);
         if (id == null) {
             return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH,
-                          "A valid submission id is required", transactionStatus);
+                          "A valid submission id is required");
         }
 
         BulkClaimSubmissionEntity submission = submissionRepository.findByIdForUpdate(id).orElse(null);
         if (submission == null) {
-            return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH, "Unknown submission", transactionStatus);
+            return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH, "Unknown submission");
         }
         if (submission.getStatus() != BulkClaimSubmissionStatus.PENDING || submission.getCaseReference() != null) {
             return reject(BulkFailReason.SAVE_FAILED, SUBMISSION_ID_PATH,
-                          "The submission has already been processed", transactionStatus);
+                          "The submission has already been processed");
         }
 
         PCSCase stagedCase = stagingSerializer.readCase(submission.getStagedCaseData());
@@ -138,11 +134,7 @@ public class CreateBulkPossessionClaim implements CCDConfig<PCSCase, State, User
         return SubmitResponse.<State>builder().state(State.PENDING_CASE_ISSUED).build();
     }
 
-    private SubmitResponse<State> reject(BulkFailReason reason, String path, String message,
-                                         TransactionStatus transactionStatus) {
-        if (transactionStatus != null) {
-            transactionStatus.setRollbackOnly();
-        }
+    private SubmitResponse<State> reject(BulkFailReason reason, String path, String message) {
         String error = new BulkSubmitError(reason.getFailReasonCode(), path, message).format();
         return SubmitResponse.<State>builder().errors(List.of(error)).build();
     }

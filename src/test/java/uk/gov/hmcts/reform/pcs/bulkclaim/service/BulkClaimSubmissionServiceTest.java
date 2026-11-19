@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkFailReason;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkValidationError;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.PreparedBulkClaim;
-import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimantOrganisationResolver;
 import uk.gov.hmcts.reform.pcs.bulkclaim.repository.BulkClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimSubmissionService.ClaimInput;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimResponseBuilder;
@@ -26,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +41,10 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -61,8 +62,6 @@ class BulkClaimSubmissionServiceTest {
     private BulkClaimSubmissionRepository repository;
     @Mock
     private BulkClaimCcdClient ccdClient;
-    @Mock
-    private BulkClaimantOrganisationResolver organisationResolver;
 
     private final Map<UUID, BulkClaimSubmissionEntity> rows = new HashMap<>();
     private final BulkClaimResponseBuilder responseBuilder = new BulkClaimResponseBuilder();
@@ -76,12 +75,7 @@ class BulkClaimSubmissionServiceTest {
     void setUp() {
         properties = new BulkClaimProperties();
         properties.setParallelism(2);
-        JacksonConfiguration jackson = new JacksonConfiguration();
-        BulkClaimStagingSerializer serializer = new BulkClaimStagingSerializer(
-            jackson.draftCaseDataObjectMapper(), jackson.getMapper());
-        underTest = new BulkClaimSubmissionService(repository, ccdClient, organisationResolver, serializer,
-                                                   responseBuilder, properties,
-                                                   mock(PlatformTransactionManager.class));
+        underTest = newService();
 
         lenient().when(repository.findByOrganisationIdAndCustomerUniqueIdentifier(any(), any()))
             .thenAnswer(invocation -> rows.values().stream()
@@ -97,7 +91,14 @@ class BulkClaimSubmissionServiceTest {
         });
         lenient().when(repository.findById(any()))
             .thenAnswer(invocation -> Optional.ofNullable(rows.get(invocation.<UUID>getArgument(0))));
-        lenient().when(organisationResolver.isPbaAccountValid(any(), any())).thenReturn(true);
+    }
+
+    private BulkClaimSubmissionService newService() {
+        JacksonConfiguration jackson = new JacksonConfiguration();
+        BulkClaimStagingSerializer serializer = new BulkClaimStagingSerializer(
+            jackson.draftCaseDataObjectMapper(), jackson.getMapper());
+        return new BulkClaimSubmissionService(repository, ccdClient, serializer, responseBuilder, properties,
+                                              mock(PlatformTransactionManager.class));
     }
 
     @AfterEach
@@ -341,29 +342,6 @@ class BulkClaimSubmissionServiceTest {
     }
 
     @Test
-    void shouldRejectClaimWhoseOwnPbaIsNotValidForTheOrganisation() {
-        when(organisationResolver.isPbaAccountValid(organisation, "PBA1")).thenReturn(false);
-
-        ClaimResponseType response = underTest.submit(ORG, organisation, "PBA9", List.of(prepared(CUI, HASH)), false)
-            .getFirst();
-
-        assertThat(response.getClaimStatus().getFailReasonCode())
-            .isEqualTo(BulkFailReason.PBA_OVERRIDE_NOT_VALID.getFailReasonCode());
-        verifyNoInteractions(ccdClient);
-    }
-
-    @Test
-    void shouldNotRevalidateClaimPbaThatMatchesTheSetLevelAccount() {
-        when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
-
-        ClaimResponseType response = underTest.submit(ORG, organisation, "pba1", List.of(prepared(CUI, HASH)), false)
-            .getFirst();
-
-        assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
-        verify(organisationResolver, never()).isPbaAccountValid(any(), any());
-    }
-
-    @Test
     void shouldReportIdentifierReusedForDuplicateIdentifiersWithinTheRequest() {
         when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
 
@@ -423,11 +401,65 @@ class BulkClaimSubmissionServiceTest {
             }));
         }
 
-        List<ClaimResponseType> responses = underTest.submit(ORG, organisation, "PBA1", inputs, false);
+        List<ClaimResponseType> responses = underTest.submit(ORG, organisation, inputs, false);
 
         assertThat(responses).extracting(ClaimResponseType::getCustomerUniqueIdentifier)
             .containsExactly("CLAIM-0", "CLAIM-1", "CLAIM-2", "CLAIM-3", "CLAIM-4");
         assertThat(maxRunning.get()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldReportClaimsStillRunningAtTheRequestDeadlineAsPendingAndFinishThemLater() throws Exception {
+        properties.setRequestTimeout(Duration.ofMillis(300));
+        when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
+        CountDownLatch release = new CountDownLatch(1);
+        ClaimInput slow = input("CLAIM-SLOW", "hash-slow", () -> {
+            try {
+                release.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return preparedResult("CLAIM-SLOW", "hash-slow");
+        });
+
+        List<ClaimResponseType> responses = submit(false, prepared("CLAIM-FAST", "hash-fast"), slow);
+
+        assertThat(responses).extracting(ClaimResponseType::getCustomerUniqueIdentifier)
+            .containsExactly("CLAIM-FAST", "CLAIM-SLOW");
+        assertThat(responses.get(0).getClaimStatus().getStatusCode())
+            .isEqualTo(BulkFailReason.CLAIM_SUCCESS.getStatusCode());
+        assertThat(responses.get(1).getClaimStatus().getStatusCode())
+            .isEqualTo(BulkFailReason.CLAIM_PENDING.getStatusCode());
+
+        release.countDown();
+        verify(ccdClient, timeout(5000).times(2)).createCase(any());
+    }
+
+    @Test
+    void shouldReportClaimsQueuedBehindTheParallelismLimitAsPendingAtTheDeadline() throws Exception {
+        properties.setParallelism(1);
+        properties.setRequestTimeout(Duration.ofMillis(300));
+        underTest.shutdown();
+        underTest = newService();
+        when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
+        CountDownLatch release = new CountDownLatch(1);
+        ClaimInput blocking = input("CLAIM-0", "hash-0", () -> {
+            try {
+                release.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return preparedResult("CLAIM-0", "hash-0");
+        });
+
+        List<ClaimResponseType> responses = submit(false, blocking, prepared("CLAIM-1", "hash-1"));
+
+        assertThat(responses).extracting(response -> response.getClaimStatus().getStatusCode())
+            .containsExactly(BulkFailReason.CLAIM_PENDING.getStatusCode(),
+                             BulkFailReason.CLAIM_PENDING.getStatusCode());
+
+        release.countDown();
+        verify(ccdClient, timeout(5000).times(2)).createCase(any());
     }
 
     private BulkClaimSubmissionEntity existing(BulkClaimSubmissionStatus status, Long caseReference,
@@ -459,7 +491,7 @@ class BulkClaimSubmissionServiceTest {
     }
 
     private List<ClaimResponseType> submit(boolean validateOnly, ClaimInput... inputs) {
-        return underTest.submit(ORG, organisation, "PBA1", List.of(inputs), validateOnly);
+        return underTest.submit(ORG, organisation, List.of(inputs), validateOnly);
     }
 
     private static ClaimInput prepared(String cui, String hash) {
@@ -468,7 +500,7 @@ class BulkClaimSubmissionServiceTest {
 
     private static BulkClaimPreparationResult preparedResult(String cui, String hash) {
         return new BulkClaimPreparationResult.Prepared(new PreparedBulkClaim(
-            cui, BulkClaimKind.RENTAL, hash, PCSCase.builder().build(),
+            PCSCase.builder().build(),
             new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null),
             "PBA1", "REF1"));
     }

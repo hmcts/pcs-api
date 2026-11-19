@@ -49,6 +49,10 @@ public class BulkClaimProperties {
     @NotNull
     private Duration pendingRetryAfter = Duration.ofMinutes(10);
 
+    /** How long a request waits for its claims; unfinished claims are reported as pending and carry on. */
+    @NotNull
+    private Duration requestTimeout = Duration.ofSeconds(120);
+
     @NotBlank
     private String systemReasonNoDocuments = "Not supplied via bulk interface";
 }

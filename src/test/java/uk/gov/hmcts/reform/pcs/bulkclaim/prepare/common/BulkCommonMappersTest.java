@@ -19,9 +19,8 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.UnderlesseeOrMortgageeTyp
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -291,11 +290,13 @@ class BulkCommonMappersTest {
     private PropertyEligibility check(EligibilityResult result) {
         EligibilityService service = Mockito.mock(EligibilityService.class);
         when(service.checkEligibility(any(), any())).thenReturn(result);
-        LocationReferenceService locations = Mockito.mock(LocationReferenceService.class);
-        CourtVenue venue = Mockito.mock(CourtVenue.class);
-        when(venue.regionId()).thenReturn("7");
-        when(locations.getCourtVenues(any())).thenReturn(List.of(venue));
-        return new BulkPropertyEligibility(service, locations).check(address("m1 1aa"), LegislativeCountryType.ENGLAND);
+        PcsCaseService caseService = Mockito.mock(PcsCaseService.class);
+        Mockito.doAnswer(invocation -> {
+            invocation.<PCSCase>getArgument(0).setRegionId(7);
+            return null;
+        }).when(caseService).allocateRegionId(any());
+        return new BulkPropertyEligibility(service, caseService)
+            .check(address("m1 1aa"), LegislativeCountryType.ENGLAND);
     }
 
     @Test

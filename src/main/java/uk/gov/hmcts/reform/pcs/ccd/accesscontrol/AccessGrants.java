@@ -68,8 +68,11 @@ final class AccessGrants {
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
         LEADERSHIP_JUDGE,
+        HEARING_CENTRE_TEAM_LEADER,
         HEARING_CENTRE_ADMIN,
+        CTSC_TEAM_LEADER,
         CTSC_ADMIN,
+        WLU_TEAM_LEADER,
         WLU_ADMIN
     };
 

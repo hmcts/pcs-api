@@ -41,7 +41,7 @@
         <Ground>
           <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
         </Ground>
-        <Ground><Code>ANTISOCIAL_BEHAVIOUR_S157</Code><EstateManagementReason>CHARITIES</EstateManagementReason></Ground>
+        <Ground><Code>ANTISOCIAL_BEHAVIOUR_S157</Code><EstateManagementGround><Code>CHARITIES</Code><Reason>Charity.</Reason></EstateManagementGround></Ground>
         <Ground><Code>OTHER_BREACH_OF_CONTRACT_S157</Code></Ground>
         <Ground><Code>FAILURE_TO_GIVE_UP_POSSESSION_S170</Code><Reason>Left late.</Reason></Ground>
         <Ground><Code>FAILURE_TO_GIVE_UP_POSSESSION_S170</Code><Reason>Left late.</Reason></Ground>

@@ -78,9 +78,7 @@ class DefaultRentalBulkClaimPreparerTest {
         PreparedBulkClaim claim = prepared("rental-england-assured-arrears-valid.xml");
         PCSCase pcsCase = claim.pcsCase();
 
-        assertThat(claim.customerUniqueIdentifier()).isEqualTo("ASSURED-ARREARS");
         assertThat(claim.pbaAccountNumber()).isEqualTo("PBA1234567");
-        assertThat(claim.claimHash()).hasSize(64);
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
         assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(20262);
         assertThat(pcsCase.getRegionId()).isEqualTo(1);

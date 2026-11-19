@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -66,11 +65,9 @@ class DefaultBulkClaimV2HandlerTest {
     @Mock
     private BulkClaimCaseStateReader caseStateReader;
     @Mock
-    private ObjectProvider<RentalBulkClaimPreparer> rentalPreparer;
+    private RentalBulkClaimPreparer rentalPreparer;
     @Mock
-    private ObjectProvider<MortgageBulkClaimPreparer> mortgagePreparer;
-    @Mock
-    private RentalBulkClaimPreparer rentalPreparerBean;
+    private MortgageBulkClaimPreparer mortgagePreparer;
     @Captor
     private ArgumentCaptor<List<ClaimInput>> inputs;
 
@@ -86,7 +83,7 @@ class DefaultBulkClaimV2HandlerTest {
     @Test
     void shouldReturnSuccessXmlWhenEveryClaimSucceeds() throws IOException {
         givenUsableOrganisation();
-        when(submissionService.submit(eq(ORG), eq(organisation), eq(SET_PBA), any(), eq(false)))
+        when(submissionService.submit(eq(ORG), eq(organisation), any(), eq(false)))
             .thenReturn(List.of(responseBuilder.claimSuccess("CLAIM-0001", "1781000000000001")));
 
         ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
@@ -100,7 +97,7 @@ class DefaultBulkClaimV2HandlerTest {
             .contains("<CustomerUniqueIdentifier>CLAIM-0001</CustomerUniqueIdentifier>")
             .contains("<CaseReference>1781000000000001</CaseReference>")
             .contains("<ClaimNumber>1781-0000-0000-0001</ClaimNumber>");
-        verify(submissionService).submit(eq(ORG), eq(organisation), eq(SET_PBA), inputs.capture(), eq(false));
+        verify(submissionService).submit(eq(ORG), eq(organisation), inputs.capture(), eq(false));
         assertThat(inputs.getValue()).singleElement().satisfies(input -> {
             assertThat(input.customerUniqueIdentifier()).isEqualTo("CLAIM-0001");
             assertThat(input.claimKind()).isEqualTo(BulkClaimKind.RENTAL);
@@ -112,7 +109,7 @@ class DefaultBulkClaimV2HandlerTest {
     @Test
     void shouldReportClaimsFailedWhenAnyClaimFails() throws IOException {
         givenUsableOrganisation();
-        when(submissionService.submit(any(), any(), any(), any(), anyBoolean()))
+        when(submissionService.submit(any(), any(), any(), anyBoolean()))
             .thenReturn(List.of(responseBuilder.claimFailure("CLAIM-0001", BulkFailReason.VALIDATION_FAILED, null)));
 
         ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
@@ -126,7 +123,7 @@ class DefaultBulkClaimV2HandlerTest {
     @Test
     void shouldPassValidateOnlyThrough() throws IOException {
         givenUsableOrganisation();
-        when(submissionService.submit(any(), any(), any(), any(), eq(true)))
+        when(submissionService.submit(any(), any(), any(), eq(true)))
             .thenReturn(List.of(responseBuilder.claimSuccess("CLAIM-0001", null)));
 
         ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
@@ -188,32 +185,33 @@ class DefaultBulkClaimV2HandlerTest {
     }
 
     @Test
-    void shouldRejectClaimsWithKindNotEnabledWhenNoPreparerExists() throws IOException {
-        givenUsableOrganisation();
-        when(submissionService.submit(any(), any(), any(), any(), anyBoolean())).thenReturn(List.of());
-
-        underTest.submitMortgage(sample("mortgage-claim.xml"), ORG, false);
-
-        verify(submissionService).submit(eq(ORG), eq(organisation), any(), inputs.capture(), eq(false));
-        ClaimInput input = inputs.getValue().getFirst();
-        assertThat(input.claimKind()).isEqualTo(BulkClaimKind.MORTGAGE);
-        assertThat(input.preparation().get()).isInstanceOfSatisfying(BulkClaimPreparationResult.Rejected.class,
-            rejected -> assertThat(rejected.reason()).isEqualTo(BulkFailReason.CLAIM_KIND_NOT_ENABLED));
-    }
-
-    @Test
     void shouldPrepareWithTheAvailablePreparer() throws IOException {
         givenUsableOrganisation();
-        when(rentalPreparer.getIfAvailable()).thenReturn(rentalPreparerBean);
-        when(submissionService.submit(any(), any(), any(), any(), anyBoolean())).thenReturn(List.of());
+        when(submissionService.submit(any(), any(), any(), anyBoolean())).thenReturn(List.of());
         BulkClaimPreparationResult rejected = new BulkClaimPreparationResult.Rejected(
             "CLAIM-0001", BulkFailReason.VALIDATION_FAILED, List.of());
-        when(rentalPreparerBean.prepare(any(), any(), eq(organisation))).thenReturn(rejected);
+        when(rentalPreparer.prepare(any(), any(), eq(organisation))).thenReturn(rejected);
 
         underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG, false);
 
-        verify(submissionService).submit(any(), any(), any(), inputs.capture(), anyBoolean());
+        verify(submissionService).submit(any(), any(), inputs.capture(), anyBoolean());
         assertThat(inputs.getValue().getFirst().preparation().get()).isSameAs(rejected);
+    }
+
+    @Test
+    void shouldPrepareMortgageClaimsWithTheMortgagePreparer() throws IOException {
+        givenUsableOrganisation();
+        when(submissionService.submit(any(), any(), any(), anyBoolean())).thenReturn(List.of());
+        BulkClaimPreparationResult rejected = new BulkClaimPreparationResult.Rejected(
+            "CLAIM-0001", BulkFailReason.VALIDATION_FAILED, List.of());
+        when(mortgagePreparer.prepare(any(), any(), eq(organisation))).thenReturn(rejected);
+
+        underTest.submitMortgage(sample("mortgage-claim.xml"), ORG, false);
+
+        verify(submissionService).submit(any(), any(), inputs.capture(), anyBoolean());
+        ClaimInput input = inputs.getValue().getFirst();
+        assertThat(input.claimKind()).isEqualTo(BulkClaimKind.MORTGAGE);
+        assertThat(input.preparation().get()).isSameAs(rejected);
     }
 
     @Test

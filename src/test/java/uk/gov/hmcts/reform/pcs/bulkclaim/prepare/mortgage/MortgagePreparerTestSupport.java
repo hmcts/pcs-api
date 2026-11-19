@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPbaCheck;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkStatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkUnderlesseeMapper;
-import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -39,7 +38,6 @@ final class MortgagePreparerTestSupport {
         BulkAddressMapper addressMapper = new BulkAddressMapper(new PostcodeValidator());
         return new DefaultMortgageBulkClaimPreparer(
             properties,
-            new BulkClaimXmlCodec(),
             featureToggleService,
             new BulkPbaCheck(resolver),
             eligibility,

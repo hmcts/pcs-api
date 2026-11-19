@@ -101,9 +101,9 @@ public class GroundRouter {
                            "Ground " + ground.getCode() + " is listed more than once");
                 continue;
             }
-            if (!ground.getEstateManagementReason().isEmpty()) {
-                errors.add(groundPath + "/EstateManagementReason", BulkErrorCollector.NOT_ALLOWED,
-                           "Estate management reasons only apply to Wales");
+            if (!ground.getEstateManagementGround().isEmpty()) {
+                errors.add(groundPath + "/EstateManagementGround", BulkErrorCollector.NOT_ALLOWED,
+                           "Estate management grounds only apply to Wales");
             }
             entries.add(new Entry(ground, groundPath));
         }

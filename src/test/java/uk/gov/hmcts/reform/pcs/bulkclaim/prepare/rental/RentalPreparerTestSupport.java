@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPbaCheck;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkStatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkUnderlesseeMapper;
-import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.AssuredTenancyRentSectionRoutingPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.IntroductoryDemotedOtherRentSectionRoutingPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
@@ -57,7 +56,6 @@ final class RentalPreparerTestSupport {
         RentalNoticeMapper noticeMapper = new RentalNoticeMapper(properties, CLOCK);
         return new DefaultRentalBulkClaimPreparer(
             properties,
-            new BulkClaimXmlCodec(),
             new BulkPbaCheck(resolver),
             eligibility,
             addressMapper,

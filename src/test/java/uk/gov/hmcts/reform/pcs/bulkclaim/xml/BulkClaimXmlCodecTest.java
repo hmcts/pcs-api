@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 class BulkClaimXmlCodecTest {
 
@@ -48,8 +49,10 @@ class BulkClaimXmlCodecTest {
         RentalClaimSet.RentalClaim claim = claimSet.getRentalClaim().getFirst();
         assertThat(claim.getPaymentAccountNumber()).isEqualTo("PBA1111111");
         assertThat(claim.getClaimParticulars().getTenancyType()).isEqualTo(TenancyTypeCode.SECURE_CONTRACT);
-        assertThat(claim.getClaimParticulars().getGrounds().getGround().getFirst().getEstateManagementReason())
-            .containsExactly("BUILDING_WORKS", "REDEVELOPMENT_SCHEMES");
+        assertThat(claim.getClaimParticulars().getGrounds().getGround().getFirst().getEstateManagementGround())
+            .extracting(g -> g.getCode().value(), g -> g.getReason())
+            .containsExactly(tuple("BUILDING_WORKS", "The block is being redeveloped."),
+                             tuple("REDEVELOPMENT_SCHEMES", "The estate is part of a regeneration scheme."));
     }
 
     @Test
@@ -70,7 +73,11 @@ class BulkClaimXmlCodecTest {
         assertThatThrownBy(() -> codec.parseRental(invalid))
             .isInstanceOfSatisfying(BulkClaimSchemaValidationException.class, e ->
                 assertThat(e.getErrors()).hasSizeGreaterThan(1).allSatisfy(error ->
-                    assertThat(error).matches("\\d+:\\d+ .+")));
+                    assertThat(error).matches("\\d+:\\d+ .+"))
+                    .anySatisfy(error -> assertThat(error).startsWith("3:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("5:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("8:"))
+                    .anySatisfy(error -> assertThat(error).startsWith("14:")));
     }
 
     @Test

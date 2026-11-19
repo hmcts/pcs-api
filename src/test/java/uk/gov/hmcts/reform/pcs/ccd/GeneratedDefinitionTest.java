@@ -40,7 +40,8 @@ class GeneratedDefinitionTest {
         "caseworker-pcs-solicitor", "claimant", "claimant-solicitor"
     ));
     private static final Set<String> BULK_CLAIM_DETAILS_PROFILES = union(INTERNAL_PROFILES, Set.of(
-        "caseworker-pcs-solicitor", "claimant-solicitor"
+        "caseworker-pcs-solicitor", "claimant-solicitor",
+        "ctsc-team-leader", "hearing-centre-team-leader", "wlu-team-leader"
     ));
     private static final Set<String> JUDICIAL_PROFILES = Set.of(
         "judge", "leadership-judge", "circuit-judge", "fee-paid-judge"
