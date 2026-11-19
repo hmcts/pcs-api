@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BailiffAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -36,12 +37,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturn;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
@@ -145,7 +148,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, InternalCaseFlagAccess.class, InternalUserAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -164,7 +167,7 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class, InternalUserAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -315,7 +318,8 @@ public class PCSCase {
     @CCD(
         label = "Who is the claimant in this case?",
         hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
-        typeOverride = DynamicRadioList
+        typeOverride = DynamicRadioList,
+        access = {InternalCaseFlagAccess.class, InternalUserAccess.class}
     )
     private DynamicStringList claimantType;
 
@@ -384,7 +388,7 @@ public class PCSCase {
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
     @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class,
-        AcaSystemUserAccess.class, DefendantReadAccess.class})
+        AcaSystemUserAccess.class, DefendantReadAccess.class, InternalUserAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     /**
@@ -850,7 +854,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class, CaseLinkingAccess.class, WAAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class, WAAccess.class, InternalUserAccess.class}
     )
     private String caseNameHmctsInternal;
 
@@ -1220,5 +1224,18 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
+
+    @CCD(
+        access = {BailiffAccess.class},
+        searchable = false
+    )
+    private WarrantReturn warrantReturn;
+
+    @CCD(
+        searchable = false,
+        access = {BailiffAccess.class}
+    )
+    @JsonUnwrapped(prefix = "enfShowConditions_")
+    private EnforcementEventShowConditions enforcementEventShowConditions;
 
 }

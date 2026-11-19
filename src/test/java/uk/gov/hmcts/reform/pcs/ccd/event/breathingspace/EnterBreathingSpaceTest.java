@@ -66,7 +66,7 @@ class EnterBreathingSpaceTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(breathingSpaceService).createBreathingSpace(TEST_CASE_REFERENCE, details);
+        verify(breathingSpaceService).enterBreathingSpace(TEST_CASE_REFERENCE, details);
     }
 
     @Test
@@ -90,5 +90,22 @@ class EnterBreathingSpaceTest extends BaseEventTest {
             .contains("1 Test Street, London")
             .contains("Claimant v Defendant");
     }
+
+
+    @Test
+    void shouldTransitionCaseToBreathingSpaceOnSubmit() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .breathingSpaceDetails(BreathingSpaceDetails.builder().build())
+            .build();
+
+        // When
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
+
+        // Then
+        assertThat(response.getState())
+            .isEqualTo(State.BREATHING_SPACE);
+    }
+
 
 }

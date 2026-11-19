@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -44,7 +43,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
@@ -81,7 +79,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+    public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
@@ -90,6 +88,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
         setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
+        enforcementOrderService.createEnforcementOrder(eventPayload.caseReference());
         return pcsCase;
     }
 

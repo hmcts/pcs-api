@@ -25,6 +25,7 @@ public class FeatureFlagView {
                                     .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
                                     .enforcementEnabled(getFlag(FeatureFlag.ENFORCEMENT))
+                                    .recordWarrantReturnEnabled(getFlag(FeatureFlag.RECORD_WARRANT_RETURN))
                                     .build());
     }
 

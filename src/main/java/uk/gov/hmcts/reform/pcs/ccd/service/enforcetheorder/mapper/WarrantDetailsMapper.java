@@ -20,7 +20,7 @@ public class WarrantDetailsMapper {
     public WarrantEntity toEntity(EnforcementOrder enforcementOrder,
                                   EnforcementOrderEntity enforcementOrderEntity) {
         WarrantEntity warrantEntity = WarrantEntity.builder()
-            .enforcementOrder(enforcementOrderEntity).build();
+            .enfApplication(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
             warrantEntity.setLanguageUsed(warrantDetails.getLanguageUsed());

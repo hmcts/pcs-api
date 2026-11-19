@@ -163,8 +163,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        if (SelectEnforcementType.getSelectEnforcementTypeFromName(
-                enforcementOrder.getChooseEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
+        if (SelectEnforcementType.valueOf(
+            enforcementOrder.getChooseEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
             return List.of();
         }
 

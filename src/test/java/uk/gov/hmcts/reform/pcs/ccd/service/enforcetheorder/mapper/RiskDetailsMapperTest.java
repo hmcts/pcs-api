@@ -53,7 +53,7 @@ class RiskDetailsMapperTest {
 
             RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
-            assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
+            assertThat(result.getEnfApplication()).isEqualTo(orderEntity);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
             assertThat(result.getViolentDetails()).isEqualTo("Violent");
             assertThat(result.getVerbalThreatsDetails()).isEqualTo("Verbal");
@@ -127,7 +127,7 @@ class RiskDetailsMapperTest {
 
             RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
-            assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
+            assertThat(result.getEnfApplication()).isEqualTo(orderEntity);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
             assertThat(result.getViolentDetails()).isEqualTo("Violent");
             assertThat(result.getVerbalThreatsDetails()).isEqualTo("Verbal");
