@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
-import uk.gov.hmcts.reform.pcs.security.ServiceAuthTokenValidator;
+import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.security.BulkClaimApimS2sFilter;
 
@@ -30,13 +31,13 @@ public class SecurityConfiguration {
     private final List<String> anonymousPaths = new ArrayList<>();
     private final ServiceAuthFilter serviceAuthFilter;
     private final IdamAuthenticationFilter idamAuthFilter;
-    private final ServiceAuthTokenValidator authTokenValidator;
+    private final AuthTokenValidator authTokenValidator;
     private final BulkClaimProperties bulkClaimProperties;
 
     @Autowired
     public SecurityConfiguration(ServiceAuthFilter serviceAuthFilter,
                                  IdamAuthenticationFilter idamAuthFilter,
-                                 ServiceAuthTokenValidator authTokenValidator,
+                                 @Qualifier("serviceAuthTokenValidator") AuthTokenValidator authTokenValidator,
                                  BulkClaimProperties bulkClaimProperties) {
         super();
         this.serviceAuthFilter = serviceAuthFilter;
