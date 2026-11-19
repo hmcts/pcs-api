@@ -59,6 +59,7 @@ public class PaymentService {
     private final OrganisationService organisationService;
     private final IdamAuthenticator idamAuthenticator;
     private final SchedulerClient schedulerClient;
+    private final BulkPaymentStatusListener bulkPaymentStatusListener;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -72,7 +73,8 @@ public class PaymentService {
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
                           OrganisationService organisationService,
                           IdamAuthenticator idamAuthenticator,
-                          SchedulerClient schedulerClient) {
+                          SchedulerClient schedulerClient,
+                          BulkPaymentStatusListener bulkPaymentStatusListener) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -83,6 +85,7 @@ public class PaymentService {
         this.organisationService = organisationService;
         this.idamAuthenticator = idamAuthenticator;
         this.schedulerClient = schedulerClient;
+        this.bulkPaymentStatusListener = bulkPaymentStatusListener;
     }
 
     /**
@@ -245,6 +248,9 @@ public class PaymentService {
         if (feesAndPayTaskData.getPbaAccountNumber() == null) {
             return;
         }
+
+        bulkPaymentStatusListener.onServiceRequestCreated(
+            feesAndPayTaskData.getBulkClaimSubmissionId(), serviceRequestReference);
 
         BulkPbaPaymentTaskData bulkPbaPaymentTaskData = BulkPbaPaymentTaskData.builder()
             .serviceRequestReference(serviceRequestReference)

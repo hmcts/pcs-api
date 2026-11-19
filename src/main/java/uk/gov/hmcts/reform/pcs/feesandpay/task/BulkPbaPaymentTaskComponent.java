@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.BulkPaymentStatusListener;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -25,6 +26,8 @@ public class BulkPbaPaymentTaskComponent {
 
     public static final TaskDescriptor<BulkPbaPaymentTaskData> BULK_PBA_PAYMENT_TASK_DESCRIPTOR =
         TaskDescriptor.of(BULK_PBA_PAYMENT_TASK_NAME, BulkPbaPaymentTaskData.class);
+
+    private static final Set<Integer> FINAL_REJECTION_STATUSES = Set.of(400, 402, 403, 404, 409, 422);
 
     private final PaymentService paymentService;
     private final BulkPaymentStatusListener statusListener;
@@ -44,8 +47,9 @@ public class BulkPbaPaymentTaskComponent {
     }
 
     /**
-     * One-time task paying a claim issue fee from a PBA account. Client errors (4xx) are final; server errors,
-     * IO errors and timeouts are retried with exponential backoff up to the configured maximum, after which the
+     * One-time task paying a claim issue fee from a PBA account. Definite rejections (400, 402, 403, 404, 409,
+     * 422) are final; any other failure, including 401, 408, 425, 429, server errors, IO errors and timeouts, is
+     * retried with exponential backoff up to the configured maximum, after which the
      * payment is reported as failed. A duplicate payment response is treated as success.
      */
     @Bean
@@ -75,7 +79,7 @@ public class BulkPbaPaymentTaskComponent {
                     log.info("Duplicate PBA payment for service request {}, treating as submitted",
                              data.getServiceRequestReference());
                 } catch (FeignException e) {
-                    if (isClientError(e)) {
+                    if (isDefiniteRejection(e)) {
                         log.error("PBA payment rejected for service request {} with status {}",
                                   data.getServiceRequestReference(), e.status(), e);
                         notifyFailed(data, "Payment rejected with status " + e.status() + ": " + e.contentUTF8());
@@ -89,8 +93,8 @@ public class BulkPbaPaymentTaskComponent {
             });
     }
 
-    private static boolean isClientError(FeignException e) {
-        return e.status() >= 400 && e.status() < 500;
+    private static boolean isDefiniteRejection(FeignException e) {
+        return FINAL_REJECTION_STATUSES.contains(e.status());
     }
 
     private void notifyFailed(BulkPbaPaymentTaskData data, String reason) {
