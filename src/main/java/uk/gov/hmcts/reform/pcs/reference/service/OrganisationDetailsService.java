@@ -75,6 +75,17 @@ public class OrganisationDetailsService {
         }
     }
 
+    /**
+     * Looks up an organisation by its PRD identifier rather than via a user.
+     *
+     * @throws FeignException.NotFound if PRD holds no such organisation
+     */
+    public OrganisationDetailsResponse getOrganisationById(String organisationId) {
+        String s2sToken = authTokenGenerator.generate();
+        String prdAdminToken = prdAdminTokenProvider.getAuthToken();
+        return rdProfessionalApi.getOrganisationById(s2sToken, prdAdminToken, organisationId);
+    }
+
     /** The same lookup, but a failure is raised rather than reported as "no organisation". */
     public String requireOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = fetchOrganisationDetails(userId);

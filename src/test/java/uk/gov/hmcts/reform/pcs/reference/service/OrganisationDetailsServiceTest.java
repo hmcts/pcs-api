@@ -53,6 +53,19 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
+    @DisplayName("Should look up an organisation by id with S2S and prd-admin tokens")
+    void shouldRetrieveOrganisationById() {
+        OrganisationDetailsResponse expected = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER).build();
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationById(S2S_TOKEN, PRD_ADMIN_TOKEN, ORGANISATION_IDENTIFIER))
+            .thenReturn(expected);
+
+        assertThat(organisationDetailsService.getOrganisationById(ORGANISATION_IDENTIFIER)).isSameAs(expected);
+    }
+
+    @Test
     @DisplayName("Should successfully retrieve organisation details")
     void shouldSuccessfullyRetrieveOrganisationDetails() {
         // Given

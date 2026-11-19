@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
@@ -53,7 +54,12 @@ public class PartyService {
     private final PostcodeValidator postcodeValidator;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        createAllParties(pcsCase, pcsCaseEntity, claimEntity,
+                         organisationService.getOrganisationDetailsForCurrentUser());
+    }
+
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
+                                 OrganisationDetailsResponse orgDetails) {
         PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
         populateClaimant(claimant, pcsCase, orgDetails.getOrganisationIdentifier(), orgDetails.getOrgProfileId());
         pcsCaseEntity.addParty(claimant);
@@ -175,8 +181,10 @@ public class PartyService {
      * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        createClaimantStub(pcsCaseEntity, organisationService.getOrganisationDetailsForCurrentUser());
+    }
 
+    public void createClaimantStub(PcsCaseEntity pcsCaseEntity, OrganisationDetailsResponse orgDetails) {
         requireNonNull(orgDetails, "Organisation must be provided to create a case");
 
         String organisationId = orgDetails.getOrganisationIdentifier();
