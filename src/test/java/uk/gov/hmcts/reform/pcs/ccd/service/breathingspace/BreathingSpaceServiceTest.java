@@ -26,7 +26,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.InOrder;
-import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import static org.mockito.Mockito.inOrder;
@@ -54,7 +53,7 @@ class BreathingSpaceServiceTest {
     private BreathingSpaceService underTest;
 
     @Test
-    void shouldSaveBreathingSpaceAgainstClaim() {
+    void shouldSaveBreathingSpaceAgainstPcsCase() {
         // Given
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -76,7 +75,7 @@ class BreathingSpaceServiceTest {
     }
 
     @Test
-    void shouldNotSaveBreathingSpaceWhenClaimNotFound() {
+    void shouldNotSaveBreathingSpaceWhenCaseNotFound() {
         // Given
         when(pcsCaseService.loadCase(CASE_REFERENCE))
             .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
