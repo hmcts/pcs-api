@@ -25,7 +25,7 @@ class PcsCaseHardDeleteRepositoryTest {
 
         underTest.deleteBlockingDependencies(caseId);
 
-        verify(jdbcTemplate).update(eq("DELETE FROM document WHERE case_id = ?"), eq(caseId));
+        verify(jdbcTemplate).update("DELETE FROM document WHERE case_id = ?", caseId);
         verify(jdbcTemplate).update(
             ArgumentMatchers.contains("DELETE FROM claim_document"),
             eq(caseId)
