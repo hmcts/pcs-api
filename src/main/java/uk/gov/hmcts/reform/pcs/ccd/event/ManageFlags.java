@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 @AllArgsConstructor
 public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     private  final PcsCaseService pcsCaseService;
+    private final LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -59,10 +61,12 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker updated case flag for {}", caseReference);
 
-        List<String> errors = pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        List<String> errors = languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties());
         if (!errors.isEmpty()) {
             return SubmitResponse.<State>builder().errors(errors).build();
         }
+
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

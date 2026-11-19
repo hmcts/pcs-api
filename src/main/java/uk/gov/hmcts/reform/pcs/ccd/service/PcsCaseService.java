@@ -47,7 +47,6 @@ public class PcsCaseService {
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
     private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
-    private final LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -83,17 +82,11 @@ public class PcsCaseService {
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public List<String> patchCaseFlags(long caseReference, PCSCase pcsCase) {
+    public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
         }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-
-        List<String> errors = languageFlagDuplicateValidator
-            .validatePartyLanguageFlags(pcsCase.getParties(), pcsCaseEntity.getParties());
-        if (!errors.isEmpty()) {
-            return errors;
-        }
 
         if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
             List<CaseFlagEntity> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
@@ -106,7 +99,6 @@ public class PcsCaseService {
         if (pcsCase.getParties() != null) {
             caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity.getParties());
         }
-        return List.of();
     }
 
     public void patchSupportFlags(long caseReference, PCSCase pcsCase) {

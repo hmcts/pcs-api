@@ -8,14 +8,10 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -26,8 +22,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator
 import static uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator.SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE;
 
 class LanguageFlagDuplicateValidatorTest {
-
-    private static final String OTHER_FLAG_CODE = "PF0002";
 
     private final LanguageFlagDuplicateValidator underTest = new LanguageFlagDuplicateValidator();
 
@@ -43,35 +37,21 @@ class LanguageFlagDuplicateValidatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("languageFlags")
-    void shouldRejectTwoActiveFlagsOfTheSameCodeOnOnePerson(String flagCode, String expectedError) {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId);
+    @MethodSource("languageFlagCodes")
+    void shouldAllowOneFlag(String flagCode) {
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active")), null)
+        ));
 
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(incomingFlag(flagCode, "Active"), incomingFlag(flagCode, "Active")),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).containsExactly(expectedError);
+        assertThat(errors).isEmpty();
     }
 
     @ParameterizedTest
     @MethodSource("languageFlags")
-    void shouldRejectAnActiveCaseworkerFlagNextToARequestedCitizenFlag(String flagCode, String expectedError) {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId, existingFlag(flagCode, "Requested", "External"));
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(incomingFlag(flagCode, "Active")),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
+    void shouldRejectTwoActiveFlags(String flagCode, String expectedError) {
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active"), flag(flagCode, "Active")), null)
+        ));
 
         assertThat(errors).containsExactly(expectedError);
     }
@@ -79,265 +59,80 @@ class LanguageFlagDuplicateValidatorTest {
     @ParameterizedTest
     @MethodSource("languageFlagCodes")
     void shouldAllowAnActiveFlagNextToAnInactiveOne(String flagCode) {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId);
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(incomingFlag(flagCode, "Inactive"), incomingFlag(flagCode, "Active")),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active"), flag(flagCode, "Inactive")), null)
+        ));
 
         assertThat(errors).isEmpty();
     }
 
     @ParameterizedTest
-    @MethodSource("languageFlagCodes")
-    void shouldAllowAnActiveFlagNextToANotApprovedOne(String flagCode) {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId);
+    @MethodSource("languageFlags")
+    void shouldRejectAnActiveFlagNextToARequestedOne(String flagCode, String expectedError) {
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active"), flag(flagCode, "Requested")), null)
+        ));
 
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(incomingFlag(flagCode, "Not approved"), incomingFlag(flagCode, "Active")),
-            null
-        );
+        assertThat(errors).containsExactly(expectedError);
+    }
 
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
+    @Test
+    void shouldAllowOneSpokenAndOneSignLanguageFlag() {
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(
+                flag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
+                flag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active")
+            ), null)
+        ));
 
         assertThat(errors).isEmpty();
     }
 
-    @Test
-    void shouldAllowOneSpokenAndOneSignLanguageFlagOnOnePerson() {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId);
+    @ParameterizedTest
+    @MethodSource("languageFlags")
+    void shouldRejectTheSameFlagInTheInternalAndExternalLists(String flagCode, String expectedError) {
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active")), flags(flag(flagCode, "Requested")))
+        ));
 
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(
-                incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active")
-            ),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).isEmpty();
+        assertThat(errors).containsExactly(expectedError);
     }
 
     @ParameterizedTest
     @MethodSource("languageFlagCodes")
     void shouldAllowTheSameFlagOnDifferentPeople(String flagCode) {
-        UUID firstPartyId = UUID.randomUUID();
-        UUID secondPartyId = UUID.randomUUID();
-
-        List<ListValue<Party>> incomingParties = List.of(
-            incomingParty(firstPartyId, flags(incomingFlag(flagCode, "Active")), null),
-            incomingParty(secondPartyId, flags(incomingFlag(flagCode, "Active")), null)
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(
-            incomingParties, Set.of(existingParty(firstPartyId), existingParty(secondPartyId)));
+        List<String> errors = underTest.validatePartyLanguageFlags(List.of(
+            party(flags(flag(flagCode, "Active")), null),
+            party(flags(flag(flagCode, "Active")), null)
+        ));
 
         assertThat(errors).isEmpty();
-    }
-
-    @Test
-    void shouldAllowDeactivatingOneOfTwoExistingDuplicates() {
-        UUID partyId = UUID.randomUUID();
-        CasePartyFlagEntity firstFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        CasePartyFlagEntity secondFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        PartyEntity existingParty = existingParty(partyId, firstFlag, secondFlag);
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(
-                incomingFlag(firstFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(secondFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Inactive")
-            ),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).isEmpty();
-    }
-
-    @Test
-    void shouldAllowChangingAnotherFlagWhenDuplicatesAlreadyExist() {
-        UUID partyId = UUID.randomUUID();
-        CasePartyFlagEntity firstFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        CasePartyFlagEntity secondFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        PartyEntity existingParty = existingParty(partyId, firstFlag, secondFlag);
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(
-                incomingFlag(firstFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(secondFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(OTHER_FLAG_CODE, "Active")
-            ),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).isEmpty();
-    }
-
-    @Test
-    void shouldRejectAThirdFlagWhenDuplicatesAlreadyExist() {
-        UUID partyId = UUID.randomUUID();
-        CasePartyFlagEntity firstFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        CasePartyFlagEntity secondFlag = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "Internal");
-        PartyEntity existingParty = existingParty(partyId, firstFlag, secondFlag);
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(
-                incomingFlag(firstFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(secondFlag.getId(), SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active")
-            ),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).containsExactly(SPOKEN_LANGUAGE_ERROR);
-    }
-
-    @Test
-    void shouldReturnBothErrorsWhenBothFlagsAreDuplicated() {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(partyId);
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(
-                incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                incomingFlag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Requested")
-            ),
-            null
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).containsExactly(SPOKEN_LANGUAGE_ERROR, SIGN_LANGUAGE_ERROR);
-    }
-
-    @Test
-    void shouldReturnEachErrorOnceWhenSeveralPeopleHaveDuplicates() {
-        UUID firstPartyId = UUID.randomUUID();
-        UUID secondPartyId = UUID.randomUUID();
-
-        List<ListValue<Party>> incomingParties = List.of(
-            incomingParty(
-                firstPartyId,
-                flags(
-                    incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                    incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active")
-                ),
-                null
-            ),
-            incomingParty(
-                secondPartyId,
-                flags(
-                    incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active"),
-                    incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Requested")
-                ),
-                null
-            )
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(
-            incomingParties, Set.of(existingParty(firstPartyId), existingParty(secondPartyId)));
-
-        assertThat(errors).containsExactly(SPOKEN_LANGUAGE_ERROR);
-    }
-
-    @Test
-    void shouldCountSavedCitizenFlagsWhenOnlyCaseworkerFlagsAreSent() {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity existingParty = existingParty(
-            partyId,
-            existingFlag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", "External")
-        );
-
-        ListValue<Party> incomingParty = incomingParty(
-            partyId,
-            flags(incomingFlag(SIGN_LANGUAGE_INTERPRETER_FLAG_CODE, "Requested")),
-            flags()
-        );
-
-        List<String> errors = underTest.validatePartyLanguageFlags(List.of(incomingParty), Set.of(existingParty));
-
-        assertThat(errors).containsExactly(SIGN_LANGUAGE_ERROR);
-    }
-
-    @Test
-    void shouldReturnNoErrorsWhenThereAreNoIncomingParties() {
-        assertThat(underTest.validatePartyLanguageFlags(null, Set.of())).isEmpty();
-        assertThat(underTest.validatePartyLanguageFlags(List.of(), Set.of())).isEmpty();
     }
 
     @Test
     void shouldIgnoreMissingValuesWithoutThrowing() {
-        UUID partyId = UUID.randomUUID();
-        CasePartyFlagEntity flagWithoutRefData = existingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, "Active", null);
-        flagWithoutRefData.setFlagRefData(null);
-        PartyEntity existingParty = existingParty(partyId, flagWithoutRefData);
+        List<ListValue<Party>> parties = new ArrayList<>();
+        parties.add(null);
+        parties.add(ListValue.<Party>builder().id(UUID.randomUUID().toString()).build());
+        parties.add(party(Flags.builder().details(null).build(), null));
+        parties.add(party(flags(
+            null,
+            ListValue.<FlagDetail>builder().id(UUID.randomUUID().toString()).build(),
+            flag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, null),
+            flag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, null),
+            flag(null, "Active")
+        ), null));
 
-        List<ListValue<Party>> incomingParties = new ArrayList<>();
-        incomingParties.add(null);
-        incomingParties.add(ListValue.<Party>builder().id(null).value(Party.builder().build()).build());
-        incomingParties.add(ListValue.<Party>builder().id("not-a-uuid").value(Party.builder().build()).build());
-        incomingParties.add(ListValue.<Party>builder().id(UUID.randomUUID().toString()).build());
-        incomingParties.add(ListValue.<Party>builder().id(partyId.toString()).value(null).build());
-        incomingParties.add(incomingParty(
-            partyId,
-            Flags.builder().details(null).build(),
-            flags(
-                null,
-                ListValue.<FlagDetail>builder().id(UUID.randomUUID().toString()).value(null).build(),
-                incomingFlag(SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE, null),
-                incomingFlag(null, "Active")
-            )
-        ));
-
-        List<String> errors = underTest.validatePartyLanguageFlags(incomingParties, Set.of(existingParty));
-
-        assertThat(errors).isEmpty();
+        assertThat(underTest.validatePartyLanguageFlags(null)).isEmpty();
+        assertThat(underTest.validatePartyLanguageFlags(parties)).isEmpty();
     }
 
-    private PartyEntity existingParty(UUID partyId, CasePartyFlagEntity... flags) {
-        return PartyEntity.builder()
-            .id(partyId)
-            .defendantFlags(new ArrayList<>(List.of(flags)))
-            .build();
-    }
-
-    private CasePartyFlagEntity existingFlag(String flagCode, String status, String visibility) {
-        CasePartyFlagEntity flag = new CasePartyFlagEntity();
-        flag.setId(UUID.randomUUID());
-        flag.setFlagRefData(FlagRefDataEntity.builder().flagCode(flagCode).build());
-        flag.setDefaultStatus(status);
-        flag.setVisibility(visibility);
-        return flag;
-    }
-
-    private ListValue<Party> incomingParty(UUID partyId, Flags caseworkerFlags, Flags citizenFlags) {
+    private ListValue<Party> party(Flags internalFlags, Flags externalFlags) {
         return ListValue.<Party>builder()
-            .id(partyId.toString())
+            .id(UUID.randomUUID().toString())
             .value(Party.builder()
-                       .defendantFlags(caseworkerFlags)
-                       .partyFlagsExternal(citizenFlags)
+                       .defendantFlags(internalFlags)
+                       .partyFlagsExternal(externalFlags)
                        .build())
             .build();
     }
@@ -349,13 +144,9 @@ class LanguageFlagDuplicateValidatorTest {
             .build();
     }
 
-    private ListValue<FlagDetail> incomingFlag(String flagCode, String status) {
-        return incomingFlag(UUID.randomUUID(), flagCode, status);
-    }
-
-    private ListValue<FlagDetail> incomingFlag(UUID id, String flagCode, String status) {
+    private ListValue<FlagDetail> flag(String flagCode, String status) {
         return ListValue.<FlagDetail>builder()
-            .id(id.toString())
+            .id(UUID.randomUUID().toString())
             .value(FlagDetail.builder()
                        .flagCode(flagCode)
                        .status(status)

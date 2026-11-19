@@ -55,7 +55,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -89,8 +88,6 @@ class PcsCaseServiceTest {
     private SecurityContextService securityContextService;
     @Mock
     private DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
-    @Mock
-    private LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -112,8 +109,7 @@ class PcsCaseServiceTest {
             postCodeCourtService,
             locationReferenceService,
             securityContextService,
-            defendantSupportEligibilityResolver,
-            languageFlagDuplicateValidator
+            defendantSupportEligibilityResolver
         );
     }
 
@@ -420,49 +416,6 @@ class PcsCaseServiceTest {
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
         verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
-    }
-
-    @Test
-    void shouldNotSaveAnyFlagsWhenLanguageFlagsAreDuplicated() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = stubFindCase();
-        Flags flags = createFlags(List.of(createFlagDetail()));
-        List<ListValue<Party>> parties = createParties();
-        PCSCase caseData = PCSCase.builder()
-            .caseFlags(flags)
-            .parties(parties)
-            .build();
-
-        List<String> duplicateErrors = List.of("more than one spoken language cannot be added");
-        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(parties, pcsCaseEntity.getParties()))
-            .thenReturn(duplicateErrors);
-
-        // When
-        List<String> errors = underTest.patchCaseFlags(CASE_REFERENCE, caseData);
-
-        // Then
-        assertThat(errors).isEqualTo(duplicateErrors);
-        verifyNoInteractions(caseFlagService);
-    }
-
-    @Test
-    void shouldReturnNoErrorsWhenCaseFlagsAreSaved() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = stubFindCase();
-        Flags flags = createFlags(List.of(createFlagDetail()));
-        List<ListValue<Party>> parties = createParties();
-        PCSCase caseData = PCSCase.builder()
-            .caseFlags(flags)
-            .parties(parties)
-            .build();
-
-        // When
-        List<String> errors = underTest.patchCaseFlags(CASE_REFERENCE, caseData);
-
-        // Then
-        assertThat(errors).isEmpty();
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
-        verify(caseFlagService).mergePartyFlags(parties, pcsCaseEntity.getParties());
     }
 
     @Test

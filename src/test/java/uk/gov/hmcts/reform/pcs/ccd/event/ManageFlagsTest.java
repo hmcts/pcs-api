@@ -12,12 +12,14 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +27,8 @@ import static org.mockito.Mockito.when;
 class ManageFlagsTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
 
     @InjectMocks
     private ManageFlags underTest;
@@ -57,30 +61,34 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldReturnLanguageFlagErrorsFromSubmitCallback() {
+    void shouldReturnLanguageFlagErrorsWithoutSavingFlags() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
         List<String> duplicateErrors = List.of("more than one language cannot be added");
-        when(pcsCaseService.patchCaseFlags(TEST_CASE_REFERENCE, pcsCase)).thenReturn(duplicateErrors);
+        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
+            .thenReturn(duplicateErrors);
 
         // When
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         // Then
         assertThat(response.getErrors()).isEqualTo(duplicateErrors);
+        verify(pcsCaseService, never()).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test
-    void shouldReturnNoErrorsWhenFlagsAreSaved() {
+    void shouldSaveFlagsWhenThereAreNoLanguageFlagErrors() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
-        when(pcsCaseService.patchCaseFlags(TEST_CASE_REFERENCE, pcsCase)).thenReturn(List.of());
+        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
+            .thenReturn(List.of());
 
         // When
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
+        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test
