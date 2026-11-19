@@ -40,6 +40,9 @@ public class StatementOfTruthService {
         StatementOfTruthCompletedBy completedBy = statementOfTruth.getCompletedBy();
         StatementOfTruthEntity.StatementOfTruthEntityBuilder sotBuilder = StatementOfTruthEntity.builder();
         sotBuilder.completedBy(completedBy);
+        if (statementOfTruth.getSignedDate() != null) {
+            sotBuilder.completedDate(statementOfTruth.getSignedDate().atStartOfDay());
+        }
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
             if (claimantAgreed(statementOfTruth)) {

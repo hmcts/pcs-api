@@ -160,7 +160,7 @@
       <xs:element name="SignedDate" type="xs:date"/>
       <xs:element name="SignedName" type="Text100"/>
       <xs:element name="FirmName" type="Text100" minOccurs="0"/>
-      <xs:element name="Position" type="Text100" minOccurs="0"/>
+      <xs:element name="Position" type="Text100"/>
     </xs:sequence>
   </xs:complexType>
 

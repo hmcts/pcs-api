@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MortgageClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <MortgageClaim>
+    <CustomerUniqueIdentifier>MORT-WAL-001</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="555">
+      <CompanyName>Example Bank plc</CompanyName>
+      <ContactEmailAddress>possessions@example.com</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>22 Mortgage Mews</AddressLine1>
+        <PostTown>Leeds</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant isOccupant="false">
+      <Name>
+        <FirstName>Max</FirstName>
+        <LastName>Borrower</LastName>
+      </Name>
+      <ContactDetails>
+        <Address>
+          <AddressLine1>1 Elsewhere Close</AddressLine1>
+          <PostTown>York</PostTown>
+          <PostCode>YO1 1AA</PostCode>
+        </Address>
+      </ContactDetails>
+    </Defendant>
+    <Defendant isOccupant="true">
+      <Name>
+        <Title>Ms</Title>
+        <FirstName>Maya</FirstName>
+        <LastName>Borrower</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>Commercial</ClaimantDesignation>
+    <ParticularsOfClaim>
+      <RecoverySteps>Letters and telephone calls to the borrowers.</RecoverySteps>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-03</SignedDate>
+        <SignedName>Pat Manager</SignedName>
+        <Position>Possessions Manager</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <PaymentHistory>
+        <PaymentLine>
+          <PaymentDueDate>2026-09-01</PaymentDueDate>
+          <AmountDue>1000.00</AmountDue>
+          <AmountPaid>0.00</AmountPaid>
+          <CumulativeArrears>1000.00</CumulativeArrears>
+        </PaymentLine>
+        <PaymentLine>
+          <PaymentDueDate>2026-10-01</PaymentDueDate>
+          <AmountDue>1000.00</AmountDue>
+          <AmountPaid>250.00</AmountPaid>
+          <CumulativeArrears>1750.00</CumulativeArrears>
+        </PaymentLine>
+      </PaymentHistory>
+      <NoticeServedDate>2026-10-20</NoticeServedDate>
+      <MortgageDate>2015-06-01</MortgageDate>
+      <DefaultNoticeDate>2026-10-05</DefaultNoticeDate>
+      <LoanAmount>200000.00</LoanAmount>
+      <CurrentRepaymentTerms>Monthly repayments of 1000.00.</CurrentRepaymentTerms>
+      <FullRepaymentDate>2040-06-01</FullRepaymentDate>
+      <FullRepaymentAmount>180000.00</FullRepaymentAmount>
+      <CostsAndAdministration>250.00</CostsAndAdministration>
+      <OutstandingAmount>175000.00</OutstandingAmount>
+      <StartInterestRate>3.5000</StartInterestRate>
+      <PreArrearsInterestRate>4.2500</PreArrearsInterestRate>
+      <ClaimStartInterestRate>5.0000</ClaimStartInterestRate>
+      <InterestedParty>Example Building Society</InterestedParty>
+      <TenancyDate>2020-01-01</TenancyDate>
+      <AdditionalPayments>
+        <AdditionalPaymentAmount>50.00</AdditionalPaymentAmount>
+        <AdditionalPaymentReason>Insurance premium</AdditionalPaymentReason>
+        <AdditionalPaymentArrears>50.00</AdditionalPaymentArrears>
+      </AdditionalPayments>
+      <AdditionalPayments>
+        <AdditionalPaymentAmount>25.00</AdditionalPaymentAmount>
+        <AdditionalPaymentReason>Account fee</AdditionalPaymentReason>
+      </AdditionalPayments>
+      <HasMonetaryJudgement>true</HasMonetaryJudgement>
+      <OriginalMortgageProvider>
+        <MortgageProviderName>First Lender Ltd</MortgageProviderName>
+        <MortgageBoughtDate>2019-04-01</MortgageBoughtDate>
+        <DateDefendantNotified>2019-05-01</DateDefendantNotified>
+      </OriginalMortgageProvider>
+    </ParticularsOfClaim>
+    <Occupant>
+      <Title>Mr</Title>
+      <FirstName>Sam</FirstName>
+      <LastName>Occupier</LastName>
+      <OtherNames>Jay</OtherNames>
+      <Initials>SJ</Initials>
+    </Occupant>
+    <Occupant>
+      <FirstName>Alex</FirstName>
+      <LastName>Lodger</LastName>
+    </Occupant>
+  </MortgageClaim>
+</MortgageClaimSet>

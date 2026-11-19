@@ -23,8 +23,8 @@ public class BulkStatementOfTruthMapper {
     }
 
     /**
-     * The statement of truth is only ever signed as agreed. PCS does not store the signed date, so it is
-     * checked here (it cannot be in the future) but not carried onto the case.
+     * The statement of truth is only ever signed as agreed. The signed date cannot be in the future and is
+     * carried onto the case as the date the statement was completed.
      */
     public StatementOfTruthDetails map(StatementOfTruthType statement, String path, BulkErrorCollector errors) {
         if (!statement.isAgreed()) {
@@ -49,6 +49,7 @@ public class BulkStatementOfTruthMapper {
                 .fullNameLegalRep(statement.getSignedName())
                 .firmNameLegalRep(statement.getFirmName())
                 .positionLegalRep(statement.getPosition())
+                .signedDate(statement.getSignedDate())
                 .build();
         }
 
@@ -57,6 +58,7 @@ public class BulkStatementOfTruthMapper {
             .agreementClaimant(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE))
             .fullNameParty(statement.getSignedName())
             .positionParty(statement.getPosition())
+            .signedDate(statement.getSignedDate())
             .build();
     }
 }

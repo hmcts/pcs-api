@@ -270,6 +270,8 @@ class BulkCommonMappersTest {
         assertThat(claimant.getAgreementClaimant()).hasSize(1);
         assertThat(legalRep.getAgreementClaimantLegalRep()).hasSize(1);
         assertThat(legalRep.getFirmNameLegalRep()).isEqualTo("Firm");
+        assertThat(claimant.getSignedDate()).isEqualTo(LocalDate.of(2026, 11, 1));
+        assertThat(legalRep.getSignedDate()).isEqualTo(LocalDate.of(2026, 11, 1));
         assertThat(errors.hasErrors()).isFalse();
     }
 

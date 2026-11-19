@@ -43,6 +43,7 @@
         <Agreed>true</Agreed>
         <SignedDate>2026-11-02</SignedDate>
         <SignedName>Lee Landlord</SignedName>
+        <Position>Landlord</Position>
       </ClaimStatementOfTruth>
       <PreActionProtocolCompleted>false</PreActionProtocolCompleted>
       <PreActionProtocolIncompleteExplanation>Not applicable to this tenancy.</PreActionProtocolIncompleteExplanation>
