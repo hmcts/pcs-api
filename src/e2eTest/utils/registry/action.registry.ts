@@ -73,6 +73,8 @@ export class ActionRegistry {
     ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['midEventRespondPossessionClaimCitizenAPI', new CreateCaseAPIAction()],
@@ -178,7 +180,8 @@ export class ActionRegistry {
     ['canCreatePartyLevelFlag', new CaseFlagAction()],
     ['canManageCaseLevelFlag', new CaseFlagAction()],
     ['canManagePartyLevelFlag', new CaseFlagAction()],
-    ['canViewCaseAndPartyFlag', new CaseFlagAction()],
+    ['canViewCaseAndPartyFlag', new CaseFlagAction()], 
+    ['handleChallengedAccess', new CaseFlagAction()], 
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
@@ -211,6 +214,8 @@ export class ActionRegistry {
     ['uploadFiles', new DocumentsAction()],
     ['uploadAdditionalDocsLR', new DocumentsAction()],
     ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['selectDocumentRelatingToCC', new DocumentsAction()],
+    ['updatePaymentAPILRCC', new CreateCaseAPIAction()],
     ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
@@ -227,6 +232,7 @@ export class ActionRegistry {
     ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['removeFile', new RemoveFileAction()],
+    ['getAllPartyDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

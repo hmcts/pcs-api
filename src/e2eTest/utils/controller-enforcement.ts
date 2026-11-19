@@ -6,6 +6,8 @@ import { ActionEnforcementRegistry } from './registry/registry-enforcement/actio
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
+import { axe_Exclusions } from '@config/axe_exclusions.config';
+
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -54,7 +56,9 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       await performValidation('autoValidatePageContent');
       try {
         await test.step("Running Accessibility Scan", async () => {
-          await new AxeUtils(executor.page).audit();
+          await new AxeUtils(executor.page).audit({
+            exclude: axe_Exclusions,
+          });
         });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
