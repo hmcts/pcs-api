@@ -80,7 +80,7 @@ public abstract class ApiSteps<T extends ApiSteps<T>> {
         resetHttpState();
         String url = baseUrl();
         if (url == null || url.isBlank()) {
-            throw new IllegalStateException("No base URL configured for " + getClass().getSimpleName());
+            throw new IllegalStateException("No base URL set" );
         }
         request = SerenityRest.given().baseUri(url).contentType(ContentType.JSON);
         return request;
