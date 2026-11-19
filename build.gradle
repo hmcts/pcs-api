@@ -449,11 +449,6 @@ dependencies {
     implementation("io.cucumber:cucumber-plugin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin-messages:$cucumberVersion")
-    // HDPI-9530: kotlin-stdlib comes in transitively (okhttp/okio, CCD SDK). 2.4.20+ fixes
-    // CVE-2026-53914. A constraint is needed because the Boot BOM arrives as a Gradle platform.
-    ['kotlin-stdlib', 'kotlin-stdlib-common', 'kotlin-stdlib-jdk7', 'kotlin-stdlib-jdk8'].each { module ->
-      implementation("org.jetbrains.kotlin:$module:$kotlinVersion")
-    }
   }
 }
 
