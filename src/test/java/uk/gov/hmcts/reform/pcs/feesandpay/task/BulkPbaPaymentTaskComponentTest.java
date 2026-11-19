@@ -13,6 +13,8 @@ import feign.RetryableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -99,9 +101,10 @@ class BulkPbaPaymentTaskComponentTest {
         verify(listener).onPbaPaymentSubmitted(SUBMISSION_ID, SERVICE_REQUEST);
     }
 
-    @Test
-    void shouldFailFinallyOnPaymentRequiredWithoutRetry() {
-        doThrow(feignException(402)).when(paymentService).createSystemPbaPayment(data);
+    @ParameterizedTest
+    @ValueSource(ints = {400, 402, 403, 404, 409, 422})
+    void shouldFailFinallyOnDefiniteRejections(int status) {
+        doThrow(feignException(status)).when(paymentService).createSystemPbaPayment(data);
 
         CompletionHandler<BulkPbaPaymentTaskData> result = task.execute(taskInstance, executionContext);
 
@@ -110,22 +113,13 @@ class BulkPbaPaymentTaskComponentTest {
         verify(listener, never()).onPbaPaymentSubmitted(any(), anyString());
     }
 
-    @Test
-    void shouldFailFinallyOnOtherClientErrors() {
-        doThrow(feignException(403)).when(paymentService).createSystemPbaPayment(data);
+    @ParameterizedTest
+    @ValueSource(ints = {401, 408, 425, 429, 500, 502, 503, 504})
+    void shouldRethrowRetryableStatusesWithoutNotifying(int status) {
+        FeignException error = feignException(status);
+        doThrow(error).when(paymentService).createSystemPbaPayment(data);
 
-        CompletionHandler<BulkPbaPaymentTaskData> result = task.execute(taskInstance, executionContext);
-
-        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-        verify(listener).onPbaPaymentFailed(eq(SUBMISSION_ID), eq(SERVICE_REQUEST), anyString());
-    }
-
-    @Test
-    void shouldRethrowServerErrorsWithoutNotifying() {
-        FeignException serverError = feignException(503);
-        doThrow(serverError).when(paymentService).createSystemPbaPayment(data);
-
-        assertThatThrownBy(() -> task.execute(taskInstance, executionContext)).isSameAs(serverError);
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext)).isSameAs(error);
         verifyNoInteractions(listener);
     }
 

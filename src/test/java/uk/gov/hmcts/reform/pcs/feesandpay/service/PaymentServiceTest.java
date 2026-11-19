@@ -115,6 +115,8 @@ class PaymentServiceTest {
     private UserInfo userDetails;
     @Mock
     private SchedulerClient schedulerClient;
+    @Mock
+    private BulkPaymentStatusListener bulkPaymentStatusListener;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -173,6 +175,7 @@ class PaymentServiceTest {
 
             // Then
             verifyNoInteractions(schedulerClient);
+            verifyNoInteractions(bulkPaymentStatusListener);
         }
 
         @Test
@@ -198,6 +201,7 @@ class PaymentServiceTest {
             // Then
             ArgumentCaptor<SchedulableInstance<BulkPbaPaymentTaskData>> captor =
                 ArgumentCaptor.forClass(SchedulableInstance.class);
+            verify(bulkPaymentStatusListener).onServiceRequestCreated(submissionId, SERVICE_REQUEST_REFERENCE);
             verify(schedulerClient).scheduleIfNotExists(captor.capture());
             SchedulableInstance<BulkPbaPaymentTaskData> scheduled = captor.getValue();
             assertThat(scheduled.getTaskInstance().getTaskName()).isEqualTo("bulk-pba-payment-task");

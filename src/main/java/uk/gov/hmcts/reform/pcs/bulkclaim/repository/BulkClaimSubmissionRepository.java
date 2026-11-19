@@ -23,6 +23,10 @@ public interface BulkClaimSubmissionRepository extends JpaRepository<BulkClaimSu
 
     Optional<BulkClaimSubmissionEntity> findByServiceRequestReference(String serviceRequestReference);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM BulkClaimSubmissionEntity s WHERE s.serviceRequestReference = :reference")
+    Optional<BulkClaimSubmissionEntity> findByServiceRequestReferenceForUpdate(@Param("reference") String reference);
+
     Optional<BulkClaimSubmissionEntity> findByCaseReference(Long caseReference);
 
 }
