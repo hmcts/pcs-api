@@ -86,14 +86,19 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-  test('Fee And Pay - Pay by Card', async ({ page, context }) => {
+  test('Fee And Pay - Pay by Card', async ({ page, context, browser }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
       continueButton: serviceRequest.continueButton
     });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    const browserName = browser.browserType().name();
+    if (browserName === 'chromium') {
+      await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    } else {
+      await performValidation('mainHeader', enterPaymentDetails.cardDetailsMainHeader);
+    }
     await performAction('enterPaymentDetails', {
       cardInput: enterPaymentDetails.cardNoInputText,
       monthInput: enterPaymentDetails.monthTextInput,
@@ -125,14 +130,19 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page', async ({ page, context }) => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page', async ({ page, context, browser }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
       continueButton: serviceRequest.continueButton
     });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    const browserName = browser.browserType().name();
+    if (browserName === 'chromium') {
+      await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    } else {
+      await performValidation('mainHeader', enterPaymentDetails.cardDetailsMainHeader);
+    }
     await performAction('clickButton', enterPaymentDetails.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
@@ -152,14 +162,19 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page', async ({ page, context }) => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page', async ({ page, context, browser }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
       continueButton: serviceRequest.continueButton
     });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    const browserName = browser.browserType().name();
+    if (browserName === 'chromium') {
+      await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    } else {
+      await performValidation('mainHeader', enterPaymentDetails.cardDetailsMainHeader);
+    }
     await performAction('enterPaymentDetails', {
       cardInput: enterPaymentDetails.cardNoInputText,
       monthInput: enterPaymentDetails.monthTextInput,
