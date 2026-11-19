@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.BulkPbaPaymentTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
@@ -37,8 +39,11 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.BulkPbaPaymentTaskComponent.BULK_PBA_PAYMENT_TASK_DESCRIPTOR;
 
 @Slf4j
 @Service
@@ -53,6 +58,7 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
     private final IdamAuthenticator idamAuthenticator;
+    private final SchedulerClient schedulerClient;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -65,7 +71,8 @@ public class PaymentService {
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
                           OrganisationService organisationService,
-                          IdamAuthenticator idamAuthenticator) {
+                          IdamAuthenticator idamAuthenticator,
+                          SchedulerClient schedulerClient) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -75,6 +82,7 @@ public class PaymentService {
         this.objectMapper = objectMapper;
         this.organisationService = organisationService;
         this.idamAuthenticator = idamAuthenticator;
+        this.schedulerClient = schedulerClient;
     }
 
     /**
@@ -115,6 +123,7 @@ public class PaymentService {
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
+        scheduleBulkPbaPayment(feesAndPayTaskData, paymentServiceResponse.getServiceRequestReference());
         return paymentServiceResponse;
     }
 
@@ -201,6 +210,58 @@ public class PaymentService {
             .status(pbaPaymentResponse.getStatus())
             .dateCreated(pbaPaymentResponse.getDateCreated())
             .build();
+    }
+
+    /**
+     * Pays the fee for a service request from the PBA account recorded against it, as the system user.
+     * The service request reference is used as the idempotency key so that a replay cannot charge twice.
+     */
+    public PbaPaymentResponse createSystemPbaPayment(BulkPbaPaymentTaskData taskData) {
+        String serviceRequestReference = taskData.getServiceRequestReference();
+        FeePaymentEntity feePaymentEntity = getFeePayment(serviceRequestReference);
+
+        PBAServiceRequestDTO paymentRequest = PBAServiceRequestDTO.builder()
+            .accountNumber(taskData.getPbaAccountNumber())
+            .amount(feePaymentEntity.getAmount())
+            .customerReference(taskData.getPbaCustomerReference())
+            .idempotencyKey(serviceRequestReference)
+            .organisationName(taskData.getOrganisationName())
+            .build();
+
+        PBAServiceRequestResponse pbaPaymentResponse = paymentsClient.createPbaPayment(
+            serviceRequestReference,
+            systemUpdateUserTokenProvider.getAuthToken(),
+            paymentRequest
+        );
+
+        return PbaPaymentResponse.builder()
+            .paymentReference(pbaPaymentResponse.getPaymentReference())
+            .status(pbaPaymentResponse.getStatus())
+            .dateCreated(pbaPaymentResponse.getDateCreated())
+            .build();
+    }
+
+    private void scheduleBulkPbaPayment(FeesAndPayTaskData feesAndPayTaskData, String serviceRequestReference) {
+        if (feesAndPayTaskData.getPbaAccountNumber() == null) {
+            return;
+        }
+
+        BulkPbaPaymentTaskData bulkPbaPaymentTaskData = BulkPbaPaymentTaskData.builder()
+            .serviceRequestReference(serviceRequestReference)
+            .caseReference(feesAndPayTaskData.getCaseReference())
+            .pbaAccountNumber(feesAndPayTaskData.getPbaAccountNumber())
+            .pbaCustomerReference(feesAndPayTaskData.getPbaCustomerReference())
+            .organisationName(feesAndPayTaskData.getOrganisationName())
+            .bulkClaimSubmissionId(feesAndPayTaskData.getBulkClaimSubmissionId())
+            .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            BULK_PBA_PAYMENT_TASK_DESCRIPTOR
+                .instance(serviceRequestReference)
+                .data(bulkPbaPaymentTaskData)
+                .scheduledTo(Instant.now())
+        );
     }
 
     private String writeAsString(FeesAndPayTaskData feesAndPayTaskData) {

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,19 +32,15 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.ClaimIssueFeeScheduler;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -53,8 +48,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_P
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -66,10 +59,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final OrganisationService organisationService;
-    private final SchedulerClient schedulerClient;
+    private final ClaimIssueFeeScheduler claimIssueFeeScheduler;
     private final DraftCaseDataService draftCaseDataService;
     private final AddressFormatter addressFormatter;
-    private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final NotificationService notificationService;
@@ -188,7 +180,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getClaimantParty(caseReference));
+        FeeDetails feeDetails = claimIssueFeeScheduler.scheduleCaseIssueFeePayment(
+            caseReference, getClaimantParty(caseReference));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
@@ -212,27 +205,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
-    }
-
-    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, PartyEntity claimantParty) {
-        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(feeDetails)
-            .ccdCaseNumber(String.valueOf(caseReference))
-            .caseReference(caseReference)
-            .responsiblePartyId(claimantParty.getId())
-            .responsiblePartyName(partyService.getPartyName(claimantParty))
-            .paymentCallbackHandlerType(CLAIM)
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            FEES_AND_PAY_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
-
-        return feeDetails;
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {

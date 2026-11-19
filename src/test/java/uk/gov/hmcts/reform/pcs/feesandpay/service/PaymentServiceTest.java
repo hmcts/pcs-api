@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.BulkPbaPaymentTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
@@ -72,6 +75,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 
@@ -109,6 +113,8 @@ class PaymentServiceTest {
     private User user;
     @Mock
     private UserInfo userDetails;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -151,6 +157,60 @@ class PaymentServiceTest {
 
             // Then
             assertServiceRequestCreation(feesAndPayTaskData, result);
+        }
+
+        @Test
+        void shouldNotScheduleBulkPbaPaymentWhenNoPbaAccount() {
+            // Given
+            FeeDetails feeDetails = Instancio.create(FeeDetails.class);
+            paymentsClientDependencies(feeDetails);
+            stubPcsCaseEntity();
+            when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
+                .thenReturn(createPaymentServiceResponse());
+
+            // When
+            underTest.createServiceRequest(createFeesAndPayTaskData(feeDetails));
+
+            // Then
+            verifyNoInteractions(schedulerClient);
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void shouldScheduleBulkPbaPaymentWhenPbaAccountPresent() {
+            // Given
+            FeeDetails feeDetails = createFeeDetails();
+            paymentsClientDependencies(feeDetails);
+            stubPcsCaseEntity();
+            when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
+                .thenReturn(createPaymentServiceResponse());
+            UUID submissionId = UUID.randomUUID();
+            FeesAndPayTaskData taskData = createFeesAndPayTaskData(feeDetails).toBuilder()
+                .pbaAccountNumber("PBA0123456")
+                .pbaCustomerReference("CUST-REF")
+                .organisationName("Some Org")
+                .bulkClaimSubmissionId(submissionId)
+                .build();
+
+            // When
+            underTest.createServiceRequest(taskData);
+
+            // Then
+            ArgumentCaptor<SchedulableInstance<BulkPbaPaymentTaskData>> captor =
+                ArgumentCaptor.forClass(SchedulableInstance.class);
+            verify(schedulerClient).scheduleIfNotExists(captor.capture());
+            SchedulableInstance<BulkPbaPaymentTaskData> scheduled = captor.getValue();
+            assertThat(scheduled.getTaskInstance().getTaskName()).isEqualTo("bulk-pba-payment-task");
+            assertThat(scheduled.getTaskInstance().getId()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+            assertThat(scheduled.getTaskInstance().getData()).isEqualTo(BulkPbaPaymentTaskData.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .caseReference(CASE_REFERENCE)
+                .pbaAccountNumber("PBA0123456")
+                .pbaCustomerReference("CUST-REF")
+                .organisationName("Some Org")
+                .bulkClaimSubmissionId(submissionId)
+                .amount(CALCULATED_AMOUNT)
+                .build());
         }
 
         @Test
@@ -615,6 +675,59 @@ class PaymentServiceTest {
 
             // Then
             assertThat(response.getPbaAccounts()).isEqualTo(List.of());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("create system PBA payment")
+    class CreateSystemPbaPayment {
+
+        @Test
+        void shouldPayFromTaskDataUsingStoredAmountWithoutUserLookups() {
+            // Given
+            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+                .amount(CALCULATED_AMOUNT).serviceRequestReference(SERVICE_REQUEST_REFERENCE).build();
+            when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(paymentsClient.createPbaPayment(any(), anyString(), any()))
+                .thenReturn(PBAServiceRequestResponse.builder().paymentReference("RC-1").status("success").build());
+            BulkPbaPaymentTaskData taskData = BulkPbaPaymentTaskData.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .caseReference(CASE_REFERENCE)
+                .pbaAccountNumber("PBA0123456")
+                .pbaCustomerReference("CUST-REF")
+                .organisationName("Some Org")
+                .bulkClaimSubmissionId(UUID.randomUUID())
+                .amount(new BigDecimal("1.00"))
+                .build();
+
+            // When
+            PbaPaymentResponse response = underTest.createSystemPbaPayment(taskData);
+
+            // Then
+            verify(paymentsClient).createPbaPayment(eq(SERVICE_REQUEST_REFERENCE), eq(SYSTEM_USER_BEARER),
+                                                    pbaPaymentRequestCaptor.capture());
+            PBAServiceRequestDTO sent = pbaPaymentRequestCaptor.getValue();
+            assertThat(sent.getAccountNumber()).isEqualTo("PBA0123456");
+            assertThat(sent.getCustomerReference()).isEqualTo("CUST-REF");
+            assertThat(sent.getOrganisationName()).isEqualTo("Some Org");
+            assertThat(sent.getIdempotencyKey()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+            assertThat(sent.getAmount()).isEqualTo(CALCULATED_AMOUNT);
+            assertThat(response.getPaymentReference()).isEqualTo("RC-1");
+            verifyNoInteractions(idamAuthenticator, organisationService);
+        }
+
+        @Test
+        void shouldThrowWhenNoFeePaymentForServiceRequest() {
+            when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+                .thenReturn(Optional.empty());
+            BulkPbaPaymentTaskData taskData = BulkPbaPaymentTaskData.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE).build();
+
+            assertThatThrownBy(() -> underTest.createSystemPbaPayment(taskData))
+                .isInstanceOf(FeePaymentNotFoundException.class);
+            verify(paymentsClient, never()).createPbaPayment(any(), any(), any());
         }
 
     }

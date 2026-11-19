@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -43,6 +44,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private static final String CCD_CASE_NUMBER = "1111-2222-3333-4444";
     private static final String RESPONSIBLE_PARTY = "Claimant Org Ltd";
     private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
+    private static final String SERVICE_REQUEST_REFERENCE = "2025-1234";
 
     @Mock
     private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
@@ -50,6 +52,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PartyService partyService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private BulkPaymentStatusListener bulkPaymentStatusListener;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -69,7 +73,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
         claimEntity.setPcsCase(pcsCase);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+            .paymentStatus(paymentStatus).serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
@@ -79,9 +84,32 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+            verify(bulkPaymentStatusListener).onPaymentConfirmed(SERVICE_REQUEST_REFERENCE);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
+            verifyNoInteractions(bulkPaymentStatusListener);
         }
+    }
+
+
+    @Test
+    void shouldNotFailCallbackWhenListenerThrows() throws Exception {
+        // Given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
+            .thenReturn(PartyEntity.builder().id(UUID.randomUUID()).build());
+        doThrow(new IllegalStateException("boom"))
+            .when(bulkPaymentStatusListener).onPaymentConfirmed(SERVICE_REQUEST_REFERENCE);
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData("{}")
+            .paymentStatus(PaymentStatus.PAID).serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+
+        // When
+        underTest.handle(PaymentStatusCallback.builder().build(), feePaymentEntity);
+
+        // Then
+        verify(ccdPaymentStateUpdateService).submitPaymentSuccess(CASE_REFERENCE);
     }
 
     @Test

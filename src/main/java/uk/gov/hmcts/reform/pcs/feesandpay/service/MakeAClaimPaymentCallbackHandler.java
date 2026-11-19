@@ -22,6 +22,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
     private final ObjectMapper objectMapper;
+    private final BulkPaymentStatusListener bulkPaymentStatusListener;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -30,9 +31,19 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+            notifyPaymentConfirmed(feePaymentEntity);
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feesAndPayTaskData.getCaseReference());
+        }
+    }
+
+    private void notifyPaymentConfirmed(FeePaymentEntity feePaymentEntity) {
+        try {
+            bulkPaymentStatusListener.onPaymentConfirmed(feePaymentEntity.getServiceRequestReference());
+        } catch (RuntimeException e) {
+            log.error("Bulk payment status listener failed for service request {}",
+                      feePaymentEntity.getServiceRequestReference(), e);
         }
     }
 
