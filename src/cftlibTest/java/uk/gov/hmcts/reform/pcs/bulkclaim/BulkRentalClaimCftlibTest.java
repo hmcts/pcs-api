@@ -171,7 +171,9 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
         assertThat(pbaRequest.path("account_number").asText()).isEqualTo(PBA_ACCOUNT);
         assertThat(pbaRequest.path("amount").decimalValue())
             .isEqualByComparingTo(payments.getFirst().getAmount());
-        assertThat(pbaRequest.path("idempotency_key").asText()).isEqualTo(serviceRequestReference);
+        assertThat(pbaRequest.path("idempotency_key").asText())
+            .startsWith(serviceRequestReference + "-")
+            .matches(".+-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}");
         assertThat(pbaRequest.path("organisation_name").asText()).isEqualTo("Bulk Housing Association");
 
         Awaitility.await("Submission records the PBA payment as submitted")
