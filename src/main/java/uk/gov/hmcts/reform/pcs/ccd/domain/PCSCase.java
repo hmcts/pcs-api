@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BulkClaimDetailsTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -1224,5 +1225,16 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
+
+    @CCD(searchable = false, access = {BulkClaimDetailsTabAccess.class})
+    private String bulkClaimDetailsMarkdown;
+
+    @CCD(
+        label = "${bulkClaimDetailsMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {BulkClaimDetailsTabAccess.class}
+    )
+    private String bulkClaimDetailsMarkdownLabel;
 
 }

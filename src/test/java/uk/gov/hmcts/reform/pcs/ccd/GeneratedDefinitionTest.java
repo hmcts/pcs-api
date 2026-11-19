@@ -39,6 +39,9 @@ class GeneratedDefinitionTest {
         "citizen", "[DEFENDANT]", "defendant-solicitor",
         "caseworker-pcs-solicitor", "claimant", "claimant-solicitor"
     ));
+    private static final Set<String> BULK_CLAIM_DETAILS_PROFILES = union(INTERNAL_PROFILES, Set.of(
+        "caseworker-pcs-solicitor", "claimant-solicitor"
+    ));
     private static final Set<String> JUDICIAL_PROFILES = Set.of(
         "judge", "leadership-judge", "circuit-judge", "fee-paid-judge"
     );
@@ -84,7 +87,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(19);
+        assertThat(roleByTab).hasSize(20);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -163,6 +166,10 @@ class GeneratedDefinitionTest {
         assertThat(readers.get("caseReviewDatesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdown")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
+        assertThat(readers.get("bulkClaimDetailsMarkdownLabel"))
+            .containsExactlyInAnyOrderElementsOf(BULK_CLAIM_DETAILS_PROFILES);
+        assertThat(readers.get("bulkClaimDetailsMarkdown"))
+            .containsExactlyInAnyOrderElementsOf(BULK_CLAIM_DETAILS_PROFILES);
     }
 
     @Test
