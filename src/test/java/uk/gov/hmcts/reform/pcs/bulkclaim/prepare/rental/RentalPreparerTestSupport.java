@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.SecureWalesRentSectionR
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.StandardOrOtherWalesRentSectionRoutingPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRoutingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.AlternativesRules;
-import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.DailyRentCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
@@ -68,7 +67,6 @@ final class RentalPreparerTestSupport {
             noticeMapper,
             new RentalRentMapper(new DailyRentCalculator(new MoneyFormatter())),
             new RentalAlternativesMapper(alternativesRules),
-            new ClaimantEligibilityRules(),
             tenancyDateRules,
             new RentSectionRoutingService(List.of(
                 new AssuredTenancyRentSectionRoutingPolicy(),

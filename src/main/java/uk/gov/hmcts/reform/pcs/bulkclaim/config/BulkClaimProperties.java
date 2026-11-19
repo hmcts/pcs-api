@@ -43,6 +43,7 @@ public class BulkClaimProperties {
     private List<ClaimantType> enabledClaimantTypes = List.of(
         ClaimantType.PROVIDER_OF_SOCIAL_HOUSING,
         ClaimantType.COMMUNITY_LANDLORD,
+        ClaimantType.PRIVATE_LANDLORD,
         ClaimantType.MORTGAGE_LENDER
     );
 
