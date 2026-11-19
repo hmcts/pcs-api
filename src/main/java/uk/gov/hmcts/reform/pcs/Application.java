@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
 import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.camunda.WorkAllocationWorkflowApi;
-import uk.gov.hmcts.reform.pcs.health.PaymentsHealthApi;
-import uk.gov.hmcts.reform.pcs.health.SendLetterHealthApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
@@ -26,10 +24,10 @@ import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
 
 /**
- * Spring Boot 4 dropped the health check API that the HMCTS ccd, payments and send-letter client libraries
- * still use, so we don't scan their packages or load their auto-configurations. Instead we register the
- * Feign clients and PaymentsClient we need ourselves, and our own health checks live in pcs.health and
- * CoreCaseDataHealthConfiguration.
+ * We don't scan the HMCTS ccd, payments and send-letter client packages or load their auto-configurations:
+ * the payments and send-letter ones register Spring Boot 3 health checks that Spring Boot 4 can't load, and
+ * the ccd one would register its Feign clients a second time. Instead we register the Feign clients and
+ * PaymentsClient we need ourselves, and the health checks live in DownstreamHealthConfiguration.
  *
  * <p>We only use idam-legacy-auth-support for its password grant (see OAuth2ClientConfig), so its
  * auto-configurations are turned off. Our code doesn't call IdamApi, but the CCD SDK's IdamClient needs it.
@@ -60,8 +58,6 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         CaseAssignmentApi.class,
         PaymentsApi.class,
         SendLetterApiProxy.class,
-        PaymentsHealthApi.class,
-        SendLetterHealthApi.class,
         CaseDocumentClientApi.class,
         WorkAllocationWorkflowApi.class,
         TaskManagementApi.class,
