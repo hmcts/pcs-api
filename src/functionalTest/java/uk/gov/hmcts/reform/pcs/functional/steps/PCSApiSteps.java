@@ -195,10 +195,6 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
 
     @Step("Get Fee payment info for case")
     public PCSApiSteps getFeePaymentInfo() {
-        return fetchFeePaymentInfo();
-    }
-
-    private PCSApiSteps fetchFeePaymentInfo() {
         Callable<ArrayNode> fetchPaymentInfo = () -> {
             String paymentInfoJson = submitFeePaymentInfoRequest(getCaseReference())
                 .then()
@@ -247,10 +243,7 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
         return response;
     }
 
-    /**
-     * Returns the first service request reference, excluding status records when multiple records exist.
-     * The party ID is retained for caller compatibility; fee payment records no longer require task data.
-     */
+    // PartyId to be used in future for GA and defendant scenarios, methods needs enahncement accordingly
     public String getPaymentReferenceForPartyId(String partyId) {
         if (feePaymentInfoList == null) {
             return null;
@@ -415,7 +408,7 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
     @Step("fee payment info details fetched for case {0}")
     public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
         setCaseReference(caseReference.toString());
-        fetchFeePaymentInfo();
+        getFeePaymentInfo();
         return MAPPER.convertValue(feePaymentInfoList, new TypeReference<>() {});
     }
 }

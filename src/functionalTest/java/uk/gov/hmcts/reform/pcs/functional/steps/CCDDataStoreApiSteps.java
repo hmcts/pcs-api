@@ -109,15 +109,9 @@ public class CCDDataStoreApiSteps extends ApiSteps<CCDDataStoreApiSteps> {
         return this;
     }
 
-    @Step("assert can access case details")
-    public CCDDataStoreApiSteps assertCanAccessCaseDetails() {
-        accessCaseDetails().then().assertThat().statusCode(200);
-        return this;
-    }
-
-    @Step("assert cannot access case details")
-    public CCDDataStoreApiSteps assertCannotAccessCaseDetails() {
-        accessCaseDetails().then().assertThat().statusCode(404);
+    @Step("assert access to case details is {0}")
+    public CCDDataStoreApiSteps assertCanAccessDetails(boolean canAccess) {
+        accessCaseDetails().then().assertThat().statusCode(canAccess ? 200 : 404);
         return this;
     }
 
@@ -139,38 +133,31 @@ public class CCDDataStoreApiSteps extends ApiSteps<CCDDataStoreApiSteps> {
         return this;
     }
 
+    public Map<String, String> getParty(String partyType, int index) {
+        if (!"claimant".equals(partyType) && !"defendant".equals(partyType)) {
+            throw new IllegalArgumentException("Unsupported party type: " + partyType);
+        }
 
-
-    public Map<String, String> getDefendantParty(int defendantIndex) {
-        JsonNode defendant = caseData.at("/data/allDefendants/" + defendantIndex);
-        JsonNode defendantId = defendant.path("id");
-        if (defendantId.isMissingNode() || defendantId.isNull()) {
+        String collection = "claimant".equals(partyType) ? "allClaimants" : "allDefendants";
+        JsonNode party = caseData.at("/data/" + collection + "/" + index);
+        JsonNode partyId = party.path("id");
+        if (partyId.isMissingNode() || partyId.isNull()) {
             throw new IllegalStateException(
-                "No defendant at index " + defendantIndex + " for case " + caseReference
+                "No " + partyType + " at index " + index + " for case " + caseReference
             );
         }
 
-        Map<String, String> defendantDetails = new HashMap<>();
-        defendantDetails.put("id", defendantId.asText());
-        defendantDetails.put("firstName", defendant.path("value").path("firstName").asText(null));
-        defendantDetails.put("lastName", defendant.path("value").path("lastName").asText(null));
-        return defendantDetails;
-    }
-
-    public Map<String, String> getClaimantParty(int index) {
-        JsonNode claimant = caseData.at("/data/allClaimants/" + index);
-        JsonNode claimantId = claimant.path("id");
-        if (claimantId.isMissingNode() || claimantId.isNull()) {
-            throw new IllegalStateException(
-                "No claimant at index " + index + " for case " + caseReference
-            );
+        Map<String, String> partyDetails = new HashMap<>();
+        partyDetails.put("id", partyId.asText());
+        JsonNode value = party.path("value");
+        if ("claimant".equals(partyType)) {
+            partyDetails.put("orgName", value.path("orgName").asText(null));
+            partyDetails.put("emailAddress", value.path("emailAddress").asText(null));
+        } else {
+            partyDetails.put("firstName", value.path("firstName").asText(null));
+            partyDetails.put("lastName", value.path("lastName").asText(null));
         }
-
-        Map<String, String> claimantDetails = new HashMap<>();
-        claimantDetails.put("id", claimantId.asText());
-        claimantDetails.put("orgName", claimant.path("value").path("orgName").asText(null));
-        claimantDetails.put("emailAddress", claimant.path("value").path("emailAddress").asText(null));
-        return claimantDetails;
+        return partyDetails;
     }
 
     @Step("assert case state is {0}")

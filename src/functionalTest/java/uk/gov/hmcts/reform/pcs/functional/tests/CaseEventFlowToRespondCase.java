@@ -62,7 +62,7 @@ class CaseEventFlowToRespondCase extends BaseApi {
             .withUser(UserType.localAuthoritySolicitor1)
             .withCaseReference(caseId)
             .fetchCaseDetails()
-            .getClaimantParty(0);
+            .getParty("claimant", 0);
 
         String serviceRequestRef = pcsApiSteps.withUser(UserType.localAuthoritySolicitor1)
                                                 .setCaseReference(caseId)
@@ -81,7 +81,7 @@ class CaseEventFlowToRespondCase extends BaseApi {
     void defendantAccessCase() {
         ccdDataStoreApiSteps.withUser(UserType.defendantCitizen1)
             .withCaseReference(caseId)
-            .assertCannotAccessCaseDetails();
+            .assertCanAccessDetails(false);
     }
 
     @Title("Defendant validates access code and can access case details")
@@ -92,7 +92,7 @@ class CaseEventFlowToRespondCase extends BaseApi {
             .withUser(UserType.localAuthoritySolicitor1)
             .withCaseReference(caseId)
             .fetchCaseDetails()
-            .getDefendantParty(1);
+            .getParty("defendant", 1);
 
         pcsApiSteps.withUser(UserType.defendantCitizen1)
             .setCaseReference(caseId)
@@ -106,7 +106,7 @@ class CaseEventFlowToRespondCase extends BaseApi {
 
         ccdDataStoreApiSteps.withUser(UserType.defendantCitizen1)
             .withCaseReference(caseId)
-            .assertCanAccessCaseDetails();
+            .assertCanAccessDetails(true);
     }
 
     @Title("Defendant responds to possession claim")
