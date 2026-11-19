@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -72,6 +73,7 @@ class SubmitEventHandlerTest {
     private static final long TEST_CASE_REFERENCE = 1234L;
     private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final String CURRENT_USER_FULL_NAME = "current user full name";
+    private static final String CURRENT_ORG_FULL_NAME = "current org full name";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -136,12 +138,17 @@ class SubmitEventHandlerTest {
         void shouldCreateGenAppWithCaseDataAndClaimantParty() {
             // Given
             UUID claimantPartyId = UUID.randomUUID();
-            PartyEntity claimantParty = mock(PartyEntity.class);
+            PartyEntity claimantParty = PartyEntity.builder().id(claimantPartyId).build();
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
                 .applicantPartyId(claimantPartyId.toString())
                 .build();
+
+            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
 
             when(partyService.getPartyEntityById(claimantPartyId, TEST_CASE_REFERENCE))
                 .thenReturn(claimantParty);
@@ -168,6 +175,10 @@ class SubmitEventHandlerTest {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
+            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
@@ -179,7 +190,6 @@ class SubmitEventHandlerTest {
             stubLegalRepForParty(representedPartyUuid);
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
-
             stubApplicationFeeCalculation(genAppRequest);
 
             PCSCase caseData = PCSCase.builder()
@@ -219,6 +229,10 @@ class SubmitEventHandlerTest {
 
             if (feeApplies) {
                 expectedFeeDetails = stubApplicationFeeCalculation(genAppRequest);
+                OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                    .name(CURRENT_ORG_FULL_NAME)
+                    .build();
+                given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
             } else {
                 stubNoApplicationFee(genAppRequest);
                 expectedFeeDetails = null;
@@ -241,7 +255,7 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
                 assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
                 assertThat(feesAndPayTaskData.getFeeDetails()).isEqualTo(expectedFeeDetails);
-                assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
+                assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_ORG_FULL_NAME);
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
@@ -258,6 +272,11 @@ class SubmitEventHandlerTest {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
+
+            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
@@ -449,6 +468,12 @@ class SubmitEventHandlerTest {
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
+            OrganisationDetailsResponse orgDetails = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetails);
+
+
             stubApplicationFeeCalculation(genAppRequest);
             stubPaymentServiceResponse();
 
@@ -471,7 +496,7 @@ class SubmitEventHandlerTest {
             FeesAndPayTaskData feesAndPayTaskData = feesAndPayTaskDataCaptor.getValue();
             assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
             assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
-            assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
+            assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_ORG_FULL_NAME);
             assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
             assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
         }
@@ -493,10 +518,14 @@ class SubmitEventHandlerTest {
 
             given(partyService.getPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
+            OrganisationDetailsResponse orgDetail = OrganisationDetailsResponse.builder()
+                .name(CURRENT_ORG_FULL_NAME)
+                .build();
             UserInfo userInfo = UserInfo.builder()
                 .name(CURRENT_USER_FULL_NAME)
                 .build();
             given(securityContextService.getCurrentUserDetails()).willReturn(userInfo);
+            given(organisationService.getOrganisationDetailsForCurrentUser()).willReturn(orgDetail);
 
             final FeeDetails feeDetails = stubApplicationFeeCalculation(genAppRequest);
 

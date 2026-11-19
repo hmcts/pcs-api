@@ -29,8 +29,8 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -170,13 +170,13 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                         long caseReference,
                                                         FeeDetails feeDetails) {
 
-        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        OrganisationDetailsResponse party = organisationService.getOrganisationDetailsForCurrentUser();
 
         return FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsiblePartyName(currentUserDetails.getName())
+            .responsiblePartyName(party.getName())
             .paymentCallbackHandlerType(GEN_APP_ISSUE)
             .relatedEntityId(genAppEntity.getId())
             .build();
