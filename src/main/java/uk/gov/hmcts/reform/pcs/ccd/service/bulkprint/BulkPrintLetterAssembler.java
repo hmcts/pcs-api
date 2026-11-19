@@ -25,9 +25,10 @@ import java.util.stream.Stream;
 
 /**
  * Builds the single PDF a pack is posted as: the coversheet exactly as rendered, then each document converted to
- * the bulk print standard (PDF/X-1a pages, A4, images at most 300 dpi, nothing within 20 mm of an edge), padded to an
- * even page count. Documents may be any type Possessions accepts as evidence (Word, Excel, PowerPoint, images,
- * text, PDF); office formats go through Docmosis.
+ * the bulk print standard (PDF/X-1a pages, A4, images at most 300 dpi, nothing within 20 mm of an edge). Each part
+ * is padded to an even page count, as Send Letter pads each document it merges, so every document starts on a new
+ * sheet rather than on the back of the coversheet or the document before. Documents may be any type Possessions
+ * accepts as evidence (Word, Excel, PowerPoint, images, text, PDF); office formats go through Docmosis.
  *
  * <p>One even-page document is what Send Letter forwards to Xerox untouched; it re-saves anything else as PDF 1.6,
  * which would undo the print standard. One document also means Send Letter's duplicate check covers the whole

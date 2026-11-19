@@ -166,18 +166,13 @@ class BulkPrintPacksTest extends CftlibTest {
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            // Coversheet, covering letter and defence form, padded to an even page count.
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertConvertedPage(pdDocument, 1);
-            assertConvertedPage(pdDocument, 2);
+            // Coversheet, covering letter and defence form, each one page followed by a blank so that each starts on
+            // a new sheet.
+            assertPartsEachStartANewSheet(pdDocument, 3);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertConvertedPage(pdDocument, 1);
-            assertConvertedPage(pdDocument, 2);
+            assertPartsEachStartANewSheet(pdDocument, 3);
         }
 
     }
@@ -212,20 +207,12 @@ class BulkPrintPacksTest extends CftlibTest {
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            // Coversheet, covering letter, defence form and counterclaim form. Already an even count.
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertConvertedPage(pdDocument, 1);
-            assertConvertedPage(pdDocument, 2);
-            assertConvertedPage(pdDocument, 3);
+            // Coversheet, covering letter, defence form and counterclaim form, each one page and a blank.
+            assertPartsEachStartANewSheet(pdDocument, 4);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertConvertedPage(pdDocument, 1);
-            assertConvertedPage(pdDocument, 2);
-            assertConvertedPage(pdDocument, 3);
+            assertPartsEachStartANewSheet(pdDocument, 4);
         }
 
     }
@@ -347,6 +334,21 @@ class BulkPrintPacksTest extends CftlibTest {
     }
 
     /** Pack documents are rasterised; full print-ready checks live in TestBulkPrintTest. */
+    /**
+     * A pack of one-page parts: the coversheet, then converted documents. Each part is followed by a blank page, so
+     * every part starts on a new sheet when printed duplex.
+     */
+    private static void assertPartsEachStartANewSheet(PDDocument document, int parts) throws IOException {
+        assertThat(document.getNumberOfPages()).isEqualTo(parts * 2);
+        assertThat(getPageContents(document, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
+        for (int index = 2; index < parts * 2; index += 2) {
+            assertConvertedPage(document, index);
+        }
+        for (int index = 1; index < parts * 2; index += 2) {
+            assertThat(document.getPage(index).hasContents()).as("page " + (index + 1) + " is blank").isFalse();
+        }
+    }
+
     private static void assertConvertedPage(PDDocument document, int index) throws IOException {
         PDFTextStripper stripper = new PDFTextStripper();
         stripper.setStartPage(index + 1);
