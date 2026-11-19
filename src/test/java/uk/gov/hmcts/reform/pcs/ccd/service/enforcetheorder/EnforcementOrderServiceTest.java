@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
@@ -87,6 +88,25 @@ class EnforcementOrderServiceTest {
 
         // Then
         assertThat(retOrder).isNull();
+    }
+
+    @Test
+    void shouldMarkAwaitingEnforcementOrderAsDraftDiscarded() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        enforcementOrderService.setEnforcementOrderAsDraftDiscarded(CASE_REFERENCE);
+
+        // Then
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.DRAFT_DISCARDED);
+        verify(enforcementOrderRepository).save(enforcementOrderEntity);
     }
 
     @ParameterizedTest

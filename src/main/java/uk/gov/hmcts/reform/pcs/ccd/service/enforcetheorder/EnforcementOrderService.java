@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementT
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.DRAFT_DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 
 @Service
@@ -74,6 +75,14 @@ public class EnforcementOrderService {
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
 
         return enforcementOrderRepository.save(enfEntity);
+    }
+
+    @Transactional
+    public void setEnforcementOrderAsDraftDiscarded(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        EnforcementOrderEntity enfEntity = findEnforcementOrderEntity(pcsCaseEntity);
+        enfEntity.setState(DRAFT_DISCARDED);
+        enforcementOrderRepository.save(enfEntity);
     }
 
     private EnforcementOrderEntity findEnforcementOrderEntity(PcsCaseEntity pcsCaseEntity) {
