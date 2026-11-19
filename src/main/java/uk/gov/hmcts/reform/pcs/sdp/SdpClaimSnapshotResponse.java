@@ -8,6 +8,7 @@ public record SdpClaimSnapshotResponse(
     Integer responseId,
     UUID partyId,
     String makeCounterClaim,
-    LocalDateTime responseSubmittedDate
+    LocalDateTime responseSubmittedDate,
+    String languageUsed
 ) {
 }

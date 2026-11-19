@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.sdp;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
@@ -39,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -76,6 +79,10 @@ class ExportServiceTest {
     }
 
     private ExportService exportService(Optional<BlobUploader> uploader) {
+        return exportService(uploader, "local", "claim_snapshot_");
+    }
+
+    private ExportService exportService(Optional<BlobUploader> uploader, String environment, String filenamePrefix) {
         ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
         return new ExportService(
             sdpClaimSnapshotJdbcRepository,
@@ -84,7 +91,8 @@ class ExportServiceTest {
             uploader,
             objectMapper,
             FIXED_CLOCK,
-            "local"
+            environment,
+            filenamePrefix
         );
     }
 
@@ -98,20 +106,63 @@ class ExportServiceTest {
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
 
         String json = uploadedJson();
-        assertThat(json).contains("\"contract_version\":\"4.1.0\"");
-        assertThat(json).contains("\"claim_reference\":\"1234-5678-9012-3456\"");
-        assertThat(json).contains("\"claim_type\":\"AAA3-SLD\"");
-        assertThat(json).contains("\"claim_sub_type\":\"Social\"");
-        assertThat(json).contains("\"party_role\":\"Defendant\"");
-        assertThat(json).contains("\"party_represented\":\"No\"");
-        assertThat(json).contains("\"grounds\":[]");
-        assertThat(json).contains("\"payment_references\":[]");
-        assertThat(json).contains("\"responses\":[]");
-        assertThat(json).contains("\"recorded_date\":\"2026-02-01T14:30:00Z\"");
-        assertThat(json).contains("\"environment\":\"dev\"");
-        assertThat(json).contains("\"snapshot_version\":1");
-        assertThat(json).contains("\"published_date\":\"2026-03-09T12:00:00Z\"");
+        assertThat(json).contains(
+            "\"contract_version\":\"4.2.0\"",
+            "\"claim_reference\":\"1234567890123456\"",
+            "\"claim_type\":\"AAA3-SLD\"",
+            "\"claim_sub_type\":\"Social\"",
+            "\"party_role\":\"Defendant\"",
+            "\"party_represented\":\"No\"",
+            "\"grounds\":[]",
+            "\"property_address\":[]",
+            "\"requested_fees\":[]",
+            "\"responses\":[]",
+            "\"postal_claim_received_by_court_date\":\"2026-01-10\"",
+            "\"claim_submitted_to_system_date\":\"2026-02-01T14:30:00Z\"",
+            "\"claim_fee_paid_date\":null",
+            "\"claim_issued_to_defendant_date\":\"2026-02-05T09:00:00Z\"",
+            "\"recorded_date\":\"2026-02-01T14:30:00Z\"",
+            "\"environment\":\"dev\"",
+            "\"snapshot_version\":1",
+            "\"published_date\":\"2026-03-09T12:00:00Z\""
+        );
+        assertThat(json).doesNotContain("\"party_language\"");
         verify(blobUploader).upload(eq("claim_snapshot_2026-03-08.json"), any(Path.class));
+    }
+
+    @Test
+    void shouldUseClaimLanguageForClaimantAndResponseLanguageForDefendant() throws Exception {
+        UUID claimantId = UUID.randomUUID();
+        stubClaimsForExport(
+            List.of(header()),
+            List.of(
+                new SdpClaimSnapshotParty(CLAIM_ID, claimantId, PartyRole.CLAIMANT.name(), false),
+                new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), false)
+            ),
+            List.of(),
+            List.of(),
+            List.of(new SdpClaimSnapshotResponse(CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(),
+                LocalDateTime.of(2026, 3, 1, 10, 0), LanguageUsed.WELSH.name()))
+        );
+
+        exportService.exportClaims();
+
+        JsonNode parties = new ObjectMapper().readTree(uploadedJson()).get(0).get("claim").get("parties");
+        assertThat(parties.get(0).get("party_id").asText()).isEqualTo(claimantId.toString());
+        assertThat(parties.get(0).get("party_language").asText()).isEqualTo("eng");
+        assertThat(parties.get(1).get("party_id").asText()).isEqualTo(PARTY_ID.toString());
+        assertThat(parties.get(1).get("party_language").asText()).isEqualTo("cym");
+    }
+
+    @Test
+    void shouldUsePreviewFilenameWhenExportingFromPreview() {
+        stubDefaultClaim();
+        exportService = exportService(Optional.of(blobUploader), "local", "claim_snapshot_preview_");
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.filename()).isEqualTo("claim_snapshot_preview_2026-03-08.json");
+        verify(blobUploader).upload(eq("claim_snapshot_preview_2026-03-08.json"), any(Path.class));
     }
 
     @Test
@@ -179,7 +230,7 @@ class ExportServiceTest {
 
         assertThatThrownBy(() -> exportService.exportClaims())
             .isInstanceOf(IllegalStateException.class);
-        verify(sdpClaimSnapshotJdbcRepository).upsertSnapshots(anyList());
+        verify(sdpClaimSnapshotJdbcRepository, never()).upsertSnapshots(anyList());
     }
 
     @Test
@@ -192,6 +243,42 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isZero();
         assertThat(result.filename()).isEqualTo("claim_snapshot_2026-03-08.json");
         verifyNoInteractions(blobUploader);
+    }
+
+    @Test
+    void shouldExportPropertyAddressFromCase() {
+        SdpClaimSnapshotHeader headerWithAddress = new SdpClaimSnapshotHeader(
+            CLAIM_ID,
+            ClaimantType.PROVIDER_OF_SOCIAL_HOUSING.name(),
+            VerticalYesNo.NO.name(),
+            LanguageUsed.ENGLISH.name(),
+            LocalDateTime.of(2026, 2, 1, 14, 30),
+            LocalDateTime.of(2026, 2, 5, 9, 0),
+            1234567890123456L,
+            45,
+            null,
+            CombinedLicenceType.SECURE_TENANCY.name(),
+            NoticeServiceMethod.FIRST_CLASS_POST.name(),
+            LocalDate.of(2026, 1, 10),
+            null,
+            "1 High Street",
+            null,
+            null,
+            "Cambridge",
+            null,
+            "England",
+            "cb5 8bl"
+        );
+        stubClaimsForExport(List.of(headerWithAddress), List.of(), List.of(), List.of(), List.of());
+
+        ExportResult result = exportService.exportClaims();
+
+        assertThat(result.recordCount()).isEqualTo(1);
+        String json = uploadedJson();
+        assertThat(json).contains(
+            "\"address\":\"1 High Street, Cambridge, England\"",
+            "\"postcode\":\"CB5 8BL\""
+        );
     }
 
     @Test
@@ -209,7 +296,8 @@ class ExportServiceTest {
             null,
             NoticeServiceMethod.FIRST_CLASS_POST.name(),
             LocalDate.of(2026, 1, 10),
-            null
+            null,
+            null, null, null, null, null, null, null
         );
         stubClaimsForExport(List.of(headerWithoutTenancy), List.of(), List.of(), List.of(), List.of());
 
@@ -234,14 +322,15 @@ class ExportServiceTest {
             CombinedLicenceType.SECURE_TENANCY.name(),
             null,
             null,
-            null
+            null,
+            null, null, null, null, null, null, null
         );
         stubClaimsForExport(List.of(headerWithoutNotice), List.of(), List.of(), List.of(), List.of());
 
         ExportResult result = exportService.exportClaims();
 
         assertThat(result.recordCount()).isEqualTo(1);
-        assertThat(uploadedJson()).doesNotContain("postal_claim_received_by_court_date");
+        assertThat(uploadedJson()).contains("\"postal_claim_received_by_court_date\":null");
     }
 
     @Test
@@ -261,8 +350,19 @@ class ExportServiceTest {
             List.of(new SdpClaimSnapshotParty(CLAIM_ID, PARTY_ID, PartyRole.DEFENDANT.name(), true)),
             List.of(
                 new SdpClaimSnapshotPayment(
-                    CLAIM_ID, "RC-1234", PaymentStatus.PAID.name(), LocalDateTime.of(2026, 2, 3, 10, 0)),
-                new SdpClaimSnapshotPayment(CLAIM_ID, " ", PaymentStatus.NOT_PAID.name(), null)
+                    CLAIM_ID,
+                    10,
+                    PARTY_ID,
+                    "2026-123456",
+                    "RC-1234",
+                    new BigDecimal("355.00"),
+                    PaymentStatus.PAID.name(),
+                    "CLAIM",
+                    LocalDateTime.of(2026, 2, 3, 10, 0),
+                    "Fee description"
+                ),
+                new SdpClaimSnapshotPayment(
+                    CLAIM_ID, 11, PARTY_ID, null, " ", null, PaymentStatus.NOT_PAID.name(), "CLAIM", null, null)
             ),
             List.of(new SdpClaimSnapshotGround(
                 CLAIM_ID,
@@ -272,8 +372,8 @@ class ExportServiceTest {
             )),
             List.of(
                 new SdpClaimSnapshotResponse(
-                    CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(), LocalDateTime.of(2026, 3, 1, 10, 0)),
-                new SdpClaimSnapshotResponse(UUID.randomUUID(), 13, null, null, null)
+                    CLAIM_ID, 12, PARTY_ID, VerticalYesNo.NO.name(), LocalDateTime.of(2026, 3, 1, 10, 0), null),
+                new SdpClaimSnapshotResponse(UUID.randomUUID(), 13, null, null, null, null)
             )
         );
 
@@ -282,7 +382,11 @@ class ExportServiceTest {
         assertThat(result.recordCount()).isEqualTo(1);
         String json = uploadedJson();
         assertThat(json).contains("\"grounds_code\":\"SERIOUS_RENT_ARREARS_GROUND8\"");
-        assertThat(json).contains("\"payment_reference\":\"RC-1234\"");
+        assertThat(json).contains("\"fee_reference\":\"2026-123456\"");
+        assertThat(json).contains("\"fee_status\":\"Fully Paid\"");
+        assertThat(json).contains("\"fee_type_description\":\"Fee description\"");
+        assertThat(json).contains("\"fee_type_description\":\"CLAIM\"");
+        assertThat(json).contains("\"fee_amount\":355.00");
         assertThat(json).contains("\"response_id\":\"12\"");
         assertThat(json).contains("\"response_type\":\"Defence\"");
         assertThat(json).contains("\"party_represented\":\"Yes\"");
@@ -399,7 +503,8 @@ class ExportServiceTest {
             CombinedLicenceType.SECURE_TENANCY.name(),
             NoticeServiceMethod.FIRST_CLASS_POST.name(),
             LocalDate.of(2026, 1, 10),
-            snapshotVersion
+            snapshotVersion,
+            null, null, null, null, null, null, null
         );
     }
 }

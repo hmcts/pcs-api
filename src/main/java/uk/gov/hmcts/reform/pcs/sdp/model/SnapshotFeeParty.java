@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class SnapshotPaymentReference {
+public class SnapshotFeeParty {
 
-    private String paymentReference;
+    private String partyId;
 }

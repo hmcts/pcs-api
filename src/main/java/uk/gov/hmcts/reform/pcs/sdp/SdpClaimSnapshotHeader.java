@@ -17,6 +17,13 @@ public record SdpClaimSnapshotHeader(
     String tenancyType,
     String servingMethod,
     LocalDate noticeDate,
-    Integer snapshotVersion
+    Integer snapshotVersion,
+    String addressLine1,
+    String addressLine2,
+    String addressLine3,
+    String postTown,
+    String county,
+    String country,
+    String postcode
 ) {
 }
