@@ -147,6 +147,11 @@ public class DraftCaseDataService {
         );
     }
 
+    @Transactional
+    public int discardAllUnsubmittedEventData(long caseReference, EventId eventId) {
+        return draftCaseDataRepository.deleteAllByCaseReferenceAndEventId(caseReference, eventId);
+    }
+
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();

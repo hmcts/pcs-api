@@ -48,9 +48,10 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        breathingSpaceService.createBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
+        breathingSpaceService.enterBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
 
         return SubmitResponse.<State>builder()
+            .state(State.BREATHING_SPACE)
             .confirmationBody(this.getConfirmationBodyMarkdown(caseData, caseReference))
             .build();
     }

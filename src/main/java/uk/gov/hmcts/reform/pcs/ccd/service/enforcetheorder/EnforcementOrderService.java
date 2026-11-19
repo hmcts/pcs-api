@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRe
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
@@ -20,6 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementStat
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EnforcementOrderService {
 
@@ -58,6 +61,50 @@ public class EnforcementOrderService {
                         order.getChooseEnforcementType().getValue().getCode().equals(enforcementType.name()))
                 .findFirst()
                 .orElse(null);
+    }
+
+
+    @Transactional
+    public void updateStatesForBreathingSpace(long caseReference) {
+        // Discard all unsubmitted Enforce the Order drafts for this case.
+        int discardedDrafts =
+            draftCaseDataService.discardAllUnsubmittedEventData(
+                caseReference,
+                EventId.enforceTheOrder
+            );
+
+
+        log.info(
+            "Discarded {} enforcement drafts for case {}",
+            discardedDrafts,
+            caseReference
+        );
+
+        // Preserve AC02
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+
+        Set<EnforcementOrderEntity> applications =
+            pcsCase.getEnforcementOrders();
+
+        if (CollectionUtils.isEmpty(applications)) {
+            log.info("No enforcement state found for case {}", caseReference);
+            return;
+        }
+
+        for (EnforcementOrderEntity application : applications) {
+            EnforcementState currentState = application.getState();
+
+            if (currentState == EnforcementState.CASE_PROGRESSION) {
+                application.setState(EnforcementState.BREATHING_SPACE);
+                log.info("Updated enforcement state to BREATHING_SPACE for case {}", caseReference);
+
+            } else if (currentState == EnforcementState.AWAITING_SUBMISSION_TO_HMCTS
+                || currentState == EnforcementState.PENDING_CASE_ISSUED) {
+
+                application.setState(EnforcementState.DRAFT_DISCARDED);
+                log.info("Updated enforcement state to Draft Discarded for case {}", caseReference);
+            }
+        }
     }
 
     @Transactional

@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Set;
@@ -38,6 +40,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildPcsCaseEntity;
+
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderServiceTest {
@@ -89,6 +92,103 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
+    @Test
+    void shouldUpdateAllEligibleEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+
+        EnforcementOrderEntity liveApplication =
+            EnforcementOrderEntity.builder()
+                .pcsCase(pcsCase)
+                .state(EnforcementState.CASE_PROGRESSION)
+                .build();
+
+        EnforcementOrderEntity draftApplication =
+            EnforcementOrderEntity.builder()
+                .pcsCase(pcsCase)
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+
+        EnforcementOrderEntity pendingApplication =
+            EnforcementOrderEntity.builder()
+                .pcsCase(pcsCase)
+                .state(EnforcementState.PENDING_CASE_ISSUED)
+                .build();
+
+        pcsCase.setEnforcementOrders(Set.of(liveApplication, draftApplication, pendingApplication));
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(liveApplication.getState()).isEqualTo(EnforcementState.BREATHING_SPACE);
+        assertThat(draftApplication.getState()).isEqualTo(EnforcementState.DRAFT_DISCARDED);
+        assertThat(pendingApplication.getState()).isEqualTo(EnforcementState.DRAFT_DISCARDED);
+
+    }
+
+
+    @Test
+    void shouldHandleCaseWithNoEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(Set.of());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getEnforcementOrders()).isEmpty();
+
+        verify(draftCaseDataService)
+            .discardAllUnsubmittedEventData(CASE_REFERENCE, EventId.enforceTheOrder);
+    }
+
+
+    @Test
+    void shouldHandleNullEnforcementApplications() {
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(null);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+    }
+
+
+    @Test
+    void shouldDiscardUnsubmittedEnforcementDraftsWhenEnteringBreathingSpace() {
+        // Given
+        PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+        pcsCase.setEnforcementOrders(Set.of());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        when(draftCaseDataService.discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        )).thenReturn(2);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        verify(draftCaseDataService).discardAllUnsubmittedEventData(
+            CASE_REFERENCE, EventId.enforceTheOrder
+        );
+    }
+
+
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldCreateAndSubmitEnforcementOrder(SelectEnforcementType enforcementType) {
@@ -123,6 +223,59 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
         assertThat(savedEntity.getState()).isEqualTo(EnforcementState.PENDING_CASE_ISSUED);
         assertThat(result).isSameAs(savedEntity);
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("breathingSpaceStateTransitions")
+    void shouldUpdateEnforcementStateForBreathingSpace(
+        EnforcementState initialState,
+        EnforcementState expectedState) {
+
+        // Given
+        final PcsCaseEntity pcsCase = buildPcsCaseEntity(pcsCaseId, claimId);
+
+        EnforcementOrderEntity enforcementState =
+            EnforcementOrderEntity.builder()
+                .pcsCase(pcsCase)
+                .state(initialState)
+                .build();
+
+        pcsCase.setEnforcementOrders(Set.of(enforcementState));
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCase);
+
+        // When
+        enforcementOrderService.updateStatesForBreathingSpace(CASE_REFERENCE);
+
+        // Then
+        assertThat(enforcementState.getState()).isEqualTo(expectedState);
+    }
+
+    private static Stream<Arguments> breathingSpaceStateTransitions() {
+        return Stream.of(
+            arguments(
+                EnforcementState.CASE_PROGRESSION,
+                EnforcementState.BREATHING_SPACE
+            ),
+            arguments(
+                EnforcementState.AWAITING_SUBMISSION_TO_HMCTS,
+                EnforcementState.DRAFT_DISCARDED
+            ),
+            arguments(
+                EnforcementState.PENDING_CASE_ISSUED,
+                EnforcementState.DRAFT_DISCARDED
+            ),
+            arguments(
+                EnforcementState.BREATHING_SPACE,
+                EnforcementState.BREATHING_SPACE
+            ),
+            arguments(
+                EnforcementState.REQUESTED_FOR_DELETION,
+                EnforcementState.REQUESTED_FOR_DELETION
+            )
+        );
     }
 
     private static Stream<Arguments> enforcementOrderTypes() {
