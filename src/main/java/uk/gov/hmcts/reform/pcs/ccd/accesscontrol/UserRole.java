@@ -90,6 +90,10 @@ public enum UserRole implements HasRole {
         this.accessProfiles = accessProfiles;
     }
 
+    public boolean isBailiffManagementRole() {
+        return this == BAILIFF || this == BAILIFF_ADMIN || this == BAILIFF_MANAGER || this == HMCTS_ENFORCEMENT;
+    }
+
     public String getCaseTypePermissions() {
         return Permission.toString(caseTypePermissions);
     }

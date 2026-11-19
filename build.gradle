@@ -175,6 +175,8 @@ tasks.register('definitionTest', Test) {
   description = "Checks the generated CCD definition: one tab per topic, declared field access respected"
   group = "verification"
   dependsOn 'generateCCDConfig'
+  systemProperty 'feature.bailiff-management-enabled',
+    providers.gradleProperty('feature.bailiff-management-enabled').orElse('false').get()
   inputs.dir(layout.buildDirectory.dir('definitions'))
   inputs.property('caseTypeSuffix', providers.environmentVariable('CASE_TYPE_SUFFIX').orElse(''))
   testClassesDirs = sourceSets.test.output.classesDirs
@@ -605,6 +607,9 @@ tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
 }
 
 project.tasks.named("generateCCDConfig") {
+  def bailiffManagement = providers.gradleProperty('feature.bailiff-management-enabled').orElse('false')
+  inputs.property('bailiffManagementEnabled', bailiffManagement)
+  systemProperty 'feature.bailiff-management-enabled', bailiffManagement.get()
   // the suffix changes the output directory, so a change must rerun the generator
   inputs.property('caseTypeSuffix', providers.environmentVariable('CASE_TYPE_SUFFIX').orElse(''))
   // random port, so generating never clashes with a running pcs-api or bootWithCCD
