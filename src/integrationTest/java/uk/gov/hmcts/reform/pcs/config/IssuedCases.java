@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -44,6 +45,7 @@ public class IssuedCases {
     private final AddressMapper addresses;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transaction;
+    private final JdbcTemplate jdbc;
 
     /** The claim pcs-api's testing support creates cases with, for a test to adjust before issuing it. */
     @SneakyThrows
@@ -98,7 +100,15 @@ public class IssuedCases {
                 .build();
             pcsCase.addHearing(hearing);
             // The case is managed here, so flushing persists the hearing itself and gives it its id.
-            pcsCases.flush();
+            // Fixture inserts run outside a CCD event; restore auditing before exercising application events.
+            String previous = jdbc.queryForObject("SELECT current_setting('ccd.audit_disabled', true)", String.class);
+            jdbc.execute("SET LOCAL ccd.audit_disabled = 'true'");
+            try {
+                pcsCases.flush();
+            } finally {
+                jdbc.queryForObject("SELECT set_config('ccd.audit_disabled', ?, true)", String.class,
+                    previous == null ? "" : previous);
+            }
             return hearing.getId();
         });
     }

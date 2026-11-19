@@ -1176,6 +1176,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private String selectedHearingId;
 
+    @CCD(label = "Which hearing do you want to manage?", searchable = false,
+        typeOverride = FieldType.DynamicList)
+    private DynamicStringList hearingSelection;
+
     @CCD(searchable = false)
     private String hearingLocation;
 
