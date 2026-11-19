@@ -40,8 +40,7 @@
       <Grounds>
         <Ground>
           <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
-          <Reason>The dwelling is needed for a disabled person.</Reason>
-          <EstateManagementReason>DISABLED_SUITABLE_DWELLING</EstateManagementReason>
+          <EstateManagementGround><Code>DISABLED_SUITABLE_DWELLING</Code><Reason>The dwelling is needed for a disabled person.</Reason></EstateManagementGround>
         </Ground>
         <Ground><Code>FAILURE_TO_GIVE_UP_POSSESSION_S170</Code><Reason>The contract-holder did not leave.</Reason></Ground>
       </Grounds>

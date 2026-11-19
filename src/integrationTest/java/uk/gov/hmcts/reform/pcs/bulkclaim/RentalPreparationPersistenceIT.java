@@ -270,7 +270,10 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
             "BUILDING_WORKS", "REDEVELOPMENT_SCHEMES");
         assertThat(groundsByCode(claim).get("BUILDING_WORKS").getCategory())
             .isEqualTo(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT);
-        assertThat(groundsByCode(claim).get("BUILDING_WORKS").getReason()).isEqualTo("The block is being redeveloped.");
+        assertThat(groundsByCode(claim).get("BUILDING_WORKS").getReason())
+            .isEqualTo("The block is being redeveloped.");
+        assertThat(groundsByCode(claim).get("REDEVELOPMENT_SCHEMES").getReason())
+            .isEqualTo("The estate is part of a regeneration scheme.");
         assertThat(groundsByCode(claim).get("OTHER_BREACH_OF_CONTRACT_S157").getReason())
             .isEqualTo("Sub-letting without consent.");
         assertThat(groundsByCode(claim).get("LANDLORD_NOTICE_PERIODIC_S178").getReason())

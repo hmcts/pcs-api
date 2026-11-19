@@ -40,9 +40,8 @@
       <Grounds>
         <Ground>
           <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
-          <Reason>The block is being redeveloped.</Reason>
-          <EstateManagementReason>BUILDING_WORKS</EstateManagementReason>
-          <EstateManagementReason>REDEVELOPMENT_SCHEMES</EstateManagementReason>
+          <EstateManagementGround><Code>BUILDING_WORKS</Code><Reason>The block is being redeveloped.</Reason></EstateManagementGround>
+          <EstateManagementGround><Code>REDEVELOPMENT_SCHEMES</Code><Reason>The estate is part of a regeneration scheme.</Reason></EstateManagementGround>
         </Ground>
         <Ground><Code>OTHER_BREACH_OF_CONTRACT_S157</Code><Reason>Sub-letting without consent.</Reason></Ground>
         <Ground><Code>LANDLORD_NOTICE_PERIODIC_S178</Code><Reason>Notice was given and has expired.</Reason></Ground>

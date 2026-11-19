@@ -61,11 +61,32 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="EstateManagementGroundCodeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BUILDING_WORKS"/>
+      <xs:enumeration value="REDEVELOPMENT_SCHEMES"/>
+      <xs:enumeration value="CHARITIES"/>
+      <xs:enumeration value="DISABLED_SUITABLE_DWELLING"/>
+      <xs:enumeration value="HOUSING_ASSOCIATIONS_AND_TRUSTS"/>
+      <xs:enumeration value="SPECIAL_NEEDS_DWELLINGS"/>
+      <xs:enumeration value="RESERVE_SUCCESSORS"/>
+      <xs:enumeration value="JOINT_CONTRACT_HOLDERS"/>
+      <xs:enumeration value="OTHER_ESTATE_MANAGEMENT_REASONS"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="EstateManagementGroundType">
+    <xs:sequence>
+      <xs:element name="Code" type="EstateManagementGroundCodeType"/>
+      <xs:element name="Reason" type="Text500"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="GroundType">
     <xs:sequence>
       <xs:element name="Code">
         <xs:annotation>
-          <xs:documentation>Ground code; the set of valid codes depends on the tenancy type and country and is checked after schema validation. NO_GROUNDS is the code for a claim made without any ground; it is valid only for introductory, demoted and other tenancies in England and cannot be combined with another ground.</xs:documentation>
+          <xs:documentation>Ground code; the set of valid codes depends on the tenancy type and country and is checked after schema validation. For a property in Wales, ESTATE_MANAGEMENT_GROUNDS_S160 takes no Reason of its own: list each estate management ground relied on, with its reason, as an EstateManagementGround. NO_GROUNDS is the code for a claim made without any ground; it is valid only for introductory, demoted and other tenancies in England and cannot be combined with another ground.</xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
@@ -76,15 +97,10 @@
       </xs:element>
       <xs:element name="Reason" type="Text500" minOccurs="0"/>
       <xs:element name="OtherDescription" type="Text500" minOccurs="0"/>
-      <xs:element name="EstateManagementReason" minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="EstateManagementGround" type="EstateManagementGroundType" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
-          <xs:documentation>Wales only, on the ESTATE_MANAGEMENT_GROUNDS_S160 ground: the estate management grounds relied on (BUILDING_WORKS, REDEVELOPMENT_SCHEMES, CHARITIES, DISABLED_SUITABLE_DWELLING, HOUSING_ASSOCIATIONS_AND_TRUSTS, SPECIAL_NEEDS_DWELLINGS, RESERVE_SUCCESSORS, JOINT_CONTRACT_HOLDERS, OTHER_ESTATE_MANAGEMENT_REASONS). The ground's Reason is recorded against each one.</xs:documentation>
+          <xs:documentation>Wales only, on the ESTATE_MANAGEMENT_GROUNDS_S160 ground: one entry for each estate management ground relied on, each with its own reason. Each code may appear once.</xs:documentation>
         </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:pattern value="[A-Z_]+"/>
-          </xs:restriction>
-        </xs:simpleType>
       </xs:element>
     </xs:sequence>
   </xs:complexType>

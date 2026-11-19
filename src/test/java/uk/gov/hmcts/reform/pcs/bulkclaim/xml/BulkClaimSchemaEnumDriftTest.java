@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.xml;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.DemotionHousingActSectionType;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.EstateManagementGroundCodeType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.LanguageUsedType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.LegislativeCountryType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.NoticeServiceMethodType;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -73,6 +75,12 @@ class BulkClaimSchemaEnumDriftTest {
     void demotionHousingActSectionShouldMatchJavaEnum() {
         assertThat(xsdValues(DemotionHousingActSectionType.values()))
             .containsExactlyInAnyOrderElementsOf(names(DemotionOfTenancyHousingAct.values()));
+    }
+
+    @Test
+    void estateManagementGroundCodeShouldMatchJavaEnum() {
+        assertThat(xsdValues(EstateManagementGroundCodeType.values()))
+            .containsExactlyInAnyOrderElementsOf(names(EstateManagementGroundsWales.values()));
     }
 
     @Test

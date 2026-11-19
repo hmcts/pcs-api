@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkErrorCollector;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.EstateManagementGroundCodeType;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.EstateManagementGroundType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.GroundType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.GroundsType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentArrearsOrBreachType;
@@ -182,9 +184,12 @@ class GroundRouterTest {
     }
 
     @Test
-    void duplicateGroundsAndEstateManagementReasonsAreRejected() {
+    void duplicateGroundsAndEstateManagementGroundsAreRejected() {
         GroundType estate = ground("RIOT_OFFENCE", "Riot.");
-        estate.getEstateManagementReason().add("BUILDING_WORKS");
+        EstateManagementGroundType estateGround = new EstateManagementGroundType();
+        estateGround.setCode(EstateManagementGroundCodeType.BUILDING_WORKS);
+        estateGround.setReason("Works.");
+        estate.getEstateManagementGround().add(estateGround);
 
         route(TenancyLicenceType.SECURE_TENANCY, grounds(estate, ground("RIOT_OFFENCE", "Riot.")));
 

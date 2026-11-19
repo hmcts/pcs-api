@@ -156,7 +156,7 @@ class WalesRentalBulkClaimPreparerTest {
     }
 
     @Test
-    void shouldPrepareOtherContractWithEstateManagementReasons() {
+    void shouldPrepareOtherContractWithEstateManagementGroundsWithTheirOwnReasons() {
         PreparedBulkClaim claim = prepared("rental-wales-estate-management.xml");
         PCSCase pcsCase = claim.pcsCase();
 
@@ -174,7 +174,7 @@ class WalesRentalBulkClaimPreparerTest {
         assertThat(pcsCase.getGroundsReasonsWales().getBuildingWorksReason())
             .isEqualTo("The block is being redeveloped.");
         assertThat(pcsCase.getGroundsReasonsWales().getRedevelopmentSchemesReason())
-            .isEqualTo("The block is being redeveloped.");
+            .isEqualTo("The estate is part of a regeneration scheme.");
         assertThat(pcsCase.getGroundsReasonsWales().getOtherBreachSection157Reason())
             .isEqualTo("Sub-letting without consent.");
         assertThat(pcsCase.getGroundsReasonsWales().getLandlordNoticePeriodicS178Reason())
@@ -278,7 +278,7 @@ class WalesRentalBulkClaimPreparerTest {
         assertThat(rejected.errors()).extracting(error -> error.path()).contains(
             CLAIM + "/TenancyCommenceDate",
             CLAIM + "/Grounds/RentArrearsOrBreach",
-            CLAIM + "/Grounds/Ground[2]/EstateManagementReason",
+            CLAIM + "/Grounds/Ground[2]/EstateManagementGround",
             CLAIM + "/Grounds/Ground[3]/Reason",
             CLAIM + "/Grounds/Ground[5]/Code",
             CLAIM + "/Grounds/Ground[6]/Code",
