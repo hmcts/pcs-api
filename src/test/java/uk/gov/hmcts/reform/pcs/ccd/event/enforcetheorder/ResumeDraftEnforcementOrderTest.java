@@ -142,8 +142,7 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         doCallRealMethod().when(enforcementFlagGuard).requireOnStart();
         PCSCase caseData = PCSCase.builder().build();
 
-
-        assertThatThrownBy( () -> callStartHandler(caseData))
+        assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage(REFUSAL_EXPECTED_STRING);
     }
@@ -156,7 +155,6 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder().build();
 
         Throwable thrown = catchThrowable(() -> callStartHandler(caseData));
-
 
         assertThat(thrown).isInstanceOf(CaseAccessException.class);
         verifyNoInteractions(enforcementSubmitEvent, enforcementOrderService);
