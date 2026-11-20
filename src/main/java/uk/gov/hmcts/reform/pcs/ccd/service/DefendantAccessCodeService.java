@@ -62,7 +62,8 @@ public class DefendantAccessCodeService {
     public List<UUID> findDefendantPartyIdsNeedingAccessCode(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         Set<UUID> partyIdsWithCode = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(PartyAccessCodeEntity::getParty)
+            .map(PartyEntity::getId)
             .collect(Collectors.toSet());
 
         return mainClaimDefendants(getMainClaim(pcsCaseEntity)).stream()
@@ -78,7 +79,7 @@ public class DefendantAccessCodeService {
 
         // Idempotent: a re-fired payment or a scheduler retry must not mint a second code for a party
         // that already has one. The UNIQUE(case_id, party_id) constraint is the final backstop.
-        if (partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(pcsCaseEntity.getId(), defendantPartyId)) {
+        if (partyAccessCodeRepo.existsByPcsCase_IdAndParty_Id(pcsCaseEntity.getId(), defendantPartyId)) {
             log.info("Access code already exists for party {} on case {} - skipping", defendantPartyId, caseReference);
             return;
         }
@@ -111,7 +112,7 @@ public class DefendantAccessCodeService {
 
             partyAccessCodeRepo.save(
                 PartyAccessCodeEntity.builder()
-                    .partyId(defendant.getId())
+                    .party(defendant)
                     .pcsCase(pcsCaseEntity)
                     .code(hashingService.encodeForStorage(plaintextAccessCode))
                     .role(PartyRole.DEFENDANT)

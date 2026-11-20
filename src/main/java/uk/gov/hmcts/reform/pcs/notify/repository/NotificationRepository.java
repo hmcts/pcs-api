@@ -14,4 +14,9 @@ public interface NotificationRepository extends JpaRepository<CaseNotification, 
      * @return An Optional containing the CaseNotification if found
      */
     Optional<CaseNotification> findByProviderNotificationId(UUID providerNotificationId);
+
+    /**
+     * Deletes all notifications for a case, including claim-less rows that claim cascade never sees.
+     */
+    void deleteByPcsCase_Id(UUID caseId);
 }

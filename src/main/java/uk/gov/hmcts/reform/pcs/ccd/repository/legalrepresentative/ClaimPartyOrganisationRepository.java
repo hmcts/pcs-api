@@ -28,4 +28,6 @@ public interface ClaimPartyOrganisationRepository
         @Param("legalRepresentativeOrganisationId") Integer legalRepresentativeOrganisationId,
         @Param("caseReference") long caseReference
     );
+
+    void deleteByParty_PcsCase_Id(UUID caseId);
 }

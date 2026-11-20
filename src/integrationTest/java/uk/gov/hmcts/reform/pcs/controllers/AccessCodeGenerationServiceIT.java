@@ -85,7 +85,8 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
             () -> accessCodeGenerationService.createAccessCodesForParties("1781000000000001", true));
 
         List<UUID> partyIdsWithCode = partyAccessCodeRepository.findAllByPcsCase_Id(caseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(PartyAccessCodeEntity::getParty)
+            .map(PartyEntity::getId)
             .toList();
         assertThat(partyIdsWithCode).containsExactly(succeedingDefendantId);
     }
@@ -106,7 +107,8 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         accessCodeGenerationService.createAccessCodesForParties("1781000000000002", true);
 
         List<UUID> partyIdsWithCode = partyAccessCodeRepository.findAllByPcsCase_Id(caseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(PartyAccessCodeEntity::getParty)
+            .map(PartyEntity::getId)
             .toList();
         assertThat(partyIdsWithCode).containsExactlyInAnyOrder(firstDefendantId, secondDefendantId);
     }
@@ -149,7 +151,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
 
     private List<UUID> partyIdsWithCode(PcsCaseEntity caseEntity) {
         return partyAccessCodeRepository.findAllByPcsCase_Id(caseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(pac -> pac.getParty().getId())
             .toList();
     }
 

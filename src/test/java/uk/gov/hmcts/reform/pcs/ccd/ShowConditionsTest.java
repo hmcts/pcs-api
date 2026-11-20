@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DELETE_UNISSUED_CLAIM;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
@@ -36,7 +37,8 @@ class ShowConditionsTest {
         WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
         CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled",
         MAKE_ORDER, "featureFlags.makeOrderEnabled",
-        ENFORCEMENT, "featureFlags.enforcementEnabled"
+        ENFORCEMENT, "featureFlags.enforcementEnabled",
+        DELETE_UNISSUED_CLAIM, "featureFlags.deleteUnissuedClaimEnabled"
     );
 
     @Test
