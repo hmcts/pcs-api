@@ -93,7 +93,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("shows the caseworker the order the judge submitted and the case")
+    @DisplayName("shows the caseworker the order the judge submitted and the case, and lists it as waiting for review")
     void showsTheSubmittedOrderAndTheCase() {
         Order submitted = judgeSubmitsOrder("the judge's order");
 
@@ -103,6 +103,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(start.order().formData()).containsEntry("notes", "the judge's order");
         assertThat(start.caseContext().caseReference()).isEqualTo(caseReference);
         assertThat(start.caseContext().defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
+        assertThat(events.view(caseReference, caseworker).getOrderListMarkdown())
+            .contains("Outright possession", "Waiting for review");
     }
 
     @Test
@@ -141,6 +143,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             .extracting(row -> row.get("state"), row -> row.get("sender_name"), row -> row.get("body"),
                 row -> row.get("closed"))
             .containsExactly(tuple("RETURNED_TO_JUDGE", "A Caseworker", QUERY, true));
+        assertThat(events.view(caseReference, judge).getOrderListMarkdown()).contains("Returned to judge");
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
@@ -211,6 +214,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(issued.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         PCSCase view = events.view(caseReference, caseworker);
+        assertThat(view.getOrderListMarkdown()).contains("Suspended possession", "Issued");
         assertThat(view.getCaseReviewDatesMarkdown())
             .contains("Review date 1", "15 Jan 2027", GENERAL_ORDER.getLabel(), "Check the rent is paid");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
