@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -27,18 +27,19 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class,
-    JacksonAutoConfiguration.class
+    Jackson2AutoConfiguration.class
 })
 @EnableFeignClients(clients = CaseAssignmentApi.class)
-@TestPropertySource(properties = "core_case_data.api.url=http://localhost:4452")
+@TestPropertySource(properties = {"core_case_data.api.url=http://localhost:4452",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "ccdDataStoreAPI_caseAssignedUserRoles", port = "4452")
-
 public class CcdCaseAssignmentConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
