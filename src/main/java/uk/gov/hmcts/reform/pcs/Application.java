@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.docassembly.DocAssemblyApi;
+import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
@@ -34,7 +36,6 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
  */
 @SpringBootApplication(
     scanBasePackages = {
-        "uk.gov.hmcts.reform.docassembly",
         "uk.gov.hmcts.reform.pcs",
         "uk.gov.hmcts.ccd.sdk"
     },
@@ -59,13 +60,14 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
         PaymentsApi.class,
         SendLetterApiProxy.class,
         CaseDocumentClientApi.class,
+        DocAssemblyApi.class,
         WorkAllocationWorkflowApi.class,
         TaskManagementApi.class,
         RoleAssignmentApi.class
     }
 )
 
-@Import(Application.PaymentsClientConfiguration.class)
+@Import({Application.PaymentsClientConfiguration.class, DocAssemblyClient.class})
 @EnableScheduling
 public class Application {
 
