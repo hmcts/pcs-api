@@ -140,7 +140,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
-        breathingSpaceSummaryView.setCaseFields(pcsCase, caseReference, state);
+        breathingSpaceSummaryView.setCaseFields(pcsCase, caseReference);
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
