@@ -166,15 +166,10 @@ class GeneratedDefinitionTest {
     }
 
     @Test
-    void bailiffPersonasAreIncludedOnlyWhenManagementIsEnabled() {
+    void bailiffPersonasHaveRegisteredAmMappingsAndCaseTypePermissions() {
         List<JsonNode> mappings = rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json"));
         List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json"));
         for (String role : List.of("bailiff", "bailiff-admin", "bailiff-manager")) {
-            if (!Boolean.getBoolean("feature.bailiff-management-enabled")) {
-                assertThat(mappings).noneMatch(row -> role.equals(row.path("RoleName").asText()));
-                assertThat(permissions).noneMatch(row -> role.equals(row.path("UserRole").asText()));
-                continue;
-            }
             assertThat(mappings).filteredOn(row -> role.equals(row.path("RoleName").asText()))
                 .singleElement().satisfies(row -> {
                     assertThat(row.path("AccessProfiles").asText()).isEqualTo(role);
@@ -189,14 +184,9 @@ class GeneratedDefinitionTest {
 
     @Test
     void basicEnforcementRoleHasOnlyTheExistingGlobalSearchAccessProfile() {
-        List<JsonNode> enforcementMappings = rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json")).stream()
-            .filter(row -> "hmcts-enforcement".equals(row.path("RoleName").asText())).toList();
-        if (Boolean.getBoolean("feature.bailiff-management-enabled")) {
-            assertThat(enforcementMappings).singleElement().satisfies(
-                row -> assertThat(row.path("AccessProfiles").asText()).isEqualTo("GS_profile"));
-        } else {
-            assertThat(enforcementMappings).isEmpty();
-        }
+        assertThat(rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json")))
+            .filteredOn(row -> "hmcts-enforcement".equals(row.path("RoleName").asText()))
+            .singleElement().satisfies(row -> assertThat(row.path("AccessProfiles").asText()).isEqualTo("GS_profile"));
         assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json")))
             .filteredOn(row -> "GS_profile".equals(row.path("UserRole").asText()))
             .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
