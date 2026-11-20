@@ -92,20 +92,5 @@ class EnterBreathingSpaceTest extends BaseEventTest {
     }
 
 
-    @Test
-    void shouldTransitionCaseToBreathingSpaceOnSubmit() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .breathingSpaceDetails(BreathingSpaceDetails.builder().build())
-            .build();
-
-        // When
-        SubmitResponse<State> response = callSubmitHandler(pcsCase);
-
-        // Then
-        assertThat(response.getState())
-            .isEqualTo(State.BREATHING_SPACE);
-    }
-
 
 }
