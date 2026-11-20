@@ -47,9 +47,17 @@ public class BulkPrintLetterAssembler {
      */
     static final long MAX_LETTER_BYTES = 50L * 1024 * 1024;
 
+    /**
+     * Below the SDK's 300 dpi default (Xerox accepts up to 300). Every page is stored as a lossless image, so 200 dpi
+     * roughly halves the size of a pack with no visible loss of legibility, and keeps evidence-heavy packs under
+     * {@link #MAX_LETTER_BYTES}.
+     */
+    static final int LETTER_DPI = 200;
+
     private final DocumentConverter documentConverter;
     private final PrintOptions printOptions = PrintOptions.bulkPrint().toBuilder()
         .maxOutputBytes(MAX_LETTER_BYTES)
+        .resolutionDpi(LETTER_DPI)
         .build();
 
     public BulkPrintLetterAssembler(DocumentConverter documentConverter) {
