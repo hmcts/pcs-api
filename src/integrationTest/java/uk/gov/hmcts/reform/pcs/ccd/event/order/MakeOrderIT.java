@@ -90,6 +90,8 @@ class MakeOrderIT extends OrderEventIT {
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
         // The order is made before the judge making it.
         assertThat(start.judgeName()).isEqualTo("First Judge");
+        // Tests fetch no calendar, so there are no bank holidays: working days skip only weekends.
+        assertThat(start.bankHolidays()).isEmpty();
         assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
         assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
     }

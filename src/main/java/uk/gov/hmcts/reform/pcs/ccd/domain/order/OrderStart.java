@@ -20,9 +20,14 @@ import java.util.UUID;
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
- * name of the judge the order is made by, which it names as made before them.
+ * name of the judge the order is made by, which it names as made before them. The bank holidays are those of the
+ * coming year in England and Wales, which a date the order gives to apply by moves off.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judgeName) {
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judgeName,
+                         List<LocalDate> bankHolidays) {
+
+    /** How far ahead the bank holidays go: a year, beyond any date an order gives to apply by. */
+    public static final int BANK_HOLIDAY_DAYS = 400;
 
     /**
      * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent

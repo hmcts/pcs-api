@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
+import uk.gov.hmcts.reform.pcs.calendar.BankHolidays;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -89,6 +90,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final HearingRecords hearingRecords;
     private final FeatureToggleService featureToggleService;
+    private final BankHolidays bankHolidays;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -150,7 +152,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElse(OrderStart.Order.NONE);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
             hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
-            securityContextService.getCurrentUserDetails().getName()));
+            securityContextService.getCurrentUserDetails().getName(),
+            bankHolidays.upcoming(OrderStart.BANK_HOLIDAY_DAYS)));
     }
 
     /** One of the case's hearings, or none for an order made without a hearing. */
