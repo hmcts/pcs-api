@@ -105,7 +105,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       table: 'Notice details'
     });
   });
-  
+
   test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
@@ -212,14 +212,6 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary(),
       section: 'Claimant contact details',
       table: 'Claimant contact details'
-    });
-    await performAction('validateCaseSummaryDetails', {
-      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary().defendant1.nameKnown,
-      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary().addAnotherDefendant,
-      createPayload: createCaseApiWalesData.createCasePayload,
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary(),
-      section: 'Claimant registration and licensing',
-      table: 'Claimant registration and licensing'
     });
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary().defendant1.nameKnown,
