@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingHtml;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -101,7 +102,8 @@ class OrderCaseContext {
             genApp.getWithoutNotice(),
             genApp.getWithoutNoticeReason(),
             genApp.getWhatOrderWanted(),
-            genApp.getDraftOrderWording(),
+            // Rich text a solicitor wrote, cleaned as the application's PDF has it, for the judge's page to show.
+            DraftOrderWordingHtml.clean(genApp.getDraftOrderWording()),
             applicationDocuments(genApp)
         );
     }

@@ -68,7 +68,8 @@ class DecideApplicationIT extends OrderEventIT {
 
     private static final String WHAT_ORDER_WANTED = "The hearing on 14 October is adjourned to the first open date.";
     private static final String DRAFT_ORDER_WORDING =
-        "<ol><li>The hearing on 14 October is <strong>adjourned</strong>.</li><li>Costs in the case.</li></ol>";
+        "<ol><li>The hearing on 14 October is <strong>adjourned</strong>.</li><li>Costs in the case.</li></ol>"
+            + "<script>alert(1)</script>";
     private static final UUID FORM_ID = UUID.randomUUID();
     private static final UUID WITNESS_STATEMENT_ID = UUID.randomUUID();
 
@@ -138,8 +139,9 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
         assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
         assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
-        // The applicant's draft order, as the rich text they wrote it in.
-        assertThat(application.draftOrderWording()).isEqualTo(DRAFT_ORDER_WORDING);
+        // The applicant's draft order, as the rich text they wrote it in, without anything that would run.
+        assertThat(application.draftOrderWording()).isEqualTo(
+            "<ol><li>The hearing on 14 October is <strong>adjourned</strong>.</li><li>Costs in the case.</li></ol>");
         assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
             .containsExactly(
                 tuple(FORM_ID, "application-form.pdf"),
