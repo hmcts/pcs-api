@@ -37,9 +37,7 @@ class CannotApplyForWritInfoPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
-                    .contains(ERROR_MESSAGE);
+            assertThat(response.getErrorMessageOverride()).isEqualTo(ERROR_MESSAGE);
         }
     }
 }

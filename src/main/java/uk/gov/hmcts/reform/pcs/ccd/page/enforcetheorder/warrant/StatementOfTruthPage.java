@@ -4,7 +4,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
@@ -26,6 +25,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
+                    .readonly(WarrantDetails::getIsSuspendedOrder, NEVER_SHOW)
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
                         .label("statementOfTruth-cert-suspended",
@@ -53,11 +53,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             """,
                             "warrantIsSuspendedOrder=\"NO\""
                         )
-                    .done()
-                    .complex(WarrantDetails::getRepaymentCosts)
-                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-                        .label("statementOfTruth-payments-table",
-                            "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
