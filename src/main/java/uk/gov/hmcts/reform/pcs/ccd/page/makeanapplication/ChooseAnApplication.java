@@ -14,7 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsDisabled;
+
 
 @Slf4j
 @AllArgsConstructor
@@ -49,7 +50,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .pageLabel("Choose an application")
             .label("chooseAnApplication-lineSeparator", "---")
             .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
-            .label("chooseAnApplication-info", INFO_MARKDOWN, featureFlagsEnabled(
+            .label("chooseAnApplication-info", INFO_MARKDOWN, featureFlagsDisabled(
                 FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2))
             .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true)
             .readonly(PCSCase::getCurrentRepresentedPartyName, NEVER_SHOW, true)
