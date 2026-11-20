@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.health.contributor.Status;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.core.env.StandardEnvironment;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,7 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IdamHealthConfigurationTest {
 
+    // Ignore environment variables: CI sets IDAM_API_URL, which binds to idam.api.url.
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+        .withInitializer(context -> context.getEnvironment().getPropertySources()
+            .remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME))
         .withUserConfiguration(IdamHealthConfiguration.class);
 
     private HttpServer idam;
