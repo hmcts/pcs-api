@@ -26,6 +26,10 @@ import {performActions} from "@utils/controller";
 import {caseSummary, home} from "@data/page-data";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
 import {VERY_LONG_TIMEOUT} from "../../../../playwright.config";
+import {
+  CaseManagementCommonUtils
+} from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
+
 
 
 export const addressInfo = {
@@ -62,13 +66,14 @@ export class GenAppsAction implements IAction {
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
       ['verifyApplicationSubmitted', () => this.verifyApplicationSubmitted()],
-      ['payClaimFeeGenApps', () => this.payClaimFeeGenApps()],
+      ['payClaimFeeGenApps', () => this.payClaimFeeGenApps(fieldName as actionRecord)],
       ['clickPayNowLinkGenApps', () => this.clickPayNowLinkGenApps(page)],
       ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
       ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
       ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()],
       ['navigateToSummaryPage',() => this.navigateToSummaryPage(page)],
       ['selectGenAppsClaimantStatementOfTruth', () => this.selectGenAppsClaimantStatementOfTruth(fieldName as actionRecord)],
+      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -149,14 +154,23 @@ export class GenAppsAction implements IAction {
   }
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: 'Case number: ' + caseInfo.fid,
+    });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
+    });
+
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
       option: feeHelp.option,
     });
-    await performAction('clickButton', helpPayingTheFee.continueButton);
+
+    await performAction('clickButton', feeHelp.continueButton);
+
   }
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
@@ -304,25 +318,43 @@ export class GenAppsAction implements IAction {
     await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
   }
 
-  private async payClaimFeeGenApps( clickLink?: boolean ) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+  private async payClaimFeeGenApps({clickLink, claimType}: {
+    clickLink?: boolean;
+    claimType?: string;
+  } = {}) {
+
+    const pageData = confirmGenApps(claimType);
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: 'Case number: ' + caseInfo.fid
+    });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('mainHeader', confirmGenApps.mainHeader);
-    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay126ApplicationFeeParagraph});
+
+    await performValidation('mainHeader', pageData.mainHeader);
+    await performValidation('text', {
+      elementType: 'span',
+      text: pageData.payApplicationFeeParagraph
+    });
     if (clickLink === true) {
-      await performAction('clickButton', confirmGenApps.payYourApplicationLink);
+      await performAction(
+        'clickButton',
+        pageData.payYourApplicationLink
+      );
     } else {
-      await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+      await performAction(
+        'clickButton',
+        pageData.closeAndReturnToCaseDetailsButton
+      );
     }
   }
 
   private async clickPayNowLinkGenApps(page: Page ) {
     const maxRetries = 10;
-    const amount = String(confirmGenApps.PayAmount);
-    const payNowText = String(confirmGenApps.payNowLink);
+    const amount = String(confirmGenApps().PayAmount);
+    const payNowText = String(confirmGenApps().payNowLink);
 
     for (
       let retryCount = 0;
@@ -519,6 +551,7 @@ export class GenAppsAction implements IAction {
   }
 
   private async reviewAndUpdateCYA(page: Page, review: actionRecord) {
+    const feePage = review.feeData as ReturnType<typeof helpPayingTheFee>;
     const rows = page.locator('.govuk-summary-list__row');
     const rowCount = await rows.count();
 
@@ -534,7 +567,7 @@ export class GenAppsAction implements IAction {
         break;
       }
     }
-    await this.updatePreviouslyAnsweredPage(page);
+    await this.updatePreviouslyAnsweredPage(page, feePage);
     const pagesForThisQuestion = journeys[String(review.journey)] ?? defaultJourney;
 
     await this.followJourneyBackToCya(page, pagesForThisQuestion);
@@ -542,7 +575,7 @@ export class GenAppsAction implements IAction {
     await expect(page).toHaveURL(/check-your-answers/);
   }
 
-  private async updatePreviouslyAnsweredPage(page: Page) {
+  private async updatePreviouslyAnsweredPage(page: Page, testPage: actionRecord) {
     const currentPage = stringToCamelCase(
       await page
         .locator(
@@ -563,15 +596,16 @@ export class GenAppsAction implements IAction {
           option: option1,
         });
         if (option1 === 'Yes') {
-          await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+          await performValidation('mainHeader', testPage.mainHeader);
           await performAction('doYouNeedHelpPayingFee', {
-            question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-            option: helpPayingTheFee.noRadioOption,
+            question: testPage.doYouNeedHelpPayingTheFeeQuestion,
+            option: testPage.noRadioOption,
+            continueButton: testPage.continueButton,
           });
         } else {
           await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
-            helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+            testPage.doYouNeedHelpPayingTheFeeQuestion as string,
             haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
             'What is your Help with Fees reference number?',
           ]);
@@ -581,13 +615,14 @@ export class GenAppsAction implements IAction {
       }
       case 'doYouNeedHelpPayingTheFeeForThisApplication': {
         const feeOption1 =
-          FieldsStore.get(helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion as string) ===
+          FieldsStore.get(testPage.doYouNeedHelpPayingTheFeeQuestion as string) ===
             'I need help paying the fee'
-            ? helpPayingTheFee.noRadioOption
-            : helpPayingTheFee.yesRadioOption;
+            ? testPage.noRadioOption
+            : testPage.yesRadioOption;
         await performAction('doYouNeedHelpPayingFee', {
-          question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+          question: testPage.doYouNeedHelpPayingTheFeeQuestion,
           option: feeOption1,
+          continueButton: testPage.continueButton,
         });
         if (feeOption1 !== 'I need help paying the fee') {
           FieldsStore.deleteKeys([
@@ -651,5 +686,154 @@ export class GenAppsAction implements IAction {
     }
 
     throw new Error('Exceeded maximum steps before reaching CYA');
+  }
+
+  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
+    if (Array.isArray(validationArr.inputArray)) {
+      for (const item of validationArr.inputArray) {
+
+        switch (validationArr.validationType) {
+
+          case 'radioOptions':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+            break;
+
+          case 'checkBox':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
+
+          case 'checkBoxPageLevel':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
+
+          case 'dropDown':
+            await performAction('clickButton', validationArr.button);
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            await performAction('select', validationArr.dropQn, validationArr.option);
+            break;
+
+          case 'textField':
+            if (item.type === 'valid') {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+            } else {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                if (item.type === 'moreThanMax') {
+                  await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
+                } else {
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                  await performValidation('errorMessage', validationArr.label, item.errMessage);
+                }
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+            }
+            break;
+
+          case 'dateField':
+            let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+            const enterDate = () =>
+              performActions(
+                'Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]
+              );
+
+            if (item.type === 'empty') {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            } else if (item.type === 'past' || item.type === 'validFuture') {
+              await enterDate();
+            } else if (item.type === 'invalid') {
+              await enterDate();
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            } else {
+              await enterDate();
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            }
+            break;
+
+          case 'dateRadioOption':
+            let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+            const enterDateOfReview = () =>
+              performActions(
+                'Enter Date',
+                ['inputText', validationArr.label1, dateOfReview.split('/')[0]],
+                ['inputText', validationArr.label2, dateOfReview.split('/')[1]],
+                ['inputText', validationArr.label3, dateOfReview.split('/')[2]]
+              );
+            await enterDateOfReview();
+            await performAction('clickRadioButton', {
+              question: validationArr.question,
+              option: validationArr.option
+            });
+            await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
+            await performAction('clickButton', validationArr.button);
+            await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            break;
+
+          case 'moneyField':
+            if (item.index && validationArr.labelMulti) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label1, index: item.index }, item.input2);
+              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
+            } else if (item.index) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+            } else {
+              await performAction('inputText', validationArr.label, item.input);
+            }
+
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              if (item.errMessage1) {
+                await performValidation('inputError', validationArr.labelMulti, item.errMessage1);
+              } else if (item.errMessage2) {
+                await performValidation('inputError', validationArr.label1, item.errMessage2);
+              }
+              else {
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'uploadADocument':
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          default:
+            throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
+        }
+      }
+    }
+    if (validationArr.buttonRemove) {
+      await performAction('removeFile');
+      await page.waitForTimeout(6000);
+    }
   }
 }

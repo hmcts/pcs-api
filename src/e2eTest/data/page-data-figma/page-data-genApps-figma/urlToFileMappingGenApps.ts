@@ -17,4 +17,5 @@ export default {
   'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
   'makeAnApplicationstatementOfTruth': 'statementOfTruth',
   'makeAnApplication/submit': 'checkYourAnswersGenApps',
+  'makeAnApplicationstartSuspend': 'askTheCourtToSuspendAnOrder',
 };

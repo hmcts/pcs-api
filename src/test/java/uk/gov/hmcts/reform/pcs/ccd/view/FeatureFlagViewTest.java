@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureFlagViewTest {
@@ -47,7 +48,8 @@ class FeatureFlagViewTest {
         WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
         MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
-        ENFORCEMENT, FeatureFlags::getEnforcementEnabled
+        ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
+        DEFENDANT_GENERAL_APPLICATIONS_R_2, FeatureFlags::getDefendantGeneralApplicationsR2Enabled
     );
 
     @Mock

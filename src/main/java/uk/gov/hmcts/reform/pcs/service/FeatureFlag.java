@@ -15,6 +15,7 @@ public enum FeatureFlag {
     CUI_RESPOND_TO_CLAIM_LR("cui-respond-to-claim-lr-enabled", true),
     RELEASE_1_DOT_2("release-1.2-enabled", true),
     RELEASE_1_DOT_3("release-1.3-enabled", true),
+    DEFENDANT_GENERAL_APPLICATIONS_R_2("defendant-general-applications-r-2", false),
     RELEASE_1B("release-1b-enabled", false),
     RELEASE_1_DOT_4("release-1.4-enabled", false),
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
@@ -45,6 +46,8 @@ class StartEventHandlerTest {
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
     private FeeApplier feeApplier;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
@@ -52,7 +55,8 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier,
+                                          featureToggleService);
     }
 
     @Test
@@ -151,6 +155,7 @@ class StartEventHandlerTest {
         // Given
         final String formattedStandardFee = "10.99";
         final String formattedMaxFee = "20.99";
+        final String formattedSuspendFee = "9.99";
 
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
@@ -174,6 +179,11 @@ class StartEventHandlerTest {
             .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_MAX_FEE), feeSetterCaptor.capture());
         feeSetterCaptor.getValue().accept(caseData, formattedMaxFee);
         assertThat(caseData.getXuiGenAppRequest().getMaxFee()).isEqualTo(formattedMaxFee);
+
+        verify(feeApplier)
+            .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_SUSPEND_FEE), feeSetterCaptor.capture());
+        feeSetterCaptor.getValue().accept(caseData, formattedSuspendFee);
+        assertThat(caseData.getXuiGenAppRequest().getSuspendFee()).isEqualTo(formattedSuspendFee);
     }
 
     @Test

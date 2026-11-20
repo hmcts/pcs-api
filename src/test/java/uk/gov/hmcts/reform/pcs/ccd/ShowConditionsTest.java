@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2;
 
 class ShowConditionsTest {
 
@@ -32,6 +33,7 @@ class ShowConditionsTest {
         RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled",
         RELEASE_1B, "featureFlags.release1bEnabled",
         RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled",
+        DEFENDANT_GENERAL_APPLICATIONS_R_2, "featureFlags.defendantGeneralApplicationsR2Enabled",
         CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled",
         WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
         CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled",
