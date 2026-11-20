@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -32,17 +33,30 @@ public class EnforcementOrderService {
     @Transactional
     public void createEnforcementOrder(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        if (CollectionUtils.isEmpty(pcsCaseEntity.getEnforcementOrders())
-                || pcsCaseEntity.getEnforcementOrders().stream()
-                    .noneMatch(order -> order.getState() == AWAITING_SUBMISSION_TO_HMCTS)) {
-            EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .enforcementOrder(EnforcementOrder.builder().build())
-                    .state(AWAITING_SUBMISSION_TO_HMCTS)
-                    .build();
-            pcsCaseEntity.getEnforcementOrders().add(enforcementOrderEntity);
-            enforcementOrderRepository.save(enforcementOrderEntity);
+        Set<EnforcementOrderEntity> enforcementOrders = pcsCaseEntity.getEnforcementOrders();
+        if (!CollectionUtils.isEmpty(enforcementOrders)) {
+            if (enforcementOrders.stream().anyMatch(order -> order.getState() == AWAITING_SUBMISSION_TO_HMCTS)) {
+                return;
+            }
+
+            EnforcementOrderEntity discardedOrder = enforcementOrders.stream()
+                    .filter(order -> order.getState() == DRAFT_DISCARDED)
+                    .findFirst()
+                    .orElse(null);
+            if (discardedOrder != null) {
+                discardedOrder.setState(AWAITING_SUBMISSION_TO_HMCTS);
+                enforcementOrderRepository.save(discardedOrder);
+                return;
+            }
         }
+
+        EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .state(AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+        pcsCaseEntity.getEnforcementOrders().add(enforcementOrderEntity);
+        enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
@@ -54,6 +68,7 @@ public class EnforcementOrderService {
 
         return enforcementEntitySet
                 .stream()
+                .filter(entity -> entity.getState() != DRAFT_DISCARDED)
                 .map(EnforcementOrderEntity::getEnforcementOrder)
                 .filter(order ->
                         order.getChooseEnforcementType().getValue().getCode().equals(enforcementType.name()))
@@ -78,10 +93,10 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public void setEnforcementOrderAsDraftDiscarded(long caseReference) {
+    public void setEnforcementApplicationState(long caseReference, EnforcementState state) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         EnforcementOrderEntity enfEntity = findEnforcementOrderEntity(pcsCaseEntity);
-        enfEntity.setState(DRAFT_DISCARDED);
+        enfEntity.setState(state);
         enforcementOrderRepository.save(enfEntity);
     }
 

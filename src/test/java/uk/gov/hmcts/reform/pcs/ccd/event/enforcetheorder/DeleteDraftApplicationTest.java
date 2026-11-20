@@ -22,6 +22,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.DRAFT_DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -79,7 +80,7 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         // Then
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
-        verify(enforcementOrderService).setEnforcementOrderAsDraftDiscarded(TEST_CASE_REFERENCE);
+        verify(enforcementOrderService).setEnforcementApplicationState(TEST_CASE_REFERENCE, DRAFT_DISCARDED);
 
         assertThat(submitResponse.getConfirmationBody())
                 .contains("Draft application deleted");
@@ -101,7 +102,7 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
         verify(enforcementOrderService, never())
-                .setEnforcementOrderAsDraftDiscarded(TEST_CASE_REFERENCE);
+                .setEnforcementApplicationState(TEST_CASE_REFERENCE, DRAFT_DISCARDED);
 
         assertThat(submitResponse.getConfirmationBody()).isNull();
     }

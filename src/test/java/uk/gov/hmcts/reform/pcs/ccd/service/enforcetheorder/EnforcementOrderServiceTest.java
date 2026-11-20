@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -33,8 +34,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.DRAFT_DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
@@ -91,6 +94,24 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldNotReturnDraftDiscardedEnforcementOrder() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .enforcementOrder(buildEnforcementOrderWithSpecifiedType(WARRANT))
+                .state(DRAFT_DISCARDED)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
+
+        // Then
+        assertThat(retOrder).isNull();
+    }
+
+    @Test
     void shouldMarkAwaitingEnforcementOrderAsDraftDiscarded() {
         // Given
         final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
@@ -102,11 +123,51 @@ class EnforcementOrderServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // When
-        enforcementOrderService.setEnforcementOrderAsDraftDiscarded(CASE_REFERENCE);
+        enforcementOrderService.setEnforcementApplicationState(CASE_REFERENCE, DRAFT_DISCARDED);
 
         // Then
-        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.DRAFT_DISCARDED);
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(DRAFT_DISCARDED);
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldReuseDraftDiscardedEnforcementOrderWhenCreatingEnforcementOrder() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .enforcementOrder(buildEnforcementOrderWithSpecifiedType(WARRANT))
+                .state(DRAFT_DISCARDED)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(new HashSet<>(Set.of(enforcementOrderEntity)));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        enforcementOrderService.createEnforcementOrder(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCaseEntity.getEnforcementOrders()).containsExactly(enforcementOrderEntity);
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS);
+        verify(enforcementOrderRepository).save(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldNotCreateAnotherEnforcementOrderWhenOneIsAwaitingSubmission() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(new HashSet<>(Set.of(enforcementOrderEntity)));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        enforcementOrderService.createEnforcementOrder(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCaseEntity.getEnforcementOrders()).containsExactly(enforcementOrderEntity);
+        verify(enforcementOrderRepository, never()).save(any(EnforcementOrderEntity.class));
     }
 
     @ParameterizedTest
