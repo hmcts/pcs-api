@@ -19,9 +19,10 @@ import java.util.UUID;
 
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
- * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
+ * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
+ * name of the judge the order is made by, which it names as made before them.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judgeName) {
 
     /**
      * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent
@@ -57,7 +58,12 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               boolean openCounterclaim,
                               List<Application> applications,
                               CaseBundle caseBundle,
-                              List<HearingOption> hearings) {
+                              List<HearingOption> hearings,
+                              Court court) {
+    }
+
+    /** The court managing the case, as an order names where the judge sits: its name and its venue's short name. */
+    public record Court(String name, String venueShortName) {
     }
 
     /** One of the case's hearings, as a judge chooses which one an order is made at. */

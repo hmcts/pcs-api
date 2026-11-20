@@ -149,7 +149,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
             .orElse(OrderStart.Order.NONE);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId()));
+            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
+            securityContextService.getCurrentUserDetails().getName()));
     }
 
     /** One of the case's hearings, or none for an order made without a hearing. */

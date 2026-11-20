@@ -84,9 +84,12 @@ class MakeOrderIT extends OrderEventIT {
     void showsThePropertyAndPartiesOfTheClaim() {
         PCSCase claim = cases.claim(ENGLAND);
 
-        var context = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext();
+        var start = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start();
+        var context = start.caseContext();
 
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
+        // The order is made before the judge making it.
+        assertThat(start.judgeName()).isEqualTo("First Judge");
         assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
         assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
     }
