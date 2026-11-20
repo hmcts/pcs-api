@@ -77,7 +77,9 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
      * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
-     * the make order form. Granting an application to suspend enforcement suspends it on conditions.
+     * the make order form. Granting an application to suspend enforcement suspends it on conditions. The draft
+     * order wording is the applicant's draft order as rich text (HTML); whatOrderWanted is their explanation, which
+     * held the order they asked for before they could give it as a draft.
      */
     public record Application(UUID id,
                               boolean enforcementSuspension,
@@ -91,6 +93,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               VerticalYesNo withoutNotice,
                               String withoutNoticeReason,
                               String whatOrderWanted,
+                              String draftOrderWording,
                               List<ApplicationDocument> documents) {
     }
 
