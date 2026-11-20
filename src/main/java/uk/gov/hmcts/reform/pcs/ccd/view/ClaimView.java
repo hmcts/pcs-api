@@ -17,17 +17,21 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+
 @Component
 @RequiredArgsConstructor
 public class ClaimView {
 
     private final UploadTimestampProvider uploadTimestampProvider;
+    private final AddressFormatter addressFormatter;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!pcsCaseEntity.getClaims().isEmpty()) {
@@ -51,6 +55,10 @@ public class ClaimView {
         pcsCase.setLanguageUsed(claim.getLanguageUsed());
         pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
         pcsCase.setIsExemptLandlord(claim.getIsExemptLandlord());
+
+        // workaround for https://hmcts.atlassian.net/browse/EXUI-5537
+        pcsCase.setFormattedPropertyAddress(
+            addressFormatter.formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
     }
 
     private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim, PcsCaseEntity pcsCaseEntity) {
