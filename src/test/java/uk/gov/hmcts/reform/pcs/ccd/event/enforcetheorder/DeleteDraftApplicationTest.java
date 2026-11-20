@@ -15,9 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -26,12 +30,16 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @ExtendWith(MockitoExtension.class)
 class DeleteDraftApplicationTest extends BaseEventTest {
 
+    private static final String REFUSAL_EXPECTED_STRING = "This action is not available";
+
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private EnforcementFlagGuard enforcementFlagGuard;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new DeleteDraftApplication(draftCaseDataService));
+        setEventUnderTest(new DeleteDraftApplication(draftCaseDataService, enforcementFlagGuard));
     }
 
     @Test
@@ -93,5 +101,40 @@ class DeleteDraftApplicationTest extends BaseEventTest {
                 TEST_CASE_REFERENCE, enforceTheOrder);
 
         assertThat(submitResponse.getConfirmationBody()).isNull();
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmitWithDeleteYes_thenReturnRefusalError() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .deleteDraftApplication(YesOrNo.YES)
+                                  .build())
+            .build();
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+        List<String> expectedErrors = List.of(REFUSAL_EXPECTED_STRING);
+
+        SubmitResponse<State> actualResponse = callSubmitHandler(caseData);
+
+        assertThat(actualResponse.getErrors()).isEqualTo(expectedErrors);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmitWithDeleteYes_thenDoNotCallDraftCaseDataService() {
+
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .deleteDraftApplication(YesOrNo.YES)
+                                  .build())
+            .build();
+
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+        callSubmitHandler(caseData);
+
+
+        verifyNoInteractions(draftCaseDataService);
     }
 }

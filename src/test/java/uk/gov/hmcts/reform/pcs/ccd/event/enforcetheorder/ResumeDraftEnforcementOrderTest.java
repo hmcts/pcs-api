@@ -23,11 +23,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfi
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -36,6 +41,8 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeDraftEnforcementOrderTest extends BaseEventTest {
+
+    private static final String REFUSAL_EXPECTED_STRING = "This action is not available";
 
     @Mock
     private EnforcementPageConfigurer enforcementPageConfigurer;
@@ -53,6 +60,8 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     private SavingPageBuilder savingPageBuilder;
     @Mock
     private EnforcementSubmitEvent enforcementSubmitEvent;
+    @Mock
+    private EnforcementFlagGuard enforcementFlagGuard;
 
     @InjectMocks
     private ResumeDraftEnforcementOrder resumeDraftEnforcementOrder;
@@ -116,5 +125,38 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         // Then
         verify(enforcementSubmitEvent).submit(any());
         verifyNoMoreInteractions(enforcementOrderService);
+    }
+
+    @Test
+    void givenEnforcementFlagOn_whenStart_thenReturnCaseDataUnchanged() {
+        PCSCase expectedCaseData = PCSCase.builder().build();
+        PCSCase actualCaseData = callStartHandler(expectedCaseData);
+
+        assertThat(actualCaseData).isSameAs(expectedCaseData);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenStart_thenThrowCaseAccessException() {
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        doCallRealMethod().when(enforcementFlagGuard).requireOnStart();
+        PCSCase caseData = PCSCase.builder().build();
+
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage(REFUSAL_EXPECTED_STRING);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenStart_thenDoNotSaveEnforcementOrder() {
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        doCallRealMethod().when(enforcementFlagGuard).requireOnStart();
+        PCSCase caseData = PCSCase.builder().build();
+
+        Throwable thrown = catchThrowable(() -> callStartHandler(caseData));
+
+        assertThat(thrown).isInstanceOf(CaseAccessException.class);
+        verifyNoInteractions(enforcementSubmitEvent, enforcementOrderService);
     }
 }
