@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -14,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRe
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
+import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 
 import java.util.Set;
 
@@ -80,7 +80,7 @@ public class EnforcementOrderService {
     public EnforcementOrderEntity submitEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        EnforcementOrderEntity enfEntity = findEnforcementOrderEntity(pcsCaseEntity);
+        EnforcementOrderEntity enfEntity = findDraftEnforcementOrderEntity(pcsCaseEntity);
         enfEntity.setEnforcementOrder(enforcementOrder);
         enfEntity.setState(PENDING_CASE_ISSUED);
         strategyFactory.getStrategy(SelectEnforcementType.valueOf(
@@ -93,18 +93,18 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public void setEnforcementApplicationState(long caseReference, EnforcementState state) {
+    public void markEnforcementApplicationAsDraftDiscarded(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        EnforcementOrderEntity enfEntity = findEnforcementOrderEntity(pcsCaseEntity);
-        enfEntity.setState(state);
+        EnforcementOrderEntity enfEntity = findDraftEnforcementOrderEntity(pcsCaseEntity);
+        enfEntity.setState(DRAFT_DISCARDED);
         enforcementOrderRepository.save(enfEntity);
     }
 
-    private EnforcementOrderEntity findEnforcementOrderEntity(PcsCaseEntity pcsCaseEntity) {
+    private EnforcementOrderEntity findDraftEnforcementOrderEntity(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getEnforcementOrders().stream()
                 .filter(order -> order.getState() == AWAITING_SUBMISSION_TO_HMCTS)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
+                .orElseThrow(() -> new EnforcementApplicationNotFoundException(
                         "No enforcement order found for case reference " + pcsCaseEntity.getCaseReference()
                                 + " with state " + AWAITING_SUBMISSION_TO_HMCTS));
     }

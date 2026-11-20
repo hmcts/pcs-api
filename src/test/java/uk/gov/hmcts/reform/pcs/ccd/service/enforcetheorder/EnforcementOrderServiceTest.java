@@ -123,7 +123,7 @@ class EnforcementOrderServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // When
-        enforcementOrderService.setEnforcementApplicationState(CASE_REFERENCE, DRAFT_DISCARDED);
+        enforcementOrderService.markEnforcementApplicationAsDraftDiscarded(CASE_REFERENCE);
 
         // Then
         assertThat(enforcementOrderEntity.getState()).isEqualTo(DRAFT_DISCARDED);

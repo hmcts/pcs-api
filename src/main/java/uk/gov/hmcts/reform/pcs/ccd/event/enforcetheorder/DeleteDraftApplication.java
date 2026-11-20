@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
@@ -69,8 +68,7 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
         long caseReference = eventPayload.caseReference();
         draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference, enforceTheOrder);
-        enforcementOrderService.setEnforcementApplicationState(eventPayload.caseReference(),
-                EnforcementState.DRAFT_DISCARDED);
+        enforcementOrderService.markEnforcementApplicationAsDraftDiscarded(eventPayload.caseReference());
 
         log.info("Deleted draft enforcement for case {}", caseReference);
 
