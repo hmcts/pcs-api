@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.OrganisationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.CitizenClaimTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
@@ -46,11 +47,13 @@ public class CaseTabView {
     private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
     private final CaseSummaryTabView caseSummaryTabView;
     private final CaseDetailsTabView caseDetailsTabView;
+    private final CitizenClaimTabDetailsBuilder citizenClaimTabDetailsBuilder;
 
     public void setCaseTabFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean isSubmitted = pcsCase.getDateSubmitted() != null;
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
+        citizenClaimTabDetailsBuilder.addSummaryDetails(summaryTab, pcsCaseEntity);
         CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCaseEntity, isSubmitted);
         pcsCase.setCasePartiesTab(casePartiesTab);
         pcsCase.setSummaryTab(summaryTab);

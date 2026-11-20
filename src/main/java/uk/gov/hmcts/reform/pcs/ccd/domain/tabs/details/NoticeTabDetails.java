@@ -43,6 +43,9 @@ public class NoticeTabDetails {
     @CCD(label = "Explain what the other means were")
     private String noticeOtherExplanation;
 
+    @CCD(label = "How the notice was served")
+    private List<ListValue<NoticeServiceMethodTabDetails>> noticeServiceMethods;
+
     @CCD(label = "Are you able to upload a copy of the notice you served?")
     private String noticeUploaded;
 

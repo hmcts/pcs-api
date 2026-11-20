@@ -14,4 +14,7 @@ public class NoticeTabDetails {
 
     @CCD(label = "Date notice was served")
     private String noticeServedDate;
+
+    @CCD(label = "Method of service")
+    private String noticeMethod;
 }

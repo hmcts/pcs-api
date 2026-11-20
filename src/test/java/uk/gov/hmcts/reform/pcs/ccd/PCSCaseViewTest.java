@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CitizenPossessionClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
@@ -153,6 +154,8 @@ class PCSCaseViewTest {
     private HearingView hearingView;
     @Mock
     private EnforcementOrderView enforcementOrderView;
+    @Mock
+    private CitizenPossessionClaimView citizenPossessionClaimView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -184,7 +187,8 @@ class PCSCaseViewTest {
                                     defendantResponseView, draftResponseView, featureFlagView,
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
-                                    messagesView, judicialNoteView, enforcementOrderView
+                                    messagesView, judicialNoteView, enforcementOrderView,
+                                    citizenPossessionClaimView
         );
     }
 

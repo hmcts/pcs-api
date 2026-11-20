@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +62,8 @@ class BulkPrintServiceTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private BlankClaimPackFormsProvider blankClaimPackFormsProvider;
+    @Mock
+    private HlpasLeafletProvider hlpasLeafletProvider;
 
     @InjectMocks
     private BulkPrintService underTest;
@@ -298,6 +301,74 @@ class BulkPrintServiceTest {
 
         verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, pdfMerger,
             sendLetterApi);
+    }
+
+    @Test
+    @DisplayName("Puts the HLPAS leaflet after the blank forms when the pack asks for it")
+    void shouldPutTheHlpasLeafletAfterTheBlankForms() {
+        final byte[] coversheetBytes = "coversheet".getBytes();
+        final byte[] claimFormBytes = "claim-form".getBytes();
+        final byte[] tenancyBytes = "tenancy".getBytes();
+        final byte[] pinBytes = "pin".getBytes();
+        final byte[] defenceBytes = "defence".getBytes();
+        final byte[] counterclaimBytes = "counterclaim".getBytes();
+        final byte[] leafletBytes = "hlpas-leaflet".getBytes();
+        final DocumentEntity claimForm = document();
+        final DocumentEntity tenancy = document();
+        final DocumentEntity pin = document();
+        stubSend(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
+        when(letterDocumentFetcher.fetchBytes(tenancy.getDocumentId())).thenReturn(tenancyBytes);
+        when(letterDocumentFetcher.fetchBytes(pin.getDocumentId())).thenReturn(pinBytes);
+        when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(defenceBytes);
+        when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(counterclaimBytes);
+        when(hlpasLeafletProvider.getLeaflet()).thenReturn(Optional.of(leafletBytes));
+        List<byte[]> expectedParts = List.of(coversheetBytes, claimFormBytes, tenancyBytes, pinBytes,
+            defenceBytes, counterclaimBytes, leafletBytes);
+        when(pdfMerger.merge(expectedParts)).thenReturn("merged".getBytes());
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "John Doe", address(),
+            List.of(claimForm, tenancy, pin), true);
+
+        verify(pdfMerger).merge(expectedParts);
+    }
+
+    @Test
+    @DisplayName("Posts the pack without the HLPAS leaflet while none is configured")
+    void shouldPostWithoutTheHlpasLeafletWhileNoneIsConfigured() {
+        final byte[] coversheetBytes = "coversheet".getBytes();
+        final byte[] claimFormBytes = "claim-form".getBytes();
+        final byte[] defenceBytes = "defence".getBytes();
+        final byte[] counterclaimBytes = "counterclaim".getBytes();
+        final DocumentEntity claimForm = document();
+        stubSend(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
+        when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(defenceBytes);
+        when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(counterclaimBytes);
+        when(hlpasLeafletProvider.getLeaflet()).thenReturn(Optional.empty());
+        List<byte[]> expectedParts = List.of(coversheetBytes, claimFormBytes, defenceBytes, counterclaimBytes);
+        when(pdfMerger.merge(expectedParts)).thenReturn("merged".getBytes());
+
+        UUID letterId = underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "John Doe",
+            address(), List.of(claimForm), true);
+
+        assertThat(letterId).isEqualTo(LETTER_ID);
+        verify(pdfMerger).merge(expectedParts);
+    }
+
+    @Test
+    @DisplayName("Leaves the HLPAS leaflet out of a pack that does not ask for it")
+    void shouldLeaveTheHlpasLeafletOutByDefault() {
+        final byte[] coversheetBytes = "coversheet".getBytes();
+        final DocumentEntity claimForm = document();
+        stubSend(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn("claim-form".getBytes());
+        when(pdfMerger.merge(any())).thenReturn("merged".getBytes());
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "John Doe", address(),
+            List.of(claimForm));
+
+        verifyNoInteractions(hlpasLeafletProvider);
     }
 
     private void stubSend(byte[] coversheetBytes) {

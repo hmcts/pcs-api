@@ -62,6 +62,9 @@ public class ClaimGroundSummary {
             case WALES_SECURE_DISCRETIONARY -> SecureContractDiscretionaryGroundsWales.valueOf(code);
             case WALES_STANDARD_OTHER_ESTATE_MANAGEMENT, WALES_SECURE_ESTATE_MANAGEMENT
                 -> EstateManagementGroundsWales.valueOf(code);
+            case PRIVATE_LANDLORD_ASSURED_MANDATORY, PRIVATE_LANDLORD_ASSURED_DISCRETIONARY,
+                PRIVATE_LANDLORD_ASSURED_OTHER
+                -> PrivateLandlordAssuredGround.valueOf(code);
         };
     }
 

@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.CitizenClaimTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
@@ -102,6 +103,9 @@ class CaseDetailsTabViewTest {
 
     @Spy
     private UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
+
+    @Mock
+    private CitizenClaimTabDetailsBuilder citizenClaimTabDetailsBuilder;
 
     @InjectMocks
     private CaseDetailsTabView caseDetailsTabView;

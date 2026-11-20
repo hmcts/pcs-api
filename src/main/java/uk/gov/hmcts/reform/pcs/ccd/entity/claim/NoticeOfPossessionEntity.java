@@ -1,13 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +26,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Builder
@@ -64,7 +72,18 @@ public class NoticeOfPossessionEntity {
 
     private String unableToUploadReason;
 
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "noticeOfPossession", orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
+    @Builder.Default
+    @JsonManagedReference
+    private List<NoticeServiceMethodEntity> serviceMethods = new ArrayList<>();
+
     @UpdateTimestamp
     private LocalDateTime lastModified;
+
+    public void addServiceMethod(NoticeServiceMethodEntity serviceMethod) {
+        serviceMethod.setNoticeOfPossession(this);
+        serviceMethods.add(serviceMethod);
+    }
 
 }

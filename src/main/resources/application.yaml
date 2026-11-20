@@ -323,6 +323,9 @@ bulk-print:
     counterclaim-form: classpath:forms/ONC-003-counterclaim.pdf
     defence-form-welsh: classpath:forms/ONC-002RW-defence-form-welsh.pdf
     counterclaim-form-welsh: classpath:forms/ONC-003-counterclaim-welsh.pdf
+  # HLPAS legal advice leaflet for citizen claim defendant packs, e.g. classpath:forms/hlpas-leaflet.pdf.
+  # Unset until the leaflet PDF is supplied; the pack is posted without it meanwhile.
+  hlpas-leaflet: ${BULK_PRINT_HLPAS_LEAFLET:}
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 

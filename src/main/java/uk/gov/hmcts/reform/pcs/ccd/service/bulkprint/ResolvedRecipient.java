@@ -13,5 +13,11 @@ public record ResolvedRecipient(PcsCaseEntity pcsCase,
                                 LetterType letterType,
                                 List<DocumentEntity> documents,
                                 String recipientName,
-                                AddressUK address) {
+                                AddressUK address,
+                                boolean includesHlpasLeaflet) {
+
+    public ResolvedRecipient(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
+                             List<DocumentEntity> documents, String recipientName, AddressUK address) {
+        this(pcsCase, recipient, letterType, documents, recipientName, address, false);
+    }
 }

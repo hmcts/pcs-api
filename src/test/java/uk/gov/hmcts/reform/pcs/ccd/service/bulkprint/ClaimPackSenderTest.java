@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -62,21 +63,37 @@ class ClaimPackSenderTest {
     @DisplayName("Posts each resolved recipient and records the document sent")
     void shouldPostResolvedRecipientAndRecordDocumentSent() {
         when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(resolvedRecipient()));
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any(), anyBoolean()))
+            .thenReturn(UUID.randomUUID());
 
         underTest.sendClaimPacks(CASE_ID);
 
         verify(bulkPrintService).sendPack(pcsCase, recipient,
-            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", address, List.of(claimForm));
+            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", address, List.of(claimForm), false);
         verify(accessCodeActivityLogService).recordPackSent(eq(pcsCase), eq(recipient), any(PackDetails.class));
         verify(accessCodeActivityLogService, never()).recordPackFailed(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Posts a citizen claim's defendant pack with the HLPAS leaflet")
+    void shouldPostTheHlpasLeafletWhenTheRecipientNeedsIt() {
+        ResolvedRecipient defendant = new ResolvedRecipient(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK,
+            List.of(claimForm), "Acme Ltd", address, true);
+        when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(defendant));
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any(), anyBoolean()))
+            .thenReturn(UUID.randomUUID());
+
+        underTest.sendClaimPacks(CASE_ID);
+
+        verify(bulkPrintService).sendPack(pcsCase, recipient,
+            LetterType.DEFENDANT_CLAIM_PACK, "Acme Ltd", address, List.of(claimForm), true);
     }
 
     @Test
     @DisplayName("Records a document-send failure when the send throws a missing address")
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(resolvedRecipient()));
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any(), anyBoolean()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendClaimPacks(CASE_ID);

@@ -96,9 +96,18 @@ public class ClaimFormPayload implements FormPayload {
     private boolean showPreviousStepsFreeText;
     private String previousStepsFreeText;
     private String judgmentRequestedYesNo;
+    private String rentDueDay;
+    private boolean showRentDueDay;
+    private String arrearsAtNoticeDate;
+    private boolean showArrearsAtNoticeDate;
+    private String currentArrearsDate;
+    private boolean showCurrentArrearsDate;
+    private String rentProofTypeLabel;
+    private boolean showRentProofType;
 
     // ---------- Pre-action ----------
     private String preActionProtocolFollowedYesNo;
+    private boolean showPreActionProtocolFollowed;
     private boolean showPreActionProtocolNotFollowedReason;
     private String preActionProtocolNotFollowedReason;
     private boolean showMediationAttempted;
@@ -128,11 +137,15 @@ public class ClaimFormPayload implements FormPayload {
     private String noticeServedToEmail;
     private String noticeOtherElectronicDetails;
     private String noticeOtherMeansDetails;
-    private boolean showNoticeUploadQuestion;   // No source yet; always false, so the upload rows stay hidden.
+    // Every method the notice was served by; only citizen claims record them.
+    private List<ClaimFormNoticeMethodRow> noticeServiceMethods;
+    private boolean showNoticeServiceMethods;
+    // Citizen claims only; the ExUI claim form does not print the upload answer.
+    private boolean showNoticeUploadQuestion;
     private VerticalYesNo noticeUploadedYesNo;
     private boolean noticeUploadedYes;
     private boolean noticeUploadedNo;
-    private String noticeNotUploadedReason;     // No source yet; null until the source field is identified.
+    private String noticeNotUploadedReason;
 
     // ---------- Tenancy / licence ----------
     private String tenancyTypeLabel;
