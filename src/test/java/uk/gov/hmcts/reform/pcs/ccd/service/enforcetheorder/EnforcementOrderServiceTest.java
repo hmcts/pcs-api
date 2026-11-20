@@ -206,6 +206,54 @@ class EnforcementOrderServiceTest {
         assertThat(result).isSameAs(savedEntity);
     }
 
+    @Test
+    void shouldRankTheFirstApplicationOfATypeOne() {
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of());
+
+        assertThat(saved.getRank()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldRankOneMoreThanTheCasesExistingApplicationsOfTheSameType() {
+        EnforcementOrderEntity existingWrit = EnforcementOrderEntity.builder()
+            .enforcementOrder(buildEnforcementOrderWithSpecifiedType(WRIT)).build();
+        EnforcementOrderEntity existingWarrant = EnforcementOrderEntity.builder()
+            .enforcementOrder(buildEnforcementOrderWithSpecifiedType(WARRANT)).build();
+
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of(existingWrit, existingWarrant));
+
+        assertThat(saved.getRank()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldNotCountApplicationsWithoutAnEnforcementTypeWhenRanking() {
+        EnforcementOrderEntity withoutOrder = EnforcementOrderEntity.builder().build();
+        EnforcementOrderEntity withoutType = EnforcementOrderEntity.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of(withoutOrder, withoutType));
+
+        assertThat(saved.getRank()).isEqualTo(1);
+    }
+
+    private EnforcementOrderEntity saveWarrantOnCaseWith(List<EnforcementOrderEntity> existingApplications) {
+        PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        EnforcementOrderEntity draft = EnforcementOrderEntity.builder()
+            .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+            .pcsCase(pcsCaseEntity)
+            .build();
+        Set<EnforcementOrderEntity> applications = new HashSet<>(existingApplications);
+        applications.add(draft);
+        pcsCaseEntity.setEnforcementOrders(applications);
+        final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(strategyFactory.getStrategy(WARRANT)).thenReturn(mock(EnforcementTypeStrategy.class));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        return enforcementOrderService.submitEnforcementOrder(CASE_REFERENCE, enforcementOrder);
+    }
+
     private static Stream<Arguments> enforcementOrderTypes() {
         return Stream.of(
                 arguments(WARRANT),

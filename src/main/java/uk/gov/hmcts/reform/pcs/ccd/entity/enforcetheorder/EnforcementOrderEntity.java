@@ -73,6 +73,8 @@ public class EnforcementOrderEntity {
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
 
+    private Integer rank;
+
     @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 

@@ -131,6 +131,7 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
             case APPLICATIONS -> "applicationsDocuments";
             case APPEALS -> "appealsDocuments";
             case CORRESPONDENCE -> "correspondenceDocuments";
+            case ENFORCEMENT -> "enforcementDocuments";
             case UNCATEGORISED_DOCUMENTS -> "uncategorisedDocuments";
         };
     }

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDocumentVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -31,6 +32,7 @@ public class DocumentsView {
 
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final EnforcementDocumentVisibilityService enforcementDocumentVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
     private final SecurityContextService securityContextService;
     private final OrderRepository orderRepository;
@@ -112,6 +114,10 @@ public class DocumentsView {
         // Access code letters are only for bulk print, which finds them in systemDocuments.
         if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
+        }
+
+        if (enforcementDocumentVisibilityService.isEnforcementDocument(documentEntity.getType())) {
+            return enforcementDocumentVisibilityService.isVisibleToUser(userRoles.roles());
         }
 
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();

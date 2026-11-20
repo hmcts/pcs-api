@@ -61,6 +61,9 @@ public class DocumentRemovalDetails implements DocumentSelectionDetails {
     private YesOrNo correspondenceEmpty;
 
     @CCD(searchable = false)
+    private YesOrNo enforcementEmpty;
+
+    @CCD(searchable = false)
     private YesOrNo uncategorisedDocumentsEmpty;
 
     @CCD(searchable = false)
@@ -100,6 +103,9 @@ public class DocumentRemovalDetails implements DocumentSelectionDetails {
     private String correspondenceReason;
 
     @CCD(searchable = false, typeOverride = TextArea)
+    private String enforcementReason;
+
+    @CCD(searchable = false, typeOverride = TextArea)
     private String uncategorisedDocumentsReason;
 
     @JsonIgnore
@@ -114,6 +120,7 @@ public class DocumentRemovalDetails implements DocumentSelectionDetails {
             case APPLICATIONS -> applicationsEmpty = empty;
             case APPEALS -> appealsEmpty = empty;
             case CORRESPONDENCE -> correspondenceEmpty = empty;
+            case ENFORCEMENT -> enforcementEmpty = empty;
             case UNCATEGORISED_DOCUMENTS -> uncategorisedDocumentsEmpty = empty;
         }
     }
@@ -129,6 +136,7 @@ public class DocumentRemovalDetails implements DocumentSelectionDetails {
             case APPLICATIONS -> applicationsReason;
             case APPEALS -> appealsReason;
             case CORRESPONDENCE -> correspondenceReason;
+            case ENFORCEMENT -> enforcementReason;
             case UNCATEGORISED_DOCUMENTS -> uncategorisedDocumentsReason;
         };
     }

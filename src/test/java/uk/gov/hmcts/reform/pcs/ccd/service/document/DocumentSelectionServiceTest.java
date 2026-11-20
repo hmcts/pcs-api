@@ -59,6 +59,7 @@ class DocumentSelectionServiceTest {
                 "Applications",
                 "Appeals",
                 "Correspondence",
+                "Enforcement",
                 "Uncategorised documents"
             );
     }

@@ -126,6 +126,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
             case APPLICATIONS -> FIELD_PREFIX + "ApplicationsEmpty";
             case APPEALS -> FIELD_PREFIX + "AppealsEmpty";
             case CORRESPONDENCE -> FIELD_PREFIX + "CorrespondenceEmpty";
+            case ENFORCEMENT -> FIELD_PREFIX + "EnforcementEmpty";
             case UNCATEGORISED_DOCUMENTS -> FIELD_PREFIX + "UncategorisedDocumentsEmpty";
         };
     }

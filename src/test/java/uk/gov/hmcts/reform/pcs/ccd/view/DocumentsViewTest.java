@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDocumentVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -40,6 +41,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +60,8 @@ class DocumentsViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private EnforcementDocumentVisibilityService enforcementDocumentVisibilityService;
 
     @Mock
     private OrderRepository orderRepository;
@@ -74,8 +78,9 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      securityContextService, orderRepository);
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService,
+            enforcementDocumentVisibilityService, new UploadTimestampProvider(), securityContextService,
+            orderRepository);
     }
 
     @Test
@@ -138,6 +143,43 @@ class DocumentsViewTest {
                 }
             );
 
+    }
+
+    @Test
+    void shouldHideEnforcementDocumentsWhenNotVisibleToTheUser() {
+        DocumentEntity warrant = enforcementDocument(DocumentType.WARRANT_OF_POSSESSION);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
+        when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
+            .thenReturn(true);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(false);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
+    }
+
+    @Test
+    void shouldShowEnforcementDocumentsWhenVisibleToTheUser() {
+        DocumentEntity warrant = enforcementDocument(DocumentType.WARRANT_OF_POSSESSION);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
+        when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
+            .thenReturn(true);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(true);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
+    }
+
+    private static DocumentEntity enforcementDocument(DocumentType type) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(type.getLabel() + ".pdf")
+            .url("url")
+            .type(type)
+            .build();
     }
 
     @Test
