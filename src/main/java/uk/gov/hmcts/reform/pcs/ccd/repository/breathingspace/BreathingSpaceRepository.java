@@ -13,7 +13,7 @@ public interface BreathingSpaceRepository extends JpaRepository<BreathingSpaceEn
     @Query("""
         SELECT bs
         FROM BreathingSpaceEntity bs
-        WHERE bs.claim.pcsCase.caseReference = :caseReference
+        WHERE bs.pcsCase.caseReference = :caseReference
         ORDER BY bs.createdAt DESC, bs.id DESC
         """)
     List<BreathingSpaceEntity> findByCaseReference(
