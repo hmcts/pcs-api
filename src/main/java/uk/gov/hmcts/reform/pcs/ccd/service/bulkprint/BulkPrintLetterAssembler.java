@@ -41,8 +41,16 @@ public class BulkPrintLetterAssembler {
     private static final FileAttribute<Set<PosixFilePermission>> OWNER_ONLY =
         PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
 
+    /**
+     * Above the SDK's 20 MiB default: every page is rasterised, so a pack of several documents can pass 20 MiB
+     * even when the uploads are small. Send Letter has no request size limit of its own.
+     */
+    static final long MAX_LETTER_BYTES = 50L * 1024 * 1024;
+
     private final DocumentConverter documentConverter;
-    private final PrintOptions printOptions = PrintOptions.bulkPrint();
+    private final PrintOptions printOptions = PrintOptions.bulkPrint().toBuilder()
+        .maxOutputBytes(MAX_LETTER_BYTES)
+        .build();
 
     public BulkPrintLetterAssembler(DocumentConverter documentConverter) {
         this.documentConverter = documentConverter;
