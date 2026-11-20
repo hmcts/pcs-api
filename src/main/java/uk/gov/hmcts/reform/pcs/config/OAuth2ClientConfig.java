@@ -21,10 +21,6 @@ import java.util.Map;
 @Configuration
 public class OAuth2ClientConfig {
 
-    /**
-     * Spring Security 7 no longer supports the password grant, but IDAM still needs it for our service users,
-     * so the provider comes from HMCTS idam-legacy-auth-support. Tokens are still cached by this manager.
-     */
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
