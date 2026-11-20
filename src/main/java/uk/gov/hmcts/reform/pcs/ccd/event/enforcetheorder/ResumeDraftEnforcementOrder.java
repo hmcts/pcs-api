@@ -37,12 +37,13 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     private final WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final EnforcementSubmitEvent enforcementSubmitEvent;
+    private final EnforcementFlagGuard enforcementFlagGuard;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
-                        .decentralisedEvent(resumeEnforcementOrder.name(), this::submit)
+                        .decentralisedEvent(resumeEnforcementOrder.name(), this::submit, this::start)
                         .forState(State.CASE_ISSUED)
                         .name("Resume draft application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
@@ -56,6 +57,12 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+    }
+
+    // Refuse before any page loads, so SavingPageBuilder saves no draft while the flag is off.
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        enforcementFlagGuard.requireOnStart();
+        return eventPayload.caseData();
     }
 
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
