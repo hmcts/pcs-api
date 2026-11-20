@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jose4j.base64url.Base64;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -52,8 +53,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +70,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.BulkPrintScheduledTask.BULK_PRINT
 class BulkPrintPacksTest extends CftlibTest {
 
     private static final long INITIAL_DRAFT_VERSION = 0L;
-    private static final Pattern ACCESS_CODE = Pattern.compile("accessCode: ([A-Z0-9]{12})");
     @Autowired
     private CcdClient ccdClient;
     @Autowired
@@ -168,19 +166,13 @@ class BulkPrintPacksTest extends CftlibTest {
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
-            // The fake document renderer writes the template name into the PDF page
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            // Coversheet, covering letter and defence form, each one page followed by a blank so that each starts on
+            // a new sheet.
+            assertPartsEachStartANewSheet(pdDocument, 3);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(3);
-            // The fake document renderer writes the template name into the PDF page
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
+            assertPartsEachStartANewSheet(pdDocument, 3);
         }
 
     }
@@ -215,21 +207,12 @@ class BulkPrintPacksTest extends CftlibTest {
             .containsExactlyInAnyOrder("Danny Defendant", "Delia Defendant");
 
         try (PDDocument pdDocument = findPackPdf("Danny Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            // The fake document renderer writes the template name into the PDF page
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 3)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            // Coversheet, covering letter, defence form and counterclaim form, each one page and a blank.
+            assertPartsEachStartANewSheet(pdDocument, 4);
         }
 
         try (PDDocument pdDocument = findPackPdf("Delia Defendant", letters)) {
-            assertThat(pdDocument.getNumberOfPages()).isEqualTo(4);
-            // The fake document renderer writes the template name into the PDF page
-            assertThat(getPageContents(pdDocument, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
-            assertThat(getPageContents(pdDocument, 1)).contains("Template: CV-PCS-LET-ENG-Covering-Letter.docx");
-            assertThat(getPageContents(pdDocument, 2)).contains("Template: CV-PCS-CLM-ENG-Defence-Form.docx");
-            assertThat(getPageContents(pdDocument, 3)).contains("Template: CV-PCS-CLM-ENG-Counterclaim-Form.docx");
+            assertPartsEachStartANewSheet(pdDocument, 4);
         }
 
     }
@@ -255,10 +238,11 @@ class BulkPrintPacksTest extends CftlibTest {
 
         for (String recipientName : List.of("Danny Defendant", "Delia Defendant")) {
             try (PDDocument pack = findPackPdf(recipientName, letters)) {
-                // Coversheet, both letters, claim form, then the real English and Welsh blank forms
-                assertThat(pack.getNumberOfPages()).isEqualTo(43);
-                assertThat(getPageContents(pack, 2)).contains("Template: CV-PCS-LET-WEL-Defendant-Access-Code.docx");
-                assertThat(accessCode(getPageContents(pack, 2))).isEqualTo(accessCode(getPageContents(pack, 1)));
+                assertThat(getPageContents(pack, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
+                assertThat(pack.getNumberOfPages()).isGreaterThan(1);
+                for (int page = 1; page < pack.getNumberOfPages(); page++) {
+                    assertConvertedPage(pack, page);
+                }
             }
         }
     }
@@ -349,10 +333,27 @@ class BulkPrintPacksTest extends CftlibTest {
         }
     }
 
-    private static String accessCode(String pageContents) {
-        Matcher matcher = ACCESS_CODE.matcher(pageContents);
-        assertThat(matcher.find()).as("access code on the letter").isTrue();
-        return matcher.group(1);
+    /** Pack documents are rasterised; full print-ready checks live in TestBulkPrintTest. */
+    /**
+     * A pack of one-page parts: the coversheet, then converted documents. Each part is followed by a blank page, so
+     * every part starts on a new sheet when printed duplex.
+     */
+    private static void assertPartsEachStartANewSheet(PDDocument document, int parts) throws IOException {
+        assertThat(document.getNumberOfPages()).isEqualTo(parts * 2);
+        assertThat(getPageContents(document, 0)).contains("Template: CV-PCS-LET-ENG-Coversheet.docx");
+        for (int index = 2; index < parts * 2; index += 2) {
+            assertConvertedPage(document, index);
+        }
+        for (int index = 1; index < parts * 2; index += 2) {
+            assertThat(document.getPage(index).hasContents()).as("page " + (index + 1) + " is blank").isFalse();
+        }
+    }
+
+    private static void assertConvertedPage(PDDocument document, int index) throws IOException {
+        PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(index + 1);
+        stripper.setEndPage(index + 1);
+        assertThat(stripper.getText(document)).as("page " + (index + 1) + " live text").isBlank();
     }
 
     private static Letter findLetterSentTo(String recipientName, List<Letter> letters) {

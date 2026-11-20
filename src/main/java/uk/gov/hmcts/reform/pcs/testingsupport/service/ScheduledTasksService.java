@@ -56,15 +56,42 @@ public class ScheduledTasksService {
         }
 
         for (String taskId : taskIds) {
-            try {
-                schedulerClient.reschedule(TaskInstanceId.of(taskName, taskId), Instant.now(utcClock));
-                log.info("Rescheduled task with ID: {}", taskId);
-            } catch (TaskInstanceCurrentlyExecutingException e) {
-                log.warn("Task {} {} is already running - not rescheduling", taskName, taskId);
-            }
+            rescheduleWhenIdle(taskName, taskId);
         }
 
         scheduler.triggerCheckForDueExecutions();
+    }
+
+    /**
+     * Waits for a currently-executing instance to finish, then moves it due now. Bulk print conversion can hold the
+     * recurring task for tens of seconds; skipping the reschedule left later pack asserts waiting forever.
+     */
+    private void rescheduleWhenIdle(String taskName, String taskId) {
+        Instant deadline = Instant.now().plus(Duration.ofMinutes(2));
+        TaskInstanceId instanceId = TaskInstanceId.of(taskName, taskId);
+        while (true) {
+            try {
+                schedulerClient.reschedule(instanceId, Instant.now(utcClock));
+                log.info("Rescheduled task with ID: {}", taskId);
+                return;
+            } catch (TaskInstanceCurrentlyExecutingException e) {
+                if (!Instant.now().isBefore(deadline)) {
+                    throw new IllegalStateException(
+                        "Timed out waiting to reschedule task %s %s still executing".formatted(taskName, taskId), e);
+                }
+                log.warn("Task {} {} is already running - waiting to reschedule", taskName, taskId);
+                sleepBriefly();
+            }
+        }
+    }
+
+    private static void sleepBriefly() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting to reschedule a db-scheduler task", e);
+        }
     }
 
 }
