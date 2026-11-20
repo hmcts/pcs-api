@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.pcs;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
@@ -58,15 +56,9 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
     }
 )
 
-@Import({Application.PaymentsClientConfiguration.class, DocAssemblyClient.class})
+@Import({PaymentsClient.class, DocAssemblyClient.class})
 @EnableScheduling
 public class Application {
-
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    @Import(PaymentsClient.class)
-    static class PaymentsClientConfiguration {
-    }
 
     public static void main(final String[] args) {
         SpringApplication.run(Application.class, args);
