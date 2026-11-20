@@ -6,7 +6,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_MANAGER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
@@ -92,7 +94,7 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> internalUserReadAccess() {
         SetMultimap<HasRole, Permission> grants = internalReadAccess();
-        addReadAccess(grants, BAILIFF_ADMIN);
+        addReadAccess(grants, BAILIFF, BAILIFF_ADMIN, BAILIFF_MANAGER);
         return grants;
     }
 
