@@ -13,6 +13,25 @@ buildscript {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     // Flyway needs Jackson here to parse the PostgreSQL migration-lock setting.
     classpath("tools.jackson.core:jackson-databind:$jackson3Version")
+    constraints {
+      // Gradle plugins (pact, uk.gov.hmcts.java, rse-cft-lib) bring vulnerable versions onto the build classpath
+      ['bcprov-jdk18on:1.85.2', 'bcpkix-jdk18on:1.85', 'bcutil-jdk18on:1.85', 'bcpg-jdk18on:1.85'].each { bc ->
+        classpath("org.bouncycastle:$bc") {
+          because 'HDPI-9837: CVE-2026-8763, CVE-2026-13506, CVE-2026-0636'
+        }
+      }
+      classpath('org.codehaus.plexus:plexus-utils:3.6.1') {
+        because 'HDPI-9838: CVE-2025-67030'
+      }
+      classpath('com.azure:azure-core-http-netty:1.17.0') {
+        because 'HDPI-9838: built against reactor-netty 1.3.x'
+      }
+      ['reactor-netty-http', 'reactor-netty-core'].each { netty ->
+        classpath("io.projectreactor.netty:$netty:1.3.8") {
+          because 'HDPI-9838: CVE-2026-47874'
+        }
+      }
+    }
   }
 }
 
@@ -433,7 +452,7 @@ ext['mockito.version'] = mockitoVersion
 ext['kotlin.version'] = kotlinVersion // HDPI-9530: CVE-2026-53914 needs 2.4.20+; Boot 4.1.2 manages 2.3.21
 ext['feign.version'] = '13.13' // HMCTS Feign clients; Spring Cloud 2025.1.4 manages 13.6.1
 ext['elasticsearch-client.version'] = '9.5.6'
-ext['opentelemetry.version'] = '1.65.0'
+ext['opentelemetry.version'] = '1.67.0' // HDPI-9837: CVE-2026-118259
 ext['commons-codec.version'] = '1.22.0'
 ext['commons-logging.version'] = '1.4.0'
 ext['json-path.version'] = '3.0.0'
@@ -446,6 +465,15 @@ dependencies {
     implementation("io.cucumber:cucumber-plugin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin-messages:$cucumberVersion")
+    integrationTestImplementation('com.github.jknack:handlebars:4.5.2') {
+      because 'HDPI-9838: CVE-2026-55760; stub-runner 5.0.3 brings 4.5.1'
+    }
+    checkstyle('commons-beanutils:commons-beanutils:1.11.0') {
+      because 'HDPI-9838: CVE-2025-48734; Checkstyle 10.24.0 brings 1.10.1'
+    }
+    checkstyle('org.codehaus.plexus:plexus-utils:3.6.1') {
+      because 'HDPI-9838: CVE-2025-67030; Checkstyle 10.24.0 brings 3.3.0'
+    }
   }
 }
 
@@ -480,8 +508,8 @@ dependencies {
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.8'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.5'
 
-  implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.65.0'
-  implementation group: 'io.opentelemetry', name: 'opentelemetry-context', version: '1.65.0'
+  implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.67.0'
+  implementation group: 'io.opentelemetry', name: 'opentelemetry-context', version: '1.67.0'
   implementation group: 'io.opentelemetry.semconv', name: 'opentelemetry-semconv', version: '1.43.0'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
