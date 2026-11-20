@@ -77,7 +77,7 @@ public class EnforcementOrderEntity {
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "sot_id", nullable = false)
+    @JoinColumn(name = "sot_id")
     @JsonBackReference
     private StatementOfTruthEntity statementOfTruth;
 
