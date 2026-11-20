@@ -21,9 +21,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 public class EnforcementSubmitEvent implements Submit<PCSCase, State> {
 
     private final EnforcementOrderService enforcementOrderService;
+    private final EnforcementFlagGuard enforcementFlagGuard;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> payload) {
+        if (enforcementFlagGuard.isOff()) {
+            return enforcementFlagGuard.refused();
+        }
         long caseReference = payload.caseReference();
         PCSCase pcsCase = payload.caseData();
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
