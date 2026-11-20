@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
@@ -48,6 +50,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -522,6 +525,81 @@ class ClaimPackSelectorTest {
                 "Claim pack held, awaiting access code - case: " + CASE_REFERENCE + ", party: " + defendantA.getId());
             assertCaseContext(event, defendantA);
         });
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @DisplayName("Never posts a claim pack to a citizen claimant, whatever the release 1.4 flag")
+    void shouldNeverPostAClaimPackToACitizenClaimant(boolean release14Enabled) {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = citizenClaimCase(List.of());
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase))
+            .extracting(ClaimPackCandidate::recipientType)
+            .containsExactly(PartyRole.DEFENDANT);
+    }
+
+    @Test
+    @DisplayName("Leads a citizen claim's defendant pack with the claim form, then the uploads, then the access code")
+    void shouldOrderACitizenClaimDefendantPack() {
+        DocumentEntity other = document(DocumentType.OTHER, null);
+        DocumentEntity rentStatement = document(DocumentType.RENT_STATEMENT, null);
+        DocumentEntity tenancyAgreement = document(DocumentType.TENANCY_AGREEMENT, null);
+        DocumentEntity notice = document(DocumentType.POSSESSION_NOTICE, null);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = citizenClaimCase(List.of(other, rentStatement, tenancyAgreement, notice));
+        DocumentEntity pinA = pcsCase.getDocuments().getFirst();
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).singleElement().satisfies(candidate -> {
+            assertThat(candidate.party()).isEqualTo(defendantA);
+            assertThat(candidate.documents())
+                .containsExactly(claimForm, tenancyAgreement, notice, rentStatement, other, pinA);
+            assertThat(candidate.includesHlpasLeaflet()).isTrue();
+        });
+    }
+
+    @Test
+    @DisplayName("Re-sends only the access code on a citizen claim when the rest already reached the defendant")
+    void shouldResendOnlyTheAccessCodeOnACitizenClaim() {
+        DocumentEntity tenancyAgreement = document(DocumentType.TENANCY_AGREEMENT, null);
+        PcsCaseEntity pcsCase = citizenClaimCase(List.of(tenancyAgreement));
+        DocumentEntity pinA = pcsCase.getDocuments().getFirst();
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(defendantA, claimForm), sent(defendantA, tenancyAgreement)));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).singleElement()
+            .satisfies(candidate -> assertThat(candidate.documents()).containsExactly(pinA));
+    }
+
+    @Test
+    @DisplayName("Keeps a legal-rep claim's pack to the access code and claim form, with no uploads or leaflet")
+    void shouldKeepTheLegalRepClaimPackUnchanged() {
+        DocumentEntity tenancyAgreement = document(DocumentType.TENANCY_AGREEMENT, null);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = citizenClaimCase(List.of(tenancyAgreement));
+        claimant.setIdamId(null);
+        claimant.setOrganisationId("ORG1");
+        DocumentEntity pinA = pcsCase.getDocuments().getFirst();
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).extracting(ClaimPackCandidate::party).containsExactly(claimant, defendantA);
+        assertThat(result.getLast().documents()).containsExactly(pinA, claimForm);
+        assertThat(result).noneMatch(ClaimPackCandidate::includesHlpasLeaflet);
+    }
+
+    private PcsCaseEntity citizenClaimCase(List<DocumentEntity> uploads) {
+        claimant.setClaimCreator(true);
+        claimant.setIdamId(UUID.randomUUID().toString());
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.setParties(Set.of(claimant, defendantA));
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        uploads.forEach(upload -> {
+            upload.setDocumentId(UUID.randomUUID());
+            claim.getClaimDocuments().add(ClaimDocumentEntity.builder().claim(claim).document(upload).build());
+        });
+        return pcsCase;
     }
 
     private List<ILoggingEvent> captureSelectorLogs(Runnable action) {

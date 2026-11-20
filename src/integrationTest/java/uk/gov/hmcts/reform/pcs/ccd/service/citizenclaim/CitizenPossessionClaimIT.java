@@ -27,6 +27,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
@@ -47,6 +49,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.PackRecipientResolver;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ResolvedRecipient;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
@@ -123,6 +129,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     private ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     @Autowired
     private ClaimantOrgNameListCreator claimantOrgNameListCreator;
+    @Autowired
+    private PackRecipientResolver packRecipientResolver;
     @Autowired
     @Qualifier("draftCaseDataObjectMapper")
     private ObjectMapper draftObjectMapper;
@@ -374,6 +382,52 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .satisfies(row -> assertThat(row.getSubmittedClaim())
                 .contains("tom.tenant@example.com")
                 .doesNotContain("confirmedSections"));
+    }
+
+    @Test
+    @DisplayName("An issued citizen claim posts each defendant the claim form, the uploads and their access code, "
+        + "and posts the claimant nothing")
+    void shouldPostTheCitizenClaimPackToDefendantsOnly() throws Exception {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+        CitizenPossessionClaim answers = completeClaim();
+        submitService.submit(caseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
+
+        PcsCaseEntity submittedCase = caseService.loadCase(caseReference);
+        ClaimEntity submittedClaim = submittedCase.getClaims().getFirst();
+        submittedClaim.setClaimFormDocument(packDocument(submittedCase, DocumentType.CLAIM, null));
+        List<PartyEntity> defendants = submittedClaim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList();
+        defendants.forEach(defendant ->
+            submittedCase.addDocument(packDocument(submittedCase, DocumentType.DEFENDANT_ACCESS_CODE, defendant)));
+        pcsCaseRepository.saveAndFlush(submittedCase);
+        entityManager.clear();
+
+        List<ResolvedRecipient> recipients = packRecipientResolver.resolveClaimRecipients(submittedCase.getId());
+
+        assertThat(recipients).hasSize(defendants.size()).allSatisfy(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENDANT_CLAIM_PACK);
+            assertThat(recipient.includesHlpasLeaflet()).isTrue();
+            assertThat(recipient.documents()).extracting(DocumentEntity::getType).containsExactly(
+                DocumentType.CLAIM, DocumentType.TENANCY_AGREEMENT, DocumentType.POSSESSION_NOTICE,
+                DocumentType.OTHER, DocumentType.DEFENDANT_ACCESS_CODE);
+            assertThat(recipient.documents().getLast().getParty().getId()).isEqualTo(recipient.recipient().getId());
+        });
+        assertThat(recipients).extracting(recipient -> recipient.recipient().getId())
+            .containsExactlyInAnyOrderElementsOf(defendants.stream().map(PartyEntity::getId).toList());
+    }
+
+    private static DocumentEntity packDocument(PcsCaseEntity pcsCase, DocumentType type, PartyEntity party) {
+        return DocumentEntity.builder()
+            .pcsCase(pcsCase)
+            .party(party)
+            .type(type)
+            .documentId(UUID.randomUUID())
+            .fileName(type.name() + ".pdf")
+            .build();
     }
 
     private CitizenPossessionClaim completeClaim() throws Exception {

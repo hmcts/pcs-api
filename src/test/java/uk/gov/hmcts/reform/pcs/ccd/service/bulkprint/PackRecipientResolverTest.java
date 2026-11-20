@@ -276,6 +276,23 @@ class PackRecipientResolverTest {
             assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENDANT_CLAIM_PACK);
             assertThat(recipient.letterType().getCode()).isEqualTo("CPD-01-IN1");
             assertThat(recipient.documents()).containsExactly(englishPin, claimForm);
+            assertThat(recipient.includesHlpasLeaflet()).isFalse();
+        });
+    }
+
+    @Test
+    @DisplayName("Carries the HLPAS leaflet onto a citizen claim's defendant pack")
+    void shouldCarryTheHlpasLeafletFromTheCandidate() {
+        DocumentEntity englishPin = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        stubClaimCandidate(caseIn(LegislativeCountry.ENGLAND),
+            new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(claimForm, englishPin), false, true));
+
+        List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENDANT_CLAIM_PACK);
+            assertThat(recipient.documents()).containsExactly(claimForm, englishPin);
+            assertThat(recipient.includesHlpasLeaflet()).isTrue();
         });
     }
 

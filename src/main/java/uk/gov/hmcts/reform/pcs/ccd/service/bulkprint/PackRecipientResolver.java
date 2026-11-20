@@ -80,7 +80,8 @@ public class PackRecipientResolver {
         LetterType letterType = claimLetterType(role, candidate.bilingual());
         return new ResolvedRecipient(pcsCase, recipient, letterType, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
-            postalAddress(recipient, role, pcsCase.getPropertyAddress()));
+            postalAddress(recipient, role, pcsCase.getPropertyAddress()),
+            candidate.includesHlpasLeaflet());
     }
 
     private ResolvedRecipient resolveDefenceRecipient(PcsCaseEntity pcsCase, DefencePackCandidate candidate) {
