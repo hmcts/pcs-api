@@ -60,7 +60,9 @@ class WritStrategyTest {
 
     @Test
     void shouldProcessWritDetailsSuccessfully() {
-        // Given & When
+        // Given
+        when(writDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity)).thenReturn(writEntity);
+        // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then

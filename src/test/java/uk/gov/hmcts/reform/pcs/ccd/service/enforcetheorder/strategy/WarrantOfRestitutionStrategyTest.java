@@ -67,7 +67,7 @@ class WarrantOfRestitutionStrategyTest {
                 .warrantOfRestitutionDetails(warrantOfRestitutionDetails)
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder()
-                .enforcementOrder(enforcementOrderEntity)
+                .enfApplication(enforcementOrderEntity)
                 .build();
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
                 .thenReturn(warrantOfRestitutionEntity);
@@ -82,7 +82,7 @@ class WarrantOfRestitutionStrategyTest {
         verify(warrantOfRestitutionRepository).save(captor.capture());
         WarrantOfRestitutionEntity saved = captor.getValue();
         assertThat(saved).isNotNull();
-        assertThat(saved.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
+        assertThat(saved.getEnfApplication()).isSameAs(enforcementOrderEntity);
     }
 
     @Test

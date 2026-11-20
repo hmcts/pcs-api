@@ -117,6 +117,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE);
     }
 
     @Test
@@ -176,6 +177,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
                 "You cannot continue with this application because your "
                     + "application to transfer to the High Court was unsuccessful"
             );
+        verify(enforcementOrderService, never()).createEnforcementOrder(TEST_CASE_REFERENCE);
     }
 
     @Test

@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -74,6 +75,8 @@ class TestCaseGenerationTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
     @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
@@ -252,10 +255,12 @@ class TestCaseGenerationTest {
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<EventPayload<PCSCase, State>> captor = ArgumentCaptor.forClass(EventPayload.class);
-        verify(enforceTheOrder).submit(captor.capture());
-        assertThat(captor.getValue().caseReference()).isEqualTo(caseReference);
-        assertThat(captor.getValue().caseData()).isEqualTo(loadedCase);
+        ArgumentCaptor<EventPayload<PCSCase, State>> submitPayloadCaptor = ArgumentCaptor.forClass(EventPayload.class);
+        InOrder enforcementOrder = inOrder(enforcementOrderService, enforceTheOrder);
+        enforcementOrder.verify(enforcementOrderService).createEnforcementOrder(caseReference);
+        enforcementOrder.verify(enforceTheOrder).submit(submitPayloadCaptor.capture());
+        assertThat(submitPayloadCaptor.getValue().caseReference()).isEqualTo(caseReference);
+        assertThat(submitPayloadCaptor.getValue().caseData()).isEqualTo(loadedCase);
     }
 
     @Test
