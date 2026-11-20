@@ -25,9 +25,10 @@ import java.util.stream.Stream;
 
 /**
  * Builds the single PDF a pack is posted as: the coversheet exactly as rendered, then each document converted to
- * the bulk print standard (PDF/X-1a pages, A4, images at most 300 dpi, nothing within 20 mm of an edge), padded to an
- * even page count. Documents may be any type Possessions accepts as evidence (Word, Excel, PowerPoint, images,
- * text, PDF); office formats go through Docmosis.
+ * the bulk print standard (PDF/X-1a pages, A4, images at most 300 dpi, nothing within 20 mm of an edge). Each part
+ * is padded to an even page count, as Send Letter pads each document it merges, so every document starts on a new
+ * sheet rather than on the back of the coversheet or the document before. Documents may be any type Possessions
+ * accepts as evidence (Word, Excel, PowerPoint, images, text, PDF); office formats go through Docmosis.
  *
  * <p>One even-page document is what Send Letter forwards to Xerox untouched; it re-saves anything else as PDF 1.6,
  * which would undo the print standard. One document also means Send Letter's duplicate check covers the whole
@@ -40,8 +41,24 @@ public class BulkPrintLetterAssembler {
     private static final FileAttribute<Set<PosixFilePermission>> OWNER_ONLY =
         PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
 
+    /**
+     * Above the SDK's 20 MiB default: every page is rasterised, so a pack of several documents can pass 20 MiB
+     * even when the uploads are small. Send Letter has no request size limit of its own.
+     */
+    static final long MAX_LETTER_BYTES = 50L * 1024 * 1024;
+
+    /**
+     * Below the SDK's 300 dpi default (Xerox accepts up to 300). Every page is stored as a lossless image, so 200 dpi
+     * roughly halves the size of a pack with no visible loss of legibility, and keeps evidence-heavy packs under
+     * {@link #MAX_LETTER_BYTES}.
+     */
+    static final int LETTER_DPI = 200;
+
     private final DocumentConverter documentConverter;
-    private final PrintOptions printOptions = PrintOptions.bulkPrint();
+    private final PrintOptions printOptions = PrintOptions.bulkPrint().toBuilder()
+        .maxOutputBytes(MAX_LETTER_BYTES)
+        .resolutionDpi(LETTER_DPI)
+        .build();
 
     public BulkPrintLetterAssembler(DocumentConverter documentConverter) {
         this.documentConverter = documentConverter;
