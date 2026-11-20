@@ -161,7 +161,7 @@ export class EnforcementAction implements IAction{
     if (applicationType.option === enforcementApplication.writOfPossessionRadioOption && applicationType.option1 !== enforcementApplication.noRadioOptionHidden) {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === enforcementApplication.writOfPossessionRadioOption || applicationType.option === enforcementApplication.warrantOfRestitutionRadioOptionDynamic) {
+    } else if (applicationType.option === enforcementApplication.warrantOfPossessionRadioOption || applicationType.option === enforcementApplication.warrantOfRestitutionRadioOptionDynamic) {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
