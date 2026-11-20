@@ -27,7 +27,7 @@ import uk.gov.hmcts.reform.sendletter.api.proxy.SendLetterApiProxy;
  * We don't scan the HMCTS ccd, payments and send-letter client packages or load their auto-configurations:
  * the payments and send-letter ones register Spring Boot 3 health checks that Spring Boot 4 can't load, and
  * the ccd one would register its Feign clients a second time. Instead we register the Feign clients and
- * PaymentsClient we need ourselves, and the health checks live in DownstreamHealthConfiguration.
+ * PaymentsClient we need ourselves.
  *
  * <p>We only use idam-legacy-auth-support for its password grant (see OAuth2ClientConfig), so its
  * auto-configurations are turned off. Our code doesn't call IdamApi, but the CCD SDK's IdamClient needs it.

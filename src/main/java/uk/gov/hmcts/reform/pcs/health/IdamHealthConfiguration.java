@@ -10,43 +10,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.healthcheck.CoreCaseDataHealthIndicator;
 
 import java.time.Duration;
 
-/**
- * Health checks for the services pcs-api calls. The payments and send-letter client libraries ship Spring Boot 3
- * health indicators that Spring Boot 4 can't load, and the CCD client's auto-configuration is excluded in
- * Application, so we register all three here. The bean names match the old ones, so /health still reports
- * coreCaseData, payments and sendLetter.
- */
 @Slf4j
 @Configuration(proxyBeanMethods = false)
-public class DownstreamHealthConfiguration {
+public class IdamHealthConfiguration {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(2);
     private static final Duration READ_TIMEOUT = Duration.ofSeconds(5);
 
     @Bean
-    @ConditionalOnProperty(prefix = "core_case_data", name = "api.url")
-    public CoreCaseDataHealthIndicator coreCaseData(CoreCaseDataApi coreCaseDataApi) {
-        return new CoreCaseDataHealthIndicator(coreCaseDataApi);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "payments", name = "api.url")
-    public HealthIndicator paymentsHealthIndicator(@Value("${payments.api.url}") String baseUrl) {
-        return healthCheck("payments", baseUrl);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "send-letter", name = "url")
-    public HealthIndicator sendLetterHealthIndicator(@Value("${send-letter.url}") String baseUrl) {
-        return healthCheck("send-letter", baseUrl);
-    }
-
-    private static HealthIndicator healthCheck(String service, String baseUrl) {
+    @ConditionalOnProperty(prefix = "idam", name = "api.url")
+    public HealthIndicator idamHealthIndicator(@Value("${idam.api.url}") String baseUrl) {
         SimpleClientHttpRequestFactory timeouts = new SimpleClientHttpRequestFactory();
         timeouts.setConnectTimeout(CONNECT_TIMEOUT);
         timeouts.setReadTimeout(READ_TIMEOUT);
@@ -57,7 +33,7 @@ public class DownstreamHealthConfiguration {
                 HealthResponse response = client.get().uri("/health").retrieve().body(HealthResponse.class);
                 return Health.status(response.status()).build();
             } catch (Exception ex) {
-                log.error("{} health check failed", service, ex);
+                log.error("IDAM health check failed", ex);
                 return Health.down(ex).build();
             }
         };
