@@ -31,7 +31,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(confirmEviction.name(), this::submit)
+                .decentralisedEvent(confirmEviction.name(), this::submit, this::start)
                 .forState(State.CASE_ISSUED)
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
@@ -41,6 +41,11 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        enforcementFlagGuard.requireOnStart();
+        return eventPayload.caseData();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
