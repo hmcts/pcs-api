@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.breathingspace;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -24,7 +23,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
