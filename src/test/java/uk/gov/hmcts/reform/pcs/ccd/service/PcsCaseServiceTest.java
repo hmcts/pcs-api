@@ -28,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseHardDeleteRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -73,6 +75,10 @@ class PcsCaseServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
     @Mock
+    private ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
+    @Mock
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
+    @Mock
     private ClaimService claimService;
     @Mock
     private PartyService partyService;
@@ -108,6 +114,8 @@ class PcsCaseServiceTest {
             pcsCaseRepository,
             pcsCaseHardDeleteRepository,
             notificationRepository,
+            claimPartyOrganisationRepository,
+            claimPartyContactDetailsRepository,
             claimService,
             partyService,
             documentService,
@@ -573,6 +581,8 @@ class PcsCaseServiceTest {
 
         // Then
         verify(notificationRepository).deleteByPcsCase_Id(caseId);
+        verify(claimPartyOrganisationRepository).deleteByParty_PcsCase_Id(caseId);
+        verify(claimPartyContactDetailsRepository).deleteByPcsCase_Id(caseId);
         verify(pcsCaseHardDeleteRepository).deleteBlockingDependencies(caseId);
         verify(pcsCaseRepository).delete(pcsCaseEntity);
 
