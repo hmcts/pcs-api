@@ -63,4 +63,8 @@ export default {
     'confirmEvictionevictionDate': 'evictionDate',
     'enforceTheOrderenforcementMissedPayments': 'missedPayments',
     'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
+    'enforceTheOrderbreathingSpaceNotSure': 'breathingSpaceNotSure',
+    'enforceTheOrdergenAppHoldingPage': 'generalApplication',
+    'enforceTheOrderuploadStatementPage': 'uploadStatement',
+    'enforceTheOrderbreathingSpaceNotSureWrit': 'breathingSpaceNotSureWrit',
 };

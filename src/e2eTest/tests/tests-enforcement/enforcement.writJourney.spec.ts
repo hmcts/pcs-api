@@ -4,8 +4,6 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  yourHCEO,
-  theNICEWillChoose,
   youCannotApplyForWrit,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -15,13 +13,18 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
+  breathingSpaceNotSureWrit,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
   enforcementApplication,
-  languageUsed, missedPayments,
+  generalApplication, hCEOfficerDetails,
+  languageUsed,
+  missedPayments,
   nameAndAddressForEviction,
-  statementOfTruth
+  statementOfTruth,
+  theNICEWillChoose,
+  uploadStatement,
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -77,7 +80,14 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC1, AC2' },
+      ],
+    },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -101,18 +111,22 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
       await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: uploadStatement.mainHeader});
+      await performAction('uploadStatement', {
+        continueButton: uploadStatement.continueButton,
+        nextPage: confirmHCEOfficer.mainHeader
+      });
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
         option: confirmHCEOfficer.yesRadioOption,
-        nextPage: yourHCEO.mainHeader
+        nextPage: hCEOfficerDetails.mainHeader
       });
-      await performValidation('mainHeader', yourHCEO.mainHeader);
-      await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
+      await performValidation('mainHeader', hCEOfficerDetails.mainHeader);
+      await performAction('errorValidationYourHCEOPage', hCEOfficerDetails.errorValidation);
       await performAction('nameYourHCEO', {
-        label: yourHCEO.nameOfYourHCEOTextLabel,
-        input: yourHCEO.nameOfYourHCEOTextInput,
+        label: hCEOfficerDetails.nameOfYourHCEOTextLabel,
+        input: hCEOfficerDetails.nameOfYourHCEOTextInput,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
@@ -135,16 +149,24 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       });
     });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement',
+    {
+      tag: ['@enforcement', '@regression'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : ` },
+        { type: 'ac', description: '' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
@@ -189,17 +211,84 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth',
+    {
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC1, AC2' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
       type: enforcementApplication.summaryWritOrWarrantLink,
-      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      label1: enforcementApplication.warrantFeeValidationParagraphHidden,
       text1: enforcementApplication.warrantFeeValidationTextHidden,
-      label2: enforcementApplication.writFeeValidationLabelHidden,
+      label2: enforcementApplication.writFeeValidationParagraphHidden,
       text2: enforcementApplication.writFeeValidationTextHidden
+    });
+    await performAction('validateGetQuoteFromBailiffLink', {
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      link: enforcementApplication.quoteFromBailiffLinkHidden,
+      newPage: enforcementApplication.hceoPageTitleHidden,
+      hiddenElements: [
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youCanUseParagraphHidden
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.itsFreeListItemHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.ifYouChooseParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.ifyouAskJudgeForAWritParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youNeedToParagraphHidden
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.applyToTransferEnforcementHiddenListItem
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.askTheJudgeForAWritHiddenListItem
+        },
+        {
+          elementType: 'listItem',
+          text: enforcementApplication.hireAPrivateListHidden
+        },
+        {
+          elementType: 'p',
+          text: enforcementApplication.theyUsuallyChargeByTheHourListItemHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.theAdditionalEvidenceParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youllNeedToProvideReasonsParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.theJudgeWillConsiderParagraphHidden
+        },
+        {
+          elementType: 'paragraph',
+          text: enforcementApplication.youCanContactALawyerParagraphHidden
+        }
+      ]
     });
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
@@ -242,7 +331,15 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
+  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement',
+    {
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : ` },
+        { type: 'ac', description: '' },
+      ],
+    },
+    async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -264,11 +361,12 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
   });
 
   test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
-    annotation: {
-      type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC10' },
+      ],
     },
-  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -287,8 +385,52 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
         defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
-      await performValidation('mainHeader', changeNameAddress.mainHeader);
-      await performAction('clickButton', changeNameAddress.continueButton);
-      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
+      await performAction('youNeedPermissionFromAJudge', {
+        continueButton: changeNameAddress.continueButton,
+        nextPage: generalApplication.mainHeader
+      });
+      await performAction('clickButton', generalApplication.continueButton);
+      await performValidation('errorMessage', { header: generalApplication.eventCouldNotBeCreatedErrorMessageHeader, message: generalApplication.errMessage });
     });
+
+  test('Writ of Possession - Breathing space: claimant selects Im not sure is directed to  screen',
+    {
+      tag: ['@enforcement'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-9502` },
+        { type: 'ac', description: 'AC3-AC7' },
+      ],
+    },
+    async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
+    await performAction('selectNameAndAddressForEviction', {
+      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      nextPage: defendantInBreathingSpace.mainHeader
+    });
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.imNotSureRadioOption,
+      nextPage: breathingSpaceNotSureWrit.mainHeader
+    });
+    await performAction('clickButton', breathingSpaceNotSureWrit.previousButton);
+    await performAction('isDefendantInBreathingSpace', {
+      option: defendantInBreathingSpace.imNotSureRadioOption,
+      nextPage: breathingSpaceNotSureWrit.mainHeader
+    });
+    await performAction('clickButton', breathingSpaceNotSureWrit.continueButton);
+    await performValidation('errorMessage', { header: breathingSpaceNotSureWrit.eventCouldNotBeCreatedErrorMessageHeader, message: breathingSpaceNotSureWrit.errorMessage });
+    await performAction('clickButton', breathingSpaceNotSureWrit.cancelButton);
+    await performValidation('mainHeader', 'Summary');
+  });
 });

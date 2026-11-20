@@ -8,7 +8,7 @@ export const cannotApplyForWritInfo = {
   transferYourClaimParagraph: `Trosglwyddo eich hawliad o'r Llys Sirol i'r Uchel Lys (gwneud cais)`,
   errorMessageHeader: `Errors`,
   errMessage: `You cannot continue with this application until you ask the judge for permission to transfer to the High Court`,
-  previousButton: `Yn ôl`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`
 }

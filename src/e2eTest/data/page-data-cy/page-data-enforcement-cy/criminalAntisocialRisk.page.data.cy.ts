@@ -4,8 +4,8 @@ export const criminalAntisocialRisk = {
   whatIsTheirHistoryOfCriminalAntisocialBehaviourQuestion: `Beth yw eu hanes o ran ymddygiad troseddol neu wrthgymdeithasol?`,
   forExampleHintText: `Er enghraifft, rhowch y cyfeirnod trosedd os ydych wedi galw'r heddlu i'r eiddo neu wedi rhoi gwybod am ddigwyddiad. Gallwch nodi hyd at 6,800 o nodau.`,
   whatIsTheirHistoryOfCriminalAntisocialBehaviourTextInput: 1200,
-  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`, 
-  previousButton: `Yn ôl`,
+  summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato yn ddiweddarach`,
+  previousButton: `Blaenorol`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`
 }
