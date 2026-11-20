@@ -31,11 +31,11 @@ public class OrdersView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            pcsCase.setOrdersMarkdown(null);
+            pcsCase.setOrderListMarkdown(null);
             return;
         }
         List<OrderStepEntity> orders = orderStepRepository.findLatestByCaseId(pcsCaseEntity.getId());
-        pcsCase.setOrdersMarkdown(orders.isEmpty() ? "There are no orders on this case." : table(orders));
+        pcsCase.setOrderListMarkdown(orders.isEmpty() ? "There are no orders on this case." : table(orders));
     }
 
     private static String table(List<OrderStepEntity> orders) {
