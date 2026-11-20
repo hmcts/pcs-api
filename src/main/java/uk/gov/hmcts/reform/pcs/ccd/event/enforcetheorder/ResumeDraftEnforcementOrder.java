@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -26,7 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-@Slf4j
+
 @Component
 @AllArgsConstructor
 public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, UserRole> {
