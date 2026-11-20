@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.endpoint.RestClientRefreshTokenTokenResponseClient;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
@@ -26,10 +27,14 @@ public class OAuth2ClientConfig {
             ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientService authorizedClientService) {
 
+        RestClient tokenClient = tokenEndpointRestClient();
+        RestClientRefreshTokenTokenResponseClient refreshTokenClient = new RestClientRefreshTokenTokenResponseClient();
+        refreshTokenClient.setRestClient(tokenClient);
+
         OAuth2AuthorizedClientProvider authorizedClientProvider =
             OAuth2AuthorizedClientProviderBuilder.builder()
-                .provider(new PasswordGrantAuthorizedClientProvider(passwordGrantRestClient()))
-                .refreshToken()
+                .provider(new PasswordGrantAuthorizedClientProvider(tokenClient))
+                .refreshToken(refreshToken -> refreshToken.accessTokenResponseClient(refreshTokenClient))
                 .build();
 
         AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager =
@@ -55,7 +60,7 @@ public class OAuth2ClientConfig {
     }
 
     /** Token-endpoint client with OAuth form and token-response converters and OAuth error handling. */
-    private static RestClient passwordGrantRestClient() {
+    private static RestClient tokenEndpointRestClient() {
         return RestClient.builder()
             .configureMessageConverters(converters -> converters
                 .addCustomConverter(new FormHttpMessageConverter())
