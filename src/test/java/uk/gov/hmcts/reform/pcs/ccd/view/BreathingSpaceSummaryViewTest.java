@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.BreathingSpaceTabDetails;
@@ -17,10 +16,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -50,7 +47,7 @@ class BreathingSpaceSummaryViewTest {
 
         // When
         underTest.setCaseFields(
-            pcsCase, CASE_REFERENCE, State.BREATHING_SPACE
+            pcsCase, CASE_REFERENCE
         );
 
         // Then
@@ -76,7 +73,7 @@ class BreathingSpaceSummaryViewTest {
 
         // When
         underTest.setCaseFields(
-            pcsCase, CASE_REFERENCE, State.BREATHING_SPACE
+            pcsCase, CASE_REFERENCE
         );
 
         // Then
@@ -99,7 +96,7 @@ class BreathingSpaceSummaryViewTest {
 
         // When
         underTest.setCaseFields(
-            pcsCase, CASE_REFERENCE, State.BREATHING_SPACE
+            pcsCase, CASE_REFERENCE
         );
 
         // Then
@@ -112,17 +109,25 @@ class BreathingSpaceSummaryViewTest {
         // Given
         PCSCase pcsCase = buildCase();
 
+        BreathingSpaceDetails details = BreathingSpaceDetails.builder()
+            .referenceNumber("BS123456")
+            .build();
+
+        when(breathingSpaceService.getLatestBreathingSpace(CASE_REFERENCE))
+            .thenReturn(Optional.of(details));
+
         // When
         underTest.setCaseFields(
-            pcsCase, CASE_REFERENCE, State.CASE_ISSUED
-        );
+            pcsCase, CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getSummaryTab().getBreathingSpaceDetails())
-            .isNull();
+        verify(breathingSpaceService)
+            .getLatestBreathingSpace(CASE_REFERENCE);
 
-        verify(breathingSpaceService, never())
-            .getLatestBreathingSpace(anyLong());
+        assertThat(pcsCase.getSummaryTab()
+                       .getBreathingSpaceDetails()
+                       .getReferenceNumber())
+            .isEqualTo("BS123456");
     }
 
     @Test
@@ -139,7 +144,7 @@ class BreathingSpaceSummaryViewTest {
 
         // When
         underTest.setCaseFields(
-            pcsCase, CASE_REFERENCE, State.BREATHING_SPACE
+            pcsCase, CASE_REFERENCE
         );
 
         // Then

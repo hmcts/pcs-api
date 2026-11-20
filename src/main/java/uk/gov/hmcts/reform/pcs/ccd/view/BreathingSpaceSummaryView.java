@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.BreathingSpaceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
@@ -22,11 +21,7 @@ public class BreathingSpaceSummaryView {
 
     private final BreathingSpaceService breathingSpaceService;
 
-    public void setCaseFields(PCSCase pcsCase, long caseReference, State state) {
-        if (state != State.BREATHING_SPACE) {
-            return;
-        }
-
+    public void setCaseFields(PCSCase pcsCase, long caseReference) {
         breathingSpaceService.getLatestBreathingSpace(caseReference)
             .ifPresent(details ->
                            pcsCase.getSummaryTab().setBreathingSpaceDetails(

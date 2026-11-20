@@ -47,7 +47,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.MessagesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -427,7 +426,7 @@ class PCSCaseViewTest {
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
-        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
     }
 
     @Test
@@ -539,7 +538,7 @@ class PCSCaseViewTest {
         // Then
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
 
-        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, State.BREATHING_SPACE);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
     }
 
 
