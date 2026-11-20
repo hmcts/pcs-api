@@ -5,7 +5,7 @@ export const user = {
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
   defendantSolicitor:  {
-    email: 'pcs-org1-solicitor2@test.com',
+    email: 'pcs.solicitor.orguser4@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD,
     orgName: `Possession Claim Service Org1`
   },
