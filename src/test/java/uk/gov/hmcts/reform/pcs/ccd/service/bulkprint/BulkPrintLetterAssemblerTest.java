@@ -63,22 +63,26 @@ class BulkPrintLetterAssemblerTest {
         // The coversheet is posted as rendered and need not meet the print standard, so only the documents'
         // pages are checked against it.
         try (PDDocument document = Loader.loadPDF(letter)) {
-            // coversheet + photo + statement + schedule = 4: already even, so no padding page.
-            assertThat(document.getNumberOfPages()).isEqualTo(4);
+            // Coversheet, photo, statement and schedule are one page each, and each is followed by a blank page so
+            // that the next starts on a new sheet when printed duplex.
+            assertThat(document.getNumberOfPages()).isEqualTo(8);
             assertThat(textOf(document, 1)).contains("Jane Doe, 1 High Street, London W1 1AA");
-            for (int page = 2; page <= 4; page++) {
+            for (int page = 3; page <= 7; page += 2) {
                 // Converted pages are CMYK images: no live text, nothing inside the 20 mm margin.
                 assertThat(textOf(document, page)).isBlank();
                 assertCmykImagesOnly(document, page - 1);
                 assertMarginBlank(document, page - 1);
+            }
+            for (int page = 2; page <= 8; page += 2) {
+                assertThat(document.getPage(page - 1).hasContents()).as("page %d is blank", page).isFalse();
             }
         }
         assertThat(docmosisCalls).containsExactly("witness-statement.docx " + DOCX);
     }
 
     @Test
-    @DisplayName("Pads an odd page count so Send Letter forwards the letter untouched")
-    void shouldPadToAnEvenPageCount() throws IOException {
+    @DisplayName("Pads each document to an even page count so each starts on a new sheet")
+    void shouldPadEachDocumentToAnEvenPageCount() throws IOException {
         BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(converterWithDocmosis());
 
         byte[] letter = underTest.assemble("DEF-01-IN0 1234-5678-9012-3456", pdfSaying("Coversheet"), List.of(
@@ -86,7 +90,8 @@ class BulkPrintLetterAssemblerTest {
             new BulkPrintLetterAssembler.LetterDocument("photo.png", "image/png", png())));
 
         try (PDDocument document = Loader.loadPDF(letter)) {
-            assertThat(document.getNumberOfPages()).isEqualTo(4);
+            // Coversheet, defence and photo, each one page and a blank.
+            assertThat(document.getNumberOfPages()).isEqualTo(6);
         }
     }
 
@@ -115,10 +120,10 @@ class BulkPrintLetterAssemblerTest {
             new BulkPrintLetterAssembler.LetterDocument(" ", null, pdfSaying("Claim form"))));
 
         try (PDDocument document = Loader.loadPDF(letter)) {
-            // coversheet + access code + claim, padded to 4.
-            assertThat(document.getNumberOfPages()).isEqualTo(4);
-            assertCmykImagesOnly(document, 1);
+            // Coversheet, access code and claim, each one page and a blank.
+            assertThat(document.getNumberOfPages()).isEqualTo(6);
             assertCmykImagesOnly(document, 2);
+            assertCmykImagesOnly(document, 4);
         }
     }
 

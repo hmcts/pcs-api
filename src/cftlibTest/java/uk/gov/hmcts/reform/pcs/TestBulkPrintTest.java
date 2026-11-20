@@ -129,15 +129,21 @@ class TestBulkPrintTest extends CftlibTest {
         byte[] pdf = Base64.getDecoder().decode(letter.documents.getFirst().content);
 
         int coversheetPages = pageCount(Files.readAllBytes(COVERSHEET));
-        // photo, scan, two statement pages, Word document, CSV
+        // Each part is padded to an even page count so it starts on a new sheet: the coversheet, then the photo,
+        // scan, Word document and CSV (one page and a blank each) and the two-page statement.
+        int firstDocumentPage = coversheetPages + coversheetPages % 2;
         int convertedPages = 6;
         try (PDDocument document = Loader.loadPDF(pdf)) {
             int pages = document.getNumberOfPages();
-            assertThat(pages % 2).as("page count %d is even for duplex", pages).isZero();
-            assertThat(pages).isIn(coversheetPages + convertedPages, coversheetPages + convertedPages + 1);
-            for (int index = coversheetPages; index < coversheetPages + convertedPages; index++) {
-                assertPrintReady(document, index);
+            assertThat(pages).isEqualTo(firstDocumentPage + 10);
+            int printed = 0;
+            for (int index = firstDocumentPage; index < pages; index++) {
+                if (document.getPage(index).hasContents()) {
+                    assertPrintReady(document, index);
+                    printed++;
+                }
             }
+            assertThat(printed).as("converted pages").isEqualTo(convertedPages);
         }
         assertThat(mockDocmosisConvertServer.convertRequests().subList(docmosisCallsBefore,
                 mockDocmosisConvertServer.convertRequests().size()))
