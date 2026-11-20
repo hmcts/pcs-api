@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>WALES-CERTIFICATES-MISSING</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Cardiff</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <RecoverySteps>Letters and phone calls.</RecoverySteps>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH_AND_WELSH</LanguageUsed>
+      <TotalArrears>2400.50</TotalArrears>
+      <PaymentHistory>
+        <PaymentLine><PaymentDueDate>2026-09-01</PaymentDueDate><AmountDue>800.00</AmountDue><AmountPaid>0.00</AmountPaid><CumulativeArrears>800.00</CumulativeArrears></PaymentLine>
+        <PaymentLine><PaymentDueDate>2026-10-01</PaymentDueDate><AmountDue>800.00</AmountDue><AmountPaid>0.00</AmountPaid><CumulativeArrears>1600.00</CumulativeArrears></PaymentLine>
+      </PaymentHistory>
+      <TenancyType>STANDARD_CONTRACT</TenancyType>
+      <TenancyCommenceDate>2020-09-01</TenancyCommenceDate>
+      <CurrentRent><Amount>800.00</Amount><Frequency>Month</Frequency></CurrentRent>
+      <DailyRent>26.30</DailyRent>
+      <Grounds>
+        <Ground><Code>SERIOUS_ARREARS_FIXED_TERM_S187</Code></Ground>
+      </Grounds>
+      <WalesNotice>
+        <Served>true</Served>
+        <TypeOfNoticeServed>RHW20</TypeOfNoticeServed>
+        <ServiceMethod>FIRST_CLASS_POST</ServiceMethod>
+        <ServedDate>2026-10-05</ServedDate>
+      </WalesNotice>
+      <Wales>
+        <IsExemptLandlord>false</IsExemptLandlord>
+        <ProhibitedConduct><Claim>false</Claim></ProhibitedConduct>
+        <EnergyPerformanceCertificate><Provided>false</Provided><NotProvidedReason>The certificate is held by the previous owner.</NotProvidedReason></EnergyPerformanceCertificate>
+        <GasSafetyReport><Provided>false</Provided><NotProvidedReason>There is no gas supply.</NotProvidedReason></GasSafetyReport>
+        <ElectricalInstallationConditionReport><Provided>false</Provided><NotProvidedReason>The inspection is booked.</NotProvidedReason></ElectricalInstallationConditionReport>
+      </Wales>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

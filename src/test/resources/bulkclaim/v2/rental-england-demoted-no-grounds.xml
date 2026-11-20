@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>DEMOTED-1</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Manchester</PostTown>
+        <PostCode>M1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <TenancyType>DEMOTED_TENANCY</TenancyType>
+      <Grounds>
+        <Ground><Code>NO_GROUNDS</Code><Reason>No ground is relied on.</Reason></Ground>
+      </Grounds>
+      <Notice>
+        <Served>true</Served>
+        <ServiceMethod>OTHER_ELECTRONIC</ServiceMethod>
+        <ServedDateTime>2026-10-05T10:30:00</ServedDateTime>
+        <Explanation>Sent by text message.</Explanation>
+      </Notice>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

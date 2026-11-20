@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <PaymentAccountNumber>PBA7654321</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>SEC_2026.11-42</CustomerUniqueIdentifier>
+    <Claimant>
+      <IndividualName>
+        <FirstName>Lee</FirstName>
+        <LastName>Landlord</LastName>
+      </IndividualName>
+      <ContactEmailAddress>lee@example.org</ContactEmailAddress>
+    </Claimant>
+    <Solicitor PCOLReferenceNumber="99">
+      <Firm>Example Solicitors LLP</Firm>
+    </Solicitor>
+    <Property>
+      <Address>
+        <AddressLine1>5 Council Way</AddressLine1>
+        <PostTown>Cardiff</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Bea</FirstName>
+        <LastName>Resident</LastName>
+      </Name>
+      <ContactDetails>
+        <Address>
+          <AddressLine1>5 Council Way</AddressLine1>
+          <PostTown>Cardiff</PostTown>
+          <PostCode>CF10 1AA</PostCode>
+        </Address>
+      </ContactDetails>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <PaymentAccountNumber>PBA1111111</PaymentAccountNumber>
+    <PaymentCustomerReference>PO-77</PaymentCustomerReference>
+    <ClaimParticulars>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-02</SignedDate>
+        <SignedName>Lee Landlord</SignedName>
+        <Position>Landlord</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>false</PreActionProtocolCompleted>
+      <PreActionProtocolIncompleteExplanation>Not applicable to this tenancy.</PreActionProtocolIncompleteExplanation>
+      <LanguageUsed>ENGLISH_AND_WELSH</LanguageUsed>
+      <UnderlesseeOrMortgagee/>
+      <TenancyType>SECURE_CONTRACT</TenancyType>
+      <Grounds>
+        <Ground>
+          <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
+          <EstateManagementGround><Code>BUILDING_WORKS</Code><Reason>The block is being redeveloped.</Reason></EstateManagementGround>
+          <EstateManagementGround><Code>REDEVELOPMENT_SCHEMES</Code><Reason>The estate is part of a regeneration scheme.</Reason></EstateManagementGround>
+        </Ground>
+      </Grounds>
+      <WalesNotice>
+        <Served>true</Served>
+        <TypeOfNoticeServed>RHW23</TypeOfNoticeServed>
+      </WalesNotice>
+      <Wales>
+        <IsExemptLandlord>false</IsExemptLandlord>
+        <GasSafetyReport>
+          <Provided>false</Provided>
+          <NotProvidedReason>No gas supply at the property.</NotProvidedReason>
+        </GasSafetyReport>
+      </Wales>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <PaymentAccountNumber>NOT-A-PBA</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>bad id with spaces</CustomerUniqueIdentifier>
+    <Claimant>
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>not-an-email</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Manchester</PostTown>
+        <PostCode>invalid</PostCode>
+      </Address>
+    </Property>
+    <ClaimantDesignation>Landlord</ClaimantDesignation>
+  </RentalClaim>
+</RentalClaimSet>

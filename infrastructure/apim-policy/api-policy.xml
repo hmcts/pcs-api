@@ -1,0 +1,214 @@
+<!--
+    Use 4 spaces for indentation to avoid formatting issues when the file is deployed.
+    APIM will remove any blank lines between policy elements.
+-->
+<policies>
+    <inbound>
+        <base />
+        <!-- Reject oversized bodies before doing any authentication work -->
+        <choose>
+            <when condition="@{
+                    try {
+                        return Convert.ToInt64(context.Request.Headers.GetValueOrDefault("Content-Length", "0")) > ${max_request_bytes};
+                    } catch {
+                        return true;
+                    }
+                }">
+                <return-response>
+                    <set-status code="413" reason="Payload Too Large" />
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{"error":"Request body too large"}</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <!-- Parse HTTP Basic credentials; an empty array means missing or malformed -->
+        <set-variable name="credentials" value="@{
+                var header = context.Request.Headers.GetValueOrDefault("Authorization", "");
+                if (!header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase)) {
+                    return new string[0];
+                }
+                try {
+                    var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(header.Substring(6).Trim()));
+                    var separator = decoded.IndexOf(':');
+                    if (separator < 0) {
+                        return new string[0];
+                    }
+                    var username = decoded.Substring(0, separator);
+                    var password = decoded.Substring(separator + 1);
+                    if (!Regex.IsMatch(username, @"^[a-z0-9-]{3,40}\z") || password.Length == 0 || password.Length > 256) {
+                        return new string[0];
+                    }
+                    return new string[] { username, password };
+                } catch {
+                    return new string[0];
+                }
+            }" />
+        <choose>
+            <when condition="@(((string[])context.Variables["credentials"]).Length == 0)">
+                <return-response>
+                    <set-status code="401" reason="Unauthorized" />
+                    <set-header name="WWW-Authenticate" exists-action="override">
+                        <value>Basic realm="pcs-bulk-claims"</value>
+                    </set-header>
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{"error":"Unauthorized"}</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <set-variable name="username" value="@(((string[])context.Variables["credentials"])[0])" />
+        <!-- Counts every attempt, so failed password guesses are throttled as well -->
+        <rate-limit-by-key calls="${rate_limit_calls}" renewal-period="${rate_limit_renewal_period}" counter-key="@((string)context.Variables["username"])" />
+        <!-- Client record from Key Vault, cached briefly; failures are never cached -->
+        <cache-lookup-value key="@("pcs-bulk-claims:client:" + (string)context.Variables["username"])" variable-name="clientSecret" caching-type="internal" />
+        <choose>
+            <when condition="@(!context.Variables.ContainsKey("clientSecret"))">
+                <send-request mode="new" response-variable-name="clientKeyVaultResponse" timeout="10" ignore-error="true">
+                    <set-url>@("https://${key_vault_name}.vault.azure.net/secrets/bulk-claims-client-" + (string)context.Variables["username"] + "?api-version=7.4")</set-url>
+                    <set-method>GET</set-method>
+                    <authentication-managed-identity resource="https://vault.azure.net" />
+                </send-request>
+                <choose>
+                    <when condition="@(context.Variables["clientKeyVaultResponse"] == null || (((IResponse)context.Variables["clientKeyVaultResponse"]).StatusCode != 200 && ((IResponse)context.Variables["clientKeyVaultResponse"]).StatusCode != 404))">
+                        <return-response>
+                            <set-status code="503" reason="Service Unavailable" />
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>{"error":"Service unavailable"}</set-body>
+                        </return-response>
+                    </when>
+                    <when condition="@(((IResponse)context.Variables["clientKeyVaultResponse"]).StatusCode == 404)">
+                        <return-response>
+                            <set-status code="401" reason="Unauthorized" />
+                            <set-header name="WWW-Authenticate" exists-action="override">
+                                <value>Basic realm="pcs-bulk-claims"</value>
+                            </set-header>
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>{"error":"Unauthorized"}</set-body>
+                        </return-response>
+                    </when>
+                </choose>
+                <set-variable name="clientSecret" value="@((string)((IResponse)context.Variables["clientKeyVaultResponse"]).Body.As<JObject>()["value"])" />
+                <cache-store-value key="@("pcs-bulk-claims:client:" + (string)context.Variables["username"])" value="@((string)context.Variables["clientSecret"])" duration="${client_cache_seconds}" caching-type="internal" />
+            </when>
+        </choose>
+        <!-- Salted HMAC-SHA256 of the password, compared in constant time; empty result means rejected -->
+        <set-variable name="organisationId" value="@{
+                try {
+                    var secret = JObject.Parse((string)context.Variables["clientSecret"]);
+                    if (!(bool)secret["enabled"]) {
+                        return "";
+                    }
+                    var salt = Convert.FromBase64String((string)secret["salt"]);
+                    var expected = Convert.FromBase64String((string)secret["passwordHash"]);
+                    var password = ((string[])context.Variables["credentials"])[1];
+                    var actual = new HMACSHA256(salt).ComputeHash(Encoding.UTF8.GetBytes(password));
+                    if (actual.Length != expected.Length) {
+                        return "";
+                    }
+                    int difference = 0;
+                    for (int i = 0; i < actual.Length; i++) {
+                        difference |= actual[i] ^ expected[i];
+                    }
+                    if (difference != 0) {
+                        return "";
+                    }
+                    var organisationId = (string)secret["organisationId"];
+                    return Regex.IsMatch(organisationId, @"^[A-Za-z0-9]{3,32}\z") ? organisationId : "";
+                } catch {
+                    return "";
+                }
+            }" />
+        <choose>
+            <when condition="@((string)context.Variables["organisationId"] == "")">
+                <return-response>
+                    <set-status code="401" reason="Unauthorized" />
+                    <set-header name="WWW-Authenticate" exists-action="override">
+                        <value>Basic realm="pcs-bulk-claims"</value>
+                    </set-header>
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{"error":"Unauthorized"}</set-body>
+                </return-response>
+            </when>
+        </choose>
+        <!-- The client's credentials stop here; the organisation comes only from the verified record -->
+        <set-header name="Authorization" exists-action="delete" />
+        <set-header name="X-Organisation-Id" exists-action="override">
+            <value>@((string)context.Variables["organisationId"])</value>
+        </set-header>
+        <!-- S2S token for ${s2s_client_id}, cached well inside its lifetime -->
+        <cache-lookup-value key="pcs-bulk-claims:s2s-token" variable-name="s2sToken" caching-type="internal" />
+        <choose>
+            <when condition="@(!context.Variables.ContainsKey("s2sToken"))">
+                <set-variable name="one_time_password" value="@{
+                        const string Base32AllowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+                        var bits = "{{${s2s_secret_named_value}}}".ToUpper().ToCharArray().Select(c => Convert.ToString(Base32AllowedCharacters.IndexOf(c), 2).PadLeft(5, '0')).Aggregate((a, b) => a + b);
+                        var secretKeyBytes = Enumerable.Range(0, bits.Length / 8).Select(i => Convert.ToByte(bits.Substring(i * 8, 8), 2)).ToArray();
+                        var unixTimestamp = (long) (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                        var timeIndex = unixTimestamp / 30;
+                        byte[] challenge = BitConverter.GetBytes(timeIndex);
+                        if (BitConverter.IsLittleEndian) {
+                            Array.Reverse(challenge);
+                        }
+                        HMACSHA1 hmac = new HMACSHA1(secretKeyBytes);
+                        byte[] hash = hmac.ComputeHash(challenge);
+                        int offset = hash[19] & 0xf;
+                        int truncatedHash = hash[offset] & 0x7f;
+                        for (int i = 1; i < 4; i++)
+                        {
+                            truncatedHash <<= 8;
+                            truncatedHash |= hash[offset + i] & 0xff;
+                        }
+                        truncatedHash %= 1000000;
+                        return truncatedHash.ToString("D6");
+                    }" />
+                <send-request mode="new" response-variable-name="s2sResponse" timeout="20" ignore-error="true">
+                    <set-url>${s2s_base_url}/lease</set-url>
+                    <set-method>POST</set-method>
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>@{
+                        return new JObject(
+                            new JProperty("microservice", "${s2s_client_id}"),
+                            new JProperty("oneTimePassword", (string)context.Variables["one_time_password"])
+                        ).ToString();
+                    }</set-body>
+                </send-request>
+                <choose>
+                    <when condition="@(context.Variables["s2sResponse"] == null || ((IResponse)context.Variables["s2sResponse"]).StatusCode != 200)">
+                        <return-response>
+                            <set-status code="503" reason="Service Unavailable" />
+                            <set-header name="Content-Type" exists-action="override">
+                                <value>application/json</value>
+                            </set-header>
+                            <set-body>{"error":"Service unavailable"}</set-body>
+                        </return-response>
+                    </when>
+                </choose>
+                <set-variable name="s2sToken" value="@(((IResponse)context.Variables["s2sResponse"]).Body.As<string>())" />
+                <cache-store-value key="pcs-bulk-claims:s2s-token" value="@((string)context.Variables["s2sToken"])" duration="${s2s_cache_seconds}" caching-type="internal" />
+            </when>
+        </choose>
+        <set-header name="ServiceAuthorization" exists-action="override">
+            <value>@("Bearer " + (string)context.Variables["s2sToken"])</value>
+        </set-header>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

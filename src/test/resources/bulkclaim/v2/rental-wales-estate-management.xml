@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>WALES-ESTATE-MANAGEMENT</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Cardiff</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH_AND_WELSH</LanguageUsed>
+      <TenancyType>OTHER</TenancyType>
+      <OtherTenancyTypeDetails>A licence agreement.</OtherTenancyTypeDetails>
+      <Grounds>
+        <Ground>
+          <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
+          <EstateManagementGround><Code>BUILDING_WORKS</Code><Reason>The block is being redeveloped.</Reason></EstateManagementGround>
+          <EstateManagementGround><Code>REDEVELOPMENT_SCHEMES</Code><Reason>The estate is part of a regeneration scheme.</Reason></EstateManagementGround>
+        </Ground>
+        <Ground><Code>OTHER_BREACH_OF_CONTRACT_S157</Code><Reason>Sub-letting without consent.</Reason></Ground>
+        <Ground><Code>LANDLORD_NOTICE_PERIODIC_S178</Code><Reason>Notice was given and has expired.</Reason></Ground>
+      </Grounds>
+      <WalesNotice>
+        <Served>true</Served>
+        <TypeOfNoticeServed>RHW20</TypeOfNoticeServed>
+        <ServiceMethod>FIRST_CLASS_POST</ServiceMethod>
+        <ServedDate>2026-10-05</ServedDate>
+      </WalesNotice>
+      <Wales>
+        <IsExemptLandlord>false</IsExemptLandlord>
+        <ProhibitedConduct><Claim>false</Claim></ProhibitedConduct>
+        <EnergyPerformanceCertificate><Provided>true</Provided></EnergyPerformanceCertificate>
+        <GasSafetyReport><Provided>true</Provided></GasSafetyReport>
+        <ElectricalInstallationConditionReport><Provided>true</Provided></ElectricalInstallationConditionReport>
+      </Wales>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/internal/v1/organisations",
+    "queryParameters": {
+      "id": { "equalTo": "BULKORG1" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "name": "Bulk Housing Association",
+      "organisationIdentifier": "BULKORG1",
+      "status": "ACTIVE",
+      "organisationProfileIds": ["SOLICITOR_PROFILE"],
+      "contactInformation": [
+        {
+          "addressLine1": "1 Org Street",
+          "townCity": "Manchester",
+          "postCode": "M1 1AA"
+        }
+      ],
+      "paymentAccount": ["PBA1234567"]
+    }
+  }
+}

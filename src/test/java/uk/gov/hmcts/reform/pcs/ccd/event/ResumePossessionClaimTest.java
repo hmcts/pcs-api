@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.ClaimIssueFeeScheduler;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -117,7 +118,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
-            organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
+            organisationService, new ClaimIssueFeeScheduler(feeService, partyService, schedulerClient),
+            draftCaseDataService, addressFormatter,
             moneyFormatter, resumePossessionClaimConfigurer, notificationService, featureFlagView
         );
 

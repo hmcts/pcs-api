@@ -38,6 +38,9 @@ public class ClaimFormPayload implements FormPayload {
     @JsonProperty("isEngland")
     private boolean isEngland;
 
+    // "Yes"/"No" so the template can branch to a mortgage possession layout.
+    private String isMortgageClaim;
+
     // ---------- Claimant ----------
     private ClaimFormParty claimant;
     private String claimantDisplayName;

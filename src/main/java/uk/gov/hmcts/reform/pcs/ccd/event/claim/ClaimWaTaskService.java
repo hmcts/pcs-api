@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -43,7 +44,10 @@ public class ClaimWaTaskService {
             return;
         }
 
-        switch (claimEntity.getLanguageUsed()) {
+        LanguageUsed languageUsed =
+            claimEntity.getLanguageUsed() != null ? claimEntity.getLanguageUsed() : LanguageUsed.ENGLISH;
+
+        switch (languageUsed) {
             case ENGLISH -> {
                 if (claimEntity.getGenAppExpected() == VerticalYesNo.YES) {
                     camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING,

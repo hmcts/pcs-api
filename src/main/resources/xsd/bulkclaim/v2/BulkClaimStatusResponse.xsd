@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="Common.xsd"/>
+
+  <xs:simpleType name="PaymentStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NOT_STARTED"/>
+      <xs:enumeration value="PENDING"/>
+      <xs:enumeration value="PAID"/>
+      <xs:enumeration value="FAILED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="BulkClaimStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="CustomerUniqueIdentifier" type="xs:string"/>
+        <xs:element name="ClaimStatus" type="StatusType"/>
+        <xs:element name="CaseReference" type="xs:string" minOccurs="0"/>
+        <xs:element name="CaseState" type="xs:string" minOccurs="0"/>
+        <xs:element name="ServiceRequestReference" type="xs:string" minOccurs="0"/>
+        <xs:element name="PaymentStatus" type="PaymentStatusType" minOccurs="0"/>
+        <xs:element name="PaymentFailureReason" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

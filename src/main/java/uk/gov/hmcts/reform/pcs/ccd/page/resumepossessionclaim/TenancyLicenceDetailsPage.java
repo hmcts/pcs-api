@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -14,10 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TENANCY_LICENCE_DOCUMENT_REQUIRED;
@@ -25,14 +25,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TE
 @Component
 public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
 
-    private final Clock ukClock;
+    private final TenancyDateRules tenancyDateRules;
     private final TextAreaValidationService textAreaValidationService;
     private final FileUploadValidationService fileUploadValidationService;
 
-    public TenancyLicenceDetailsPage(@Qualifier("ukClock") Clock ukClock,
+    public TenancyLicenceDetailsPage(TenancyDateRules tenancyDateRules,
                                 TextAreaValidationService textAreaValidationService,
                                 FileUploadValidationService fileUploadValidationService) {
-        this.ukClock = ukClock;
+        this.tenancyDateRules = tenancyDateRules;
         this.textAreaValidationService = textAreaValidationService;
         this.fileUploadValidationService = fileUploadValidationService;
     }
@@ -83,12 +83,12 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         LocalDate tenancyLicenceDate = caseData.getTenancyLicenceDetails() != null
                 ? caseData.getTenancyLicenceDetails().getTenancyLicenceDate() : null;
-        LocalDate currentDate = LocalDate.now(ukClock);
 
         // Validate tenancy licence date
-        if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
+        Optional<String> dateError = tenancyDateRules.validateEnglandTenancyLicenceDate(tenancyLicenceDate);
+        if (dateError.isPresent()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("Date the tenancy or licence began must be in the past")
+            .errorMessageOverride(dateError.get())
             .build();
         }
 

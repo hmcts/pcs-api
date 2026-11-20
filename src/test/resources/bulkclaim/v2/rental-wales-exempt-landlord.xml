@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>WALES-EXEMPT-LANDLORD</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Cardiff</PostTown>
+        <PostCode>CF10 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>WALES</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <DefendantsCircumstances>Defendant lives with two children.</DefendantsCircumstances>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH_AND_WELSH</LanguageUsed>
+      <TenancyType>SECURE_CONTRACT</TenancyType>
+      <TenancyCommenceDate>2018-01-15</TenancyCommenceDate>
+      <Grounds>
+        <Ground>
+          <Code>ESTATE_MANAGEMENT_GROUNDS_S160</Code>
+          <EstateManagementGround><Code>DISABLED_SUITABLE_DWELLING</Code><Reason>The dwelling is needed for a disabled person.</Reason></EstateManagementGround>
+        </Ground>
+        <Ground><Code>FAILURE_TO_GIVE_UP_POSSESSION_S170</Code><Reason>The contract-holder did not leave.</Reason></Ground>
+      </Grounds>
+      <WalesNotice>
+        <Served>true</Served>
+        <TypeOfNoticeServed>RHW20</TypeOfNoticeServed>
+        <ServiceMethod>EMAIL</ServiceMethod>
+        <ServedDateTime>2026-10-05T10:30:00</ServedDateTime>
+        <EmailAddress>ann@example.org</EmailAddress>
+      </WalesNotice>
+      <Wales>
+        <IsExemptLandlord>true</IsExemptLandlord>
+        <ProhibitedConduct>
+          <Claim>true</Claim>
+          <AgreedTermsOfPeriodicContract>false</AgreedTermsOfPeriodicContract>
+          <Details>A probationary contract is more suitable.</Details>
+        </ProhibitedConduct>
+        <EnergyPerformanceCertificate><Provided>true</Provided></EnergyPerformanceCertificate>
+        <GasSafetyReport><Provided>true</Provided></GasSafetyReport>
+        <ElectricalInstallationConditionReport><Provided>true</Provided></ElectricalInstallationConditionReport>
+      </Wales>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

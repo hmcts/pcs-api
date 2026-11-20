@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
@@ -13,23 +12,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGr
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
 
-    @Mock
-    private PossessionGroundsValidationUtil possessionGroundsValidationUtil;
-
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(possessionGroundsValidationUtil));
+        setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(
+            new GroundsRules(new TextAreaValidationService())));
     }
 
     @Test
@@ -65,10 +61,6 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
                 )
                 .build();
 
-        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
-                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .data(caseData)
-                        .build());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -92,10 +84,6 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
             )
             .build();
 
-        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
-                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .data(caseData)
-                        .build());
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
@@ -117,10 +105,6 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
             )
             .build();
 
-        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
-                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .data(caseData)
-                        .build());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

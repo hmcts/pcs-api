@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MortgageClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <MortgageClaim>
+    <CustomerUniqueIdentifier>MORT-001</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="555">
+      <CompanyName>Example Bank plc</CompanyName>
+      <ContactEmailAddress>possessions@example.com</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>22 Mortgage Mews</AddressLine1>
+        <PostTown>Leeds</PostTown>
+        <PostCode>LS1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant isOccupant="false">
+      <Name>
+        <FirstName>Max</FirstName>
+        <LastName>Borrower</LastName>
+      </Name>
+      <ContactDetails>
+        <Address>
+          <AddressLine1>1 Elsewhere Close</AddressLine1>
+          <PostTown>York</PostTown>
+          <PostCode>YO1 1AA</PostCode>
+        </Address>
+      </ContactDetails>
+    </Defendant>
+    <ClaimantDesignation>Commercial</ClaimantDesignation>
+    <ParticularsOfClaim>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-03</SignedDate>
+        <SignedName>Pat Manager</SignedName>
+        <Position>Possessions Manager</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <TotalArrears>5000.00</TotalArrears>
+      <PaymentHistory>
+        <PaymentLine>
+          <PaymentDueDate>2026-10-01</PaymentDueDate>
+          <AmountDue>1000.00</AmountDue>
+          <AmountPaid>0.00</AmountPaid>
+          <CumulativeArrears>1000.00</CumulativeArrears>
+        </PaymentLine>
+      </PaymentHistory>
+      <NoticeServedDate>2026-10-20</NoticeServedDate>
+      <MortgageDate>2015-06-01</MortgageDate>
+      <LoanAmount>200000.00</LoanAmount>
+      <CurrentRepaymentTerms>Monthly repayments of 1000.00.</CurrentRepaymentTerms>
+      <FullRepaymentDate>2040-06-01</FullRepaymentDate>
+      <FullRepaymentAmount>180000.00</FullRepaymentAmount>
+      <CostsAndAdministration>250.00</CostsAndAdministration>
+      <StartInterestRate>3.5000</StartInterestRate>
+      <PreArrearsInterestRate>4.2500</PreArrearsInterestRate>
+      <ClaimStartInterestRate>5.0000</ClaimStartInterestRate>
+      <AdditionalPayments>
+        <AdditionalPaymentAmount>50.00</AdditionalPaymentAmount>
+        <AdditionalPaymentReason>Insurance premium</AdditionalPaymentReason>
+      </AdditionalPayments>
+      <HasMonetaryJudgement>false</HasMonetaryJudgement>
+    </ParticularsOfClaim>
+    <Occupant>
+      <FirstName>Sam</FirstName>
+      <LastName>Occupier</LastName>
+    </Occupant>
+  </MortgageClaim>
+</MortgageClaimSet>

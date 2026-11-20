@@ -12,20 +12,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @Component
 @AllArgsConstructor
 public class SelectClaimantType implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final ClaimantEligibilityRules claimantEligibilityRules;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -59,23 +57,15 @@ public class SelectClaimantType implements CcdPageConfiguration {
         LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
         caseData
-            .setShowClaimantTypeNotEligibleEngland(YesOrNo.from(isEligibleInEngland(legislativeCountry, claimantType)));
+            .setShowClaimantTypeNotEligibleEngland(YesOrNo.from(
+                claimantEligibilityRules.isClaimantTypeNotAllowedInEngland(legislativeCountry, claimantType)));
 
         caseData
-            .setShowClaimantTypeNotEligibleWales(YesOrNo.from(isEligibleInWales(legislativeCountry, claimantType)));
-
+            .setShowClaimantTypeNotEligibleWales(YesOrNo.from(
+                claimantEligibilityRules.isClaimantTypeNotAllowedInWales(legislativeCountry, claimantType)));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
-
-    private boolean isEligibleInEngland(LegislativeCountry legislativeCountry, ClaimantType claimantType) {
-        return legislativeCountry == ENGLAND && claimantType != PROVIDER_OF_SOCIAL_HOUSING;
-    }
-
-    private Boolean isEligibleInWales(LegislativeCountry legislativeCountry, ClaimantType claimantType) {
-        return legislativeCountry == WALES && claimantType != COMMUNITY_LANDLORD;
-    }
-
 }

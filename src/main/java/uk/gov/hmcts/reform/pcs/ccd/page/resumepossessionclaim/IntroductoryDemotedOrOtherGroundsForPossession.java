@@ -4,21 +4,16 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
@@ -28,6 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final GroundsRules groundsRules;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -78,32 +74,13 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        List<String> validationErrors = new ArrayList<>();
+        IntroductoryDemotedOtherGroundsForPossession grounds =
+            caseData.getIntroductoryDemotedOrOtherGroundsForPossession();
 
-        if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription(),
-                PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ));
-        }
+        List<String> validationErrors = groundsRules.validateIntroductoryDemotedOrOtherGrounds(grounds);
 
-        boolean hasOtherDiscretionaryGrounds =
-            Optional.ofNullable(caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
-                                    .getIntroductoryDemotedOrOtherGrounds())
-                .stream()
-                .flatMap(Collection::stream)
-                .anyMatch(grounds -> grounds
-                    != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-
-        if (hasOtherDiscretionaryGrounds
-            || caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
-                .getHasIntroductoryDemotedOtherGroundsForPossession()
-            == VerticalYesNo.NO) {
-            caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
-        } else {
-            caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
-        }
+        caseData.setShowIntroductoryDemotedOtherGroundReasonPage(
+            groundsRules.showReasonsForIntroductoryDemotedOrOtherGrounds(grounds));
 
         if (!validationErrors.isEmpty()) {
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

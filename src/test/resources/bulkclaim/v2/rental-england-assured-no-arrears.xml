@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>ASSURED-NOARREARS</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Manchester</PostTown>
+        <PostCode>M1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant>
+      <Name>
+        <FirstName>Ann</FirstName>
+        <LastName>Tenant</LastName>
+      </Name>
+      <AddressSameAsProperty>true</AddressSameAsProperty>
+    </Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <TotalArrears>10.00</TotalArrears>
+      <TenancyType>ASSURED_TENANCY</TenancyType>
+      <CurrentRent><Amount>800.00</Amount><Frequency>Month</Frequency></CurrentRent>
+      <Grounds>
+        <Ground><Code>ANTISOCIAL_BEHAVIOUR_GROUND7A</Code><Reason>Antisocial behaviour reported.</Reason></Ground>
+        <Ground><Code>OTHER</Code><Reason>Other reasons apply.</Reason><OtherDescription>Breach of a special term.</OtherDescription></Ground>
+      </Grounds>
+      <Notice>
+        <Served>false</Served>
+      </Notice>
+      <ClaimantsCircumstances>Claimant is a housing association.</ClaimantsCircumstances>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

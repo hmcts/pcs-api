@@ -104,6 +104,41 @@ ccd {
   configDir = file('build/definitions')
 }
 
+configurations {
+  xjc
+}
+
+def bulkClaimXsdDir = file('src/main/resources/xsd/bulkclaim/v2')
+def bulkClaimXjcBindings = file('src/main/xjc/bulkclaim-v2.xjb')
+def bulkClaimXjcOutput = layout.buildDirectory.dir('generated-src/xjc')
+
+tasks.register('generateBulkClaimXmlClasses', JavaExec) {
+  description = 'Generates JAXB classes for the bulk claim v2 XSDs'
+  group = 'build'
+  inputs.dir(bulkClaimXsdDir)
+  inputs.file(bulkClaimXjcBindings)
+  outputs.dir(bulkClaimXjcOutput)
+  classpath = configurations.xjc
+  mainClass = 'com.sun.tools.xjc.XJCFacade'
+  doFirst {
+    delete bulkClaimXjcOutput
+    bulkClaimXjcOutput.get().asFile.mkdirs()
+  }
+  argumentProviders.add({
+    def xsds = ['RentalClaim.xsd', 'MortgageClaim.xsd', 'BulkClaimResponse.xsd', 'BulkClaimStatusResponse.xsd']
+      .collect { new File(bulkClaimXsdDir, it).absolutePath }
+    ['-quiet', '-no-header', '-encoding', 'UTF-8',
+     '-p', 'uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated',
+     '-d', bulkClaimXjcOutput.get().asFile.absolutePath,
+     '-b', bulkClaimXjcBindings.absolutePath] + xsds
+  } as CommandLineArgumentProvider)
+}
+
+sourceSets.main.java.srcDir(bulkClaimXjcOutput)
+tasks.named('compileJava') {
+  dependsOn 'generateBulkClaimXmlClasses'
+}
+
 tasks.withType(JavaCompile).configureEach {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
@@ -362,7 +397,7 @@ sonarqube {
   properties {
     property "sonar.projectName", "Reform :: pcs-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api-2"
-    property "sonar.exclusions", ".github/workflows/publish-openapi.yaml"
+    property "sonar.exclusions", ".github/workflows/publish-openapi.yaml,**/uk/gov/hmcts/reform/pcs/bulkclaim/xml/generated/**"
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
@@ -505,6 +540,10 @@ dependencies {
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
+  implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api'
+  implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime'
+  xjc group: 'org.glassfish.jaxb', name: 'jaxb-xjc'
+  xjc group: 'org.glassfish.jaxb', name: 'jaxb-runtime'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.12.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
@@ -663,7 +702,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment,ccd_case_document_am_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
-  environment 'S2S_NAMES_WHITELIST', 'pcs_api,ccd,em_gw,xui_webapp,pcs_frontend,ccd_data,dg_docassembly_api'
+  environment 'S2S_NAMES_WHITELIST', 'pcs_api,ccd,em_gw,xui_webapp,pcs_frontend,ccd_data,dg_docassembly_api,pcs_bulk_claims_apim'
 
   // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
@@ -736,6 +775,7 @@ cftlibTest {
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
+  systemProperty 'feature.bulk-claims-v2-enabled', 'true'
   // Covering letters in defence/gen-app packs are gated on release 1.4
   systemProperty 'feature.release-1.4-enabled', 'true'
 
@@ -801,4 +841,14 @@ tasks.named("processFunctionalTestResources") {
 
 tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
+}
+
+tasks.named('checkstyleMain') {
+  exclude '**/bulkclaim/xml/generated/**'
+}
+
+tasks.named('jacocoTestReport') {
+  classDirectories.setFrom(files(sourceSets.main.output.classesDirs.files.collect {
+    fileTree(dir: it, exclude: '**/bulkclaim/xml/generated/**')
+  }))
 }

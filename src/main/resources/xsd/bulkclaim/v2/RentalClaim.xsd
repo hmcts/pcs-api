@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="Common.xsd"/>
+
+  <xs:simpleType name="TenancyTypeCode">
+    <xs:annotation>
+      <xs:documentation>Union of the England tenancy types and the Wales occupation contract types. Validity for the property's legislative country is checked after schema validation.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ASSURED_TENANCY"/>
+      <xs:enumeration value="SECURE_TENANCY"/>
+      <xs:enumeration value="INTRODUCTORY_TENANCY"/>
+      <xs:enumeration value="FLEXIBLE_TENANCY"/>
+      <xs:enumeration value="DEMOTED_TENANCY"/>
+      <xs:enumeration value="SECURE_CONTRACT"/>
+      <xs:enumeration value="STANDARD_CONTRACT"/>
+      <xs:enumeration value="OTHER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RentArrearsOrBreachType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RENT_ARREARS"/>
+      <xs:enumeration value="BREACH_OF_TENANCY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NoticeServiceMethodType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FIRST_CLASS_POST"/>
+      <xs:enumeration value="DELIVERED_PERMITTED_PLACE"/>
+      <xs:enumeration value="PERSONALLY_HANDED"/>
+      <xs:enumeration value="EMAIL"/>
+      <xs:enumeration value="OTHER_ELECTRONIC"/>
+      <xs:enumeration value="OTHER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ClaimantDesignationRentalType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SocialLandlord"/>
+      <xs:enumeration value="PrivateLandlord"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SuspensionHousingActSectionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SECTION_82A_2"/>
+      <xs:enumeration value="SECTION_6A_2"/>
+      <xs:enumeration value="SECTION_121A"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DemotionHousingActSectionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SECTION_82A_2"/>
+      <xs:enumeration value="SECTION_6A_2"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="EstateManagementGroundCodeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BUILDING_WORKS"/>
+      <xs:enumeration value="REDEVELOPMENT_SCHEMES"/>
+      <xs:enumeration value="CHARITIES"/>
+      <xs:enumeration value="DISABLED_SUITABLE_DWELLING"/>
+      <xs:enumeration value="HOUSING_ASSOCIATIONS_AND_TRUSTS"/>
+      <xs:enumeration value="SPECIAL_NEEDS_DWELLINGS"/>
+      <xs:enumeration value="RESERVE_SUCCESSORS"/>
+      <xs:enumeration value="JOINT_CONTRACT_HOLDERS"/>
+      <xs:enumeration value="OTHER_ESTATE_MANAGEMENT_REASONS"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="EstateManagementGroundType">
+    <xs:sequence>
+      <xs:element name="Code" type="EstateManagementGroundCodeType"/>
+      <xs:element name="Reason" type="Text500"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GroundType">
+    <xs:sequence>
+      <xs:element name="Code">
+        <xs:annotation>
+          <xs:documentation>Ground code; the set of valid codes depends on the tenancy type and country and is checked after schema validation. For a property in Wales, ESTATE_MANAGEMENT_GROUNDS_S160 takes no Reason of its own: list each estate management ground relied on, with its reason, as an EstateManagementGround. NO_GROUNDS is the code for a claim made without any ground; it is valid only for introductory, demoted and other tenancies in England and cannot be combined with another ground.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80"/>
+            <xs:pattern value="[A-Z0-9_]+"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Reason" type="Text500" minOccurs="0"/>
+      <xs:element name="OtherDescription" type="Text500" minOccurs="0"/>
+      <xs:element name="EstateManagementGround" type="EstateManagementGroundType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Wales only, on the ESTATE_MANAGEMENT_GROUNDS_S160 ground: one entry for each estate management ground relied on, each with its own reason. Each code may appear once.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GroundsType">
+    <xs:sequence>
+      <xs:element name="Ground" type="GroundType" maxOccurs="unbounded"/>
+      <xs:element name="RentArrearsOrBreach" type="RentArrearsOrBreachType" minOccurs="0" maxOccurs="2"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NoticeType">
+    <xs:annotation>
+      <xs:documentation>Notice of possession for a property in England. Required for England and not allowed for Wales, which uses WalesNotice.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Served" type="xs:boolean"/>
+      <xs:element name="ServiceMethod" type="NoticeServiceMethodType" minOccurs="0"/>
+      <xs:element name="ServedDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="ServedDateTime" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="PersonName" type="Text60" minOccurs="0"/>
+      <xs:element name="EmailAddress" type="EmailType" minOccurs="0"/>
+      <xs:element name="Explanation" type="Text250" minOccurs="0"/>
+      <xs:element name="NoticeType" type="Text100" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WalesNoticeType">
+    <xs:annotation>
+      <xs:documentation>Notice of possession for a property in Wales. Required for Wales and not allowed for England, which uses Notice. When the notice was served, TypeOfNoticeServed and the ServiceMethod with the details that method needs (as for Notice) are required; when it was not, NoticeStatement is required.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Served" type="xs:boolean"/>
+      <xs:element name="TypeOfNoticeServed" minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="10"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ServiceMethod" type="NoticeServiceMethodType" minOccurs="0"/>
+      <xs:element name="ServedDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="ServedDateTime" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="PersonName" type="Text60" minOccurs="0"/>
+      <xs:element name="EmailAddress" type="EmailType" minOccurs="0"/>
+      <xs:element name="Explanation" type="Text250" minOccurs="0"/>
+      <xs:element name="NoticeStatement" type="Text500" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SuspensionOfRightToBuyType">
+    <xs:sequence>
+      <xs:element name="HousingActSection" type="SuspensionHousingActSectionType"/>
+      <xs:element name="Reason" type="Text250"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DemotionOfTenancyType">
+    <xs:sequence>
+      <xs:element name="HousingActSection" type="DemotionHousingActSectionType"/>
+      <xs:element name="StatementOfExpressTermsServed" type="xs:boolean"/>
+      <xs:element name="StatementDetails" type="Text250" minOccurs="0"/>
+      <xs:element name="Reason" type="Text250"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProhibitedConductType">
+    <xs:sequence>
+      <xs:element name="Claim" type="xs:boolean"/>
+      <xs:element name="AgreedTermsOfPeriodicContract" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="DetailsOfTerms" type="Text250" minOccurs="0"/>
+      <xs:element name="Details" type="Text250" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ConductAnswerType">
+    <xs:sequence>
+      <xs:element name="Answer" type="xs:boolean"/>
+      <xs:element name="Details" type="Text500" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DocumentProvidedType">
+    <xs:sequence>
+      <xs:element name="Provided" type="xs:boolean"/>
+      <xs:element name="NotProvidedReason" type="Text500" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WalesType">
+    <xs:sequence>
+      <xs:element name="IsExemptLandlord" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="ProhibitedConduct" type="ProhibitedConductType" minOccurs="0"/>
+      <xs:element name="AntisocialBehaviour" type="ConductAnswerType" minOccurs="0"/>
+      <xs:element name="IllegalPurposesUse" type="ConductAnswerType" minOccurs="0"/>
+      <xs:element name="OtherProhibitedConduct" type="ConductAnswerType" minOccurs="0"/>
+      <xs:element name="EnergyPerformanceCertificate" type="DocumentProvidedType" minOccurs="0"/>
+      <xs:element name="GasSafetyReport" type="DocumentProvidedType" minOccurs="0"/>
+      <xs:element name="ElectricalInstallationConditionReport" type="DocumentProvidedType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ParticularsRentedType">
+    <xs:complexContent>
+      <xs:extension base="ParticularsOfClaimType">
+        <xs:sequence>
+          <xs:element name="PaymentHistory" type="PaymentHistoryType" minOccurs="0"/>
+          <xs:element name="TenancyType" type="TenancyTypeCode"/>
+          <xs:element name="OtherTenancyTypeDetails" type="Text500" minOccurs="0"/>
+          <xs:element name="TenancyCommenceDate" type="xs:date" minOccurs="0"/>
+          <xs:element name="CurrentRent" type="ValueFrequencyType" minOccurs="0"/>
+          <xs:element name="DailyRent" type="MoneyType" minOccurs="0"/>
+          <xs:element name="Grounds" type="GroundsType"/>
+          <xs:element name="Notice" type="NoticeType" minOccurs="0"/>
+          <xs:element name="WalesNotice" type="WalesNoticeType" minOccurs="0"/>
+          <xs:element name="ClaimantsCircumstances" type="Text950" minOccurs="0"/>
+          <xs:element name="HasExpenseClaim" type="xs:boolean" minOccurs="0"/>
+          <xs:element name="MediationAttempted" type="xs:boolean" minOccurs="0"/>
+          <xs:element name="SettlementAttempted" type="xs:boolean" minOccurs="0"/>
+          <xs:element name="SuspensionOfRightToBuy" type="SuspensionOfRightToBuyType" minOccurs="0"/>
+          <xs:element name="DemotionOfTenancy" type="DemotionOfTenancyType" minOccurs="0"/>
+          <xs:element name="Wales" type="WalesType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="RentalClaimSet">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Version" type="xs:string" minOccurs="0"/>
+        <xs:element name="PaymentAccountNumber" type="PaymentAccountNumberType"/>
+        <xs:element name="RentalClaim" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="CustomerUniqueIdentifier" type="CustomerUniqueIdentifierType"/>
+              <xs:element name="Claimant" type="ClaimantType"/>
+              <xs:element name="Solicitor" type="SolicitorType" minOccurs="0"/>
+              <xs:element name="Property" type="PropertyType"/>
+              <xs:element name="Defendant" type="DefendantType" maxOccurs="unbounded"/>
+              <xs:element name="ClaimantDesignation" type="ClaimantDesignationRentalType"/>
+              <xs:element name="PaymentAccountNumber" type="PaymentAccountNumberType" minOccurs="0"/>
+              <xs:element name="PaymentCustomerReference" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="250"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ClaimParticulars" type="ParticularsRentedType"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

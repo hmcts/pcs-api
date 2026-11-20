@@ -9,13 +9,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantEligibilityRules;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
-
 public class SelectClaimType implements CcdPageConfiguration {
+
+    private final ClaimantEligibilityRules claimantEligibilityRules;
+
+    public SelectClaimType() {
+        this(new ClaimantEligibilityRules());
+    }
+
+    public SelectClaimType(ClaimantEligibilityRules claimantEligibilityRules) {
+        this.claimantEligibilityRules = claimantEligibilityRules;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -57,22 +64,15 @@ public class SelectClaimType implements CcdPageConfiguration {
         LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
         caseData.setShowClaimTypeNotEligibleEngland(YesOrNo.from(
-            isEligibleInEngland(legislativeCountry, claimAgainstTrespassers)));
+            claimantEligibilityRules.isTrespasserClaimNotAllowedInEngland(
+                legislativeCountry, claimAgainstTrespassers)));
 
         caseData.setShowClaimTypeNotEligibleWales(YesOrNo.from(
-            isEligibleInWales(legislativeCountry, claimAgainstTrespassers)));
+            claimantEligibilityRules.isTrespasserClaimNotAllowedInWales(
+                legislativeCountry, claimAgainstTrespassers)));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
-
-    private boolean isEligibleInEngland(LegislativeCountry legislativeCountry, VerticalYesNo claimAgainstTrespassers) {
-        return legislativeCountry == ENGLAND && claimAgainstTrespassers == YES;
-    }
-
-    private Boolean isEligibleInWales(LegislativeCountry legislativeCountry, VerticalYesNo claimAgainstTrespassers) {
-        return legislativeCountry == WALES && claimAgainstTrespassers == YES;
-    }
-
 }

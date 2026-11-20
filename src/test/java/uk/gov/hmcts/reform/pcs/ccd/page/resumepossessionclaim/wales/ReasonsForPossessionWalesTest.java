@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,8 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new ReasonsForPossessionWales(textAreaValidationService));
+        setPageUnderTest(new ReasonsForPossessionWales(textAreaValidationService,
+            new GroundsRules(textAreaValidationService)));
     }
 
     @ParameterizedTest
