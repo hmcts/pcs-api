@@ -50,6 +50,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
+                              String caseName,
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,

@@ -138,7 +138,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
-        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setMarkdownFields(pcsCase, caseReference, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
@@ -245,8 +245,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
-        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+    private void setMarkdownFields(PCSCase pcsCase, long caseReference, boolean hasUnsubmittedCaseData) {
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase, caseReference));
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
