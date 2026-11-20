@@ -69,20 +69,22 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
 
     @Test
     void shouldPopulateCreatedAtWhenSavingNewBreathingSpace() {
-        // Given
-        PcsCaseEntity pcsCase = createPcsCase();
 
-        BreathingSpaceEntity entity =
-            BreathingSpaceEntity.builder()
-                .pcsCase(pcsCase)
-                .referenceNumber("BS-DEFAULT")
-                .build();
+        PcsCaseEntity pcsCase = createPcsCase();
+        UUID id = UUID.randomUUID();
 
         // When
-        BreathingSpaceEntity saved =
-            breathingSpaceRepository.saveAndFlush(entity);
-
-        UUID id = saved.getId();
+        jdbcTemplate.update(
+            """
+                INSERT INTO breathing_space
+                    (id, claim_id, pcs_case_id, reference_number)
+                VALUES (?, ?, ?, ?)
+                """,
+            id,
+            UUID.randomUUID(),
+            pcsCase.getId(),
+            "BS-DEFAULT"
+        );
 
         entityManager.clear();
 
@@ -110,9 +112,10 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     ) {
         jdbcTemplate.update("""
             INSERT INTO breathing_space
-                (id, pcs_case_id, reference_number, created_at)
-            VALUES (?, ?, ?, ?)
+                (id, claim_id, pcs_case_id, reference_number, created_at)
+            VALUES (?, ?, ?, ?, ?)
             """,
+                            UUID.randomUUID(),
                             UUID.randomUUID(),
                             pcsCaseId,
                             referenceNumber,
