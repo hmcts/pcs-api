@@ -22,6 +22,7 @@ export const submitCaseApiDataWales = {
       valueCode: 'COMMUNITY_LANDLORD'
     },
     claimAgainstTrespassers: 'NO',
+    isExemptLandlord: 'YES',
     claimantContactEmail: 'pcs-solicitor-automation@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
@@ -167,6 +168,7 @@ export const submitCaseApiDataWales = {
       valueCode: 'COMMUNITY_LANDLORD',
     },
     claimAgainstTrespassers: 'NO',
+    isExemptLandlord: 'YES',
     claimantContactEmail: 'pcs-solicitor-automation@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
