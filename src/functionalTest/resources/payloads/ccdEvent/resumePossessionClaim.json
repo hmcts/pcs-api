@@ -1,0 +1,1140 @@
+{
+  "regionId": "1",
+  "caseManagementLocationNumber": "20262",
+  "orgNameFound": "Yes",
+  "claimantName": "Possession Claims Solicitor Org",
+  "isClaimantNameCorrect": "YES",
+  "legislativeCountry": "England",
+  "claimantType": {
+    "value": {
+      "code": "PROVIDER_OF_SOCIAL_HOUSING",
+      "label": "Registered provider of social housing or local authority"
+    },
+    "list_items": [
+      {
+        "code": "PRIVATE_LANDLORD",
+        "label": "Private landlord"
+      },
+      {
+        "code": "PROVIDER_OF_SOCIAL_HOUSING",
+        "label": "Registered provider of social housing or local authority"
+      },
+      {
+        "code": "MORTGAGE_LENDER",
+        "label": "Mortgage lender"
+      },
+      {
+        "code": "OTHER",
+        "label": "Other"
+      }
+    ],
+    "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
+  },
+  "claimAgainstTrespassers": "NO",
+  "claimantContactEmail": "pcs-solicitor1@test.com",
+  "isCorrectClaimantContactEmail": "YES",
+  "orgAddressFound": "Yes",
+  "organisationAddress": {
+    "AddressLine1": "Ministry Of Justice",
+    "AddressLine2": "Seventh Floor 102 Petty France",
+    "PostTown": "London",
+    "PostCode": "SW1H 9AJ",
+    "Country": "United Kingdom"
+  },
+  "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+  "isCorrectClaimantContactAddress": "YES",
+  "claimantProvidePhoneNumber": "NO",
+  "defendant1": {
+    "nameKnown": "YES",
+    "firstName": "Test1",
+    "lastName": "defendant",
+    "addressKnown": "NO",
+    "addressSameAsPossession": null,
+    "correspondenceAddress": {
+      "AddressLine1": null,
+      "AddressLine2": null,
+      "AddressLine3": null,
+      "PostTown": null,
+      "County": null,
+      "Country": null,
+      "PostCode": null
+    }
+  },
+  "addAnotherDefendant": "YES",
+  "additionalDefendants": [
+    {
+      "value": {
+        "nameKnown": "YES",
+        "firstName": "Test2",
+        "lastName": "defendant",
+        "addressKnown": "NO",
+        "addressSameAsPossession": null,
+        "correspondenceAddress": {
+          "AddressLine1": null,
+          "AddressLine2": null,
+          "AddressLine3": null,
+          "PostTown": null,
+          "County": null,
+          "Country": null,
+          "PostCode": null
+        }
+      },
+      "id": "d102b3d3-dc87-4260-818f-0c651e5f60ba"
+    }
+  ],
+  "tenancy_TypeOfTenancyLicence": "ASSURED_TENANCY",
+  "tenancy_TenancyLicenceDate": "2025-01-01",
+  "tenancy_HasCopyOfTenancyLicence": "YES",
+  "tenancy_TenancyLicenceDocuments": [
+    {
+      "id": "22d0ebb2-d73e-4030-9b60-b538c8a6f9af",
+      "value": {
+        "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/89d11c9b-6674-4558-9e6d-36fa7e335603",
+        "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/89d11c9b-6674-4558-9e6d-36fa7e335603/binary",
+        "document_filename": "tenancy_TenancyLicenceDocuments_1.png",
+        "document_hash": null
+      }
+    }
+  ],
+  "claimDueToRentArrears": "Yes",
+  "rentArrears_RentArrearsGrounds": [
+    "RENT_ARREARS_GROUND10"
+  ],
+  "hasOtherAdditionalGrounds": "Yes",
+  "rentArrears_AdditionalMandatoryGrounds": [
+    "OWNER_OCCUPIER_GROUND1"
+  ],
+  "rentArrears_AdditionalDiscretionaryGrounds": [],
+  "rentArrears_AdditionalOtherGround": [],
+  "ownerOccupierReason": "Test",
+  "preActionProtocolCompleted": "YES",
+  "mediationAttempted": "NO",
+  "settlementAttempted": "NO",
+  "noticeServed": "Yes",
+  "notice_ServiceMethod": "EMAIL",
+  "notice_EmailAddress": null,
+  "notice_EmailSentDateTime": null,
+  "notice_AbleToUploadDocument": "Yes",
+  "notice_Documents": [
+    {
+      "id": "d3561eb3-e05f-4cec-a505-21a4a91c6a95",
+      "value": {
+        "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/aa83c5d0-e679-4fcc-ba32-11b76ba1d3b4",
+        "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/aa83c5d0-e679-4fcc-ba32-11b76ba1d3b4/binary",
+        "document_filename": "notice_Documents_1.png",
+        "document_hash": null
+      }
+    }
+  ],
+  "rentDetails_CurrentRent": "10000",
+  "rentDetails_Frequency": "FORTNIGHTLY",
+  "rentDetails_CalculatedDailyCharge": "714",
+  "rentArrears_StatementDocuments": [
+    {
+      "id": "83833834-24bf-4f5b-b717-dd76031dfd55",
+      "value": {
+        "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/24af415e-e91e-4922-8568-7c58598efa4d",
+        "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/24af415e-e91e-4922-8568-7c58598efa4d/binary",
+        "document_filename": "rentArrears_StatementDocuments_1.png",
+        "document_hash": null
+      }
+    }
+  ],
+  "rentArrears_Total": "10000",
+  "rentArrears_RecoveryAttempted": "NO",
+  "arrearsJudgmentWanted": "YES",
+  "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
+  "claimantCircumstancesSelect": "NO",
+  "hasDefendantCircumstancesInfo": "NO",
+  "suspensionOfRTB_ShowHousingActsPage": "No",
+  "demotionOfTenancy_ShowHousingActsPage": "No",
+  "suspensionToBuyDemotionOfTenancyPages": "No",
+  "alternativesToPossession": [],
+  "additionalReasonsForPossession": {
+    "hasReasons": "NO",
+    "reasons": null
+  },
+  "hasUnderlesseeOrMortgagee": "NO",
+  "wantToUploadDocuments": "YES",
+  "additionalDocuments": [
+    {
+      "id": "dde79ecc-657c-424c-a859-09b70b769cd0",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+            "label": "Witness statement"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Witness statement",
+          "valueCode": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee"
+        },
+        "description": "witness statement desc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/09108079-6131-4b7d-a0ff-fbbe424d3873",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/09108079-6131-4b7d-a0ff-fbbe424d3873/binary",
+          "document_filename": "additionalDocuments_1.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "91c70efb-8a77-4675-ad65-116a60c1b080",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "c677d95f-5904-47a7-8834-887945166b38",
+            "label": "Rent statement"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Rent statement",
+          "valueCode": "c677d95f-5904-47a7-8834-887945166b38"
+        },
+        "description": "Rent statement desc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/f2211dcf-63a2-49c4-8c59-b3e9093cbbc8",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/f2211dcf-63a2-49c4-8c59-b3e9093cbbc8/binary",
+          "document_filename": "additionalDocuments_2.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "74e7d4a5-0b9b-4cfc-8a1d-772469b4e20f",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+            "label": "Tenancy agreement"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Tenancy agreement",
+          "valueCode": "e8a70ba6-79f4-4789-a597-20e3bc750d15"
+        },
+        "description": "Tenancy agreement desc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/a9a02dcf-06bd-4c90-a560-e47238daaeb8",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/a9a02dcf-06bd-4c90-a560-e47238daaeb8/binary",
+          "document_filename": "additionalDocuments_3.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "5cb9c1b9-31b2-4c84-9dbf-cf4829469695",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+            "label": "Certificate of service"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Certificate of service",
+          "valueCode": "1866de0c-d5ed-47d4-9028-d8881d410a6b"
+        },
+        "description": "certificate of service",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/d57b845e-da28-405c-a0ff-879648f3a8cc",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/d57b845e-da28-405c-a0ff-879648f3a8cc/binary",
+          "document_filename": "additionalDocuments_4.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "cb0926e4-7336-46d8-a458-2d09632985b4",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+            "label": "Correspondence from defendant"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Correspondence from defendant",
+          "valueCode": "0b11437f-fd0b-40d0-9102-b916d6e825a6"
+        },
+        "description": "correspondence of defendant doc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/e7a02f70-c6b0-4b67-8872-12bc63c217bc",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/e7a02f70-c6b0-4b67-8872-12bc63c217bc/binary",
+          "document_filename": "additionalDocuments_5.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "74e4cea0-aa05-4c51-a38c-8a2137a98322",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+            "label": "Correspondence from claimant"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Correspondence from claimant",
+          "valueCode": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85"
+        },
+        "description": "correspondence of claimant doc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/8983ec24-09ff-4e44-bb6e-2a1ecc3a3199",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/8983ec24-09ff-4e44-bb6e-2a1ecc3a3199/binary",
+          "document_filename": "additionalDocuments_6.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "40bda0e4-4218-45f9-b089-b4fbbf8c4884",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+            "label": "Possession notice"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Possession notice",
+          "valueCode": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c"
+        },
+        "description": "pssession ntice doc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/da190513-86cf-4374-89e2-3a8c0485d36f",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/da190513-86cf-4374-89e2-3a8c0485d36f/binary",
+          "document_filename": "additionalDocuments_7.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "86602017-eaa5-4c1d-8ea3-b3ad7a50415a",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+            "label": "Notice for service out of the jurisdiction"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Notice for service out of the jurisdiction",
+          "valueCode": "bb3852b2-8afd-4356-a97c-a1eef1844a42"
+        },
+        "description": "notice f service out of jurisdiction doc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/ad1c09e3-7a3c-4a29-9223-681d237f1a55",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/ad1c09e3-7a3c-4a29-9223-681d237f1a55/binary",
+          "document_filename": "additionalDocuments_8.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "9b4eb756-b9a3-4ddc-a142-76d56d462cc1",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+            "label": "Photographic evidence"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Photographic evidence",
+          "valueCode": "800ed9d8-30b5-4d3c-bc30-e28953bc4726"
+        },
+        "description": "phitographic evidence",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/7b4ad3dd-8ff8-412d-aacf-32ae5694162d",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/7b4ad3dd-8ff8-412d-aacf-32ae5694162d/binary",
+          "document_filename": "additionalDocuments_9.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "57bf9940-a89a-4b18-bbf8-4ded67d8f825",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+            "label": "Inspection or report"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Inspection or report",
+          "valueCode": "22bc5b9b-1199-4195-989f-c24d429824f2"
+        },
+        "description": "inspection of report",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/12a3d253-e1a5-4a92-933a-1b9aa5882f30",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/12a3d253-e1a5-4a92-933a-1b9aa5882f30/binary",
+          "document_filename": "additionalDocuments_10.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "52a7ff95-4a47-4a9f-8250-98701359413c",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+            "label": "Certificate of suitability as litigation friend"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Certificate of suitability as litigation friend",
+          "valueCode": "d7def06a-ebe2-4e68-8905-b1dc73266811"
+        },
+        "description": "cert of suitability as litigatin friend",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/d596e5d7-4398-40a6-9cb9-de1b80bdeaab",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/d596e5d7-4398-40a6-9cb9-de1b80bdeaab/binary",
+          "document_filename": "additionalDocuments_11.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "3209f6ca-e348-43c6-98e1-e49be1c730b2",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+            "label": "Legal aid certificate"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Legal aid certificate",
+          "valueCode": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954"
+        },
+        "description": "legal aid certificate",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/9d634696-eaf1-4c2c-b0d9-5b97cab5cca0",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/9d634696-eaf1-4c2c-b0d9-5b97cab5cca0/binary",
+          "document_filename": "additionalDocuments_12.png",
+          "document_hash": null
+        }
+      }
+    },
+    {
+      "id": "1c85b430-3356-42e3-a055-5d146950a210",
+      "value": {
+        "documentType": {
+          "value": {
+            "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+            "label": "Other document"
+          },
+          "list_items": [
+            {
+              "code": "b01b0f0a-bcc2-410e-90ef-c8d2966125ee",
+              "label": "Witness statement"
+            },
+            {
+              "code": "c677d95f-5904-47a7-8834-887945166b38",
+              "label": "Rent statement"
+            },
+            {
+              "code": "e8a70ba6-79f4-4789-a597-20e3bc750d15",
+              "label": "Tenancy agreement"
+            },
+            {
+              "code": "1866de0c-d5ed-47d4-9028-d8881d410a6b",
+              "label": "Certificate of service"
+            },
+            {
+              "code": "0b11437f-fd0b-40d0-9102-b916d6e825a6",
+              "label": "Correspondence from defendant"
+            },
+            {
+              "code": "c901a4aa-aeb2-4a85-bf73-b9f913c90b85",
+              "label": "Correspondence from claimant"
+            },
+            {
+              "code": "b07fa54e-5f0d-4d0f-b972-6ae63136c49c",
+              "label": "Possession notice"
+            },
+            {
+              "code": "bb3852b2-8afd-4356-a97c-a1eef1844a42",
+              "label": "Notice for service out of the jurisdiction"
+            },
+            {
+              "code": "800ed9d8-30b5-4d3c-bc30-e28953bc4726",
+              "label": "Photographic evidence"
+            },
+            {
+              "code": "22bc5b9b-1199-4195-989f-c24d429824f2",
+              "label": "Inspection or report"
+            },
+            {
+              "code": "d7def06a-ebe2-4e68-8905-b1dc73266811",
+              "label": "Certificate of suitability as litigation friend"
+            },
+            {
+              "code": "7cc07b76-2aff-4ea0-aba3-9866ae5bc954",
+              "label": "Legal aid certificate"
+            },
+            {
+              "code": "7ef1bae6-0095-4762-90e7-866f236076d3",
+              "label": "Other document"
+            }
+          ],
+          "valueLabel": "Other document",
+          "valueCode": "7ef1bae6-0095-4762-90e7-866f236076d3"
+        },
+        "description": "other documenet doc desc",
+        "document": {
+          "document_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/c6b56016-2c65-441d-a8d4-f2c0918f3dfc",
+          "document_binary_url": "http://dm-store-aat.service.core-compute-aat.internal/documents/c6b56016-2c65-441d-a8d4-f2c0918f3dfc/binary",
+          "document_filename": "additionalDocuments_13.png",
+          "document_hash": null
+        }
+      }
+    }
+  ],
+  "applicationWithClaim": "YES",
+  "languageUsed": "ENGLISH",
+  "completionNextStep": "SUBMIT_AND_PAY_NOW",
+  "endButtonLabel": "Submit claim",
+  "statementOfTruth": {
+    "completedBy": "CLAIMANT",
+    "fullNameParty": "test",
+    "positionParty": "test",
+    "fullNameLegalRep": null,
+    "firmNameLegalRep": null,
+    "positionLegalRep": null,
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ],
+    "agreementClaimantLegalRep": [],
+    "agreementDefendantLegalRep": []
+  }
+}

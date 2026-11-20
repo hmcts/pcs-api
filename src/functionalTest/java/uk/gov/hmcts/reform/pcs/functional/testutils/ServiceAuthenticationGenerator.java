@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.testutils;
 
 import net.serenitybdd.rest.SerenityRest;
+import io.restassured.response.Response;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ public class ServiceAuthenticationGenerator {
     }
 
     public String generate(final String microservice) {
-        SerenityRest
+        Response response = SerenityRest
             .given()
             .relaxedHTTPSValidation()
             .baseUri(s2sUrl)
@@ -27,17 +28,17 @@ public class ServiceAuthenticationGenerator {
             .post("/testing-support/lease")
             .andReturn();
 
-        if (SerenityRest.lastResponse().statusCode() != 200) {
+        if (response.statusCode() != 200) {
             throw new RuntimeException(String.format(
                 "Failed to generate S2S token for '%s'. Status code: %d. Response: %s",
                 microservice,
-                SerenityRest.lastResponse().statusCode(),
-                SerenityRest.lastResponse().asString()
+                response.statusCode(),
+                response.asString()
             ));
         }
 
-        assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
+        assertThat(response.getStatusCode()).isEqualTo(200);
 
-        return SerenityRest.lastResponse().getBody().asString();
+        return response.getBody().asString();
     }
 }
