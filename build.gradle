@@ -427,9 +427,6 @@ dependencyManagement {
 
 ext['snakeyaml.version'] = '2.7'
 ext['tomcat.version'] = tomcatEmbedVersion
-// Boot 4 splits Jackson: jackson-2-bom.version is com.fasterxml.jackson (what pcs-api uses);
-// jackson-bom.version is the Jackson 3 tools.jackson BOM, so it must not be set to a 2.x version.
-ext['jackson-2-bom.version'] = jacksonVersion
 ext['mockito.version'] = mockitoVersion
 // With the BOMs resolving, they would pull these below what transitive dependencies ask for.
 // Keep the versions the branch was built and tested with.
@@ -453,7 +450,6 @@ dependencies {
 }
 
 dependencies {
-  implementation platform("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
   implementation 'com.github.hmcts:decentralised-runtime'
   implementation 'com.github.hmcts:document-bundling'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
@@ -465,7 +461,6 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aspectj', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
-  // Spring Security 7 removed the OAuth2 password grant; IDAM still needs it for service tokens.
   // Not transitive: its runtime starters (web, oauth2-resource-server) would add Boot 4's Jackson 3 starter
   // and resource-server auto-configuration. pcs-api already has the oauth2-client and web classes it uses.
   implementation(group: 'com.github.hmcts', name: 'idam-legacy-auth-support', version: '1.0.1') {
@@ -536,7 +531,6 @@ dependencies {
   implementation 'com.azure:azure-core-http-jdk-httpclient'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  // BEFTA preview data setup also uses REST Assured on the main runtime classpath.
   implementation group: 'io.rest-assured', name: 'rest-assured', version: '6.3.0'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
@@ -562,7 +556,6 @@ dependencies {
   contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.3')
   contractTestImplementation sourceSets.test.output
 
-  testImplementation(platform('org.junit:junit-bom:6.1.3'))
   testImplementation 'org.springframework.security:spring-security-test'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
