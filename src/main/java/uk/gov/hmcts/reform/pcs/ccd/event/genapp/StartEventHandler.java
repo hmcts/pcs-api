@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -21,10 +22,14 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final OrganisationService organisationService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final FeeApplier feeApplier;
+    private final DraftOrderWordingAccess draftOrderWordingAccess;
 
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+
+        caseData.getXuiGenAppRequest().setDraftOrderWordingAllowed(
+            VerticalYesNo.from(draftOrderWordingAccess.isAllowed(caseReference)));
 
         setRepresentedParties(caseReference, caseData);
 

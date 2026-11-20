@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.safety.Cleaner;
+import org.jsoup.safety.Safelist;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -43,6 +47,10 @@ import java.util.stream.Collectors;
 public class GenAppDocumentGenerator {
 
     private static final String TEMPLATE_ID = "CV-PCS-GAP-ENG-Application-Summary.docx";
+    private static final Cleaner DRAFT_ORDER_HTML_CLEANER = new Cleaner(Safelist.basic()
+        .addTags("u", "s", "strike")
+        .addAttributes("ol", "start")
+        .addAttributes("li", "value"));
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
@@ -157,6 +165,7 @@ public class GenAppDocumentGenerator {
             .applicationType(genAppEntity.getType())
             .within14Days(genAppEntity.getWithin14Days())
             .whatOrderWanted(genAppEntity.getWhatOrderWanted())
+            .draftOrderWording(renderableDraftOrderWording(genAppEntity.getDraftOrderWording()))
             .otherPartiesAgreed(genAppEntity.getOtherPartiesAgreed())
             .withoutNotice(genAppEntity.getWithoutNotice())
             .withoutNoticeReason(genAppEntity.getWithoutNoticeReason())
@@ -168,6 +177,16 @@ public class GenAppDocumentGenerator {
                                   .build()
             )
             .build();
+    }
+
+    private String renderableDraftOrderWording(String wording) {
+        if (wording == null) {
+            return null;
+        }
+        var cleanedHtml = DRAFT_ORDER_HTML_CLEANER.clean(Jsoup.parseBodyFragment(wording));
+        cleanedHtml.outputSettings().prettyPrint(false);
+        Element body = cleanedHtml.body();
+        return body.hasText() ? body.html() : null;
     }
 
     private List<Document> getDocumentList(GenAppEntity genAppEntity) {
