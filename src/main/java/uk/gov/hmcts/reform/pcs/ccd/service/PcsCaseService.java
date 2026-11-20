@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -35,6 +36,9 @@ import java.util.Objects;
 @Slf4j
 @AllArgsConstructor
 public class PcsCaseService {
+
+    private static final String SOCIAL_LANDLORD_RENT_ARREARS_KEY = "AAA3-RA-SL";
+    private static final String SOCIAL_LANDLORD_NON_RENT_ARREARS_KEY = "AAA3-RNA-SL";
 
     private final PcsCaseRepository pcsCaseRepository;
     private final ClaimService claimService;
@@ -79,6 +83,7 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+        setCaseType(pcsCaseEntity, claimEntity);
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -218,5 +223,23 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = this.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private void setCaseType(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        if (claimEntity.getClaimantType() != ClaimantType.PROVIDER_OF_SOCIAL_HOUSING) {
+            return;
+        }
+
+        String caseTypeKey = isRentArrearsClaim(claimEntity)
+            ? SOCIAL_LANDLORD_RENT_ARREARS_KEY
+            : SOCIAL_LANDLORD_NON_RENT_ARREARS_KEY;
+
+        pcsCaseEntity.setCaseTypeKey(caseTypeKey);
+        pcsCaseEntity.setCaseSubtypeKey(caseTypeKey);
+    }
+
+    private static boolean isRentArrearsClaim(ClaimEntity claim) {
+        return claim.getClaimGrounds() != null && claim.getClaimGrounds().stream()
+            .anyMatch(ground -> Boolean.TRUE.equals(ground.getIsRentArrears()));
     }
 }

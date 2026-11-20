@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -281,6 +283,70 @@ class PcsCaseServiceTest {
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
+    }
+
+    @Test
+    void shouldSetSocialLandlordRentArrearsCaseTypeWhenClaimHasRentArrearsGround() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
+        when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false), claimGround(true)));
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey("AAA3-RA-SL");
+        verify(pcsCaseEntity).setCaseSubtypeKey("AAA3-RA-SL");
+    }
+
+    @Test
+    void shouldSetSocialLandlordNonRentArrearsCaseTypeWhenClaimHasNoRentArrearsGround() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
+        when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false), claimGround(null)));
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey("AAA3-RNA-SL");
+        verify(pcsCaseEntity).setCaseSubtypeKey("AAA3-RNA-SL");
+    }
+
+    @Test
+    void shouldSetSocialLandlordNonRentArrearsCaseTypeWhenClaimHasNoGrounds() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
+        when(mainClaimEntity.getClaimGrounds()).thenReturn(null);
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey("AAA3-RNA-SL");
+        verify(pcsCaseEntity).setCaseSubtypeKey("AAA3-RNA-SL");
+    }
+
+    @Test
+    void shouldNotSetCaseTypeWhenClaimantIsNotSocialLandlord() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PRIVATE_LANDLORD);
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity, never()).setCaseTypeKey(any());
+        verify(pcsCaseEntity, never()).setCaseSubtypeKey(any());
+        verify(mainClaimEntity, never()).getClaimGrounds();
     }
 
     @Test
@@ -779,6 +845,12 @@ class PcsCaseServiceTest {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
         return claimEntity;
+    }
+
+    private static ClaimGroundEntity claimGround(Boolean isRentArrears) {
+        return ClaimGroundEntity.builder()
+            .isRentArrears(isRentArrears)
+            .build();
     }
 
 

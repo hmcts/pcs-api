@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseCategory;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -78,6 +79,7 @@ public class ServiceHearingValuesMapper {
         values.setCaseSlaStartDate(caseSlaStartDate(pcsCase));
         values.setNumberOfPhysicalAttendees(numberOfPhysicalAttendees(pcsCase));
         values.setListingComments(listingComments(pcsCase));
+        values.setCaseCategories(caseCategories(pcsCase));
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -132,6 +134,23 @@ public class ServiceHearingValuesMapper {
             .filter(party -> !party.isRemoved())
             .count();
         return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
+    }
+
+    private List<CaseCategory> caseCategories(PcsCaseEntity pcsCase) {
+        if (pcsCase.getCaseTypeKey() == null) {
+            return List.of();
+        }
+
+        return List.of(
+            CaseCategory.builder()
+                .categoryType(defaults.getCaseTypeCategory())
+                .categoryValue(pcsCase.getCaseTypeKey())
+                .build(),
+            CaseCategory.builder()
+                .categoryType(defaults.getCaseSubTypeCategory())
+                .categoryValue(pcsCase.getCaseSubtypeKey())
+                .categoryParent(pcsCase.getCaseTypeKey())
+                .build());
     }
 
     /**

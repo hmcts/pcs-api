@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -66,6 +69,10 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private TestCaseSupportHelper testCaseSupportHelper;
     @Autowired
     private IdamHelper idamHelper;
+    @Autowired
+    private PcsCaseRepository pcsCaseRepository;
+    @Autowired
+    private EntityManager entityManager;
     @MockitoBean
     private FeeService feeService;
     @MockitoBean
@@ -104,6 +111,24 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getState()).isEqualTo(PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    @Transactional
+    void shouldSaveCaseTypeKeysWhenMakeAClaimSubmitted() {
+        // Given
+        String label = selectLabelStartingWith(MAKE_A_CLAIM_CASE_GENERATOR);
+        EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
+
+        // When
+        underTest.submit(eventPayload);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Then
+        PcsCaseEntity savedCase = pcsCaseRepository.findByCaseReference(CASE_REFERENCE).orElseThrow();
+        assertThat(savedCase.getCaseTypeKey()).isEqualTo("AAA3-RNA-SL");
+        assertThat(savedCase.getCaseSubtypeKey()).isEqualTo("AAA3-RNA-SL");
     }
 
     @Test
