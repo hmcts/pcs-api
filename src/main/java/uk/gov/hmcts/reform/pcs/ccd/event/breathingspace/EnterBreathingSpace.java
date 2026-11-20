@@ -51,7 +51,6 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         breathingSpaceService.enterBreathingSpace(caseReference, caseData.getBreathingSpaceDetails());
 
         return SubmitResponse.<State>builder()
-            .state(State.BREATHING_SPACE)
             .confirmationBody(this.getConfirmationBodyMarkdown(caseData, caseReference))
             .build();
     }
