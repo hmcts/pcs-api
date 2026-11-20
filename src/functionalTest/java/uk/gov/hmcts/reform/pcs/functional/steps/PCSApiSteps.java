@@ -78,7 +78,8 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
             "/payloads/payment-update-CallbackRequest.json",
             Map.of(
                 "requestReference", serviceRequestRef,
-                "caseReference", this.caseReference
+                "caseReference", this.caseReference,
+                "status", "Paid"
             )
         );
 
