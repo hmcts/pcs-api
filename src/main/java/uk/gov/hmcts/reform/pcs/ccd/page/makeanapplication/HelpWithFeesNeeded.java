@@ -9,8 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2;
 
 @Slf4j
 @AllArgsConstructor
@@ -56,8 +59,10 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
             .pageLabel("Confirm if the defendant needs help paying fees")
             .showCondition(fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES))
             .label("helpWithFeesNeeded-lineSeparator", "---")
-            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND,
-                   fieldEquals(APPLICATION_TYPE, GenAppType.SUSPEND))
+            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND, and(
+                fieldEquals(APPLICATION_TYPE, GenAppType.SUSPEND),
+                featureFlagsEnabled(DEFENDANT_GENERAL_APPLICATIONS_R_2)
+                   ))
             .label("helpWithFeesNeeded-info", INFO_MARKDOWN, or(
                 fieldEquals(APPLICATION_TYPE, GenAppType.ADJOURN),
                 fieldEquals(APPLICATION_TYPE, GenAppType.SET_ASIDE),
