@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,9 +39,9 @@ public class BreathingSpaceEntity {
     private UUID id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "claim_id", nullable = false)
+    @JoinColumn(name = "pcs_case_id", nullable = false)
     @JsonBackReference
-    private ClaimEntity claim;
+    private PcsCaseEntity pcsCase;
 
     private String referenceNumber;
 
