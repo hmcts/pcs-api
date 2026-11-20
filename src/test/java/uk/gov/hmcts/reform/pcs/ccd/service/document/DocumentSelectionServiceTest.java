@@ -88,6 +88,7 @@ class DocumentSelectionServiceTest {
             .containsExactly("application.pdf");
         assertThat(caseData.getDocumentAmendDetails().getApplicationsEmpty()).isEqualTo(YesOrNo.NO);
         assertThat(caseData.getDocumentAmendDetails().getEvidenceEmpty()).isEqualTo(YesOrNo.YES);
+        assertThat(caseData.getDocumentAmendDetails().getEnforcementEmpty()).isEqualTo(YesOrNo.YES);
     }
 
     @Test

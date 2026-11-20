@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -59,6 +60,8 @@ class DocumentsViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private EnforcementDocumentVisibilityService enforcementDocumentVisibilityService;
 
     @Mock
     private OrderRepository orderRepository;
@@ -76,7 +79,7 @@ class DocumentsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new DocumentsView(userRoleService, genAppVisibilityService,
-            new EnforcementDocumentVisibilityService(), new UploadTimestampProvider(), securityContextService,
+            enforcementDocumentVisibilityService, new UploadTimestampProvider(), securityContextService,
             orderRepository);
     }
 
@@ -142,31 +145,32 @@ class DocumentsViewTest {
 
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"[DEFENDANT]", "[DEFENDANTSOLICITOR]", "defendant-solicitor"})
-    void shouldHideEnforcementDocumentsFromTheDefendantSide(String role) {
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(enforcementDocument(DocumentType.WARRANT_OF_POSSESSION)));
+    @Test
+    void shouldHideEnforcementDocumentsWhenNotVisibleToTheUser() {
+        DocumentEntity warrant = enforcementDocument(DocumentType.WARRANT_OF_POSSESSION);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
+        when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
+            .thenReturn(true);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(false);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         assertThat(pcsCase.getAllDocuments()).isEmpty();
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"[CLAIMANTSOLICITOR]", "claimant", "hearing-centre-admin", "fee-paid-judge"})
-    void shouldShowEnforcementDocumentsToTheClaimantSideAndStaff(String role) {
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of(role)));
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            enforcementDocument(DocumentType.WRIT_OF_POSSESSION),
-            enforcementDocument(DocumentType.WARRANT_OF_POSSESSION),
-            enforcementDocument(DocumentType.RISK_ASSESSMENT)));
+    @Test
+    void shouldShowEnforcementDocumentsWhenVisibleToTheUser() {
+        DocumentEntity warrant = enforcementDocument(DocumentType.WARRANT_OF_POSSESSION);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
+        when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
+            .thenReturn(true);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(true);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
-        assertThat(pcsCase.getAllDocuments()).hasSize(3);
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
     }
 
     private static DocumentEntity enforcementDocument(DocumentType type) {

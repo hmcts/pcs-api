@@ -20,7 +20,6 @@ public class WarrantOfPossessionPayload implements FormPayload {
     private String claimantName;
     private String claimantAddress;
     private String claimantTelephoneNumber;
-    private String claimantReference;
     private String claimantEmailAddress;
 
     //Defendant details
@@ -29,7 +28,6 @@ public class WarrantOfPossessionPayload implements FormPayload {
     //Application details
     private String applicationType;
     private String possessionOrderType;
-    private String possessionOrderDate;
     private String breathingSpaceAnswer;
     private String missedPaymentsAnswer;
     private String propertyAddress;
@@ -41,4 +39,7 @@ public class WarrantOfPossessionPayload implements FormPayload {
     private String signatoryOrganisation;
     private String submissionDate;
 
+    //In the template but not captured in the enf journeys yet
+    private String claimantReference;
+    private String possessionOrderDate;
 }

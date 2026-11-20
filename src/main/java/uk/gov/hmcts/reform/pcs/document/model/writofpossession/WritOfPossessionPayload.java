@@ -20,7 +20,6 @@ public class WritOfPossessionPayload implements FormPayload {
     private String claimantName;
     private String claimantAddress;
     private String claimantTelephoneNumber;
-    private String claimantReference;
     private String claimantEmailAddress;
 
     //Defendant details
@@ -28,11 +27,8 @@ public class WritOfPossessionPayload implements FormPayload {
     private String propertyAddress;
 
     //Application details
-    private String possessionOrderType;
-    private String possessionOrderDate;
     private String breathingSpaceAnswer;
     private String highCourtPermissionAnswer;
-    private String highCourtPermissionOrderDate;
 
     //High Court Enforcement Officer
     private String hceoHiredAnswer;
@@ -46,5 +42,9 @@ public class WritOfPossessionPayload implements FormPayload {
     private String signatoryOrganisation;
     private String submissionDate;
 
+    //In the template but not captured in the enf journeys yet
+    private String claimantReference;
+    private String possessionOrderType;
+    private String possessionOrderDate;
+    private String highCourtPermissionOrderDate;
 }
-

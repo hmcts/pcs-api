@@ -19,7 +19,6 @@ public class RiskAssessmentPayload implements FormPayload {
     //Application and property details
     private String applicationType;
     private String claimantName;
-    private String claimantReference;
     private String defendantNames;
     private String evictionAddress;
 
@@ -49,4 +48,6 @@ public class RiskAssessmentPayload implements FormPayload {
     private String otherEvictionInformationResponse;
     private String otherEvictionInformation;
 
+    //In the template but not captured in the enf journeys yet
+    private String claimantReference;
 }

@@ -145,6 +145,17 @@ class EnforcementOrderServiceTest {
         assertThat(saved.getRank()).isEqualTo(2);
     }
 
+    @Test
+    void shouldNotCountApplicationsWithoutAnEnforcementTypeWhenRanking() {
+        EnforcementOrderEntity withoutOrder = EnforcementOrderEntity.builder().build();
+        EnforcementOrderEntity withoutType = EnforcementOrderEntity.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        EnforcementOrderEntity saved = saveWarrantOnCaseWith(List.of(withoutOrder, withoutType));
+
+        assertThat(saved.getRank()).isEqualTo(1);
+    }
+
     private EnforcementOrderEntity saveWarrantOnCaseWith(List<EnforcementOrderEntity> existingApplications) {
         PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         EnforcementOrderEntity draft = EnforcementOrderEntity.builder()

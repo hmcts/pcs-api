@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -71,7 +72,8 @@ public class WarrantOfPossessionPersistenceService {
             return Optional.empty();
         }
         return Optional.of(
-            new WarrantOfPossessionRenderContext(toPayload(enforcementOrder), enforcementOrder.getRank()));
+            new WarrantOfPossessionRenderContext(
+                toPayload(enforcementOrder), Objects.requireNonNullElse(enforcementOrder.getRank(), 1)));
     }
 
     @Transactional

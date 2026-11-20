@@ -238,6 +238,13 @@ class WarrantOfPossessionPersistenceServiceTest {
         assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().rank()).isEqualTo(2);
     }
 
+    @Test
+    void shouldDefaultTheRankToOneWhenTheApplicationHasNoRank() {
+        stubEnforcementOrder(enforcementOrder(new WarrantEntity()));
+
+        assertThat(underTest.buildRenderContext(ENFORCEMENT_ORDER_ID).orElseThrow().rank()).isEqualTo(1);
+    }
+
     private void stubEnforcementOrder(EnforcementOrderEntity enforcementOrder) {
         when(enforcementOrderRepository.findById(ENFORCEMENT_ORDER_ID)).thenReturn(Optional.of(enforcementOrder));
     }

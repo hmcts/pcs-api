@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.document.model.riskassessment.RiskAssessmentPaylo
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +63,8 @@ public class RiskAssessmentPersistenceService {
             || hasRiskAssessmentDocument(enforcementOrder)) {
             return Optional.empty();
         }
-        return Optional.of(new RiskAssessmentRenderContext(toPayload(enforcementOrder), enforcementOrder.getRank()));
+        return Optional.of(new RiskAssessmentRenderContext(
+            toPayload(enforcementOrder), Objects.requireNonNullElse(enforcementOrder.getRank(), 1)));
     }
 
     @Transactional
@@ -142,9 +144,6 @@ public class RiskAssessmentPersistenceService {
     }
 
     private String formatAddress(AddressEntity address) {
-        if (address == null) {
-            return null;
-        }
         return addressFormatter.formatFullAddress(addressMapper.toAddressUK(address),
                                                   AddressFormatter.NEWLINE_DELIMITER);
     }
