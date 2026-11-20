@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforcementFlagGuard;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -31,6 +32,7 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
     private BreathingSpaceService breathingSpaceService;
     private AddressFormatter addressFormatter;
+    private EnforcementFlagGuard enforcementFlagGuard;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -47,6 +49,9 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        if (enforcementFlagGuard.isOff()) {
+            return enforcementFlagGuard.refused();
+        }
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
