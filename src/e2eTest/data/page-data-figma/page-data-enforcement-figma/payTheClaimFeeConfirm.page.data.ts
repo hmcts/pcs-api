@@ -1,0 +1,12 @@
+export const payTheClaimFeeConfirm = (testTitle: string) => ({
+  mainHeader: `Enforce the order`,
+  payHMCTSTextLabel: testTitle.includes('Warrant')
+    ? `Pay £152 for HM Courts and Tribunals Service to review your application`
+    : `Pay £82 for HM Courts and Tribunals Service to review your application`,
+  weHaveSavedTextLabel: testTitle.includes('Warrant')
+    ? `We have saved your application, but you still need to pay for it before we can review it. This costs £152`
+    : `We have saved your application, but you still need to pay for it before we can review it. This costs 82`,
+  weCannotReviewTextLabel: `We cannot review your application until you pay this fee.`,
+  closeAndReturnButton: `Close and Return to case details`,
+  payYourApplicationFeeLink: `Pay your application fee`
+});

@@ -6,13 +6,15 @@ import {
   yourHCEO,
   theNICEWillChoose,
   youCannotApplyForWrit,
-  checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { changeNameAddress, confirmHCEOfficer, enforcementApplication, languageUsed, nameAndAddressForEviction, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import { checkYourAnswersEnforcement } from '@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
+import { payTheClaimFeeConfirm } from '@data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data';
 import {
   caseSummary,
   changeNameAddress,
@@ -25,6 +27,8 @@ import {
 } from '@data/index.selector.enforcement';
 import {home} from "@data/page-data-cy";
 
+let payClaimFeeWrit: ReturnType<typeof payTheClaimFeeConfirm>;
+let sotWrit: ReturnType<typeof statementOfTruth>;
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -65,6 +69,10 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+
+  payClaimFeeWrit = payTheClaimFeeConfirm(test.info().title);
+  sotWrit = statementOfTruth(test.info().title);
+  
   if (process.env.RUN_E2E_IN_WELSH === 'true') {
     await performAction('clickButton', home.cymraegLink);
   }
@@ -80,63 +88,119 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
+test.describe('[Enforcement - Writ of Possession]', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME]',
+    {
+      tag: ['@enforcement', '@regression','@writ'],
+      annotation: [
+        { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-3816` },
+        { type: 'ac', description: 'AC1, AC2' },
+      ],
+    },
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', enforcementApplication.mainHeader);
-      await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
-      await performAction('selectApplicationType', {
-        question: enforcementApplication.typeOfApplicationQuestion,
-        option: enforcementApplication.writOfPossessionRadioOption,
-        question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
-        question2: enforcementApplication.genAppSuccessfulQuestionHidden,
-        option1: enforcementApplication.yesRadioOptionHidden,
-        nextPage: nameAndAddressForEviction.mainHeader
+      await test.step(`Given the user has selected Enforce the order event`, async () => {
+        await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+        await performAction('clickButton', caseSummary.go);
       });
-      await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
-      await performAction('selectNameAndAddressForEviction', {
-        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-        nextPage: defendantInBreathingSpace.mainHeader
+
+      await test.step(`When the user validates the writ or warrant fee amount`, async () => {
+        await performValidation('mainHeader', enforcementApplication.mainHeader);
+        await performAction('validateWritOrWarrantFeeAmount', {
+          journey: enforcementApplication.writOfPossessionRadioOption,
+          type: enforcementApplication.summaryWritOrWarrantLink,
+          label1: enforcementApplication.warrantFeeValidationLabelHidden,
+          text1: enforcementApplication.warrantFeeValidationTextHidden,
+          label2: enforcementApplication.writFeeValidationLabelHidden,
+          text2: enforcementApplication.writFeeValidationTextHidden
+        });
       });
-      await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
-      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-      await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
-      await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
-      await performAction('selectHaveHiredHCEO', {
-        question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
-        option: confirmHCEOfficer.yesRadioOption,
-        nextPage: yourHCEO.mainHeader
+
+      await test.step(`And the user validates the Get quote from Bailiff link`, async () => {
+        await performAction('validateGetQuoteFromBailiffLink', {
+          type: enforcementApplication.summaryWritOrWarrantLink,
+          link: enforcementApplication.quoteFromBailiffLinkHidden,
+          newPage: enforcementApplication.hceoPageTitleHidden
+        });
       });
-      await performValidation('mainHeader', yourHCEO.mainHeader);
-      await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
-      await performAction('nameYourHCEO', {
-        label: yourHCEO.nameOfYourHCEOTextLabel,
-        input: yourHCEO.nameOfYourHCEOTextInput,
-        nextPage: languageUsed.mainHeader
+
+      await test.step(`And the user selects the application type`, async () => {
+        await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
+        await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
+        await performAction('selectApplicationType', {
+          question: enforcementApplication.typeOfApplicationQuestion,
+          option: enforcementApplication.writOfPossessionRadioOption,
+          question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+          question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+          option1: enforcementApplication.yesRadioOptionHidden,
+          nextPage: nameAndAddressForEviction.mainHeader
+        });
+      });
+
+      await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
+        await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
+        await performAction('selectNameAndAddressForEviction', {
+          question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+          option: nameAndAddressForEviction.yesRadioOption,
+          defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+          nextPage: confirmHCEOfficer.mainHeader
+        });
+      });
+
+      await test.step(`Then the user selects HCEO`, async () => {
+        await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
+        await performAction('selectHaveHiredHCEO', {
+          question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+          option: confirmHCEOfficer.yesRadioOption,
+          nextPage: yourHCEO.mainHeader
+        });
+      });
+
+      await test.step(`Then the user provide name of HCEO`, async () => {
+        await performValidation('mainHeader', yourHCEO.mainHeader);
+        await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
+        await performAction('nameYourHCEO', {
+          label: yourHCEO.nameOfYourHCEOTextLabel,
+          input: yourHCEO.nameOfYourHCEOTextInput,
+          nextPage: languageUsed.mainHeader
+        });
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.englishRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWrit.mainHeader
       });
-      await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
-      await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iCertifyCheckboxDynamic,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        nextPage: checkYourAnswers.mainHeader,
-        iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      await performAction('errorValidationSOTWritPage', sotWrit.errorValidation);
+      await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
+        await performAction('selectStatementOfTruthWrit', {
+          question: sotWrit.completedByParagraph,
+          option: sotWrit.claimantRadioOption,
+          option1: sotWrit.iCertifyCheckboxDynamic,
+          label: sotWrit.fullNameHiddenTextLabel,
+          input: sotWrit.fullNameHiddenTextInput,
+          label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+          input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
+          label2: sotWrit.nameOfFirmHiddenTextLabel,
+          input2: sotWrit.nameOfFirmHiddenTextInput,
+          nextPage: sotWrit.mainHeader,
+          iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+          continueButton: sotWrit.continueButton
+        });
       });
+
+      await test.step(`And continue to the pay the claim fee page`, async () => {
+        await performAction('continueFromCYAPage', {
+          nextPage: payClaimFeeWrit.mainHeader
+        });
+      });
+
+      await test.step(`And verify the pay the claim fee page content`, async () => {
+        await performAction('selectPayClaimFee', {
+          payText: payClaimFeeWrit.payHMCTSTextLabel,
+          link: payClaimFeeWrit.payYourApplicationFeeLink
+        });
+      });
+
     });
 
   test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
@@ -163,10 +227,8 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      nextPage: defendantInBreathingSpace.mainHeader
+      nextPage: confirmHCEOfficer.mainHeader
     });
-    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -176,20 +238,20 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.welshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader,
-      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantLegalRepresentativeRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.nameOfFirmHiddenTextLabel,
+      input1: sotWrit.nameOfFirmHiddenTextInput,
+      label2: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWrit.positionOrOfficeHeldHiddenTextInput,
+      nextPage: sotWrit.mainHeader,
+      claimantBelieveCheckBox: sotWrit.theClaimantBelievesHiddenCheckBox
     });
   });
 
@@ -217,10 +279,8 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      nextPage: defendantInBreathingSpace.mainHeader
+      nextPage: confirmHCEOfficer.mainHeader
     });
-    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
@@ -231,18 +291,21 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.englishAndWelshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader,
-      iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
+      label2: sotWrit.nameOfFirmHiddenTextLabel,
+      input2: sotWrit.nameOfFirmHiddenTextInput,
+      nextPage: checkYourAnswersEnforcement.mainHeader,
+      iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+      continueButton: sotWrit.continueButton,
     });
   });
 
@@ -272,7 +335,6 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
     },
-  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
