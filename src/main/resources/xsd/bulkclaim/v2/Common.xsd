@@ -173,7 +173,7 @@
       <xs:element name="ContactEmailAddress" type="EmailType"/>
       <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0">
         <xs:annotation>
-          <xs:documentation>Overrides the address held for the claimant's organisation, for example a branch office.</xs:documentation>
+          <xs:documentation>The claimant's own address and contact details. They are held with the claim for reference and are not the correspondence address, which is the claimant's solicitor firm.</xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:sequence>
@@ -181,9 +181,20 @@
   </xs:complexType>
 
   <xs:complexType name="SolicitorType">
+    <xs:annotation>
+      <xs:documentation>The calling organisation is always the claimant's solicitor firm. This optional block only overrides that firm's details for this claim.</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:element name="Firm" type="Text100"/>
-      <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0"/>
+      <xs:element name="Firm" type="Text100" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Defaults to the name of the calling organisation.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ContactDetails" type="ContactDetailsType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Correspondence address and telephone number for this claim. Defaults to the address held for the calling organisation.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
     <xs:attribute name="PCOLReferenceNumber" type="xs:string" use="optional"/>
   </xs:complexType>

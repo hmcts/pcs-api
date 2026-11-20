@@ -22,6 +22,7 @@ public record BulkClaimsTestOrganisation(String organisationId, String pba) {
 
     private static final String DEFAULT_PRD_URL = "http://rd-professional-api-aat.service.core-compute-aat.internal";
     private static final String ACTIVE = "ACTIVE";
+    private static final String SOLICITOR_PROFILE = "SOLICITOR_PROFILE";
 
     /** Thrown when no usable organisation can be found; the message says why. */
     public static class Unavailable extends RuntimeException {
@@ -65,13 +66,19 @@ public record BulkClaimsTestOrganisation(String organisationId, String pba) {
 
             String organisationId = response.jsonPath().getString("organisationIdentifier");
             String status = response.jsonPath().getString("status");
-            List<String> paymentAccounts = response.jsonPath().getList("paymentAccount", String.class);
+            List<String> profiles = response.jsonPath().getList("organisationProfileIds", String.class);
+            final List<String> paymentAccounts = response.jsonPath().getList("paymentAccount", String.class);
 
             if (organisationId == null || organisationId.isBlank()) {
                 throw new Unavailable("rd-professional returned no organisationIdentifier");
             }
             if (!ACTIVE.equalsIgnoreCase(status)) {
                 throw new Unavailable("Organisation " + organisationId + " is " + status + ", not " + ACTIVE);
+            }
+
+            if (profiles == null || !profiles.contains(SOLICITOR_PROFILE)) {
+                throw new Unavailable("Organisation " + organisationId + " is not a solicitor organisation (profiles: "
+                    + profiles + "); bulk claims require a solicitor firm");
             }
 
             String pba = Optional.ofNullable(System.getenv("BULK_CLAIMS_TEST_PBA"))

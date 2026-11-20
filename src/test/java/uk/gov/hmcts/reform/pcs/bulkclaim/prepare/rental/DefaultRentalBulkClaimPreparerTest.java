@@ -167,35 +167,20 @@ class DefaultRentalBulkClaimPreparerTest {
     }
 
     @Test
-    void shouldIgnoreTheSolicitorBlockForANonSolicitorOrganisation() {
-        RentalClaimSet set = codec.parseRental(fixture("rental-england-assured-arrears-valid.xml"));
-        final RentalClaimSet.RentalClaim claim = set.getRentalClaim().getFirst();
-        var solicitor = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType();
-        solicitor.setFirm("Firm LLP");
-        solicitor.setPCOLReferenceNumber("S-1");
-        final var contact = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType();
-        var address = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.AddressType();
-        address.setAddressLine1("1 Firm Street");
-        address.setPostTown("Leeds");
-        address.setPostCode("LS1 1AA");
-        contact.setAddress(address);
-        solicitor.setContactDetails(contact);
-        claim.setSolicitor(solicitor);
-        var organisation = RentalPreparerTestSupport.organisation();
-        organisation.setOrganisationProfileIds(List.of("ORGANISATION_PROFILE"));
+    void shouldDefaultTheSolicitorFirmToTheOrganisationNameAndKeepTheClaimantsOwnContact() {
+        PreparedBulkClaim prepared = prepared("rental-england-assured-arrears.xml");
 
-        PreparedBulkClaim prepared = ((Prepared) underTest.prepare(set, claim, organisation)).claim();
-
-        assertThat(prepared.extras().noticeOfActingRequired()).isTrue();
-        assertThat(prepared.extras().solicitorFirmName()).isEqualTo("Firm LLP");
-        assertThat(prepared.extras().legacyPcolSolicitorReference()).isEqualTo("S-1");
-        assertThat(prepared.pcsCase().getClaimantContactPreferences().getOverriddenClaimantContactAddress())
-            .satisfiesAnyOf(a -> assertThat(a).isNull(),
-                            a -> assertThat(a.getPostCode()).isNotEqualTo("LS1 1AA"));
+        assertThat(prepared.extras().solicitorFirmName()).isEqualTo(RentalPreparerTestSupport.organisation().getName());
+        assertThat(prepared.extras().claimantOwnContact().address().getPostCode()).isEqualTo("SW1A 1AA");
+        assertThat(prepared.extras().claimantOwnContact().telephoneNumber()).isEqualTo("02075550100");
+        assertThat(prepared.pcsCase().getClaimantContactPreferences().getIsCorrectClaimantContactAddress())
+            .isEqualTo(VerticalYesNo.YES);
+        assertThat(prepared.pcsCase().getClaimantContactPreferences().getClaimantProvidePhoneNumber())
+            .isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
-    void shouldHonourTheSolicitorBlockForASolicitorOrganisation() {
+    void shouldHonourTheSolicitorBlockAsAnOverride() {
         RentalClaimSet set = codec.parseRental(fixture("rental-england-assured-arrears-valid.xml"));
         RentalClaimSet.RentalClaim claim = set.getRentalClaim().getFirst();
         var solicitor = new uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType();
@@ -205,7 +190,6 @@ class DefaultRentalBulkClaimPreparerTest {
         PreparedBulkClaim prepared = ((Prepared) underTest.prepare(
             set, claim, RentalPreparerTestSupport.organisation())).claim();
 
-        assertThat(prepared.extras().noticeOfActingRequired()).isFalse();
         assertThat(prepared.extras().solicitorFirmName()).isEqualTo("Firm LLP");
     }
 

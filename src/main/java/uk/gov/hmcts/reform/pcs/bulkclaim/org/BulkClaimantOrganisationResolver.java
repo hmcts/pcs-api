@@ -6,8 +6,7 @@ import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimOrganisationException.Reason;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
@@ -35,10 +34,10 @@ public class BulkClaimantOrganisationResolver {
     }
 
     /**
-     * Resolves an active organisation PCS can derive claimant access for.
+     * Resolves an active solicitor organisation, which is always the claimant's solicitor firm.
      *
-     * @throws BulkClaimOrganisationException if the organisation does not exist, is not active, or carries
-     *     a profile PCS cannot derive claimant access from
+     * @throws BulkClaimOrganisationException if the organisation does not exist, is not active, or is not a
+     *     solicitor organisation
      */
     public OrganisationDetailsResponse resolve(String organisationId) {
         OrganisationDetailsResponse organisation = cache.get(organisationId, this::fetch);
@@ -84,9 +83,8 @@ public class BulkClaimantOrganisationResolver {
             throw new BulkClaimOrganisationException(Reason.PROFILE_NOT_USABLE);
         }
 
-        if (GroupAccessType.caseAccessGroupIdFor(
-            profileId, PartyRole.CLAIMANT, organisation.getOrganisationIdentifier()).isEmpty()) {
-            throw new BulkClaimOrganisationException(Reason.PROFILE_NOT_USABLE);
+        if (!OrganisationProfile.SOLICITOR_PROFILE.getId().equals(profileId)) {
+            throw new BulkClaimOrganisationException(Reason.NOT_A_SOLICITOR_ORGANISATION);
         }
     }
 }

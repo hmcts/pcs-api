@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.BulkClaimDetails.Row;
 import uk.gov.hmcts.reform.pcs.ccd.domain.BulkClaimDetails.Section;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SubmissionChannel;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimOccupantEntity;
@@ -33,6 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** The bulk claim details tab: PCOL data carried by claims created through the bulk API. */
@@ -91,12 +93,12 @@ public class BulkClaimDetailsView {
             .flatMap(role -> claim.getClaimParties().stream()
                 .filter(claimParty -> claimParty.getRole() == role)
                 .map(ClaimPartyEntity::getParty)
-                .map(party -> partySection(role, party)))
+                .map(party -> partySection(claim, role, party)))
             .filter(section -> !section.rows().isEmpty())
             .toList();
     }
 
-    private Section partySection(PartyRole role, PartyEntity party) {
+    private Section partySection(ClaimEntity claim, PartyRole role, PartyEntity party) {
         List<Row> rows = new ArrayList<>();
         add(rows, "Title", party.getTitle());
         add(rows, "Initials", party.getInitials());
@@ -106,8 +108,23 @@ public class BulkClaimDetailsView {
         add(rows, "Telephone number", party.getPhoneNumber());
         add(rows, "Email address", party.getEmailAddress());
         add(rows, "Occupant", yesNo(party.getIsOccupant()));
+        if (role == PartyRole.CLAIMANT) {
+            add(rows, "Claimant's own address", address(claim.getClaimantOwnAddress()));
+            add(rows, "Claimant's own telephone number", claim.getClaimantOwnTelephoneNumber());
+            add(rows, "Claimant's own email address", claim.getClaimantOwnEmailAddress());
+        }
         String heading = role == PartyRole.CLAIMANT ? "Claimant" : "Defendant";
         return new Section(heading + ": " + partyName(party), rows);
+    }
+
+    private static String address(AddressEntity address) {
+        if (address == null) {
+            return null;
+        }
+        return Stream.of(address.getAddressLine1(), address.getAddressLine2(), address.getAddressLine3(),
+                         address.getPostTown(), address.getCounty(), address.getPostcode(), address.getCountry())
+            .filter(part -> part != null && !part.isBlank())
+            .collect(Collectors.joining(", "));
     }
 
     private String partyName(PartyEntity party) {

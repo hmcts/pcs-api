@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.repository.BulkClaimSubmissionRepositor
 import uk.gov.hmcts.reform.pcs.ccd.domain.BulkClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SubmissionChannel;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.ClaimPaymentHistoryLineEntity;
@@ -82,6 +83,10 @@ class BulkClaimDetailsViewTest {
         claim.setClaimantDesignation("Landlord");
         claim.setLegacyPcolClaimantReference("PCOL-C");
         claim.setSolicitorFirmName("Firm LLP");
+        claim.setClaimantOwnAddress(AddressEntity.builder().addressLine1("9 Own Street").postTown("Hull")
+            .postcode("HU1 1AA").build());
+        claim.setClaimantOwnTelephoneNumber("01482000000");
+        claim.setClaimantOwnEmailAddress("own@example.org");
         claim.setClaimCosts(YesOrNo.YES);
         claim.addPaymentHistoryLine(ClaimPaymentHistoryLineEntity.builder()
             .rank(2).paymentDueDate(LocalDate.of(2026, 2, 1)).amountDue(new BigDecimal("500.00"))
@@ -113,7 +118,7 @@ class BulkClaimDetailsViewTest {
         assertThat(details.parties()).hasSize(1);
         assertThat(details.parties().getFirst().heading()).isEqualTo("Claimant: Jane Doe");
         assertThat(details.parties().getFirst().rows()).extracting(BulkClaimDetails.Row::value)
-            .containsExactly("Ms", "DX 1", "No");
+            .containsExactly("Ms", "DX 1", "No", "9 Own Street, Hull, HU1 1AA", "01482000000", "own@example.org");
         assertThat(details.paymentHistory()).extracting(BulkClaimDetails.PaymentLine::dueDate)
             .containsExactly("1 January 2026", "1 February 2026");
         assertThat(details.paymentHistory().getLast().cumulativeArrears()).isEqualTo("£900.50");

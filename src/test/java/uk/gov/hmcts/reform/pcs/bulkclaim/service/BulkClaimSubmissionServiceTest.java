@@ -516,27 +516,6 @@ class BulkClaimSubmissionServiceTest {
         verify(repository, never()).save(any());
     }
 
-    @Test
-    void shouldReportNoticeOfActingReasonForNonSolicitorSolicitorBlockAndReplayIt() {
-        when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
-        ClaimInput claim = input(CUI, HASH, () -> preparedResult(CUI, HASH, true));
-
-        final ClaimResponseType first = submitOne(claim);
-        BulkClaimSubmissionEntity row = rows.values().iterator().next();
-        assertThat(row.isNoticeOfActingRequired()).isTrue();
-        row.setStatus(BulkClaimSubmissionStatus.CASE_CREATED);
-        row.setCaseReference(CASE_REFERENCE);
-        ClaimResponseType replay = submitOne(unexpectedPreparation());
-
-        for (ClaimResponseType response : List.of(first, replay)) {
-            assertThat(response.getClaimStatus().getStatusCode()).isEqualTo(1);
-            assertThat(response.getClaimStatus().getReason())
-                .isEqualTo(BulkFailReason.CLAIM_SUCCESS_NOTICE_OF_ACTING.getStatusReason())
-                .contains("notice of acting");
-            assertThat(response.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
-        }
-    }
-
     private BulkClaimSubmissionEntity existingWithFailedPayment() {
         BulkClaimSubmissionEntity row = existing(BulkClaimSubmissionStatus.CASE_CREATED, CASE_REFERENCE, Instant.now());
         row.setPaymentStatus(BulkClaimPaymentStatus.FAILED);
@@ -581,14 +560,9 @@ class BulkClaimSubmissionServiceTest {
     }
 
     private static BulkClaimPreparationResult preparedResult(String cui, String hash) {
-        return preparedResult(cui, hash, false);
-    }
-
-    private static BulkClaimPreparationResult preparedResult(String cui, String hash, boolean noticeOfActing) {
         return new BulkClaimPreparationResult.Prepared(new PreparedBulkClaim(
             PCSCase.builder().build(),
-            new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null,
-                                noticeOfActing),
+            new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null, null),
             "PBA1", "REF1"));
     }
 

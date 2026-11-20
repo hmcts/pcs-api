@@ -4,12 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.ClaimantOwnContact;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.PartyExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimantType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ContactDetailsType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.NameType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.SolicitorType;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -19,15 +19,14 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkErrorCollector.INVALID_VALUE;
 
 /**
- * Maps the claimant (and optional solicitor) to the claimant sections of a {@link PCSCase}. The claimant name
- * and contact details come from the PRD organisation unless the claim supplies its own. Only a solicitor
- * organisation may supply a Solicitor block; for any other organisation it is ignored apart from the firm name and
- * PCOL reference, which are kept as legacy data.
+ * Maps the claimant and the optional Solicitor override to the claimant sections of a {@link PCSCase}. The calling
+ * organisation is the claimant's solicitor firm, so the correspondence address and the firm name default to the
+ * organisation's PRD details; the claimant's own name comes from the claim and its own contact details are kept as
+ * PCOL-only data.
  */
 @Component
 public class BulkClaimantMapper {
@@ -49,7 +48,7 @@ public class BulkClaimantMapper {
                                   String solicitorFirmName,
                                   String legacyPcolClaimantReference,
                                   String legacyPcolSolicitorReference,
-                                  boolean noticeOfActingRequired) {
+                                  ClaimantOwnContact claimantOwnContact) {
 
         public void applyTo(PCSCase pcsCase) {
             pcsCase.setClaimantInformation(claimantInformation);
@@ -72,32 +71,23 @@ public class BulkClaimantMapper {
 
         ClaimantInformation information = mapInformation(claimant, organisation, path, errors);
 
-        boolean solicitorIgnored = solicitor != null && !isSolicitorOrganisation(organisation);
-        ContactDetailsType solicitorContact = solicitor != null && !solicitorIgnored
-            ? solicitor.getContactDetails() : null;
-        ContactDetailsType claimantContact = claimant.getContactDetails();
+        ContactDetailsType solicitorContact = solicitor != null ? solicitor.getContactDetails() : null;
         ClaimantContactPreferences preferences = mapContactPreferences(
-            claimant, solicitorContact, claimantContact, organisation, path, solicitorPath, errors);
+            claimant, solicitorContact, organisation, path, solicitorPath, errors);
 
-        if (solicitor != null) {
-            errors.requiredWithMaxLength(solicitorPath + "/Firm", solicitor.getFirm(), BulkLimits.SIGNATORY,
-                                         "Solicitor firm");
-        }
+        String suppliedFirm = solicitor != null ? StringUtils.trimToNull(solicitor.getFirm()) : null;
+        errors.maxLength(solicitorPath + "/Firm", suppliedFirm, BulkLimits.SIGNATORY, "Solicitor firm");
+        String firmName = suppliedFirm != null ? suppliedFirm : organisationName(organisation);
 
         return new ClaimantMapping(
             information,
             preferences,
             claimantExtras(claimant),
-            solicitor != null ? solicitor.getFirm() : null,
+            firmName,
             claimant.getPCOLReferenceNumber(),
             solicitor != null ? solicitor.getPCOLReferenceNumber() : null,
-            solicitorIgnored
+            claimantOwnContact(claimant, path, errors)
         );
-    }
-
-    private static boolean isSolicitorOrganisation(OrganisationDetailsResponse organisation) {
-        return organisation != null && organisation.getOrganisationProfileIds() != null
-            && organisation.getOrganisationProfileIds().contains(OrganisationProfile.SOLICITOR_PROFILE.getId());
     }
 
     private ClaimantInformation mapInformation(ClaimantType claimant,
@@ -105,7 +95,7 @@ public class BulkClaimantMapper {
                                                String path,
                                                BulkErrorCollector errors) {
         String suppliedName = suppliedName(claimant, path, errors);
-        String organisationName = organisation != null ? StringUtils.trimToNull(organisation.getName()) : null;
+        String organisationName = organisationName(organisation);
 
         ClaimantInformation.ClaimantInformationBuilder builder = ClaimantInformation.builder();
         if (organisationName == null) {
@@ -140,7 +130,6 @@ public class BulkClaimantMapper {
 
     private ClaimantContactPreferences mapContactPreferences(ClaimantType claimant,
                                                              ContactDetailsType solicitorContact,
-                                                             ContactDetailsType claimantContact,
                                                              OrganisationDetailsResponse organisation,
                                                              String path,
                                                              String solicitorPath,
@@ -158,46 +147,55 @@ public class BulkClaimantMapper {
             .isCorrectClaimantContactEmail(VerticalYesNo.NO)
             .overriddenClaimantContactEmail(email);
 
-        ContactDetailsType addressSource = firstWithAddress(solicitorContact, claimantContact);
-        String addressPath = addressSource == null ? null
-            : (addressSource == solicitorContact ? solicitorPath : path) + "/ContactDetails/Address";
-        if (addressSource != null) {
+        boolean addressOverridden = solicitorContact != null && solicitorContact.getAddress() != null;
+        if (addressOverridden) {
             builder.isCorrectClaimantContactAddress(VerticalYesNo.NO)
-                .overriddenClaimantContactAddress(
-                    addressMapper.toValidAddress(addressSource.getAddress(), addressPath, errors));
+                .overriddenClaimantContactAddress(addressMapper.toValidAddress(
+                    solicitorContact.getAddress(), solicitorPath + "/ContactDetails/Address", errors));
         } else if (organisationAddress != null) {
             builder.isCorrectClaimantContactAddress(VerticalYesNo.YES);
         } else {
-            errors.add(path + "/ContactDetails", BulkErrorCollector.REQUIRED,
-                       "A contact address is required because the organisation has no address on record");
+            errors.add(solicitorPath + "/ContactDetails", BulkErrorCollector.REQUIRED,
+                       "A correspondence address is required because the organisation has no address on record");
         }
 
-        String phone = firstPhone(addressSource, solicitorContact, claimantContact);
+        String phone = solicitorContact != null ? phone(solicitorContact) : null;
         if (phone == null) {
             builder.claimantProvidePhoneNumber(VerticalYesNo.NO);
         } else {
             builder.claimantProvidePhoneNumber(VerticalYesNo.YES).claimantContactPhoneNumber(phone);
             if (!BulkLimits.PHONE_PATTERN.matcher(phone).matches()) {
-                errors.add(path + "/ContactDetails/TelephoneNumber", INVALID_VALUE,
+                errors.add(solicitorPath + "/ContactDetails/TelephoneNumber", INVALID_VALUE,
                            "Telephone number must be an 11 digit UK number starting with 0");
             }
         }
         return builder.build();
     }
 
-    private static ContactDetailsType firstWithAddress(ContactDetailsType... candidates) {
-        return Stream.of(candidates)
-            .filter(contact -> contact != null && contact.getAddress() != null)
-            .findFirst()
-            .orElse(null);
+    private static String phone(ContactDetailsType contact) {
+        return StringUtils.isBlank(contact.getTelephoneNumber()) ? null
+            : contact.getTelephoneNumber().replaceAll("\\s", "");
     }
 
-    private static String firstPhone(ContactDetailsType preferred, ContactDetailsType... others) {
-        return Stream.concat(Stream.of(preferred), Stream.of(others))
-            .filter(contact -> contact != null && StringUtils.isNotBlank(contact.getTelephoneNumber()))
-            .map(contact -> contact.getTelephoneNumber().replaceAll("\\s", ""))
-            .findFirst()
-            .orElse(null);
+    private static String organisationName(OrganisationDetailsResponse organisation) {
+        return organisation != null ? StringUtils.trimToNull(organisation.getName()) : null;
+    }
+
+    private ClaimantOwnContact claimantOwnContact(ClaimantType claimant, String path, BulkErrorCollector errors) {
+        ContactDetailsType contact = claimant.getContactDetails();
+        if (contact == null) {
+            return null;
+        }
+        String contactPath = path + "/ContactDetails";
+        String telephone = phone(contact);
+        if (telephone != null && !BulkLimits.PHONE_PATTERN.matcher(telephone).matches()) {
+            errors.add(contactPath + "/TelephoneNumber", INVALID_VALUE,
+                       "Telephone number must be an 11 digit UK number starting with 0");
+        }
+        return new ClaimantOwnContact(
+            addressMapper.toValidAddress(contact.getAddress(), contactPath + "/Address", errors),
+            telephone,
+            StringUtils.trimToNull(contact.getEmailAddress()));
     }
 
     private static AddressUK organisationAddress(OrganisationDetailsResponse organisation) {

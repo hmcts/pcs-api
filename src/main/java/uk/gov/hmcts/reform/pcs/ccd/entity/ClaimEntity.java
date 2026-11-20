@@ -264,6 +264,14 @@ public class ClaimEntity {
     @JoinColumn(name = "claim_form_document_id")
     private DocumentEntity claimFormDocument;
 
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "claimant_own_address_id")
+    private AddressEntity claimantOwnAddress;
+
+    private String claimantOwnTelephoneNumber;
+
+    private String claimantOwnEmailAddress;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);

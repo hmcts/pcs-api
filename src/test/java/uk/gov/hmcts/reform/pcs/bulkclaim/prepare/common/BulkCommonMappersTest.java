@@ -164,43 +164,60 @@ class BulkCommonMappersTest {
     }
 
     @Test
-    void solicitorAddressIsUsedBeforeClaimantAndOrganisationAddress() {
-        ClaimantType claimant = company("Example Housing");
-        claimant.setContactDetails(contact("M1 1AA"));
-        SolicitorType solicitor = new SolicitorType();
-        solicitor.setFirm("Firm LLP");
-        solicitor.setContactDetails(contact("LS1 1AA"));
-        solicitor.setPCOLReferenceNumber("99");
-
-        var mapping = new BulkClaimantMapper(addressMapper).map(
-            claimant, solicitor, solicitorOrganisation("Example Housing"), "Claimant", "Solicitor", errors);
-
-        assertThat(mapping.contactPreferences().getOverriddenClaimantContactAddress().getPostCode())
-            .isEqualTo("LS1 1AA");
-        assertThat(mapping.solicitorFirmName()).isEqualTo("Firm LLP");
-        assertThat(mapping.legacyPcolSolicitorReference()).isEqualTo("99");
-    }
-
-    @Test
-    void solicitorBlockIsIgnoredForANonSolicitorOrganisationExceptFirmAndReference() {
+    void solicitorAddressOverridesTheOrganisationAddressAndTheClaimantsOwnAddressIsNeverUsed() {
         ClaimantType claimant = company("Example Housing");
         claimant.setContactDetails(contact("M1 1AA"));
         SolicitorType solicitor = new SolicitorType();
         solicitor.setFirm("Firm LLP");
         ContactDetailsType solicitorContact = contact("LS1 1AA");
-        solicitorContact.setTelephoneNumber("01132223333");
+        solicitorContact.setTelephoneNumber("0113 222 3333");
         solicitor.setContactDetails(solicitorContact);
         solicitor.setPCOLReferenceNumber("99");
 
         var mapping = new BulkClaimantMapper(addressMapper).map(
             claimant, solicitor, organisation("Example Housing"), "Claimant", "Solicitor", errors);
 
-        assertThat(mapping.noticeOfActingRequired()).isTrue();
         assertThat(mapping.contactPreferences().getOverriddenClaimantContactAddress().getPostCode())
-            .isEqualTo("M1 1AA");
-        assertThat(mapping.contactPreferences().getClaimantProvidePhoneNumber()).isEqualTo(VerticalYesNo.NO);
+            .isEqualTo("LS1 1AA");
+        assertThat(mapping.contactPreferences().getClaimantContactPhoneNumber()).isEqualTo("01132223333");
         assertThat(mapping.solicitorFirmName()).isEqualTo("Firm LLP");
         assertThat(mapping.legacyPcolSolicitorReference()).isEqualTo("99");
+        assertThat(mapping.claimantOwnContact().address().getPostCode()).isEqualTo("M1 1AA");
+        assertThat(errors.hasErrors()).isFalse();
+    }
+
+    @Test
+    void organisationAddressIsTheCorrespondenceAddressAndClaimantPhoneIsNotTheFirmsPhone() {
+        ClaimantType claimant = company("Example Housing");
+        ContactDetailsType own = contact("M1 1AA");
+        own.setTelephoneNumber("01612223333");
+        own.setEmailAddress("own@example.org");
+        claimant.setContactDetails(own);
+
+        var mapping = new BulkClaimantMapper(addressMapper).map(
+            claimant, null, organisation("Example Housing"), "Claimant", "Solicitor", errors);
+
+        assertThat(mapping.contactPreferences().getIsCorrectClaimantContactAddress()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mapping.contactPreferences().getOverriddenClaimantContactAddress()).isNull();
+        assertThat(mapping.contactPreferences().getClaimantProvidePhoneNumber()).isEqualTo(VerticalYesNo.NO);
+        assertThat(mapping.claimantOwnContact().address().getPostCode()).isEqualTo("M1 1AA");
+        assertThat(mapping.claimantOwnContact().telephoneNumber()).isEqualTo("01612223333");
+        assertThat(mapping.claimantOwnContact().emailAddress()).isEqualTo("own@example.org");
+    }
+
+    @Test
+    void solicitorFirmDefaultsToTheOrganisationNameWhenAbsent() {
+        SolicitorType solicitor = new SolicitorType();
+        solicitor.setPCOLReferenceNumber("99");
+
+        var withBlock = new BulkClaimantMapper(addressMapper).map(
+            company("Example Housing"), solicitor, organisation("Example Housing"), "Claimant", "Solicitor", errors);
+        var withoutBlock = new BulkClaimantMapper(addressMapper).map(
+            company("Example Housing"), null, organisation("Example Housing"), "Claimant", "Solicitor", errors);
+
+        assertThat(withBlock.solicitorFirmName()).isEqualTo("Example Housing");
+        assertThat(withoutBlock.solicitorFirmName()).isEqualTo("Example Housing");
+        assertThat(withoutBlock.claimantOwnContact()).isNull();
     }
 
     @Test
@@ -244,7 +261,7 @@ class BulkCommonMappersTest {
             company("Example Housing"), null, noAddress, "Claimant", "Solicitor", errors);
 
         assertThat(errors.errors()).extracting(e -> e.path())
-            .containsExactly("/RentalClaimSet/RentalClaim[2]/Claimant/ContactDetails");
+            .containsExactly("/RentalClaimSet/RentalClaim[2]/Solicitor/ContactDetails");
     }
 
     @Test

@@ -226,7 +226,7 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
             commonParticularsMapper.paymentHistory(particulars.getPaymentHistory()),
             null,
             List.of(),
-            claimant.noticeOfActingRequired()
+            claimant.claimantOwnContact()
         );
     }
 
