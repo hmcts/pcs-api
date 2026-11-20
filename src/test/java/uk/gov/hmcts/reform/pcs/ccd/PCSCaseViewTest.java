@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementEventShowConditionsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -170,6 +171,9 @@ class PCSCaseViewTest {
     @Mock
     private BreathingSpaceSummaryView breathingSpaceSummaryView;
 
+    @Mock
+    private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+
     private PCSCaseView underTest;
 
     @BeforeEach
@@ -189,7 +193,7 @@ class PCSCaseViewTest {
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
                                     messagesView, judicialNoteView, enforcementOrderView,
-                                    breathingSpaceSummaryView
+                                    breathingSpaceSummaryView, enforcementEventShowConditionsView
         );
     }
 
@@ -427,6 +431,7 @@ class PCSCaseViewTest {
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
+        verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
     }
 
     @Test
