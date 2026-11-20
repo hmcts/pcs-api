@@ -94,9 +94,6 @@ public class BulkClaimSubmissionEntity {
 
     private String paymentFailureReason;
 
-    @Builder.Default
-    private boolean noticeOfActingRequired = false;
-
     @CreationTimestamp
     private Instant createdAt;
 

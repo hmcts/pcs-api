@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.AdditionalPayment;
+import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.ClaimantOwnContact;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.MortgageParticulars;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.Occupant;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras.PartyExtras;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +36,7 @@ import java.util.List;
 public class BulkClaimExtrasService {
 
     private final PcsCaseService pcsCaseService;
+    private final AddressMapper addressMapper;
 
     public void apply(long caseReference, BulkClaimExtras extras) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
@@ -50,11 +53,23 @@ public class BulkClaimExtrasService {
         claim.setSolicitorFirmName(extras.solicitorFirmName());
         claim.setClaimCosts(yesOrNo(extras.claimingCosts()));
         applyNoticeType(claim, extras.noticeType());
+        applyClaimantOwnContact(claim, extras.claimantOwnContact());
 
         applyPartyExtras(claim, extras);
         applyPaymentHistory(claim, extras.paymentHistory());
         applyMortgageParticulars(claim, extras.mortgageParticulars());
         applyOccupants(claim, extras.occupants());
+    }
+
+    private void applyClaimantOwnContact(ClaimEntity claim, ClaimantOwnContact contact) {
+        if (contact == null) {
+            return;
+        }
+        if (contact.address() != null) {
+            claim.setClaimantOwnAddress(addressMapper.toAddressEntityAndNormalise(contact.address()));
+        }
+        claim.setClaimantOwnTelephoneNumber(contact.telephoneNumber());
+        claim.setClaimantOwnEmailAddress(contact.emailAddress());
     }
 
     private void applyPartyExtras(ClaimEntity claim, BulkClaimExtras extras) {

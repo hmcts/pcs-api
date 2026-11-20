@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.model;
 
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,8 +23,12 @@ public record BulkClaimExtras(
     List<PaymentHistoryLine> paymentHistory,
     MortgageParticulars mortgageParticulars,
     List<Occupant> occupants,
-    Boolean noticeOfActingRequired
+    ClaimantOwnContact claimantOwnContact
 ) {
+
+    /** The claimant's own contact details, which are not the claim's correspondence details. */
+    public record ClaimantOwnContact(AddressUK address, String telephoneNumber, String emailAddress) {
+    }
 
     public record PartyExtras(
         String title,

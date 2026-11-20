@@ -189,6 +189,25 @@ class RentalPreparationPersistenceIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    void persistsTheClaimantsOwnAddressAndTheFirmAsTheCorrespondenceAddress() {
+        OrganisationDetailsResponse organisation = organisation();
+        RentalClaimSet claimSet = codec.parseRental(read("rental-england-assured-arrears.xml"));
+        PreparedBulkClaim prepared = ((Prepared) preparer.prepare(
+            claimSet, claimSet.getRentalClaim().getFirst(), organisation)).claim();
+
+        ClaimEntity claim = persistWithExtras(prepared, organisation);
+
+        assertThat(claim.getClaimantOwnAddress().getAddressLine1()).isEqualTo("1 Landlord Street");
+        assertThat(claim.getClaimantOwnTelephoneNumber()).isEqualTo("02075550100");
+        PartyEntity claimant = claim.getClaimParties().stream()
+            .filter(p -> p.getRole() == PartyRole.CLAIMANT)
+            .findFirst().orElseThrow().getParty();
+        assertThat(claimant.getAddress().getAddressLine1()).isEqualTo(organisation.getContactInformation()
+                                                                          .getFirst().getAddressLine1());
+        assertThat(claimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
     void persistsRentForAnAssuredClaimWithoutRentArrearsGrounds() {
         OrganisationDetailsResponse organisation = organisation();
         RentalClaimSet claimSet = codec.parseRental(read("rental-england-assured-no-arrears.xml"));

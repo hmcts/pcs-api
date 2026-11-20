@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimSubmissionEntity;
@@ -183,6 +184,9 @@ class CreateBulkPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(claim.getLegacyPcolSolicitorReference()).isEqualTo("PCOL-S-1");
         assertThat(claim.getSolicitorFirmName()).isEqualTo("Firm LLP");
         assertThat(claim.getClaimCosts()).isEqualTo(YesOrNo.YES);
+        assertThat(claim.getClaimantOwnAddress().getAddressLine1()).isEqualTo("9 Own Street");
+        assertThat(claim.getClaimantOwnTelephoneNumber()).isEqualTo("01482000000");
+        assertThat(claim.getClaimantOwnEmailAddress()).isEqualTo("own@example.org");
 
         assertThat(claim.getPaymentHistoryLines())
             .extracting("rank", "amountDue")
@@ -240,7 +244,10 @@ class CreateBulkPossessionClaimIT extends AbstractPostgresContainerIT {
                 null, null,
                                     List.of(new AdditionalPayment(new BigDecimal("12.00"), "Insurance",
                                                                   new BigDecimal("12.00")))),
-            List.of(new Occupant("Mrs", "Olive", "Occupier", null, "O")), false);
+            List.of(new Occupant("Mrs", "Olive", "Occupier", null, "O")),
+            new BulkClaimExtras.ClaimantOwnContact(
+                AddressUK.builder().addressLine1("9 Own Street").postTown("Hull").postCode("HU1 1AA").build(),
+                "01482000000", "own@example.org"));
 
         BulkClaimSubmissionEntity row = BulkClaimSubmissionEntity.builder()
             .organisationId(ORGANISATION_ID)

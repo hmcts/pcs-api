@@ -8,7 +8,8 @@ public class BulkClaimOrganisationException extends RuntimeException {
     public enum Reason {
         NOT_FOUND,
         NOT_ACTIVE,
-        PROFILE_NOT_USABLE
+        PROFILE_NOT_USABLE,
+        NOT_A_SOLICITOR_ORGANISATION
     }
 
     private final Reason reason;

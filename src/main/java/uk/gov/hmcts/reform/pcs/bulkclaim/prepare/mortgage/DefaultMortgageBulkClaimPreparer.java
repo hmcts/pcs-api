@@ -179,7 +179,7 @@ public class DefaultMortgageBulkClaimPreparer implements MortgageBulkClaimPrepar
             paymentHistory,
             mortgageParticularsMapper.map(particulars, paymentHistory, PARTICULARS_PATH, errors),
             mortgageParticularsMapper.occupants(claim.getOccupant(), "Occupant", errors),
-            claimant.noticeOfActingRequired()
+            claimant.claimantOwnContact()
         );
     }
 

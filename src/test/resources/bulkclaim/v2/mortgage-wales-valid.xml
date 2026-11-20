@@ -6,6 +6,13 @@
     <Claimant PCOLReferenceNumber="555">
       <CompanyName>Example Bank plc</CompanyName>
       <ContactEmailAddress>possessions@example.com</ContactEmailAddress>
+      <ContactDetails>
+        <Address>
+          <AddressLine1>5 Lender Lane</AddressLine1>
+          <PostTown>Hull</PostTown>
+          <PostCode>HU1 1AA</PostCode>
+        </Address>
+      </ContactDetails>
     </Claimant>
     <Property>
       <Address>

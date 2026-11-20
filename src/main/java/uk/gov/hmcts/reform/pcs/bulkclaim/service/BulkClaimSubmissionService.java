@@ -208,29 +208,28 @@ public class BulkClaimSubmissionService {
         }
         PreparedBulkClaim prepared = ((Prepared) preparation).claim();
 
-        boolean noticeOfActing = noticeOfActingRequired(prepared);
         if (validateOnly) {
-            return responseBuilder.claimSuccess(cui, null, noticeOfActing);
+            return responseBuilder.claimSuccess(cui, null);
         }
 
         UUID submissionId = stage(organisationId, organisation, claim, prepared);
         BulkClaimCcdResult result = ccdClient.createCase(submissionId);
         if (result.isCreated()) {
-            return responseBuilder.claimSuccess(cui, String.valueOf(result.caseReference()), noticeOfActing);
+            return responseBuilder.claimSuccess(cui, String.valueOf(result.caseReference()));
         }
         if (result.retryable()) {
-            return afterUnavailableCcd(submissionId, cui, noticeOfActing);
+            return afterUnavailableCcd(submissionId, cui);
         }
         markFailed(submissionId, result.failReason(), result.errors());
         return responseBuilder.claimFailure(cui, result.failReason(), result.errors());
     }
 
-    private ClaimResponseType afterUnavailableCcd(UUID submissionId, String cui, boolean noticeOfActing) {
+    private ClaimResponseType afterUnavailableCcd(UUID submissionId, String cui) {
         Long caseReference = repository.findById(submissionId)
             .map(BulkClaimSubmissionEntity::getCaseReference)
             .orElse(null);
         return caseReference != null
-            ? responseBuilder.claimSuccess(cui, String.valueOf(caseReference), noticeOfActing)
+            ? responseBuilder.claimSuccess(cui, String.valueOf(caseReference))
             : responseBuilder.claimPending(cui);
     }
 
@@ -284,12 +283,7 @@ public class BulkClaimSubmissionService {
 
     private ClaimResponseType replay(BulkClaimSubmissionEntity submission) {
         return responseBuilder.claimSuccess(
-            submission.getCustomerUniqueIdentifier(), String.valueOf(submission.getCaseReference()),
-            submission.isNoticeOfActingRequired());
-    }
-
-    private static boolean noticeOfActingRequired(PreparedBulkClaim prepared) {
-        return prepared.extras() != null && Boolean.TRUE.equals(prepared.extras().noticeOfActingRequired());
+            submission.getCustomerUniqueIdentifier(), String.valueOf(submission.getCaseReference()));
     }
 
     private Optional<ClaimResponseType> pendingOutcome(BulkClaimSubmissionEntity existing,
@@ -356,7 +350,6 @@ public class BulkClaimSubmissionService {
             row.setStatusCode(BulkFailReason.CLAIM_PENDING.getStatusCode());
             row.setFailReasonCode(null);
             row.setFailReason(null);
-            row.setNoticeOfActingRequired(noticeOfActingRequired(prepared));
             row.setValidationErrors(null);
             row.setStagedCaseData(serializer.writeCase(prepared.pcsCase()));
             row.setStagedExtras(serializer.writeExtras(prepared.extras()));

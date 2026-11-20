@@ -22,19 +22,7 @@ public class BulkClaimResponseBuilder {
     }
 
     public ClaimResponseType claimSuccess(String customerUniqueIdentifier, String caseReference) {
-        return claimSuccess(customerUniqueIdentifier, caseReference, false);
-    }
-
-    /**
-     * A successful claim response.
-     *
-     * @param noticeOfActingRequired whether the claim was accepted with its Solicitor block ignored because the
-     *     organisation is not a solicitor firm
-     */
-    public ClaimResponseType claimSuccess(String customerUniqueIdentifier,
-                                          String caseReference,
-                                          boolean noticeOfActingRequired) {
-        ClaimResponseType claim = claim(customerUniqueIdentifier, successReason(noticeOfActingRequired));
+        ClaimResponseType claim = claim(customerUniqueIdentifier, BulkFailReason.CLAIM_SUCCESS);
         claim.setCaseReference(caseReference);
         claim.setClaimNumber(formatClaimNumber(caseReference));
         return claim;
@@ -65,10 +53,6 @@ public class BulkClaimResponseBuilder {
         status.setFailReasonCode(reason.getFailReasonCode());
         status.setFailReason(reason.getReason());
         return status;
-    }
-
-    public static BulkFailReason successReason(boolean noticeOfActingRequired) {
-        return noticeOfActingRequired ? BulkFailReason.CLAIM_SUCCESS_NOTICE_OF_ACTING : BulkFailReason.CLAIM_SUCCESS;
     }
 
     public static String formatClaimNumber(String caseReference) {

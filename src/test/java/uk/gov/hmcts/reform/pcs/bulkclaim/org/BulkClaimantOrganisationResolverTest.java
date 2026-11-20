@@ -37,7 +37,7 @@ class BulkClaimantOrganisationResolverTest {
     }
 
     @Test
-    void shouldReturnActiveOrganisationWithMappedProfile() {
+    void shouldReturnActiveSolicitorOrganisation() {
         OrganisationDetailsResponse org = organisation("ACTIVE", List.of("SOLICITOR_PROFILE"));
         when(organisationDetailsService.getOrganisationById(ORG_ID)).thenReturn(org);
 
@@ -45,8 +45,21 @@ class BulkClaimantOrganisationResolverTest {
     }
 
     @Test
-    void shouldAcceptUnmappedSpecificProfileViaClaimantFallback() {
-        OrganisationDetailsResponse org = organisation("ACTIVE", List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"));
+    void shouldRejectNonSolicitorProfiles() {
+        for (List<String> profiles : List.of(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"),
+                                             List.of("ORGANISATION_PROFILE"),
+                                             List.of("LOCALAUTH_PROFILE"))) {
+            underTest = new BulkClaimantOrganisationResolver(organisationDetailsService);
+            when(organisationDetailsService.getOrganisationById(ORG_ID))
+                .thenReturn(organisation("ACTIVE", profiles));
+
+            assertReason(Reason.NOT_A_SOLICITOR_ORGANISATION);
+        }
+    }
+
+    @Test
+    void shouldAcceptSolicitorProfileAlongsideGenericOrganisationProfile() {
+        OrganisationDetailsResponse org = organisation("ACTIVE", List.of("ORGANISATION_PROFILE", "SOLICITOR_PROFILE"));
         when(organisationDetailsService.getOrganisationById(ORG_ID)).thenReturn(org);
 
         assertThat(underTest.resolve(ORG_ID)).isSameAs(org);

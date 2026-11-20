@@ -204,9 +204,9 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
 
     private static BulkFailReason claimReason(BulkClaimSubmissionEntity submission) {
         return switch (submission.getStatus()) {
-            case CASE_CREATED -> BulkClaimResponseBuilder.successReason(submission.isNoticeOfActingRequired());
+            case CASE_CREATED -> BulkFailReason.CLAIM_SUCCESS;
             case PENDING -> submission.getCaseReference() != null
-                ? BulkClaimResponseBuilder.successReason(submission.isNoticeOfActingRequired())
+                ? BulkFailReason.CLAIM_SUCCESS
                 : BulkFailReason.CLAIM_PENDING;
             case FAILED_VALIDATION -> BulkFailReasonCodes.forFailReasonCode(submission.getFailReasonCode())
                 .orElse(BulkFailReason.VALIDATION_FAILED);

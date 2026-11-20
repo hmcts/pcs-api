@@ -166,6 +166,11 @@ class MortgagePreparationPersistenceIT extends AbstractPostgresContainerIT {
             .toList();
         assertThat(defendantOccupantFlags).containsExactly(YesOrNo.NO, YesOrNo.YES);
 
+        assertThat(claim.getClaimantOwnAddress().getAddressLine1()).isEqualTo("5 Lender Lane");
+        assertThat(claim.getClaimParties().stream()
+                       .filter(party -> party.getRole() == PartyRole.CLAIMANT)
+                       .findFirst().orElseThrow().getParty().getAddress().getAddressLine1())
+            .isEqualTo("1 Org Street");
         assertThat(claim.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
         assertThat(claim.getStatementOfTruth().getPositionHeld()).isEqualTo("Possessions Manager");
         assertThat(claim.getStatementOfTruth().getCompletedDate()).isEqualTo(LocalDate.of(2026, 11, 3).atStartOfDay());

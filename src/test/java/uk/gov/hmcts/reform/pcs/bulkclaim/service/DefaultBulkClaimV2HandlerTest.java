@@ -159,7 +159,7 @@ class DefaultBulkClaimV2HandlerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"NOT_FOUND", "NOT_ACTIVE", "PROFILE_NOT_USABLE"})
+    @ValueSource(strings = {"NOT_FOUND", "NOT_ACTIVE", "PROFILE_NOT_USABLE", "NOT_A_SOLICITOR_ORGANISATION"})
     void shouldReturnForbiddenWhenOrganisationIsNotUsable(String reason) throws IOException {
         when(organisationResolver.resolve(ORG)).thenThrow(new BulkClaimOrganisationException(Reason.valueOf(reason)));
 
