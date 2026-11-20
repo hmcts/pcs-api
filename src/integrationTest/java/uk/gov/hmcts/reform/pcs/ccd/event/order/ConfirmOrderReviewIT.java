@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -226,7 +227,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order order = judgeSubmitsOrder("the judge's order");
         var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
         var outright = new ClaimOutcome(ClaimOutcome.Kind.OUTRIGHT_POSSESSION, false, LocalDate.of(2026, 12, 4),
-            ClaimOutcome.Grounds.MANDATORY, "Ground 8", null);
+            LocalTime.of(16, 0), ClaimOutcome.Grounds.MANDATORY, "Ground 8", null);
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
@@ -244,18 +245,23 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         // Recorded against the case's claim.
         assertThat(jdbcTemplate.queryForMap("SELECT oc.kind, oc.possession_forthwith, "
-            + "oc.possession_date::text AS date, oc.grounds, oc.grounds_details FROM order_claim oc "
+            + "oc.possession_date::text AS date, oc.possession_time::text AS time, oc.grounds, oc.grounds_details "
+            + "FROM order_claim oc "
             + "JOIN claim c ON c.id = oc.claim_id JOIN pcs_case pc ON pc.id = c.case_id "
             + "WHERE oc.order_id = ? AND pc.case_reference = ?", order.id(), caseReference))
             .containsAllEntriesOf(Map.of("kind", "OUTRIGHT_POSSESSION", "possession_forthwith", false,
-                "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
+                "date", "2026-12-04", "time", "16:00:00", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
         // The database holds possession to a date or forthwith, as the event does.
         assertThatThrownBy(() -> jdbcTemplate.update(
             "UPDATE order_claim SET possession_forthwith = true WHERE order_id = ?", order.id()))
             .hasMessageContaining("order_claim_outright_check");
         assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET kind = 'SUSPENDED_POSSESSION', "
-            + "possession_date = NULL WHERE order_id = ?", order.id()))
+            + "possession_date = NULL, possession_time = NULL WHERE order_id = ?", order.id()))
             .hasMessageContaining("order_claim_suspended_check");
+        // A time is the time on the day possession is ordered by, so it needs that day.
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET possession_forthwith = true, "
+            + "possession_date = NULL WHERE order_id = ?", order.id()))
+            .hasMessageContaining("order_claim_possession_time_check");
     }
 
     @Test
