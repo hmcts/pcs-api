@@ -36,6 +36,9 @@ class AccessProfileTest {
     private static Stream<Arguments> provideAccessProfileExpectations() {
         return Stream.of(
             Arguments.of(AccessProfile.CREATOR, "[CREATOR]", CRU),
+            Arguments.of(AccessProfile.BAILIFF, "bailiff", CRU),
+            Arguments.of(AccessProfile.BAILIFF_ADMIN, "bailiff-admin", CRU),
+            Arguments.of(AccessProfile.BAILIFF_MANAGER, "bailiff-manager", CRU),
             Arguments.of(AccessProfile.RAS_VALIDATOR, "caseworker-ras-validation", Set.of(R)),
             Arguments.of(AccessProfile.CITIZEN, "citizen", CRU),
             Arguments.of(AccessProfile.DEFENDANT, "[DEFENDANT]", CRU),

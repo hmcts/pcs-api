@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseRoleToAccessProfile.CaseRoleToAccessProfileBuilder;
@@ -80,6 +82,23 @@ class RoleToAccessProfilesTest {
             .containsExactly(AccessProfile.CLAIMANT.getRole());
         assertThat(UserRole.GA_CLAIMANT_SOLICITOR.getAccessProfiles())
             .containsExactly(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"BAILIFF,bailiff", "BAILIFF_ADMIN,bailiff-admin", "BAILIFF_MANAGER,bailiff-manager"})
+    void shouldMapTheCcBailiffPersonasToTheirOwnAmAccessProfiles(UserRole role, String amRole) {
+        assertThat(role.getRoleType()).isEqualTo(RoleType.RAS);
+        assertThat(ExternalUserRole.forCcdRole(role).getRole()).isEqualTo(amRole);
+        assertThat(role.getAccessProfiles()).containsExactly(amRole);
+        assertThat(role.getCaseTypePermissions()).isEqualTo("CRU");
+    }
+
+    @Test
+    void shouldMapTheBasicEnforcementRoleToTheReadOnlyGlobalSearchProfile() {
+        assertThat(UserRole.HMCTS_ENFORCEMENT.getRoleType()).isEqualTo(RoleType.RAS);
+        assertThat(ExternalUserRole.forCcdRole(UserRole.HMCTS_ENFORCEMENT).getRole()).isEqualTo("hmcts-enforcement");
+        assertThat(UserRole.HMCTS_ENFORCEMENT.getAccessProfiles()).containsExactly(AccessProfile.GS_PROFILE.getRole());
+        assertThat(UserRole.HMCTS_ENFORCEMENT.getCaseTypePermissions()).isEqualTo("R");
     }
 
     @Test
