@@ -142,6 +142,10 @@ hmc:
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
+# England and Wales bank holidays, as Task Management also takes them; blank for none (weekends only).
+bank-holidays:
+  url: ${BANK_HOLIDAYS_URL:https://www.gov.uk/bank-holidays/england-and-wales.json}
+
 location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}

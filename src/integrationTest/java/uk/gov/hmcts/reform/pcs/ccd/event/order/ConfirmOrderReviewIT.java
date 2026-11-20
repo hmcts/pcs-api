@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -102,6 +103,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(start.order().formData()).containsEntry("notes", "the judge's order");
         assertThat(start.caseContext().caseReference()).isEqualTo(caseReference);
         assertThat(start.caseContext().defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
+        // Made before the judge who made it, not the caseworker reviewing it.
+        assertThat(start.judgeName()).isEqualTo("A Judge");
         assertThat(events.view(caseReference, caseworker).getOrderListMarkdown())
             .contains("Outright possession", "Waiting for review");
     }
@@ -230,7 +233,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         Order order = judgeSubmitsOrder("the judge's order");
         var freeForm = new IssuedOrder(OrderType.FREE_FORM, Map.of(), WORDING, "the judge's wording");
         var outright = new ClaimOutcome(ClaimOutcome.Kind.OUTRIGHT_POSSESSION, false, LocalDate.of(2026, 12, 4),
-            ClaimOutcome.Grounds.MANDATORY, "Ground 8", null);
+            LocalTime.of(16, 0), ClaimOutcome.Grounds.MANDATORY, "Ground 8", null);
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
@@ -248,18 +251,23 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         // Recorded against the case's claim.
         assertThat(jdbcTemplate.queryForMap("SELECT oc.kind, oc.possession_forthwith, "
-            + "oc.possession_date::text AS date, oc.grounds, oc.grounds_details FROM order_claim oc "
+            + "oc.possession_date::text AS date, oc.possession_time::text AS time, oc.grounds, oc.grounds_details "
+            + "FROM order_claim oc "
             + "JOIN claim c ON c.id = oc.claim_id JOIN pcs_case pc ON pc.id = c.case_id "
             + "WHERE oc.order_id = ? AND pc.case_reference = ?", order.id(), caseReference))
             .containsAllEntriesOf(Map.of("kind", "OUTRIGHT_POSSESSION", "possession_forthwith", false,
-                "date", "2026-12-04", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
+                "date", "2026-12-04", "time", "16:00:00", "grounds", "MANDATORY", "grounds_details", "Ground 8"));
         // The database holds possession to a date or forthwith, as the event does.
         assertThatThrownBy(() -> jdbcTemplate.update(
             "UPDATE order_claim SET possession_forthwith = true WHERE order_id = ?", order.id()))
             .hasMessageContaining("order_claim_outright_check");
         assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET kind = 'SUSPENDED_POSSESSION', "
-            + "possession_date = NULL WHERE order_id = ?", order.id()))
+            + "possession_date = NULL, possession_time = NULL WHERE order_id = ?", order.id()))
             .hasMessageContaining("order_claim_suspended_check");
+        // A time is the time on the day possession is ordered by, so it needs that day.
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE order_claim SET possession_forthwith = true, "
+            + "possession_date = NULL WHERE order_id = ?", order.id()))
+            .hasMessageContaining("order_claim_possession_time_check");
     }
 
     @Test
@@ -334,6 +342,44 @@ class ConfirmOrderReviewIT extends OrderEventIT {
                 true, List.of(), false, OTHER)))
             .errors()).containsExactly(ConfirmOrderReview.TASKS_OUTSTANDING);
         assertThat(asCaseworker.start().order().id()).isEqualTo(order.id());
+    }
+
+    @Test
+    @DisplayName("keeps an order returned to the judge apart from their draft on the case: each opens, saves and is "
+        + "sent as itself")
+    void keepsAReturnedOrderApartFromTheJudgesDraft() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        // With an order in review, the judge's next order is a new draft.
+        asJudge.submitExpectingSuccess(startDraft("the next order"));
+        final UUID draftId = asJudge.start().order().id();
+        assertThat(draftId).isNotEqualTo(order.id());
+        asCaseworker.submitExpectingSuccess(returnToJudge(order));
+
+        // The returned order's task opens it, not the draft, which every other link opens.
+        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
+        Order returned = asAuthor.start().order();
+        assertThat(returned.id()).isEqualTo(order.id());
+        assertThat(returned.state()).isEqualTo(RETURNED_TO_JUDGE);
+        assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
+        assertThat(asJudge.start().order().id()).isEqualTo(draftId);
+        assertThat(asJudge.start().order().queryFromCaseworker()).isNull();
+
+        // Saved, it is the same order, still returned, beside the draft.
+        asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, returned, "half way"));
+        assertThat(asAuthor.start().order()).extracting(Order::id, Order::state, saved -> saved.formData().get("notes"))
+            .containsExactly(order.id(), RETURNED_TO_JUDGE, "half way");
+        asJudge.submitExpectingSuccess(change(SAVE_DRAFT, asJudge.start().order(), "the next order, changed"));
+        assertThat(jdbcTemplate.queryForList("SELECT state FROM orders WHERE case_id = "
+            + "(SELECT id FROM pcs_case WHERE case_reference = ?) ORDER BY state", String.class, caseReference))
+            .containsExactly("DRAFT", "RETURNED_TO_JUDGE");
+
+        // Sent again, it leaves the draft the judge's draft.
+        assertThat(asAuthor.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, asAuthor.start().order(), "answered"))
+            .changed("orders", OrderRow.class)).extracting(OrderRow::id, OrderRow::state)
+            .containsExactly(order.id(), SUBMITTED_FOR_REVIEW);
+        Order draft = asJudge.start().order();
+        assertThat(draft.id()).isEqualTo(draftId);
+        assertThat(draft.formData()).containsEntry("notes", "the next order, changed");
     }
 
     @Test

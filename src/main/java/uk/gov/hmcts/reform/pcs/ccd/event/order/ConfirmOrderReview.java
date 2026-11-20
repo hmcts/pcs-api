@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
+import uk.gov.hmcts.reform.pcs.calendar.BankHolidays;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -90,6 +91,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final OrderDocumentService orderDocumentService;
     private final FeatureToggleService featureToggleService;
+    private final BankHolidays bankHolidays;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -118,7 +120,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
             OrderStart.Order.of(order, orderSteps.latest(order), null),
-            orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), null));
+            orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), null, order.getAuthorName(),
+            bankHolidays.upcoming(OrderStart.BANK_HOLIDAY_DAYS)));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
