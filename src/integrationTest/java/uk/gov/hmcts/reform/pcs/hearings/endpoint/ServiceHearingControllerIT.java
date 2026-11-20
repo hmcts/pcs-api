@@ -135,7 +135,27 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
-                .andExpect(jsonPath("$.listingComments").doesNotExist());
+                .andExpect(jsonPath("$.listingComments").doesNotExist())
+                .andExpect(jsonPath("$.caseCategories").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("sets the stored case type and subtype keys as case categories")
+        void shouldReturnCaseCategoriesFromStoredCaseTypeKeys() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            pcsCase.setCaseTypeKey("AAA3-RA-SL");
+            pcsCase.setCaseSubtypeKey("AAA3-RA-SL");
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.caseCategories.length()").value(2))
+                .andExpect(jsonPath("$.caseCategories[0].categoryType").value("caseType"))
+                .andExpect(jsonPath("$.caseCategories[0].categoryValue").value("AAA3-RA-SL"))
+                .andExpect(jsonPath("$.caseCategories[0].categoryParent").doesNotExist())
+                .andExpect(jsonPath("$.caseCategories[1].categoryType").value("caseSubType"))
+                .andExpect(jsonPath("$.caseCategories[1].categoryValue").value("AAA3-RA-SL"))
+                .andExpect(jsonPath("$.caseCategories[1].categoryParent").value("AAA3-RA-SL"));
         }
 
         @Test

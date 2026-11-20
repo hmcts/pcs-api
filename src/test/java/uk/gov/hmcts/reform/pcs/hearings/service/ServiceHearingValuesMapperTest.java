@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseCategory;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -60,6 +61,8 @@ class ServiceHearingValuesMapperTest {
         defaults.setLocationType("court");
         defaults.setRoleTypes(List.of("24", "45"));
         defaults.setPreferredHearingChannel("INTER");
+        defaults.setCaseTypeCategory("caseType");
+        defaults.setCaseSubTypeCategory("caseSubType");
 
         underTest = new ServiceHearingValuesMapper(defaults, pcsCaseService, caseNameFormatter, MANAGE_CASE_URL);
     }
@@ -105,6 +108,36 @@ class ServiceHearingValuesMapperTest {
 
         assertThat(values.getCaseDeepLink())
             .isEqualTo(MANAGE_CASE_URL + "/cases/case-details/PCS/PCS/1234567890123456#Case%20File%20View");
+    }
+
+    @Test
+    void shouldSetCaseTypeAndSubTypeCategoriesFromCaseKeys() {
+        givenCase(caseBuilder()
+                      .caseTypeKey("AAA3-RA-SL")
+                      .caseSubtypeKey("AAA3-RA-SL")
+                      .build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseCategories()).containsExactly(
+            CaseCategory.builder()
+                .categoryType("caseType")
+                .categoryValue("AAA3-RA-SL")
+                .build(),
+            CaseCategory.builder()
+                .categoryType("caseSubType")
+                .categoryValue("AAA3-RA-SL")
+                .categoryParent("AAA3-RA-SL")
+                .build());
+    }
+
+    @Test
+    void shouldOmitCaseCategoriesWhenCaseHasNoCaseType() {
+        givenCase(caseBuilder().build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseCategories()).isEmpty();
     }
 
     @Test
