@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
@@ -32,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -345,6 +348,52 @@ class GenAppServiceTest {
             // Then
             verify(genAppRepository).save(genAppEntityCaptor.capture());
             assertThat(genAppEntityCaptor.getValue().getWhatOrderWanted()).isEqualTo(expectedOrder);
+        }
+
+        @Test
+        void shouldKeepDraftOrderFormattingSeparateFromTheExplanation() {
+            String explanation = "Please adjourn because the claimant has a medical appointment.";
+            String draft = "<ol><li>The hearing is adjourned.</li><li><strong>Costs reserved.</strong></li></ol>";
+            XuiGenAppRequest request = XuiGenAppRequest.builder()
+                .whatOrderWanted(explanation)
+                .draftOrderWording(draft)
+                .agreementClaimantLegalRep(List.of(
+                    AgreementClaimantLegalRep.AGREED))
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            GenAppEntity saved = getSavedGenAppEntity();
+            assertThat(saved.getWhatOrderWanted()).isEqualTo(explanation);
+            assertThat(saved.getDraftOrderWording()).isEqualTo(draft);
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {" ", "\t\n"})
+        void shouldLeaveDraftOrderNullWhenSolicitorDoesNotSupplyWording(String draft) {
+            XuiGenAppRequest request = XuiGenAppRequest.builder()
+                .whatOrderWanted("The explanation must not become the draft order")
+                .draftOrderWording(draft)
+                .agreementClaimantLegalRep(List.of(
+                    AgreementClaimantLegalRep.AGREED))
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            assertThat(getSavedGenAppEntity().getDraftOrderWording()).isNull();
+        }
+
+        @Test
+        void shouldLeaveDraftOrderNullForCitizenApplication() {
+            CitizenGenAppRequest request = CitizenGenAppRequest.builder()
+                .whatOrderWanted("Please adjourn the hearing")
+                .sotAccepted(VerticalYesNo.YES)
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            assertThat(getSavedGenAppEntity().getDraftOrderWording()).isNull();
         }
 
         @ParameterizedTest

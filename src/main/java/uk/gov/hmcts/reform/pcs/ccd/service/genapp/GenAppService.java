@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -118,6 +120,10 @@ public class GenAppService {
         }
 
         genAppEntity.setWhatOrderWanted(genAppRequest.getWhatOrderWanted());
+        if (genAppRequest instanceof XuiGenAppRequest xuiGenAppRequest) {
+            String draftOrderWording = xuiGenAppRequest.getDraftOrderWording();
+            genAppEntity.setDraftOrderWording(StringUtils.isBlank(draftOrderWording) ? null : draftOrderWording);
+        }
 
         genAppEntity.setDocumentsUploaded(genAppRequest.getHasSupportingDocuments());
         if (genAppRequest.getHasSupportingDocuments() == VerticalYesNo.YES) {

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -45,6 +47,8 @@ class StartEventHandlerTest {
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
     private FeeApplier feeApplier;
+    @Mock
+    private DraftOrderWordingAccess draftOrderWordingAccess;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
@@ -52,7 +56,22 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService,
+                                          feeApplier, draftOrderWordingAccess);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetDraftWordingVisibilityFromAuthenticatedEligibility(boolean allowed) {
+        when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(allowed);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+            .thenReturn(DynamicList.builder().listItems(List.of()).build());
+        PCSCase caseData = PCSCase.builder().xuiGenAppRequest(XuiGenAppRequest.builder().build()).build();
+
+        underTest.start(eventPayload(caseData));
+
+        assertThat(caseData.getXuiGenAppRequest().getDraftOrderWordingAllowed())
+            .isEqualTo(VerticalYesNo.from(allowed));
     }
 
     @Test
