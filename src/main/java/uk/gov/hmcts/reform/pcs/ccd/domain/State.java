@@ -127,7 +127,6 @@ public enum State {
     BREATHING_SPACE,
 
     @CCD(
-            // State ID must be PendingDisposal for the CCD SDK retain-and-dispose contract.
             label = "Draft discarded",
             access = {SystemUserAccess.class}
     )
