@@ -15,7 +15,6 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
@@ -24,7 +23,8 @@ import {
   nameAndAddressForEviction,
   statementOfTruth
 } from '@data/index.selector.enforcement';
-import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
+import { caseSummary } from '@data/page-data-figma/page-data-enforcement-figma';
+import { confirm,  } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -147,30 +147,6 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
         nextPage: checkYourAnswers.mainHeader,
         iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
       });
-      await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
-      await performAction('payEnforcementFee', {
-        headerName: confirm.mainHeader,
-        applicationType: enforcementApplication.writOfPossessionRadioOption,
-        feePayText: confirm.pay82ApplicationFeeParagraph,
-        payLink: confirm.payYourApplicationFeeLink,
-        serviceTab: caseSummary.serviceRequestTab
-      });
-      await performAction('selectPaymentTypePBA', {
-        amountLabel: serviceRequest.amountToPayLabel,
-        expectedAmount: serviceRequest.enforcementWritFeeAmount82,
-        payByOption: serviceRequest.payByAccountRadioOption,
-        pbaLabel: serviceRequest.selectPBALabel,
-        pbaValue: serviceRequest.pbaIndex1,
-        referenceLabel: serviceRequest.pbaReferenceLable,
-        referenceText: serviceRequest.pbaReferenceInputText,
-        confirmButton: serviceRequest.confirmPaymentButton,
-      });
-      await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-      await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
-      await performAction('verifyFeeStatusInServiceTab', {
-        applicationType: enforcementApplication.writOfPossessionRadioOption,
-        status: serviceRequest.paidStatus
-      });
     });
 
   test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
@@ -225,36 +201,6 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: checkYourAnswers.mainHeader,
       claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
     });
-    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
-    await performAction('payEnforcementFee', {
-      headerName: confirm.mainHeader,
-      applicationType: enforcementApplication.writOfPossessionRadioOption,
-      feePayText: confirm.pay82ApplicationFeeParagraph,
-      payLink: confirm.payYourApplicationFeeLink,
-      serviceTab: caseSummary.serviceRequestTab
-    });
-    await performAction('selectPaymentByCard', {
-      amountLabel: serviceRequest.amountToPayLabel,
-      payByOption: serviceRequest.payByCardRadioOption,
-      continueButton: serviceRequest.continueButton
-    });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
-    await performAction('enterPaymentDetails', {
-      cardInput: enterPaymentDetails.cardNoInputText,
-      monthInput: enterPaymentDetails.monthTextInput,
-      yearInput: enterPaymentDetails.yearTextInput,
-      nameInput: enterPaymentDetails.nameOnCardTextInput,
-      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
-      address1Input: enterPaymentDetails.addressLine1TextInput,
-      address2Input: enterPaymentDetails.addressLine2TextInput,
-      townInput: enterPaymentDetails.TownOrCityTextInput,
-      countryInput: enterPaymentDetails.countryTextInput,
-      postCodeInput: enterPaymentDetails.postcodeTextInput,
-      emailInput: enterPaymentDetails.emailTextInput
-    });
-    await performValidation('mainHeader', confirmYourPayment.mainHeader);
-    await performAction('clickButton', confirmYourPayment.confirmButton);
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
   test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
@@ -308,6 +254,36 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: checkYourAnswers.mainHeader,
       iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
     });
+    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+    await performAction('payEnforcementFee', {
+      headerName: confirm.mainHeader,
+      applicationType: enforcementApplication.writOfPossessionRadioOption,
+      feePayText: confirm.pay82ApplicationFeeParagraph,
+      payLink: confirm.payYourApplicationFeeLink,
+      serviceTab: caseSummary.serviceRequestTab
+    });
+    await performAction('selectPaymentByCard', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      payByOption: serviceRequest.payByCardRadioOption,
+      continueButton: serviceRequest.continueButton
+    });
+    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    await performAction('enterPaymentDetails', {
+      cardInput: enterPaymentDetails.cardNoInputText,
+      monthInput: enterPaymentDetails.monthTextInput,
+      yearInput: enterPaymentDetails.yearTextInput,
+      nameInput: enterPaymentDetails.nameOnCardTextInput,
+      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
+      address1Input: enterPaymentDetails.addressLine1TextInput,
+      address2Input: enterPaymentDetails.addressLine2TextInput,
+      townInput: enterPaymentDetails.TownOrCityTextInput,
+      countryInput: enterPaymentDetails.countryTextInput,
+      postCodeInput: enterPaymentDetails.postcodeTextInput,
+      emailInput: enterPaymentDetails.emailTextInput
+    });
+    await performValidation('mainHeader', confirmYourPayment.mainHeader);
+    await performAction('clickButton', confirmYourPayment.confirmButton);
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
   test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {

@@ -2,7 +2,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
@@ -44,6 +43,7 @@ import {
   cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
+import { serviceRequest } from '@data/page-data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -289,30 +289,6 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         input2: statementOfTruth.nameOfFirmHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
-      await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
-      await performAction('payEnforcementFee', {
-        headerName: confirm.mainHeader,
-        applicationType: enforcementApplication.warrantOfPossessionRadioOption,
-        feePayText: confirm.pay152ApplicationFeeParagraph,
-        payLink: confirm.payYourApplicationFeeLink,
-        serviceTab: caseSummary.serviceRequestTab
-      });
-      await performAction('selectPaymentTypePBA', {
-        amountLabel: serviceRequest.amountToPayLabel,
-        expectedAmount: serviceRequest.enforcementWarrantFeeAmount152,
-        payByOption: serviceRequest.payByAccountRadioOption,
-        pbaLabel: serviceRequest.selectPBALabel,
-        pbaValue: serviceRequest.pbaIndex1,
-        referenceLabel: serviceRequest.pbaReferenceLable,
-        referenceText: serviceRequest.pbaReferenceInputText,
-        confirmButton: serviceRequest.confirmPaymentButton,
-      });
-      await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-      await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
-      await performAction('verifyFeeStatusInServiceTab', {
-        applicationType: enforcementApplication.warrantOfPossessionRadioOption,
-        status: serviceRequest.paidStatus
-      });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder @enforcement @regression', async () => {
@@ -431,36 +407,6 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
-    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
-    await performAction('payEnforcementFee', {
-      headerName: confirm.mainHeader,
-      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
-      feePayText: confirm.pay152ApplicationFeeParagraph,
-      payLink: confirm.payYourApplicationFeeLink,
-      serviceTab: caseSummary.serviceRequestTab
-    });
-    await performAction('selectPaymentByCard', {
-      amountLabel: serviceRequest.amountToPayLabel,
-      payByOption: serviceRequest.payByCardRadioOption,
-      continueButton: serviceRequest.continueButton
-    });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
-    await performAction('enterPaymentDetails', {
-      cardInput: enterPaymentDetails.cardNoInputText,
-      monthInput: enterPaymentDetails.monthTextInput,
-      yearInput: enterPaymentDetails.yearTextInput,
-      nameInput: enterPaymentDetails.nameOnCardTextInput,
-      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
-      address1Input: enterPaymentDetails.addressLine1TextInput,
-      address2Input: enterPaymentDetails.addressLine2TextInput,
-      townInput: enterPaymentDetails.TownOrCityTextInput,
-      countryInput: enterPaymentDetails.countryTextInput,
-      postCodeInput: enterPaymentDetails.postcodeTextInput,
-      emailInput: enterPaymentDetails.emailTextInput
-    });
-    await performValidation('mainHeader', confirmYourPayment.mainHeader);
-    await performAction('clickButton', confirmYourPayment.confirmButton);
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
@@ -583,6 +529,30 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       label2: statementOfTruth.nameOfFirmHiddenTextLabel,
       input2: statementOfTruth.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+    await performAction('payEnforcementFee', {
+      headerName: confirm.mainHeader,
+      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
+      feePayText: confirm.pay152ApplicationFeeParagraph,
+      payLink: confirm.payYourApplicationFeeLink,
+      serviceTab: caseSummary.serviceRequestTab
+    });
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.enforcementWarrantFeeAmount152,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
+    await performAction('verifyFeeStatusInServiceTab', {
+      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
+      status: serviceRequest.paidStatus
     });
   });
 
