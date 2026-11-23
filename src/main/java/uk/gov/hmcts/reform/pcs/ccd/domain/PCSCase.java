@@ -143,6 +143,21 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
+    // Welsh Yes/No context proof of concept: not for merge.
+    // YesOrNo radios are translated using the label's yes/no columns; VerticalYesNo (FixedRadioList) radios
+    // are not.
+    @CCD(label = "Welsh Placeholder YesNo 1", searchable = false)
+    private YesOrNo welshPlaceholderYesNo1;
+
+    @CCD(label = "Welsh Placeholder YesNo 2", searchable = false)
+    private YesOrNo welshPlaceholderYesNo2;
+
+    @CCD(label = "Welsh Placeholder VerticalYesNo 1", searchable = false)
+    private VerticalYesNo welshPlaceholderVerticalYesNo1;
+
+    @CCD(label = "Welsh Placeholder VerticalYesNo 2", searchable = false)
+    private VerticalYesNo welshPlaceholderVerticalYesNo2;
+
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 

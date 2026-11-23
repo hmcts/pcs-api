@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.WelshYesNoContextPoc;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
@@ -61,6 +62,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
+            .add(new WelshYesNoContextPoc())
             .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
