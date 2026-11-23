@@ -104,7 +104,10 @@ export class ActionEnforcementRegistry {
     ['cannotApplyForWarrantInfo', new EnforcementAction()],
     ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
     ['payEnforcementFee', new EnforcementAction()],
-    ['selectPaymentTypePBA', new EnforcementAction()], 
+    ['selectPaymentTypePBA', new EnforcementAction()],
+    ['verifyFeeStatusInServiceTab', new EnforcementAction()],
+    ['selectPaymentByCard', new EnforcementAction()],
+    ['enterPaymentDetails', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

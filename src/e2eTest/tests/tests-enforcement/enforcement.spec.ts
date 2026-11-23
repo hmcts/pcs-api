@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary, home, serviceRequest } from '@data/page-data';
+import { caseSummary, confirmYourPayment, enterPaymentDetails, home, serviceRequest } from '@data/page-data';
 import {
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -288,6 +288,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
       await performAction('payEnforcementFee', {
         headerName: confirm.mainHeader,
+        applicationType: enforcementApplication.warrantOfPossessionRadioOption,
         feePayText: confirm.pay152ApplicationFeeParagraph,
         payLink: confirm.payYourApplicationFeeLink,
         serviceTab: caseSummary.serviceRequestTab
@@ -305,6 +306,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
       await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
       await performAction('verifyFeeStatusInServiceTab', {
+        applicationType: enforcementApplication.warrantOfPossessionRadioOption,
         status: serviceRequest.paidStatus
       });
     });
@@ -425,6 +427,36 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
+    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+    await performAction('payEnforcementFee', {
+      headerName: confirm.mainHeader,
+      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
+      feePayText: confirm.pay152ApplicationFeeParagraph,
+      payLink: confirm.payYourApplicationFeeLink,
+      serviceTab: caseSummary.serviceRequestTab
+    });
+    await performAction('selectPaymentByCard', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      payByOption: serviceRequest.payByCardRadioOption,
+      continueButton: serviceRequest.continueButton
+    });
+    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    await performAction('enterPaymentDetails', {
+      cardInput: enterPaymentDetails.cardNoInputText,
+      monthInput: enterPaymentDetails.monthTextInput,
+      yearInput: enterPaymentDetails.yearTextInput,
+      nameInput: enterPaymentDetails.nameOnCardTextInput,
+      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
+      address1Input: enterPaymentDetails.addressLine1TextInput,
+      address2Input: enterPaymentDetails.addressLine2TextInput,
+      townInput: enterPaymentDetails.TownOrCityTextInput,
+      countryInput: enterPaymentDetails.countryTextInput,
+      postCodeInput: enterPaymentDetails.postcodeTextInput,
+      emailInput: enterPaymentDetails.emailTextInput
+    });
+    await performValidation('mainHeader', confirmYourPayment.mainHeader);
+    await performAction('clickButton', confirmYourPayment.confirmButton);
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
