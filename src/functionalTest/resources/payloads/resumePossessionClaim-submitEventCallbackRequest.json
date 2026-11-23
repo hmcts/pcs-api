@@ -53,7 +53,7 @@
       "claimAgainstTrespassers": "NO",
       "organisationName": "Possession Claims Solicitor Org",
       "isClaimantNameCorrect": "YES",
-      "claimantContactEmail": "pcs-solicitor1@test.com",
+      "claimantContactEmail": "claimant-contact@example.com",
       "isCorrectClaimantContactEmail": "YES",
       "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
       "isCorrectClaimantContactAddress": "YES",

@@ -667,7 +667,8 @@ tasks.withType(CftlibExec).configureEach {
 
   // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
-  environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  // Set XUI_DOCUMENTS_API_V2 to the AAT case document AM API URL to use AAT document services
+  environment 'XUI_DOCUMENTS_API_V2', System.getenv('XUI_DOCUMENTS_API_V2') ?: 'http://host.docker.internal:4455'
   // Point XUI's common data (case-linking reason codes) at the local wiremock stub
   environment 'SERVICES_PRD_COMMONDATA_API', 'http://host.docker.internal:8083'
   environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'

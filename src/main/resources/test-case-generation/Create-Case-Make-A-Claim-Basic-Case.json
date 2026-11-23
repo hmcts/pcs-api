@@ -78,7 +78,7 @@
   "settlementAttempted": "NO",
   "showRentSectionPage": "NO",
   "applicationWithClaim": "NO",
-  "claimantContactEmail": "pcs-solicitor1@test.com",
+  "claimantContactEmail": "claimant-contact@example.com",
   "caseNameHmctsInternal": "null vs persons unknown",
   "isClaimantNameCorrect": "NO",
   "wantToUploadDocuments": "NO",

@@ -76,7 +76,7 @@ from the PCS AAT key vault:
 
 | Environment Variable         | Value or Secret Name                                                         |
 | ---------------------------- | ---------------------------------------------------------------------------- |
-| LOCATION_REF_URL             | http://rd-location-ref-api-aat.service.core-compute-aat.internal             |
+| LOCATION_REF_URL             | AAT rd-location-ref-api URL (ask the team)                                   |
 | DATA_STORE_URL_BASE          | https://ccd-data-store-api-pcs-api-pr-{CHANGE_ID}.preview.platform.hmcts.net |
 | PCS_API_S2S_SECRET           | secret: pcs-api-s2s-secret                                                   |
 | IDAM_CLIENT_SECRET           | secret: pcs-api-idam-secret                                                  |
@@ -122,7 +122,8 @@ then it may be updated to alwys run when `AuthMode.Local` is set.
 
 If the above fails, then it may be easier to connect
 to AAT dependencies using a VPN, by setting the authentication mode to `AuthMode.AAT` as described above and ensuring
-that `LOCAL_DOC_SERVICES` is not set to `true`.
+that `LOCAL_DOC_SERVICES` is not set to `true`. In this case also set `XUI_DOCUMENTS_API_V2` to the AAT case document
+AM API URL (ask the team) so that ExUI uses the AAT document services.
 
 
 #### Generating the CCD definition XLS
