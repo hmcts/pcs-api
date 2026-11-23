@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -52,6 +53,8 @@ class ServiceHearingValuesMapperTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
     private CaseNameFormatter caseNameFormatter;
     @Mock
     private IndividualDetailsFlagMapper individualDetailsFlagMapper;
@@ -67,7 +70,8 @@ class ServiceHearingValuesMapperTest {
         defaults.setPreferredHearingChannel("INTER");
 
         underTest = new ServiceHearingValuesMapper(
-            defaults, pcsCaseService, caseNameFormatter, individualDetailsFlagMapper, MANAGE_CASE_URL);
+            defaults, pcsCaseService, pcsCaseRepository, caseNameFormatter, 
+            individualDetailsFlagMapper, MANAGE_CASE_URL);
         lenient().when(individualDetailsFlagMapper.map(any())).thenReturn(new IndividualDetails());
     }
 
@@ -111,7 +115,7 @@ class ServiceHearingValuesMapperTest {
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getCaseDeepLink())
-            .isEqualTo(MANAGE_CASE_URL + "/cases/case-details/PCS/PCS/1234567890123456#Case%20File%20View");
+            .isEqualTo(MANAGE_CASE_URL + "/cases/case-details/1234567890123456#Case%20File%20View");
     }
 
     @Test
@@ -308,21 +312,22 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldCapCommentAtMaxCommentLengthWhenFullTextIsTooLong() {
+    void shouldShortenCommentToFillListingWhenFullTextIsTooLong() {
         String longComment = "x".repeat(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
         givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
-        int keptLength = ServiceHearingValuesMapper.MAX_COMMENT_LENGTH - ServiceHearingValuesMapper.ELLIPSIS.length();
+        // "Case Flags: Urgent case (Comments: )" is 36 characters, leaving 1,964 for the comment and its "..."
         assertThat(values.getListingComments())
-            .isEqualTo("Case Flags: Urgent case (Comments: " + "x".repeat(keptLength) + "...)");
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .isEqualTo("Case Flags: Urgent case (Comments: " + "x".repeat(1961) + "...)");
     }
 
     @Test
-    void shouldKeepFullTextWhenEightOrMoreCommentedFlagsFit() {
+    void shouldKeepFullTextWhenManyCommentedFlagsFit() {
         List<CaseFlagEntity> caseFlags = flags();
-        int flagCount = ServiceHearingValuesMapper.FULL_TEXT_MAX_COMMENTED_FLAGS + 2;
+        int flagCount = 10;
         for (int i = 1; i <= flagCount; i++) {
             caseFlags.add(flag("Flag " + i, "comment " + i));
         }
@@ -337,12 +342,12 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldShareSpaceFairlyKeepingShortCommentsWholeAndNamesInFull() {
+    void shouldSplitSpaceEquallyKeepingShortCommentsWholeAndNamesInFull() {
         // 12 flags: 10 with 200-character comments and 2 with short ones. The full text would be ~2,300 characters.
-        // Fixed text is 274 characters, leaving 1,726 to share: 5 + 5 for the short comments, then 171-172 each.
+        // Fixed text is 274 characters, leaving 1,726 split 12 ways: 143 each, so long comments keep 140 + "...".
         List<CaseFlagEntity> caseFlags = flags();
         for (int i = 1; i <= 12; i++) {
-            String comment = i == 5 || i == 12 ? "short" : "x".repeat(ServiceHearingValuesMapper.MAX_COMMENT_LENGTH);
+            String comment = i == 5 || i == 12 ? "short" : "x".repeat(200);
             caseFlags.add(flag(String.format("Flag %02d", i), comment));
         }
         givenCase(caseBuilder().caseFlags(caseFlags).build());
@@ -350,7 +355,7 @@ class ServiceHearingValuesMapperTest {
         String listingComments = underTest.getServiceHearingValues(CASE_REFERENCE).getListingComments();
 
         assertThat(listingComments)
-            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .hasSizeLessThanOrEqualTo(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
             .startsWith("Case Flags: ");
         List<String> entries = List.of(listingComments.substring("Case Flags: ".length()).split(", "));
         assertThat(entries).hasSize(12);
@@ -360,7 +365,7 @@ class ServiceHearingValuesMapperTest {
             if (i == 5 || i == 12) {
                 assertThat(entry).isEqualTo(name + " (Comments: short)");
             } else {
-                assertThat(entry).matches(name + " \\(Comments: x{168,169}\\.\\.\\.\\)");
+                assertThat(entry).isEqualTo(name + " (Comments: " + "x".repeat(140) + "...)");
             }
         }
     }
@@ -381,23 +386,30 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldCutListingCommentsAtMaxLengthWhenNoFlagHasAComment() {
+        List<CaseFlagEntity> caseFlags = flags();
+        for (int i = 1; i <= 100; i++) {
+            caseFlags.add(flag(String.format("Flag name number %03d", i), null));
+        }
+        givenCase(caseBuilder().caseFlags(caseFlags).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments())
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .startsWith("Case Flags: Flag name number 001, Flag name number 002")
+            .doesNotContain("(Comments: ");
+    }
+
+    @Test
     void shouldNotShortenCommentThatFits() {
         assertThat(ServiceHearingValuesMapper.shorten("so urgent", 9)).isEqualTo("so urgent");
     }
 
     @Test
-    void shouldShortenAtWordBoundaryAndDropTrailingWhitespace() {
-        assertThat(ServiceHearingValuesMapper.shorten("the quick brown fox", 15)).isEqualTo("the quick...");
-        assertThat(ServiceHearingValuesMapper.shorten("hello   world", 10)).isEqualTo("hello...");
-    }
-
-    @Test
-    void shouldShortenMidWordWhenLastWordBoundaryIsTooEarly() {
-        String comment = "a " + "x".repeat(50);
-
-        assertThat(ServiceHearingValuesMapper.shorten(comment, 20))
-            .hasSize(20)
-            .isEqualTo("a " + "x".repeat(15) + "...");
+    void shouldReplaceLastThreeCharactersWithEllipsisWhenShortened() {
+        assertThat(ServiceHearingValuesMapper.shorten("the quick brown fox", 15)).isEqualTo("the quick br...");
+        assertThat(ServiceHearingValuesMapper.shorten("hello   world", 10)).isEqualTo("hello  ...");
     }
 
     @Test
@@ -440,7 +452,7 @@ class ServiceHearingValuesMapperTest {
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
         assertThat(linkedCases).isEmpty();
-        verify(pcsCaseService, never()).findCasesByReferences(any());
+        verify(pcsCaseRepository, never()).findAllByCaseReferenceIn(any());
     }
 
     @Test
@@ -449,7 +461,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001", "CLRC002")))
             .build());
-        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE)))
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE)))
             .thenReturn(List.of(linkedCase));
         when(caseNameFormatter.formatCaseName(linkedCase)).thenReturn(CASE_NAME);
 
@@ -467,7 +479,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001")))
             .build());
-        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -484,7 +496,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE)))
             .build());
-        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE))).thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
 
@@ -500,7 +512,7 @@ class ServiceHearingValuesMapperTest {
         givenCase(caseBuilder()
             .caseLinks(links(link(LINKED_CASE_REFERENCE, "CLRC001"), link(secondLinkedCase, "CLRC003")))
             .build());
-        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
             .thenReturn(List.of());
 
         List<ServiceLinkedCases> linkedCases = underTest.getServiceLinkedCases(CASE_REFERENCE);
@@ -521,7 +533,7 @@ class ServiceHearingValuesMapperTest {
                 link(secondLinkedCase, "CLRC003"),
                 link(LINKED_CASE_REFERENCE, "CLRC002")))
             .build());
-        when(pcsCaseService.findCasesByReferences(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
+        when(pcsCaseRepository.findAllByCaseReferenceIn(List.of(LINKED_CASE_REFERENCE, secondLinkedCase)))
             .thenReturn(List.of(secondCase, firstCase));
         when(caseNameFormatter.formatCaseName(firstCase)).thenReturn(CASE_NAME);
         when(caseNameFormatter.formatCaseName(secondCase)).thenReturn("Other Landlord vs Other Tenant");
@@ -531,7 +543,7 @@ class ServiceHearingValuesMapperTest {
         assertThat(linkedCases)
             .extracting(ServiceLinkedCases::getCaseName)
             .containsExactly(CASE_NAME, "Other Landlord vs Other Tenant", CASE_NAME);
-        verify(pcsCaseService, times(1)).findCasesByReferences(any());
+        verify(pcsCaseRepository, times(1)).findAllByCaseReferenceIn(any());
         verify(pcsCaseService, never()).loadCase(LINKED_CASE_REFERENCE);
         verify(pcsCaseService, never()).loadCase(secondLinkedCase);
     }

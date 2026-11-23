@@ -131,7 +131,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.hmctsInternalCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.publicCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.caseDeepLink").value(
-                    manageCaseUrl + "/cases/case-details/PCS/PCS/" + CASE_REFERENCE + "#Case%20File%20View"))
+                    manageCaseUrl + "/cases/case-details/" + CASE_REFERENCE + "#Case%20File%20View"))
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
@@ -343,10 +343,6 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         verify(serviceHearingValuesMapper, never()).getServiceLinkedCases(anyLong());
     }
 
-    /**
-     * Saves the case and clears the persistence context, so the request reads it back from Postgres
-     * rather than getting the in-memory entity from the first-level cache.
-     */
     private void persist(PcsCaseEntity pcsCase) {
         pcsCaseRepository.saveAndFlush(pcsCase);
         entityManager.clear();
@@ -392,7 +388,6 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             .defaultStatus(status)
             .flagComment(comment)
             .build();
-        // Both columns are NOT NULL; Hibernate inserts explicit nulls, so the DB default on visibility doesn't apply
         flag.setPaths(":Case");
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
