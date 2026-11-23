@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary, confirmYourPayment, enterPaymentDetails, home, serviceRequest } from '@data/page-data';
+import { confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
@@ -40,7 +40,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments
+  statementOfTruth, defendantInBreathingSpace, missedPayments,
+  cannotApplyForWarrantInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 

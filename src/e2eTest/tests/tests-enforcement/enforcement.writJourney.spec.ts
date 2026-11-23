@@ -15,7 +15,6 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
@@ -25,7 +24,6 @@ import {
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
-} from '@data/index.selector.enforcement';
 import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
