@@ -153,7 +153,36 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.hearingWindow.dateRangeEnd").value("2026-08-27"))
                 .andExpect(jsonPath("$.hearingWindow.firstDateTimeMustBe").doesNotExist())
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
-                .andExpect(jsonPath("$.listingComments").doesNotExist());
+                .andExpect(jsonPath("$.listingComments").doesNotExist())
+                .andExpect(jsonPath("$.screenFlow[*].screenName", contains(
+                    "hearing-panel", "hearing-facilities", "hearing-stage", "hearing-attendance", "hearing-venue",
+                    "hearing-welsh", "hearing-judge", "hearing-timing", "hearing-link",
+                    "hearing-additional-instructions")))
+                .andExpect(jsonPath("$.screenFlow[0].conditionKey").doesNotExist())
+                .andExpect(jsonPath("$.screenFlow[0].navigation[0].resultValue").value("hearing-facilities"))
+                .andExpect(jsonPath("$.screenFlow[9].navigation").doesNotExist())
+                // Venues outside Wales skip the Welsh screen and go straight to the judge screen
+                .andExpect(jsonPath("$.screenFlow[4].conditionKey").value("regionId"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].conditionOperator").value("NOT INCLUDE"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].conditionValue").value("7"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].resultValue").value("hearing-judge"));
+        }
+
+        @Test
+        @DisplayName("sends ExUI to the Welsh hearing screen after the venue when the venue is in Wales")
+        void shouldRouteWalesVenueThroughWelshScreen() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            String venue = "$.screenFlow[?(@.screenName == 'hearing-venue')]";
+            String walesRoute = venue + ".navigation[?(@.conditionOperator == 'INCLUDE')]";
+            String welsh = "$.screenFlow[?(@.screenName == 'hearing-welsh')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(venue + ".conditionKey", contains("regionId")))
+                .andExpect(jsonPath(walesRoute + ".conditionValue", contains("7")))
+                .andExpect(jsonPath(walesRoute + ".resultValue", contains("hearing-welsh")))
+                .andExpect(jsonPath(welsh + ".navigation[*].resultValue", contains("hearing-judge")));
         }
 
         @Test
