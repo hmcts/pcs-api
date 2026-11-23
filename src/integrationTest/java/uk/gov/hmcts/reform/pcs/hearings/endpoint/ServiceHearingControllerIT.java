@@ -131,7 +131,7 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.hmctsInternalCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.publicCaseName").value(CASE_NAME))
                 .andExpect(jsonPath("$.caseDeepLink").value(
-                    manageCaseUrl + "/cases/case-details/PCS/PCS/" + CASE_REFERENCE + "#Case%20File%20View"))
+                    manageCaseUrl + "/cases/case-details/" + CASE_REFERENCE + "#Case%20File%20View"))
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
