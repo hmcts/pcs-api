@@ -548,10 +548,6 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         verify(serviceHearingValuesMapper, never()).getServiceLinkedCases(anyLong());
     }
 
-    /**
-     * Saves the case and clears the persistence context, so the request reads it back from Postgres
-     * rather than getting the in-memory entity from the first-level cache.
-     */
     private void persist(PcsCaseEntity pcsCase) {
         pcsCaseRepository.saveAndFlush(pcsCase);
         entityManager.clear();
@@ -638,7 +634,6 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
             .defaultStatus(status)
             .flagComment(comment)
             .build();
-        // Both columns are NOT NULL; Hibernate inserts explicit nulls, so the DB default on visibility doesn't apply
         flag.setPaths(":Case");
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
