@@ -45,8 +45,10 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
 class RiskAssessmentViewTest {
 
     private final FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
+    private final EnforcementOrderMediator enforcementOrderMediator =
+        new EnforcementOrderMediator(featureToggleService);
     private final RiskAssessmentView view = new RiskAssessmentView(
-        new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()), new EnforcementOrderMediator(),
+        new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()), enforcementOrderMediator,
         featureToggleService
     );
     private final PCSCase pcsCase = PCSCase.builder().build();
@@ -82,7 +84,7 @@ class RiskAssessmentViewTest {
         PcsCaseEntity entity = PcsCaseEntity.builder()
             .claims(List.of(ClaimEntity.builder().build())).enforcementOrders(Set.of(application)).build();
         EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
-            new EnforcementOrderMediator(), featureToggleService);
+            enforcementOrderMediator, featureToggleService);
         view.setCaseFields(pcsCase, entity);
         conditions.setCaseFields(entity, pcsCase);
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
@@ -347,7 +349,7 @@ class RiskAssessmentViewTest {
         PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(old, latest, draft)).build();
 
         view.setCaseFields(pcsCase, entity);
-        new EnforcementEventShowConditionsView(new EnforcementOrderMediator(), featureToggleService)
+        new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
             .setCaseFields(entity, pcsCase);
 
         assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment())
@@ -364,7 +366,7 @@ class RiskAssessmentViewTest {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(application)).build();
         EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
-            new EnforcementOrderMediator(), featureToggleService);
+            enforcementOrderMediator, featureToggleService);
         conditions.setCaseFields(entity, pcsCase);
         assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
 
@@ -380,7 +382,7 @@ class RiskAssessmentViewTest {
         application.getStatementOfTruth().setCompletedDate(null);
         PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(application)).build();
 
-        new EnforcementEventShowConditionsView(new EnforcementOrderMediator(), featureToggleService)
+        new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
             .setCaseFields(entity, pcsCase);
 
         assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);

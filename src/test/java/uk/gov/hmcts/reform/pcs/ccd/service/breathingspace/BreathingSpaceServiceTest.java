@@ -9,12 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +26,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.InOrder;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+
 import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +39,7 @@ class BreathingSpaceServiceTest {
     private static final LocalDate EXPECTED_END_DATE = LocalDate.of(2026, 11, 30);
 
     @Mock
-    private ClaimService claimService;
+    private PcsCaseService pcsCaseService;
 
     @Mock
     private BreathingSpaceRepository breathingSpaceRepository;
@@ -52,38 +53,38 @@ class BreathingSpaceServiceTest {
     private BreathingSpaceService underTest;
 
     @Test
-    void shouldSaveBreathingSpaceAgainstClaim() {
+    void shouldSaveBreathingSpaceAgainstPcsCase() {
         // Given
-        ClaimEntity claimEntity = new ClaimEntity();
-        when(claimService.loadClaim(CASE_REFERENCE)).thenReturn(claimEntity);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
-        BreathingSpaceDetails breathingSpaceDetails = stub();
+        BreathingSpaceDetails details = stub();
 
         // When
-        underTest.createBreathingSpace(CASE_REFERENCE, breathingSpaceDetails);
+        underTest.createBreathingSpace(CASE_REFERENCE, details);
 
         // Then
         verify(breathingSpaceRepository).save(breathingSpaceEntityCaptor.capture());
-        BreathingSpaceEntity savedEntity = breathingSpaceEntityCaptor.getValue();
 
-        assertThat(savedEntity.getClaim()).isSameAs(claimEntity);
-        assertThat(savedEntity.getReferenceNumber()).isEqualTo(breathingSpaceDetails.getReferenceNumber());
-        assertThat(savedEntity.getStartDate()).isEqualTo(breathingSpaceDetails.getStartDate());
-        assertThat(savedEntity.getType()).isEqualTo(breathingSpaceDetails.getType());
-        assertThat(savedEntity.getExpectedEndDate()).isEqualTo(breathingSpaceDetails.getExpectedEndDate());
+        BreathingSpaceEntity savedEntity = breathingSpaceEntityCaptor.getValue();
+        assertThat(savedEntity.getPcsCase()).isSameAs(pcsCaseEntity);
+        assertThat(savedEntity.getReferenceNumber()).isEqualTo(details.getReferenceNumber());
+        assertThat(savedEntity.getStartDate()).isEqualTo(details.getStartDate());
+        assertThat(savedEntity.getType()).isEqualTo(details.getType());
+        assertThat(savedEntity.getExpectedEndDate()).isEqualTo(details.getExpectedEndDate());
     }
 
     @Test
-    void shouldNotSaveBreathingSpaceWhenClaimNotFound() {
+    void shouldNotSaveBreathingSpaceWhenCaseNotFound() {
         // Given
-        when(claimService.loadClaim(CASE_REFERENCE))
-            .thenThrow(new ClaimNotFoundException(CASE_REFERENCE));
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
 
         BreathingSpaceDetails breathingSpaceDetails = stub();
 
         // When
         assertThatThrownBy(() -> underTest.createBreathingSpace(CASE_REFERENCE, breathingSpaceDetails))
-            .isInstanceOf(ClaimNotFoundException.class);
+            .isInstanceOf(CaseNotFoundException.class);
 
         // Then
         verify(breathingSpaceRepository, never()).save(any());
@@ -171,10 +172,10 @@ class BreathingSpaceServiceTest {
     @Test
     void shouldNotSaveExpectedEndDateForMentalHealthMoratorium() {
         // Given
-        ClaimEntity claimEntity = new ClaimEntity();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
-        when(claimService.loadClaim(CASE_REFERENCE))
-            .thenReturn(claimEntity);
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCaseEntity);
 
         BreathingSpaceDetails details = BreathingSpaceDetails.builder()
             .referenceNumber("BS123456")
@@ -197,9 +198,9 @@ class BreathingSpaceServiceTest {
     @Test
     void shouldSaveBreathingSpaceBeforeUpdatingEnforcement() {
         // Given
-        ClaimEntity claimEntity = new ClaimEntity();
-        when(claimService.loadClaim(CASE_REFERENCE))
-            .thenReturn(claimEntity);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        when(pcsCaseService.loadCase(CASE_REFERENCE))
+            .thenReturn(pcsCaseEntity);
 
         BreathingSpaceDetails details = stub();
 

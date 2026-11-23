@@ -441,7 +441,7 @@ class PCSCaseViewTest {
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
-        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
         verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
     }
 
@@ -554,7 +554,7 @@ class PCSCaseViewTest {
         // Then
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
 
-        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE, State.BREATHING_SPACE);
+        verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
     }
 
 
