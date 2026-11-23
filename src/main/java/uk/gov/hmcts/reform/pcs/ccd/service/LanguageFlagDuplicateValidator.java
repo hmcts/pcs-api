@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class LanguageFlagDuplicateValidator {
@@ -16,7 +15,6 @@ public class LanguageFlagDuplicateValidator {
     static final String SIGN_LANGUAGE_INTERPRETER_FLAG_CODE = "RA0042";
     static final String SPOKEN_LANGUAGE_ERROR = "more than one spoken language cannot be added";
     static final String SIGN_LANGUAGE_ERROR = "more than one language cannot be added";
-    static final Set<String> ACTIVE_OR_REQUESTED_STATUSES = Set.of("Active", "Requested");
 
     /**
      * Checks that a case flags submission does not give any party more than one spoken language
@@ -75,11 +73,6 @@ public class LanguageFlagDuplicateValidator {
     private boolean isActiveOrRequestedFlag(FlagDetail detail, String flagCode) {
         return detail != null
             && flagCode.equals(detail.getFlagCode())
-            && isActiveOrRequested(detail.getStatus());
-    }
-
-    private static boolean isActiveOrRequested(String status) {
-        return ACTIVE_OR_REQUESTED_STATUSES.stream()
-            .anyMatch(countingStatus -> countingStatus.equalsIgnoreCase(status));
+            && (CaseFlagService.isCaseFlagActive(detail) || CaseFlagService.isCaseFlagRequested(detail));
     }
 }
