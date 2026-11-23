@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -14,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -30,9 +33,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderMediatorTest {
+
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private EnforcementOrderMediator underTest;
@@ -41,6 +52,7 @@ class EnforcementOrderMediatorTest {
 
     @BeforeEach
     void beforeEach() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
@@ -122,6 +134,22 @@ class EnforcementOrderMediatorTest {
         underTest.handleEnforcementRequirements(null, pcsCase);
 
         // Then
+        assertNull(pcsCase.getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
+    }
+
+    @Test
+    void shouldNotLoadEnforcementDataWhenFeatureIsDisabled() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity, never()).getClaims();
+        verify(pcsCaseEntity, never()).getEnforcementOrders();
         assertNull(pcsCase.getShowConfirmEvictionJourney());
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
     }

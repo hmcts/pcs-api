@@ -27,8 +27,7 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
         UUID enfApplicationId = feePaymentEntity.getRelatedEntityId();
 
-        log.info("Handling callback for enforcement app payment for case number ID {}",
-                paymentStatusCallback.getCcdCaseNumber());
+        log.info("Handling callback for enforcement app payment for enf Application ID {}", enfApplicationId);
 
         if (feePaymentEntity.getPaymentStatus() == PAID) {
             EnforcementOrderEntity enforcementOrderEntity = findEnfApplicationEntity(enfApplicationId);
