@@ -108,7 +108,7 @@ class ServiceHearingValuesMapperTest {
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getCaseDeepLink())
-            .isEqualTo(MANAGE_CASE_URL + "/cases/case-details/PCS/PCS/1234567890123456#Case%20File%20View");
+            .isEqualTo(MANAGE_CASE_URL + "/cases/case-details/1234567890123456#Case%20File%20View");
     }
 
     @Test
