@@ -144,6 +144,7 @@ public class ServiceHearingValuesMapper {
             .toList();
     }
 
+    // defendantFlags is the historical name on PartyEntity for a person's flags, including claimants
     private PartyDetails partyDetails(PartyEntity party) {
         IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
         details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
