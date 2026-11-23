@@ -22,7 +22,7 @@ import {
   languageUsed, missedPayments,
   nameAndAddressForEviction,
   statementOfTruth
-} from '@data/page-data-figma/page-data-enforcement-figma';
+} from '@data/index.selector.enforcement';
 import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 import {home} from "@data/page-data-cy";
 
