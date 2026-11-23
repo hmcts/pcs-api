@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -140,6 +141,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
                 .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
             populateWarrantRestDetails(enforcementOrder, details.getId());
+        }
+        if (CollectionUtils.isEmpty(errors)) {
+            enforcementOrderService.createEnforcementOrder(details.getId());
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

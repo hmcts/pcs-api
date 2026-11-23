@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,8 +24,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
+    private final FeatureToggleService featureToggleService;
+
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
-        if (pcsCaseEntity != null && pcsCase != null) {
+        if (featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)
+            && pcsCaseEntity != null && pcsCase != null) {
             getEnforcementOrder(pcsCaseEntity).ifPresent(enforcementOrderEntity ->
                 Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
                     .ifPresentOrElse(
