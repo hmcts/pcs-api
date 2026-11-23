@@ -2,7 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import { confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 import {
   yourHCEO,
   theNICEWillChoose,
@@ -15,6 +15,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
+  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
