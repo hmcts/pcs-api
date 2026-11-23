@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -74,6 +75,8 @@ class TestCaseGenerationTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
     @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
@@ -252,14 +255,10 @@ class TestCaseGenerationTest {
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<EventPayload<PCSCase, State>> startPayloadCaptor = ArgumentCaptor.forClass(EventPayload.class);
-        @SuppressWarnings("unchecked")
         ArgumentCaptor<EventPayload<PCSCase, State>> submitPayloadCaptor = ArgumentCaptor.forClass(EventPayload.class);
-        InOrder enforcementOrder = inOrder(enforceTheOrder);
-        enforcementOrder.verify(enforceTheOrder).start(startPayloadCaptor.capture());
+        InOrder enforcementOrder = inOrder(enforcementOrderService, enforceTheOrder);
+        enforcementOrder.verify(enforcementOrderService).createEnforcementOrder(caseReference);
         enforcementOrder.verify(enforceTheOrder).submit(submitPayloadCaptor.capture());
-        assertThat(startPayloadCaptor.getValue().caseReference()).isEqualTo(caseReference);
-        assertThat(startPayloadCaptor.getValue().caseData()).isEqualTo(loadedCase);
         assertThat(submitPayloadCaptor.getValue().caseReference()).isEqualTo(caseReference);
         assertThat(submitPayloadCaptor.getValue().caseData()).isEqualTo(loadedCase);
     }
