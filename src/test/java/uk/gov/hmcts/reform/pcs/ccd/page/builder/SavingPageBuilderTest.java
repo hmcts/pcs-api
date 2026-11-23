@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +50,7 @@ class SavingPageBuilderTest {
     @BeforeEach
     void setUp() {
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
-        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
+        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId, () -> true);
     }
 
     @Test
@@ -103,6 +104,26 @@ class SavingPageBuilderTest {
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
         inOrder.verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
         assertThat(response).isEqualTo(pageMidEventResponse);
+    }
+
+    @Test
+    void shouldReturnErrorAndNotSaveWhenDisabled() {
+        // Given
+        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId, () -> false);
+        underTest.page(TEST_PAGE_ID);
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .id(CASE_REFERENCE)
+            .data(mock(PCSCase.class))
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventHandler()
+            .handle(caseDetails, new CaseDetails<>());
+
+        // Then
+        assertThat(response.getErrors()).containsExactly("Event is not enabled");
+        verifyNoInteractions(draftCaseDataService);
     }
 
     private MidEvent<PCSCase, State> getMidEventHandler() {

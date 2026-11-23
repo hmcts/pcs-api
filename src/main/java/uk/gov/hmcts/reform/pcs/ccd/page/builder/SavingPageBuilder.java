@@ -12,19 +12,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 public class SavingPageBuilder extends PageBuilder {
 
     private final DraftCaseDataService draftCaseDataService;
     private final EventId eventId;
+    private final BooleanSupplier enabled;
 
     public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
-                             EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
+                             EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId,
+                             BooleanSupplier enabled) {
 
         super(eventBuilder);
         this.draftCaseDataService = draftCaseDataService;
         this.eventId = eventId;
+        this.enabled = enabled;
     }
 
     @Override
@@ -59,6 +64,11 @@ public class SavingPageBuilder extends PageBuilder {
 
         public AboutToStartOrSubmitResponse<PCSCase, State> handleMidEvent(CaseDetails<PCSCase, State> details,
                                                                            CaseDetails<PCSCase, State> detailsBefore) {
+            if (!enabled.getAsBoolean()) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(List.of("Event is not enabled"))
+                    .build();
+            }
 
             AboutToStartOrSubmitResponse<PCSCase, State> wrappedMidEventResponse = null;
             if (wrappedMidEvent != null) {
