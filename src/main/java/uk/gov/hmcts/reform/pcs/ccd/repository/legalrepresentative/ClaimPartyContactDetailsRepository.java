@@ -30,4 +30,5 @@ public interface ClaimPartyContactDetailsRepository extends JpaRepository<ClaimP
     Optional<ClaimPartyContactDetailsEntity> findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
         String organisationId, long caseReference);
 
+    void deleteByPcsCase_Id(UUID caseId);
 }

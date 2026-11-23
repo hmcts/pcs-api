@@ -75,7 +75,7 @@ public class RevokeAccessHelper {
             log.info("Revoked access for defendant [{}] to respond to claim for case [{}]",
                       defendantParty.getId(), caseEntity.getCaseReference());
         }
-        partyAccessCodeRepository.deleteByPcsCase_IdAndPartyId(caseEntity.getId(), defendantParty.getId());
+        partyAccessCodeRepository.deleteByPcsCase_IdAndParty_Id(caseEntity.getId(), defendantParty.getId());
         defendantParty.setIdamId(null);
     }
 

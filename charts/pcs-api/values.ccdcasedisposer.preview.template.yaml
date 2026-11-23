@@ -53,7 +53,7 @@ ccd-case-disposer:
         secretRef: "{{ .Values.global.postgresSecret }}"
         key: PASSWORD
     environment:
-      DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $ }}'
+      DATA_STORE_DB_HOST: "{{ tpl .Values.global.postgresHostname $ }}"
       DATA_STORE_DB_PORT: 5432
       DATA_STORE_DB_NAME: "{{ .Values.global.databaseNamePrefix }}data-store"
       DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername }}"

@@ -41,6 +41,12 @@ public class CaseDeletionService {
         deleteDraftData(caseReference);
     }
 
+    @Transactional
+    public void deleteServiceOwnedData(long caseReference) {
+        deletePcsCase(caseReference);
+        deleteDraftData(caseReference);
+    }
+
     public void deletePcsCase(long caseReference) {
         try {
             pcsCaseService.deleteCase(caseReference);

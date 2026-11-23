@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
  * All possible PCS case states.
  * Converted into CCD states.
  */
+@SuppressWarnings("java:S115") // PendingDisposal matches the camelCase SDK retain-and-dispose state id via .name()
 @RequiredArgsConstructor
 @Getter
 public enum State {
@@ -127,7 +128,6 @@ public enum State {
 
     @CCD(
             // State ID must be PendingDisposal for the CCD SDK retain-and-dispose contract.
-            // Label keeps Manage Case wording aligned with HDPI-3404 "Draft discarded".
             label = "Draft discarded",
             access = {SystemUserAccess.class}
     )
