@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,12 +15,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementEventShowConditionsViewTest {
@@ -27,8 +32,33 @@ class EnforcementEventShowConditionsViewTest {
     @Mock
     private EnforcementOrderMediator enforcementOrderMediator;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @InjectMocks
     private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+
+    @BeforeEach
+    void enableRiskAssessment() {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(true);
+    }
+
+    @ParameterizedTest
+    @MethodSource("recordWarrantReturnScenarios")
+    void shouldPreserveWarrantReturnEligibilityAndSkipRiskAssessmentWhenFlagIsOff(EnforcementState state,
+                                                                               YesOrNo expected) {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getEnforcementOrder(entity))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().state(state).build()));
+
+        enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnforcementEventShowConditions().getCanRecordWarrantReturn()).isEqualTo(expected);
+        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        verify(enforcementOrderMediator, never()).getLatestSubmittedWarrantApplication(entity);
+    }
 
     @ParameterizedTest
     @MethodSource("recordWarrantReturnScenarios")
@@ -74,6 +104,41 @@ class EnforcementEventShowConditionsViewTest {
 
         // Then
         assertThat(pcsCase.getEnforcementEventShowConditions().getCanRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+    }
+
+    @ParameterizedTest
+    @MethodSource("recordWarrantReturnScenarios")
+    void shouldSetRiskAssessmentVisibilityFromTheSubmittedWarrantState(EnforcementState state, YesOrNo expected) {
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().state(state).build()));
+
+        enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldHideRiskAssessmentWithoutASubmittedWarrant() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+
+        enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldHideRiskAssessmentWhenTheSubmittedWarrantHasNoState() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().build()));
+
+        enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

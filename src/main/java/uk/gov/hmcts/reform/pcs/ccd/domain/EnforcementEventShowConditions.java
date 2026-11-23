@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentInternalAccess;
 
 @Builder
 @Data
@@ -18,4 +20,7 @@ public class EnforcementEventShowConditions {
 
     @CCD
     private YesOrNo canRecordWarrantReturn;
+
+    @CCD(searchable = false, access = {RiskAssessmentInternalAccess.class, RiskAssessmentClaimantAccess.class})
+    private YesOrNo canViewRiskAssessment;
 }

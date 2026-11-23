@@ -42,6 +42,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentInternalAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.bailiff.WarrantReturn;
@@ -1060,6 +1062,28 @@ public class PCSCase {
         access = {JudicialReadAccess.class}
     )
     private String judicialNotesMarkdownLabel;
+
+    @CCD(searchable = false, access = {RiskAssessmentInternalAccess.class})
+    private String riskAssessmentInternalMarkdown;
+
+    @CCD(
+        label = "${riskAssessmentInternalMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {RiskAssessmentInternalAccess.class}
+    )
+    private String riskAssessmentInternalMarkdownLabel;
+
+    @CCD(searchable = false, access = {RiskAssessmentClaimantAccess.class})
+    private String riskAssessmentClaimantMarkdown;
+
+    @CCD(
+        label = "${riskAssessmentClaimantMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {RiskAssessmentClaimantAccess.class}
+    )
+    private String riskAssessmentClaimantMarkdownLabel;
 
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private String caseReviewDatesMarkdown;
