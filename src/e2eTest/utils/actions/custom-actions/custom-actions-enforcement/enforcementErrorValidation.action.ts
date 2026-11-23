@@ -138,16 +138,6 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
-  // private async errorValidationPermissionRequiredPage(validationReq: string) {
-  //   if (validationReq === 'YES') {
-  //     await performAction('inputErrorValidation', {
-  //       validationType: permissionForWritInfo.errorValidationType.six,
-  //       inputArray: permissionForWritInfo.errorValidationField.errorPageLevel,
-  //       header: permissionForWritInfo.eventCouldNotBeCreatedHeader,
-  //       button: permissionForWritInfo.continueButton,
-  //     });
-  //   }
-  // }
 private async errorValidationPermissionRequiredPage(pageData: any) {
   if (pageData.errorValidation === 'YES') {
     await performAction('inputErrorValidation', {
