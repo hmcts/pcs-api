@@ -24,7 +24,7 @@ import {
   statementOfTruth
 } from '@data/index.selector.enforcement';
 import { caseSummary } from '@data/page-data-figma/page-data-enforcement-figma';
-import { confirm,  } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
+import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
