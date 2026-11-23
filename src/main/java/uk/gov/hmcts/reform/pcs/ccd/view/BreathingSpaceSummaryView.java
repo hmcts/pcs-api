@@ -6,6 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.BreathingSpaceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
+import java.util.Optional;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -22,12 +24,14 @@ public class BreathingSpaceSummaryView {
     private final BreathingSpaceService breathingSpaceService;
 
     public void setCaseFields(PCSCase pcsCase, long caseReference) {
-        breathingSpaceService.getLatestBreathingSpace(caseReference)
-            .ifPresent(details ->
-                           pcsCase.getSummaryTab().setBreathingSpaceDetails(
-                               buildTabDetails(details)
-                           )
-            );
+        Optional<BreathingSpaceDetails> latestBreathingSpace =
+            breathingSpaceService.getLatestBreathingSpace(caseReference);
+
+        pcsCase.setHasActiveBreathingSpace(YesOrNo.from(latestBreathingSpace.isPresent()));
+
+        latestBreathingSpace.ifPresent(details ->
+                                           pcsCase.getSummaryTab().setBreathingSpaceDetails(
+                                               buildTabDetails(details)));
     }
 
     private BreathingSpaceTabDetails buildTabDetails(BreathingSpaceDetails details) {
