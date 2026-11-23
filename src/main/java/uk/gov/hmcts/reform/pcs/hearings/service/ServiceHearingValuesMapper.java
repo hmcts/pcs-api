@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
@@ -43,24 +44,26 @@ public class ServiceHearingValuesMapper {
     static final String ACTIVE_FLAG_STATUS = "Active";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     static final int MAX_COMMENT_LENGTH = 200;
-    static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
     static final String ELLIPSIS = "...";
     private static final String FLAG_SEPARATOR = ", ";
     private static final String COMMENT_OPEN = " (Comments: ";
     private static final String COMMENT_CLOSE = ")";
-    private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
+    private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
+    private final PcsCaseRepository pcsCaseRepository;
     private final CaseNameFormatter caseNameFormatter;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
+                                      PcsCaseRepository pcsCaseRepository,
                                       CaseNameFormatter caseNameFormatter,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
+        this.pcsCaseRepository = pcsCaseRepository;
         this.caseNameFormatter = caseNameFormatter;
         this.manageCaseUrl = manageCaseUrl;
     }
@@ -110,7 +113,7 @@ public class ServiceHearingValuesMapper {
             return Map.of();
         }
 
-        return pcsCaseService.findCasesByReferences(linkedCaseReferences).stream()
+        return pcsCaseRepository.findAllByCaseReferenceIn(linkedCaseReferences).stream()
             .collect(Collectors.toMap(PcsCaseEntity::getCaseReference, Function.identity()));
     }
 
@@ -134,14 +137,6 @@ public class ServiceHearingValuesMapper {
         return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
     }
 
-    /**
-     * Lists the case's active case-level flags for the listing officer, as
-     * {@code Case Flags: name, name (Comments: comment)}, within HMC's 2000-character limit.
-     *
-     * <p>With fewer than {@value #FULL_TEXT_MAX_COMMENTED_FLAGS} commented flags the full text is tried
-     * first and returned if it fits. Otherwise every flag name is kept in full and the comments are
-     * shortened to share the space that is left (see {@link #fitCommentsFairly}).
-     */
     private String listingComments(PcsCaseEntity pcsCase) {
         List<FlagText> flags = pcsCase.getCaseFlags().stream()
             .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
@@ -153,16 +148,12 @@ public class ServiceHearingValuesMapper {
             return null;
         }
 
-        // less than 8 flags + comments should fit in the limit
-        long commentedFlags = flags.stream().filter(FlagText::hasComment).count();
-        if (commentedFlags < FULL_TEXT_MAX_COMMENTED_FLAGS) {
-            String fullText = render(flags);
-            if (fullText.length() <= MAX_LISTING_COMMENTS_LENGTH) {
-                return fullText;
-            }
+        String fullText = render(flags);
+        if (fullText.length() <= MAX_LISTING_COMMENTS_LENGTH) {
+            return fullText;
         }
 
-        // case has more than 8 flags + comments or fulltext was over the limit
+        // text is over 2000 characters
         String fittedText = render(fitCommentsFairly(flags));
         // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request
         return fittedText.length() > MAX_LISTING_COMMENTS_LENGTH
@@ -180,7 +171,7 @@ public class ServiceHearingValuesMapper {
     private static List<FlagText> fitCommentsFairly(List<FlagText> flags) {
         int commentedFlags = (int) flags.stream().filter(FlagText::hasComment).count();
         int fixedLength = render(flags.stream().map(FlagText::withoutComment).toList()).length()
-            + commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length());
+            + (commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length()));
         int remaining = MAX_LISTING_COMMENTS_LENGTH - fixedLength;
 
         List<Integer> smallestFirst = IntStream.range(0, flags.size())
