@@ -40,7 +40,7 @@ class DeleteThisCaseTest extends BaseEventTest {
     }
 
     @Test
-    void shouldReturnDraftDiscardedStateWhenDeleteDraftClaimIsYes() {
+    void shouldReturnPendingDisposalStateWhenDeleteDraftClaimIsYes() {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .ttl(TTL.builder().build())

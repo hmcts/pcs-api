@@ -30,27 +30,26 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
                         .label("statementOfTruth-cert-suspended",
                             """
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (*and that the whole or part
-                                of any instalments due under the judgment or order have not been paid) ( †and the
-                                balance now due is as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
-                                Possession Orders by Mortgagees) Regulations 2010.</li>
-                                <li>a statement of the payments due and made under the judgment or order is attached to
-                                this request.††</li>
+                            <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
+                            <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-0">
+                                <li>the defendant has not vacated the land as ordered and has failed to
+                                comply with the terms upon which the order was suspended.</li>
+                                <li>a statement of the payments due and made under the judgement or order
+                                is attached to this request.</li>
+                                <li>I believe that the facts stated in this form are true</li>
                             </ul>
+                            </div>
                             """,
                             "warrantIsSuspendedOrder=\"YES\""
                         )
                         .label("statementOfTruth-cert-not-suspended",
                             """
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (*and that the whole or part
-                                of any instalments due under the judgment or order have not been paid) (†and the
-                                balance now due is as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
-                                Possession Orders by Mortgagees) Regulations 2010.</li>
+                            <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
+                            <ul class="govuk-list govuk-list--bullet" style="margin-left: 40px;">
+                                <li>the defendant has not vacated the land as ordered</li>
+                                <li>I believe the facts stated in this form are true.</li>
                             </ul>
+                            </div>
                             """,
                             "warrantIsSuspendedOrder=\"NO\""
                         )

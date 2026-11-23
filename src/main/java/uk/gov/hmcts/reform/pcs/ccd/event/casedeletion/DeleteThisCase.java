@@ -29,6 +29,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(EventId.deleteThisCase.name(), this::submit)
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
                 .name("Delete this case")
+                .ttlIncrement(0)
                 .showCondition(ShowConditions.featureFlagsEnabled(DELETE_UNISSUED_CLAIM))
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)

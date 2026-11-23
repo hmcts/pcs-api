@@ -25,7 +25,10 @@ public class CounterClaimFormService {
 
         CounterClaimFormRenderContext renderContext = context.get();
         String dmStoreUrl = documentGenerator.generate(
-            renderContext.payload(), renderContext.counterClaimRank(), renderContext.defendantNumber());
+            renderContext.payload(),
+            renderContext.counterClaimRank(),
+            renderContext.defendantNumber()
+        );
         try {
             persistenceService.attach(counterClaimId, dmStoreUrl);
         } catch (RuntimeException e) {

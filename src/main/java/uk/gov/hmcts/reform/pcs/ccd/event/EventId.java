@@ -43,7 +43,6 @@ public enum EventId {
     DocumentUpdated,
     resumeEnforcementOrder,
     deleteDraftApplication,
-    // Must match RetainAndDisposePolicy.DISPOSAL_EVENT_ID / CONFIRM_DISPOSAL_EVENT_ID
     MarkForDisposal,
     ConfirmDisposal,
     deleteThisCase

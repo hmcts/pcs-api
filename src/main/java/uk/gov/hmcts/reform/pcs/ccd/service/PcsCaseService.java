@@ -13,7 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseHardDeleteRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -21,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
@@ -37,6 +41,10 @@ import java.util.Objects;
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseHardDeleteRepository pcsCaseHardDeleteRepository;
+    private final NotificationRepository notificationRepository;
+    private final ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
+    private final ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
     private final ClaimService claimService;
     private final PartyService partyService;
     private final DocumentService documentService;
@@ -160,8 +168,14 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    @Transactional
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        UUID caseId = pcsCaseEntity.getId();
+        notificationRepository.deleteByPcsCase_Id(caseId);
+        claimPartyOrganisationRepository.deleteByParty_PcsCase_Id(caseId);
+        claimPartyContactDetailsRepository.deleteByPcsCase_Id(caseId);
+        pcsCaseHardDeleteRepository.deleteBlockingDependencies(caseId);
         pcsCaseRepository.delete(pcsCaseEntity);
         log.debug("Deleted case with reference: {}", caseReference);
     }
@@ -229,5 +243,11 @@ public class PcsCaseService {
     public void setCaseIssuedDate(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
+    }
+
+    public ClaimEntity retrieveClaimEntity(Long caseReference) {
+        PcsCaseEntity pcsCaseEntity = this.loadCase(caseReference);
+        // Assuming 1 claim per PcsCase
+        return pcsCaseEntity.getClaims().getFirst();
     }
 }

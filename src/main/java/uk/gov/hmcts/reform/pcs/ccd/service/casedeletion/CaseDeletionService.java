@@ -27,14 +27,11 @@ public class CaseDeletionService {
 
     @Transactional
     public void deleteCaseData(long caseReference) {
-        deleteServiceOwnedData(caseReference);
+        deletePcsCase(caseReference);
+        deleteDraftData(caseReference);
         deleteCcdCase(caseReference);
     }
 
-    /**
-     * Deletes PCS-owned rows only. Used by {@code RetainAndDisposePolicy#dispose} because the SDK
-     * removes decentralised {@code ccd} rows in the same transaction after this hook returns.
-     */
     @Transactional
     public void deleteServiceOwnedData(long caseReference) {
         deletePcsCase(caseReference);

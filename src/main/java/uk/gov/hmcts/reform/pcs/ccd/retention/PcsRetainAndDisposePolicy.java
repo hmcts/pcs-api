@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Marks inactive unissued claims for disposal (HDPI-3404 AC01/AC02) and cleans PCS-owned data
- * after central CCD has deleted the case pointer (SDK retain-and-dispose step 6).
+ * Marks inactive unissued claims for disposal and cleans PCS-owned data
+ * after central CCD has deleted the case pointer.
  */
 @Slf4j
 @Component

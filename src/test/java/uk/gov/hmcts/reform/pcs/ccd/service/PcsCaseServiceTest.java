@@ -26,7 +26,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseHardDeleteRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -34,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
@@ -66,6 +70,14 @@ class PcsCaseServiceTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private PcsCaseHardDeleteRepository pcsCaseHardDeleteRepository;
+    @Mock
+    private NotificationRepository notificationRepository;
+    @Mock
+    private ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
+    @Mock
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
     @Mock
     private ClaimService claimService;
     @Mock
@@ -100,6 +112,10 @@ class PcsCaseServiceTest {
     void setUp() {
         underTest = new PcsCaseService(
             pcsCaseRepository,
+            pcsCaseHardDeleteRepository,
+            notificationRepository,
+            claimPartyOrganisationRepository,
+            claimPartyContactDetailsRepository,
             claimService,
             partyService,
             documentService,
@@ -555,13 +571,19 @@ class PcsCaseServiceTest {
     @Test
     void shouldDeleteCaseIfFound() {
         // Given
+        UUID caseId = UUID.randomUUID();
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getId()).thenReturn(caseId);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
         underTest.deleteCase(CASE_REFERENCE);
 
         // Then
+        verify(notificationRepository).deleteByPcsCase_Id(caseId);
+        verify(claimPartyOrganisationRepository).deleteByParty_PcsCase_Id(caseId);
+        verify(claimPartyContactDetailsRepository).deleteByPcsCase_Id(caseId);
+        verify(pcsCaseHardDeleteRepository).deleteBlockingDependencies(caseId);
         verify(pcsCaseRepository).delete(pcsCaseEntity);
 
     }
@@ -828,6 +850,21 @@ class PcsCaseServiceTest {
 
         // Then
         verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());
+    }
+
+    @Test
+    void shouldReturnFirstClaimFromPcsCaseEntity() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity firstClaim = new ClaimEntity();
+        ClaimEntity secondClaim = new ClaimEntity();
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(firstClaim, secondClaim));
+
+        // When
+        ClaimEntity result = underTest.retrieveClaimEntity(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isSameAs(firstClaim);
     }
 
     private PcsCaseEntity stubFindCase() {

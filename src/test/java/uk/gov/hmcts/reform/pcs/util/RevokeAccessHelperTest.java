@@ -188,7 +188,7 @@ class RevokeAccessHelperTest {
         assertEquals(String.valueOf(caseReference), scheduledData.getCaseReference());
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), eq(idamId));
-        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
+        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndParty_Id(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 
     @Test
@@ -215,7 +215,7 @@ class RevokeAccessHelperTest {
         verify(schedulerClient, never()).scheduleIfNotExists(any());
         verify(draftCaseDataRepository, never()).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), any());
-        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
+        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndParty_Id(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 }
 
