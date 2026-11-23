@@ -453,6 +453,9 @@ public class PCSCase {
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
 
+    @CCD(searchable = false)
+    private YesOrNo hasActiveBreathingSpace;
+
     @JsonUnwrapped
     @CCD
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;

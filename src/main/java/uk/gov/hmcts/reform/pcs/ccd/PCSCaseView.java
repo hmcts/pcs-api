@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -139,6 +140,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
         breathingSpaceSummaryView.setCaseFields(pcsCase, caseReference);
+
+        // Determine whether an enforcement application is in breathing space
+        boolean hasActiveBreathingSpace =
+            pcsCaseEntity.getEnforcementOrders() != null
+                && pcsCaseEntity.getEnforcementOrders().stream()
+                .anyMatch(order -> order.getState() == EnforcementState.BREATHING_SPACE);
+        pcsCase.setHasActiveBreathingSpace(hasActiveBreathingSpace ? YesOrNo.YES : YesOrNo.NO);
+
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
