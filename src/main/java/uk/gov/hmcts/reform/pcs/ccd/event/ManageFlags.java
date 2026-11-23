@@ -4,11 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -18,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -30,7 +27,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     private  final PcsCaseService pcsCaseService;
     private final LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
-    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -46,7 +42,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                                    UserRole.HEARING_CENTRE_ADMIN,
                                    UserRole.HEARING_CENTRE_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
-            .page("caseworkerCaseFlag", this::midEvent)
+            .page("caseworkerCaseFlag", languageFlagDuplicateValidator::validateFlagsPage)
             .pageLabel("Manage case flags")
             .label("caseworkerCaseFlag-lineSeparator", "---")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
@@ -57,13 +53,6 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
                 null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-        List<String> errors = languageFlagDuplicateValidator.validatePartyLanguageFlags(caseData.getParties());
-        return textAreaValidationService.createValidationResponse(caseData, errors);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

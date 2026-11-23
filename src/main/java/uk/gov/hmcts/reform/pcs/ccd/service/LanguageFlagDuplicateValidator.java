@@ -1,14 +1,20 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class LanguageFlagDuplicateValidator {
 
     static final String SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE = "PF0015";
@@ -16,11 +22,13 @@ public class LanguageFlagDuplicateValidator {
     static final String SPOKEN_LANGUAGE_ERROR = "More than one spoken language cannot be added";
     static final String SIGN_LANGUAGE_ERROR = "More than one language cannot be added";
 
+    private final TextAreaValidationService textAreaValidationService;
+
     /**
      * Checks that a case flags submission does not give any party more than one spoken language
      * interpreter (PF0015) or sign language interpreter (RA0042) flag.
      *
-     * <p>Only Active and Requested flags count- Inactive and Not approved flags do not. A party's internal
+     * <p>Only Active and Requested flags count; Inactive and Not approved flags do not. A party's internal
      * and external flags are counted together. The same flag on different parties is allowed.
      *
      * @return the error messages to show, or an empty list when the submission can be saved
@@ -51,6 +59,13 @@ public class LanguageFlagDuplicateValidator {
             return List.of(SIGN_LANGUAGE_ERROR);
         }
         return List.of();
+    }
+
+    public AboutToStartOrSubmitResponse<PCSCase, State> validateFlagsPage(CaseDetails<PCSCase, State> details,
+                                                                          CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        return textAreaValidationService.createValidationResponse(
+            caseData, validatePartyLanguageFlags(caseData.getParties()));
     }
 
     private int countFlags(Party party, String flagCode) {

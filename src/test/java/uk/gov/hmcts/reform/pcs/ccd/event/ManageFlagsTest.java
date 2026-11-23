@@ -15,12 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,8 +32,6 @@ class ManageFlagsTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
-    @Mock
-    private TextAreaValidationService textAreaValidationService;
 
     @InjectMocks
     private ManageFlags underTest;
@@ -99,12 +98,9 @@ class ManageFlagsTest extends BaseEventTest {
     void shouldShowLanguageFlagErrorsWhenContinuingFromTheFlagsPage() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
-        List<String> duplicateErrors = List.of("More than one language cannot be added");
         AboutToStartOrSubmitResponse<PCSCase, State> validationResponse =
             AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
-        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
-            .thenReturn(duplicateErrors);
-        when(textAreaValidationService.<PCSCase, State>createValidationResponse(pcsCase, duplicateErrors))
+        when(languageFlagDuplicateValidator.validateFlagsPage(any(), isNull()))
             .thenReturn(validationResponse);
 
         // When
@@ -112,6 +108,7 @@ class ManageFlagsTest extends BaseEventTest {
 
         // Then
         assertThat(response).isSameAs(validationResponse);
+        verify(languageFlagDuplicateValidator).validateFlagsPage(any(), isNull());
         verify(pcsCaseService, never()).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
@@ -119,12 +116,9 @@ class ManageFlagsTest extends BaseEventTest {
     void shouldContinueFromTheFlagsPageWhenThereAreNoLanguageFlagErrors() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
-        List<String> noErrors = List.of();
         AboutToStartOrSubmitResponse<PCSCase, State> validationResponse =
             AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(pcsCase).build();
-        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
-            .thenReturn(noErrors);
-        when(textAreaValidationService.<PCSCase, State>createValidationResponse(pcsCase, noErrors))
+        when(languageFlagDuplicateValidator.validateFlagsPage(any(), isNull()))
             .thenReturn(validationResponse);
 
         // When
@@ -132,6 +126,7 @@ class ManageFlagsTest extends BaseEventTest {
 
         // Then
         assertThat(response).isSameAs(validationResponse);
+        verify(languageFlagDuplicateValidator).validateFlagsPage(any(), isNull());
     }
 
     @Test
