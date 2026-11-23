@@ -19,14 +19,12 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -43,7 +41,6 @@ public class ServiceHearingValuesMapper {
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
-    static final int MAX_COMMENT_LENGTH = 200;
     static final String ELLIPSIS = "...";
     private static final String FLAG_SEPARATOR = ", ";
     private static final String COMMENT_OPEN = " (Comments: ";
@@ -163,43 +160,35 @@ public class ServiceHearingValuesMapper {
 
     /**
      * Shortens the comments so the listing fits in {@value #MAX_LISTING_COMMENTS_LENGTH} characters,
-     * keeping every flag name whole. The space left after the fixed text is shared out smallest
-     * comment first: each comment gets the lesser of its own length (at most
-     * {@value #MAX_COMMENT_LENGTH}) and an equal share of what is still unallocated. Short comments
-     * therefore stay whole, and the space they don't use goes to the longer ones.
+     * keeping every flag name whole. The space left after is equally split between all comments.
+     * Comments shorter than the new commentLength remain whole and comments longer than this limit will be truncated.
      */
     private static List<FlagText> fitCommentsFairly(List<FlagText> flags) {
         int commentedFlags = (int) flags.stream().filter(FlagText::hasComment).count();
+        // max listing hsas been reached with just flag names
+        if (commentedFlags == 0) {
+            return flags;
+        }
         int fixedLength = render(flags.stream().map(FlagText::withoutComment).toList()).length()
             + (commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length()));
         int remaining = MAX_LISTING_COMMENTS_LENGTH - fixedLength;
 
-        List<Integer> smallestFirst = IntStream.range(0, flags.size())
-            .filter(i -> flags.get(i).hasComment())
-            .boxed()
-            .sorted(Comparator.comparingInt(i -> commentDemand(flags.get(i))))
-            .toList();
+        int commentLength = Math.max(0,remaining / commentedFlags);
 
         List<FlagText> fitted = new ArrayList<>(flags);
-        int unallocated = smallestFirst.size();
-        for (int i : smallestFirst) {
-            FlagText flag = flags.get(i);
-            int share = Math.max(0, remaining) / unallocated--;
-            int allowance = Math.min(commentDemand(flag), share);
-            fitted.set(i, flag.withComment(shorten(flag.comment(), allowance)));
-            remaining -= allowance;
+        for (int i = 0; i < fitted.size(); i++) {
+            FlagText flag = fitted.get(i);
+            if (flag.hasComment()) {
+                fitted.set(i, flag.withComment(shorten(flag.comment(), commentLength)));
+            }
         }
+
         return fitted;
     }
 
-    private static int commentDemand(FlagText flag) {
-        return Math.min(flag.comment().length(), MAX_COMMENT_LENGTH);
-    }
-
     /**
-     * Cuts a comment to at most {@code maxLength} characters, ending it with {@value #ELLIPSIS} so the
-     * listing officer knows there is more. Cuts at the last whitespace where that keeps at least half
-     * the space, otherwise mid-word. Returns null (show the flag without comments) when there isn't
+     * Cuts a comment to {@code maxLength} characters, replacing the last 3 with {@value #ELLIPSIS} so the
+     * listing officer knows there is more. Returns null (show the flag without comments) when there isn't
      * room for any text before the ellipsis.
      */
     static String shorten(String comment, int maxLength) {
@@ -210,20 +199,7 @@ public class ServiceHearingValuesMapper {
         if (limit <= 0) {
             return null;
         }
-        int cut = lastWhitespaceAtOrBefore(comment, limit);
-        if (cut < limit / 2) {
-            cut = limit;
-        }
-        return comment.substring(0, cut).stripTrailing() + ELLIPSIS;
-    }
-
-    private static int lastWhitespaceAtOrBefore(String text, int index) {
-        for (int i = Math.min(index, text.length() - 1); i >= 0; i--) {
-            if (Character.isWhitespace(text.charAt(i))) {
-                return i;
-            }
-        }
-        return -1;
+        return comment.substring(0, limit) + ELLIPSIS;
     }
 
     private static String render(List<FlagText> flags) {

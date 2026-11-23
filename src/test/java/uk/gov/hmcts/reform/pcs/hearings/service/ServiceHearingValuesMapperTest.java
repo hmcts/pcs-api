@@ -255,15 +255,16 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldCapCommentAtMaxCommentLengthWhenFullTextIsTooLong() {
+    void shouldShortenCommentToFillListingWhenFullTextIsTooLong() {
         String longComment = "x".repeat(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH);
         givenCase(caseBuilder().caseFlags(flags(flag("Urgent case", longComment))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
-        int keptLength = ServiceHearingValuesMapper.MAX_COMMENT_LENGTH - ServiceHearingValuesMapper.ELLIPSIS.length();
+        // "Case Flags: Urgent case (Comments: )" is 36 characters, leaving 1,964 for the comment and its "..."
         assertThat(values.getListingComments())
-            .isEqualTo("Case Flags: Urgent case (Comments: " + "x".repeat(keptLength) + "...)");
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .isEqualTo("Case Flags: Urgent case (Comments: " + "x".repeat(1961) + "...)");
     }
 
     @Test
@@ -284,12 +285,12 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldShareSpaceFairlyKeepingShortCommentsWholeAndNamesInFull() {
+    void shouldSplitSpaceEquallyKeepingShortCommentsWholeAndNamesInFull() {
         // 12 flags: 10 with 200-character comments and 2 with short ones. The full text would be ~2,300 characters.
-        // Fixed text is 274 characters, leaving 1,726 to share: 5 + 5 for the short comments, then 171-172 each.
+        // Fixed text is 274 characters, leaving 1,726 split 12 ways: 143 each, so long comments keep 140 + "...".
         List<CaseFlagEntity> caseFlags = flags();
         for (int i = 1; i <= 12; i++) {
-            String comment = i == 5 || i == 12 ? "short" : "x".repeat(ServiceHearingValuesMapper.MAX_COMMENT_LENGTH);
+            String comment = i == 5 || i == 12 ? "short" : "x".repeat(200);
             caseFlags.add(flag(String.format("Flag %02d", i), comment));
         }
         givenCase(caseBuilder().caseFlags(caseFlags).build());
@@ -297,7 +298,7 @@ class ServiceHearingValuesMapperTest {
         String listingComments = underTest.getServiceHearingValues(CASE_REFERENCE).getListingComments();
 
         assertThat(listingComments)
-            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .hasSizeLessThanOrEqualTo(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
             .startsWith("Case Flags: ");
         List<String> entries = List.of(listingComments.substring("Case Flags: ".length()).split(", "));
         assertThat(entries).hasSize(12);
@@ -307,7 +308,7 @@ class ServiceHearingValuesMapperTest {
             if (i == 5 || i == 12) {
                 assertThat(entry).isEqualTo(name + " (Comments: short)");
             } else {
-                assertThat(entry).matches(name + " \\(Comments: x{168,169}\\.\\.\\.\\)");
+                assertThat(entry).isEqualTo(name + " (Comments: " + "x".repeat(140) + "...)");
             }
         }
     }
@@ -328,23 +329,30 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldCutListingCommentsAtMaxLengthWhenNoFlagHasAComment() {
+        List<CaseFlagEntity> caseFlags = flags();
+        for (int i = 1; i <= 100; i++) {
+            caseFlags.add(flag(String.format("Flag name number %03d", i), null));
+        }
+        givenCase(caseBuilder().caseFlags(caseFlags).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments())
+            .hasSize(ServiceHearingValuesMapper.MAX_LISTING_COMMENTS_LENGTH)
+            .startsWith("Case Flags: Flag name number 001, Flag name number 002")
+            .doesNotContain("(Comments: ");
+    }
+
+    @Test
     void shouldNotShortenCommentThatFits() {
         assertThat(ServiceHearingValuesMapper.shorten("so urgent", 9)).isEqualTo("so urgent");
     }
 
     @Test
-    void shouldShortenAtWordBoundaryAndDropTrailingWhitespace() {
-        assertThat(ServiceHearingValuesMapper.shorten("the quick brown fox", 15)).isEqualTo("the quick...");
-        assertThat(ServiceHearingValuesMapper.shorten("hello   world", 10)).isEqualTo("hello...");
-    }
-
-    @Test
-    void shouldShortenMidWordWhenLastWordBoundaryIsTooEarly() {
-        String comment = "a " + "x".repeat(50);
-
-        assertThat(ServiceHearingValuesMapper.shorten(comment, 20))
-            .hasSize(20)
-            .isEqualTo("a " + "x".repeat(15) + "...");
+    void shouldReplaceLastThreeCharactersWithEllipsisWhenShortened() {
+        assertThat(ServiceHearingValuesMapper.shorten("the quick brown fox", 15)).isEqualTo("the quick br...");
+        assertThat(ServiceHearingValuesMapper.shorten("hello   world", 10)).isEqualTo("hello  ...");
     }
 
     @Test
