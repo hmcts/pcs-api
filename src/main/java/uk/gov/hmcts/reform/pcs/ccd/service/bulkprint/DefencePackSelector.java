@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,7 +30,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * Selects defence-phase envelopes per recipient. Defence packs go to defendants who opted into postal contact;
  * claimants are not included. The current rollout flag gates that rule and, while off, keeps the previous
  * all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are included, so late
- * counter-claims follow without re-sending.
+ * counter-claims follow without re-sending. When bulk print 2 is on, uploads follow the form they belong
+ * to, and only on the send that includes that form.
  */
 @Service
 public class DefencePackSelector {
@@ -57,6 +59,7 @@ public class DefencePackSelector {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
+        boolean includeEvidence = featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2);
         Set<String> sent =
             sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
 
@@ -86,9 +89,18 @@ public class DefencePackSelector {
         List<DefencePackCandidate> candidates = new ArrayList<>();
         for (Map.Entry<UUID, PartyEntity> entry : recipients.entrySet()) {
             PartyEntity recipient = entry.getValue();
-            List<DocumentEntity> unsent = documentsByRecipient.get(entry.getKey()).stream()
-                .filter(document -> !sent.contains(key(recipient, document)))
-                .toList();
+            List<DocumentEntity> unsent = new ArrayList<>();
+            for (DocumentEntity document : documentsByRecipient.get(entry.getKey())) {
+                if (sent.contains(key(recipient, document))) {
+                    continue;
+                }
+                unsent.add(document);
+                if (includeEvidence) {
+                    supportingEvidence(pcsCase, document).stream()
+                        .filter(upload -> !sent.contains(key(recipient, upload)))
+                        .forEach(unsent::add);
+                }
+            }
             if (!unsent.isEmpty()) {
                 PartyRole role = claimantIds.contains(recipient.getId()) ? PartyRole.CLAIMANT : PartyRole.DEFENDANT;
                 candidates.add(new DefencePackCandidate(role, recipient, unsent));
@@ -137,6 +149,30 @@ public class DefencePackSelector {
                             PartyEntity recipient, DocumentEntity document) {
         recipients.putIfAbsent(recipient.getId(), recipient);
         documentsByRecipient.computeIfAbsent(recipient.getId(), key -> new LinkedHashSet<>()).add(document);
+    }
+
+    private List<DocumentEntity> supportingEvidence(PcsCaseEntity pcsCase, DocumentEntity form) {
+        return pcsCase.getDocuments().stream()
+            .filter(upload -> belongsWith(form, upload))
+            .sorted(Comparator.comparing(DocumentEntity::getSubmittedDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+    }
+
+    private boolean belongsWith(DocumentEntity form, DocumentEntity upload) {
+        if (form.getType() == DocumentType.DEFENDANT_RESPONSE) {
+            return form.getDefendantResponse() != null
+                && form.getDefendantResponse().getId() != null
+                && upload.getDefendantResponse() != null
+                && form.getDefendantResponse().getId().equals(upload.getDefendantResponse().getId())
+                && upload.getType() != DocumentType.DEFENDANT_RESPONSE;
+        }
+        return form.getType() == DocumentType.COUNTERCLAIM
+            && form.getCounterClaim() != null
+            && form.getCounterClaim().getId() != null
+            && upload.getType() == DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM
+            && upload.getCounterClaim() != null
+            && form.getCounterClaim().getId().equals(upload.getCounterClaim().getId());
     }
 
     private DocumentEntity defenceFormDocument(PcsCaseEntity pcsCase, PartyEntity defendant) {
