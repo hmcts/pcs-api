@@ -83,7 +83,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         excludeNeverShownFieldsFromSummary(eventBuilder.fields().build());
     }
 
-    private static void excludeNeverShownFieldsFromSummary(FieldCollection fieldCollection) {
+    static void excludeNeverShownFieldsFromSummary(FieldCollection fieldCollection) {
         fieldCollection.getFields().stream()
                 .filter(field -> NEVER_SHOW.equals(field.build().getShowCondition()))
                 .forEach(field -> field.showSummary(false));

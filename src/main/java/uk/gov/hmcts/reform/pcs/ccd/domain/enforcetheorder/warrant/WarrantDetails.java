@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefe
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 
 import java.util.List;
@@ -127,6 +128,14 @@ public class WarrantDetails {
                     + "return to the case summary page, and then check the tab named ‘Case File View’"
     )
     private VerticalYesNo isSuspendedOrder;
+
+    @Deprecated
+    @JsonUnwrapped
+    @CCD
+    /**
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    private StatementOfTruthDetailsEnforcement statementOfTruth;
 
     @CCD(
             typeOverride = FieldType.MultiSelectList,

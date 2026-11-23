@@ -15,14 +15,21 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.Field;
+import uk.gov.hmcts.ccd.sdk.api.Field.FieldBuilder;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
@@ -52,11 +59,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class EnforceTheOrderTest extends BaseEventTest {
@@ -123,6 +140,49 @@ class EnforceTheOrderTest extends BaseEventTest {
     }
 
     @Test
+    void shouldConfigureEventForCaseIssuedWithEnforcementFeatureFlagAndCorrectGrants() {
+        assertConfiguredForStates(State.CASE_ISSUED);
+        assertConfiguredShowConditions(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""));
+        assertGrants(PCS_SOLICITOR, Permission.CRUD);
+        assertGrants(GA_CLAIMANT_SOLICITOR, Permission.CRUD);
+        assertGrants(CLAIMANT, Permission.CRUD);
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes"})
+    void shouldExcludeNeverShownFieldsFromSummaryIncludingNestedFields() {
+        Field<?, ?, ?, ?> hiddenField = mock(Field.class);
+        Field<?, ?, ?, ?> visibleField = mock(Field.class);
+        Field<?, ?, ?, ?> nestedHiddenField = mock(Field.class);
+        when(hiddenField.getShowCondition()).thenReturn(NEVER_SHOW);
+        when(visibleField.getShowCondition()).thenReturn("someCondition");
+        when(nestedHiddenField.getShowCondition()).thenReturn(NEVER_SHOW);
+
+        FieldBuilder hiddenFieldBuilder = mock(FieldBuilder.class);
+        FieldBuilder visibleFieldBuilder = mock(FieldBuilder.class);
+        FieldBuilder nestedFieldBuilder = mock(FieldBuilder.class);
+        when(hiddenFieldBuilder.build()).thenReturn(hiddenField);
+        when(visibleFieldBuilder.build()).thenReturn(visibleField);
+        when(nestedFieldBuilder.build()).thenReturn(nestedHiddenField);
+
+        FieldCollection nestedCollection = mock(FieldCollection.class);
+        when(nestedCollection.getFields()).thenReturn(List.of(nestedFieldBuilder));
+        FieldCollectionBuilder nestedCollectionBuilder = mock(FieldCollectionBuilder.class);
+        when(nestedCollectionBuilder.build()).thenReturn(nestedCollection);
+
+        FieldCollection fieldCollection = mock(FieldCollection.class);
+        when(fieldCollection.getFields()).thenReturn(List.of(hiddenFieldBuilder, visibleFieldBuilder));
+        when(fieldCollection.getComplexFields()).thenReturn(List.of(nestedCollectionBuilder));
+        when(nestedCollection.getComplexFields()).thenReturn(List.of());
+
+        EnforceTheOrder.excludeNeverShownFieldsFromSummary(fieldCollection);
+
+        verify(hiddenFieldBuilder).showSummary(false);
+        verify(visibleFieldBuilder, never()).showSummary(false);
+        verify(nestedFieldBuilder).showSummary(false);
+    }
+
+    @Test
     void shouldReturnCaseDataInStartCallback() {
         // Given
         AddressUK propertyAddress = mock(AddressUK.class);
@@ -160,13 +220,15 @@ class EnforceTheOrderTest extends BaseEventTest {
         // Given
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+        SubmitResponse<State> expectedResponse = SubmitResponse.<State>builder().build();
+        when(enforcementSubmitEvent.submit(any())).thenReturn(expectedResponse);
 
         // When
-        callSubmitHandler(pcsCase);
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         // Then
+        assertThat(response).isSameAs(expectedResponse);
         verify(enforcementSubmitEvent).submit(any());
-
     }
 
     @Nested
@@ -369,10 +431,11 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
-        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
-                .anyMatch(item ->
-                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertThat(warrantOfRestitutionOptionExists).isTrue();
+        assertThat(enforcementTypes.getListItems())
+                .extracting(DynamicStringListElement::getCode)
+                .containsExactly(WARRANT.name(), WRIT.name(), WARRANT_OF_RESTITUTION.name());
+        assertThat(caseData.getEnforcementOrder().getWarrantOfRestitutionInfoText())
+                .isEqualTo(CommonPageContent.WARRANT_OF_RESTITUTION_INFO_TEXT);
     }
 
     @Test
@@ -390,10 +453,10 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
-        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
-                .anyMatch(item ->
-                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertThat(warrantOfRestitutionOptionExists).isFalse();
+        assertThat(enforcementTypes.getListItems())
+                .extracting(DynamicStringListElement::getCode)
+                .containsExactly(WARRANT.name(), WRIT.name());
+        assertThat(caseData.getEnforcementOrder().getWarrantOfRestitutionInfoText()).isEmpty();
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

@@ -152,18 +152,17 @@ class StatementOfTruthServiceTest {
         @Test
         void shouldPersistStatementOfTruthForEnforcement() {
             // Given
-            StatementOfTruthDetails statementOfTruthDetailsEnforcement = new StatementOfTruthDetails();
             EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
             StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
             StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
 
-            when(statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement))
+            when(statementOfTruthMapper.toEntity(statementOfTruthDetails))
                     .thenReturn(statementOfTruthEntity);
             when(statementOfTruthRepository.save(statementOfTruthEntity))
                     .thenReturn(savedStatementOfTruthEntity);
 
             // When
-            statementOfTruthService.processStatementOfTruth(statementOfTruthDetailsEnforcement, enforcementOrderEntity);
+            statementOfTruthService.processStatementOfTruth(statementOfTruthDetails, enforcementOrderEntity);
 
             // Then
             assertThat(enforcementOrderEntity.getStatementOfTruth()).isEqualTo(savedStatementOfTruthEntity);
