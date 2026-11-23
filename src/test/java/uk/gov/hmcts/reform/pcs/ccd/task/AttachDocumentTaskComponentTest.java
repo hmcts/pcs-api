@@ -4,6 +4,8 @@ import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,6 +85,56 @@ class AttachDocumentTaskComponentTest {
                 assertThat(token.getId()).isEqualTo(DOCUMENT_ID.toString());
                 assertThat(token.getHashToken()).isNull();
             });
+    }
+
+    @Test
+    void shouldSendTheHashTokenOfADraftUploadSoCdamChecksIt() {
+        when(taskInstance.getData()).thenReturn(AttachDocumentTaskData.builder()
+                                                    .caseReference(CASE_REFERENCE)
+                                                    .documentId(DOCUMENT_ID)
+                                                    .hashToken("hash")
+                                                    .build());
+
+        underTest.attachDocumentTask().execute(taskInstance, executionContext);
+
+        ArgumentCaptor<CaseDocumentsMetadata> metadata = ArgumentCaptor.forClass(CaseDocumentsMetadata.class);
+        verify(caseDocumentClientApi).patchDocument(anyString(), anyString(), metadata.capture());
+        assertThat(metadata.getValue().getDocumentHashTokens())
+            .singleElement()
+            .satisfies(token -> assertThat(token.getHashToken()).isEqualTo("hash"));
+    }
+
+    @Test
+    void shouldCompleteWhenADraftUploadNoLongerExists() {
+        when(taskInstance.getData()).thenReturn(AttachDocumentTaskData.builder()
+                                                    .caseReference(CASE_REFERENCE)
+                                                    .documentId(DOCUMENT_ID)
+                                                    .hashToken("hash")
+                                                    .build());
+        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
+            .thenThrow(notFound());
+
+        CompletionHandler<AttachDocumentTaskData> completionHandler =
+            underTest.attachDocumentTask().execute(taskInstance, executionContext);
+
+        assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+    }
+
+    @Test
+    void shouldRetryWhenASubmittedDocumentIsNotFound() {
+        when(caseDocumentClientApi.patchDocument(anyString(), anyString(), any(CaseDocumentsMetadata.class)))
+            .thenThrow(notFound());
+
+        CustomTask<AttachDocumentTaskData> task = underTest.attachDocumentTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(FeignException.NotFound.class);
+    }
+
+    private static FeignException.NotFound notFound() {
+        Request request = Request.create(Request.HttpMethod.PATCH, "/cases/documents/attachToCase",
+                                         Map.of(), null, StandardCharsets.UTF_8, null);
+        return new FeignException.NotFound("not found", request, null, null);
     }
 
     @Test
