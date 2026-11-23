@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
@@ -51,6 +52,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
+    private final EnforcementOrderService enforcementOrderService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -92,8 +94,9 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             return SubmitResponse.<State>builder().state(PENDING_CASE_ISSUED).build();
         } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
             makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-            enforceTheOrder.start(new EventPayload<>(caseReference, loadTestPcsCase(label), null));
-            enforceTheOrder.submit(new EventPayload<>(caseReference, loadTestPcsCase(label), null));
+            PCSCase enforcementCase = loadTestPcsCase(label);
+            enforcementOrderService.createEnforcementOrder(caseReference);
+            enforceTheOrder.submit(new EventPayload<>(caseReference, enforcementCase, null));
             return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
         }
         return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();

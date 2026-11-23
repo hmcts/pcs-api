@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
@@ -29,9 +31,15 @@ class DeleteDraftApplicationTest extends BaseEventTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
 
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
+
+    @InjectMocks
+    private DeleteDraftApplication deleteDraftApplication;
+
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new DeleteDraftApplication(draftCaseDataService));
+        setEventUnderTest(deleteDraftApplication);
     }
 
     @Test
@@ -71,6 +79,7 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         // Then
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
+        verify(enforcementOrderService).markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
 
         assertThat(submitResponse.getConfirmationBody())
                 .contains("Draft application deleted");
@@ -91,6 +100,8 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         // Then
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(
                 TEST_CASE_REFERENCE, enforceTheOrder);
+        verify(enforcementOrderService, never())
+                .markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
 
         assertThat(submitResponse.getConfirmationBody()).isNull();
     }
