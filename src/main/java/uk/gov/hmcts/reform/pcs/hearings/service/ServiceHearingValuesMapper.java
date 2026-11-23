@@ -151,6 +151,8 @@ public class ServiceHearingValuesMapper {
         }
 
         // text is over 2000 characters
+        log.info("listingComments has been truncated for case {} ({} characters, limit {})",
+                 pcsCase.getCaseReference(), fullText.length(), MAX_LISTING_COMMENTS_LENGTH);
         String fittedText = render(fitCommentsFairly(flags));
         // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request
         return fittedText.length() > MAX_LISTING_COMMENTS_LENGTH
