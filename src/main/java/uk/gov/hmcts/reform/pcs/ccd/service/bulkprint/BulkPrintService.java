@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
@@ -50,6 +51,7 @@ public class BulkPrintService {
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final FeatureToggleService featureToggleService;
     private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             CoveringLetterProvider coveringLetterProvider,
@@ -59,7 +61,8 @@ public class BulkPrintService {
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter,
                             FeatureToggleService featureToggleService,
-                            BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
+                            BlankClaimPackFormsProvider blankClaimPackFormsProvider,
+                            DocumentIdExtractor documentIdExtractor) {
         this.coversheetProvider = coversheetProvider;
         this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
@@ -69,6 +72,7 @@ public class BulkPrintService {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.featureToggleService = featureToggleService;
         this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
+        this.documentIdExtractor = documentIdExtractor;
     }
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -85,7 +89,7 @@ public class BulkPrintService {
         }
         documents.forEach(document -> letterDocuments.add(new BulkPrintLetterAssembler.LetterDocument(
             document.getFileName(), document.getContentType(),
-            letterDocumentFetcher.fetchBytes(document.getDocumentId()))));
+            letterDocumentFetcher.fetchBytes(storeDocumentId(document)))));
         addBlankForms(letterDocuments, letterType);
         byte[] letterPdf = letterAssembler.assemble(
             letterType.getCode() + " " + caseReference, coversheet, letterDocuments);
@@ -94,6 +98,17 @@ public class BulkPrintService {
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
             additionalData(caseReference, recipientName, address));
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
+    }
+
+    // Some upload paths did not record the store ID, so older rows only have the URL, whose last segment is the ID.
+    private UUID storeDocumentId(DocumentEntity document) {
+        if (document.getDocumentId() != null) {
+            return document.getDocumentId();
+        }
+        if (StringUtils.isBlank(document.getUrl())) {
+            throw new IllegalStateException("Document " + document.getId() + " has neither a store ID nor a URL");
+        }
+        return documentIdExtractor.extractDocumentId(document.getUrl());
     }
 
     // Blank forms always go last, however many documents come before them; each Welsh form follows its English one.

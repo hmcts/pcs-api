@@ -808,6 +808,10 @@ class DocumentServiceTest {
         when(documentNameService.appendDefendantPostfix(eq("file2.xlsx"), any(), any()))
             .thenReturn("file2 - Defendant 2.xlsx");
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+        UUID storeId1 = UUID.randomUUID();
+        UUID storeId2 = UUID.randomUUID();
+        when(documentIdExtractor.extractDocumentId("url1")).thenReturn(storeId1);
+        when(documentIdExtractor.extractDocumentId("url2")).thenReturn(storeId2);
 
         // When
         List<DocumentEntity> result =
@@ -839,7 +843,50 @@ class DocumentServiceTest {
             .extracting(DocumentEntity::getSize)
             .containsExactly(135529L, 26033L);
 
+        assertThat(entities)
+            .extracting(DocumentEntity::getDocumentId)
+            .containsExactly(storeId1, storeId2);
+
         assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void shouldSaveCounterClaimEvidenceDocumentsWithStoreIds() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(party.getId()).thenReturn(partyId);
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        UUID storeId = UUID.randomUUID();
+        when(documentIdExtractor.extractDocumentId("cc-url")).thenReturn(storeId);
+        when(documentNameService.appendCounterClaimPostfix("receipt.jpg", counterClaim, mainClaim, partyId))
+            .thenReturn("receipt - Defendant 1.jpg");
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        UploadedDocument ccDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("cc-url").filename("receipt.jpg").binaryUrl("cc-bin").build())
+            .contentType("image/jpeg")
+            .sizeInBytes(2048L)
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(ccDoc).build()
+        );
+
+        // When
+        underTest.createCounterClaimUploadedDocuments(uploadedDocs, counterClaim, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        assertThat(documentEntityListCaptor.getValue()).singleElement().satisfies(entity -> {
+            assertThat(entity.getDocumentId()).isEqualTo(storeId);
+            assertThat(entity.getUrl()).isEqualTo("cc-url");
+            assertThat(entity.getCounterClaim()).isSameAs(counterClaim);
+            assertThat(entity.getType()).isEqualTo(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM);
+            assertThat(entity.getFileName()).isEqualTo("receipt - Defendant 1.jpg");
+        });
     }
 
     @Test
@@ -1097,6 +1144,8 @@ class DocumentServiceTest {
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
         when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
+        UUID storeId = UUID.randomUUID();
+        when(documentIdExtractor.extractDocumentId("url-new")).thenReturn(storeId);
 
         UploadedDocument uploaded = UploadedDocument.builder()
             .document(Document.builder()
@@ -1126,6 +1175,7 @@ class DocumentServiceTest {
         assertThat(entity.getFileName()).isEqualTo("file-new - Defendant 1.pdf");
         assertThat(entity.getUrl()).isEqualTo("url-new");
         assertThat(entity.getParty()).isSameAs(party);
+        assertThat(entity.getDocumentId()).isEqualTo(storeId);
     }
 
     @Test

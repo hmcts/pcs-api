@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.service.coverletter.CoveringLetterProvider;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
@@ -60,6 +62,8 @@ class BulkPrintServiceTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private BlankClaimPackFormsProvider blankClaimPackFormsProvider;
+    @Spy
+    private DocumentIdExtractor documentIdExtractor = new DocumentIdExtractor();
 
     @InjectMocks
     private BulkPrintService underTest;
@@ -363,6 +367,39 @@ class BulkPrintServiceTest {
 
         verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, letterAssembler,
             sendLetterApi);
+    }
+
+    @Test
+    @DisplayName("Fetches a document by the ID at the end of its URL when no store ID was recorded")
+    void shouldFallBackToUrlWhenDocumentIdMissing() {
+        byte[] coversheetBytes = "coversheet".getBytes();
+        stubSend(coversheetBytes);
+        UUID storeId = UUID.randomUUID();
+        byte[] uploadBytes = "upload".getBytes();
+        when(letterDocumentFetcher.fetchBytes(storeId)).thenReturn(uploadBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn("merged-pdf".getBytes());
+        DocumentEntity upload = DocumentEntity.builder().id(UUID.randomUUID())
+            .url("http://dm-store/documents/" + storeId).fileName("photo.jpg").contentType("image/jpeg").build();
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address(), List.of(upload));
+
+        verify(letterDocumentFetcher).fetchBytes(storeId);
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).singleElement()
+            .satisfies(packDocument -> assertThat(packDocument.content()).isEqualTo(uploadBytes));
+    }
+
+    @Test
+    @DisplayName("Throws and sends nothing when a document has neither a store ID nor a URL")
+    void shouldThrowWhenDocumentHasNoIdOrUrl() {
+        DocumentEntity upload = DocumentEntity.builder().id(UUID.randomUUID()).build();
+
+        assertThatThrownBy(() -> underTest.sendPack(
+            pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address(), List.of(upload)))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(upload.getId().toString());
+
+        verifyNoInteractions(letterDocumentFetcher, letterAssembler, sendLetterApi);
     }
 
     private void stubSend(byte[] coversheetBytes) {
