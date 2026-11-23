@@ -13,8 +13,8 @@ public class LanguageFlagDuplicateValidator {
 
     static final String SPOKEN_LANGUAGE_INTERPRETER_FLAG_CODE = "PF0015";
     static final String SIGN_LANGUAGE_INTERPRETER_FLAG_CODE = "RA0042";
-    static final String SPOKEN_LANGUAGE_ERROR = "more than one spoken language cannot be added";
-    static final String SIGN_LANGUAGE_ERROR = "more than one language cannot be added";
+    static final String SPOKEN_LANGUAGE_ERROR = "More than one spoken language cannot be added";
+    static final String SIGN_LANGUAGE_ERROR = "More than one language cannot be added";
 
     /**
      * Checks that a case flags submission does not give any party more than one spoken language

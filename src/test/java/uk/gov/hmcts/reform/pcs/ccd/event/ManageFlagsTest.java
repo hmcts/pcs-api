@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +31,8 @@ class ManageFlagsTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
 
     @InjectMocks
     private ManageFlags underTest;
@@ -64,7 +68,7 @@ class ManageFlagsTest extends BaseEventTest {
     void shouldReturnLanguageFlagErrorsWithoutSavingFlags() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
-        List<String> duplicateErrors = List.of("more than one language cannot be added");
+        List<String> duplicateErrors = List.of("More than one language cannot be added");
         when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
             .thenReturn(duplicateErrors);
 
@@ -89,6 +93,45 @@ class ManageFlagsTest extends BaseEventTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldShowLanguageFlagErrorsWhenContinuingFromTheFlagsPage() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        List<String> duplicateErrors = List.of("More than one language cannot be added");
+        AboutToStartOrSubmitResponse<PCSCase, State> validationResponse =
+            AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
+        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
+            .thenReturn(duplicateErrors);
+        when(textAreaValidationService.<PCSCase, State>createValidationResponse(pcsCase, duplicateErrors))
+            .thenReturn(validationResponse);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler("caseworkerCaseFlag", pcsCase);
+
+        // Then
+        assertThat(response).isSameAs(validationResponse);
+        verify(pcsCaseService, never()).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldContinueFromTheFlagsPageWhenThereAreNoLanguageFlagErrors() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        List<String> noErrors = List.of();
+        AboutToStartOrSubmitResponse<PCSCase, State> validationResponse =
+            AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(pcsCase).build();
+        when(languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties()))
+            .thenReturn(noErrors);
+        when(textAreaValidationService.<PCSCase, State>createValidationResponse(pcsCase, noErrors))
+            .thenReturn(validationResponse);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler("caseworkerCaseFlag", pcsCase);
+
+        // Then
+        assertThat(response).isSameAs(validationResponse);
     }
 
     @Test
