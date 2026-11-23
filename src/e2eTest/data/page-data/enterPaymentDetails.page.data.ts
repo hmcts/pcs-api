@@ -1,5 +1,6 @@
 export const enterPaymentDetails = {
   mainHeader: `Enter payment details`,
+  cardDetailsMainHeader: `Enter card details`,
   cardNoLabel: `Card number`,
   cardNoInputText: `4242424242424242`,
   monthTextLabel: `Month`,

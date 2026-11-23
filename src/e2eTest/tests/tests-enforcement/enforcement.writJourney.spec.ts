@@ -15,19 +15,18 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
+  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
   enforcementApplication,
-  landRegistryFees,
-  languageUsed,
-  legalCosts, missedPayments,
-  moneyOwed,
+  languageUsed, missedPayments,
   nameAndAddressForEviction,
-  repayments,
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
+} from '@data/index.selector.enforcement';
+import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -69,6 +68,9 @@ test.beforeEach(async ({ page }, testInfo) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  if (process.env.RUN_E2E_IN_WELSH === 'true') {
+    await performAction('clickButton', home.cymraegLink);
+  }
 });
 
 test.afterEach(async () => {
@@ -80,8 +82,8 @@ test.afterEach(async () => {
   }
   PageContentValidation.finaliseTest();
 });
-// Skipping this test case as the feature is not part of Release 1 to save execution time.
-test.describe('[Enforcement - Writ of Possession]', async () => {
+
+test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
   test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -330,7 +332,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey @enforcement', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',

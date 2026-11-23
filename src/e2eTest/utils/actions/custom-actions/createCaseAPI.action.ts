@@ -33,7 +33,14 @@ export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid:
 
 export let defendantUserDetails: { id: string; name: string }[] = [];
 
+type FeePaymentInfo = {
+  serviceRequestReference?: string;
+  amount?: number;
+  paymentStatus?: string;
+};
+
 export class CreateCaseAPIAction implements IAction {
+  private feePaymentReferencesByCase = new Map<string, Set<string>>();
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCaseAPI', () => this.createCaseAPI(fieldName)],
@@ -48,10 +55,11 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
-      ['updatePaymentAPI', () => this.updatePaymentAPI(fieldName as actionRecord)],
+      ['updatePaymentAPI', () => this.updatePaymentAPI()],
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimLRAPI', () => this.midEventRespondPossessionClaimLRAPI(fieldName as actionRecord)],
+      ['updatePaymentAPILRCC', () => this.updatePaymentAPILRCC(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimCitizenAPI', () => this.midEventRespondPossessionClaimCitizenAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseCitizenAPI', () => this.submitPossessionClaimResponseCitizenAPI()],
 
@@ -277,7 +285,7 @@ export class CreateCaseAPIAction implements IAction {
         await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
-        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);       
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
         defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
@@ -540,34 +548,55 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async updatePaymentAPI(payType?: actionRecord): Promise<void> {
+  private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
+    const caseNumber = process.env.CASE_NUMBER;
+    if (!caseNumber) {
+      throw new Error('Cannot update payment because CASE_NUMBER is not set.');
+    }
+    // Fee payment records are created asynchronously after case submission.
+    // Enforcement journeys can take longer than the standard action retry window.
     const maxRetries = actionRetries + actionRetries;
     const delayMs = VERY_SHORT_TIMEOUT;
-    const payLoad = payType?.app ? paymentApiData.paymentUpdateCCPayload : paymentApiData.paymentUpdatePayload
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
-        const paymentInfo = response.data;
-        if (!paymentInfo?.length) {
-          throw new Error('No payment information found.');
+        const paymentInfo = response.data as FeePaymentInfo[];
+        if (!Array.isArray(paymentInfo) || paymentInfo.length === 0) {
+          throw new Error('No fee payment information found.');
         }
-        const selectedPayment = payType?.app === 'Counter Claim'
-          ? this.selectCounterClaimPayment(paymentInfo, payType.amt)
-          : paymentInfo[0];
-        const requestReference = selectedPayment?.serviceRequestReference;
-        if (!requestReference) {
-          throw new Error('Selected payment does not contain a service request reference');
+        const uniqueFeeRequests = [...new Map(paymentInfo
+          .filter((fee): fee is FeePaymentInfo & { serviceRequestReference: string; amount: number } =>
+            Boolean(fee.serviceRequestReference) && Number.isFinite(Number(fee.amount)) && Number(fee.amount) > 0)
+          .map(fee => [fee.serviceRequestReference, fee] as const)).values()];
+        const previousReferences = this.feePaymentReferencesByCase.get(caseNumber);
+        const unpaidFeeRequests = uniqueFeeRequests.filter(fee => fee.paymentStatus !== 'PAID');
+        const payableFeeRequests = previousReferences
+          ? unpaidFeeRequests.filter(fee => !previousReferences.has(fee.serviceRequestReference))
+          : unpaidFeeRequests;
+        if (payableFeeRequests.length === 0) throw new Error('No unpaid fee service request found.');
+        if (payableFeeRequests.length > 1) {
+          throw new Error(`Expected one unpaid fee service request but found ${payableFeeRequests.length}.`);
         }
+        const selectedPayment = payableFeeRequests[0];
+        const requestReference = selectedPayment.serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
-          payLoad(requestReference, payType?.amt as number | undefined)
+          paymentApiData.paymentUpdatePayload(requestReference, Number(selectedPayment.amount))
         );
-        if (updateResponse.status === 200 || updateResponse.status === 204) {
-          console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`)
-          return;
+        if (updateResponse.status !== 200 && updateResponse.status !== 204) throw new Error(`Payment update failed with status ${updateResponse.status}`);
+        let paymentConfirmed = false;
+        for (let statusAttempt = 1; statusAttempt <= maxRetries; statusAttempt++) {
+          const statusResponse = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
+          const updatedFee = (statusResponse.data as FeePaymentInfo[]).find(fee =>
+            fee.serviceRequestReference === requestReference && fee.paymentStatus === 'PAID');
+          if (updatedFee) { paymentConfirmed = true; break; }
+          await new Promise(res => setTimeout(res, delayMs));
         }
-        throw new Error(`Payment update failed with status ${updateResponse.status}`);
+        if (!paymentConfirmed) throw new Error(`Payment status was not updated to PAID for ${requestReference}.`);
+        this.feePaymentReferencesByCase.set(caseNumber, new Set(uniqueFeeRequests.map(fee => fee.serviceRequestReference)));
+        console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`);
+        return;
       } catch (error: any) {
         const status = error?.response?.status;
         if (attempt === maxRetries) {
@@ -580,37 +609,6 @@ export class CreateCaseAPIAction implements IAction {
       }
     }
     throw new Error('Payment API failed after multiple retries');
-  }
-
-  private selectCounterClaimPayment(paymentInfo: any[], amount?: actionData): any {
-    const callbackPayment = paymentInfo.find(
-      payment => payment?.paymentCallbackHandlerType === 'COUNTER_CLAIM_ISSUE'
-    );
-    if (callbackPayment) {
-      return callbackPayment;
-    }
-
-    const requestedAmount = Number(amount);
-    const amountRepresentations = new Set([
-      requestedAmount,
-      requestedAmount / 100,
-    ].filter(value => Number.isFinite(value)));
-
-    const matchingPayments = paymentInfo.filter(payment => {
-      const paymentAmount = Number(payment?.amount);
-      return amountRepresentations.has(paymentAmount)
-        || amountRepresentations.has(Number(payment?.amountInPence));
-    });
-
-    if (matchingPayments.length > 0) {
-      return matchingPayments[matchingPayments.length - 1];
-    }
-
-    if (paymentInfo.length === 1) {
-      return paymentInfo[0];
-    }
-
-    throw new Error(`No counterclaim payment found for amount ${amount}`);
   }
 
   private defendantIds: string[] = [];
@@ -772,7 +770,7 @@ export class CreateCaseAPIAction implements IAction {
     await validateApi.get(`/cases/${process.env.CASE_NUMBER}/event-triggers/respondPossessionClaim`);
 
     const midEventPayload = typeof midEvent === "object" && "data" in midEvent ? midEvent.data : midEvent;
-    
+
     try {
       const response = await this.apiRetry(() =>
         validateApi.post(
@@ -853,6 +851,106 @@ export class CreateCaseAPIAction implements IAction {
     }
 
   };
+  private async updatePaymentAPILRCC(payType?: actionRecord): Promise<void> {
+    const isCounterClaim = Boolean(payType?.app);
+    // Only read the marker for counterclaim payments; other callers are unaffected
+    const before = isCounterClaim ? await this.readCaseLastModified() : undefined;
+
+    const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
+    const maxRetries = actionRetries + actionRetries;
+    const delayMs = VERY_SHORT_TIMEOUT;
+    const payLoad = paymentApiData.paymentUpdatePayload;
+    let paid = false;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
+        const paymentInfo = response.data;
+        if (!paymentInfo?.length) {
+          throw new Error('No payment information found.');
+        }
+
+        let selected = paymentInfo[0]; // unchanged for non-counterclaim payments
+
+        if (isCounterClaim) {
+          const amt = Number(payType?.amt);
+          const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const amountPatterns = [...new Set([String(amt), String(amt / 100), (amt / 100).toFixed(2)])].map(
+            v => new RegExp(`(^|[^\\d.])${escapeRegExp(v)}(?!\\d)(?!\\.\\d*[1-9])`)
+          );
+          const matchesAmount = (p: any) => amountPatterns.some(r => r.test(JSON.stringify(p)));
+
+          const matchIndex = [...paymentInfo].reverse().findIndex(matchesAmount);
+          if (matchIndex === -1) {
+            throw new Error(
+              `No service request matching amount ${amt} (or ${amt / 100}) yet. Payment info: ${JSON.stringify(paymentInfo)}`
+            );
+          }
+          selected = paymentInfo[paymentInfo.length - 1 - matchIndex];
+        }
+
+        const requestReference = selected.serviceRequestReference;
+        const updateResponse = await paymentApi.put(
+          paymentApiData.updatePaymentApiEndPoint,
+          payLoad(requestReference, payType?.amt as number)
+        );
+        if (updateResponse.status === 200 || updateResponse.status === 204) {
+          console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`);
+          paid = true;
+          break; // leave the retry loop; the settle wait happens below, outside the try/catch
+        }
+        throw new Error(`Payment update failed with status ${updateResponse.status}`);
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (attempt === maxRetries) {
+          if (Axios.isAxiosError(error)) {
+            throw new Error(`Payment API failed after retries: ${status}`);
+          }
+          throw new Error(`Payment API failed unexpectedly after retries.${error}`);
+        }
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+    }
+
+    if (!paid) {
+      throw new Error('Payment API failed after multiple retries');
+    }
+
+    // Replaces the fixed 90s sleep: returns as soon as the case changes
+    if (isCounterClaim) {
+      await this.waitForCaseUpdate(before);
+    }
+  }
+
+  private async readCaseLastModified(): Promise<string | undefined> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    const { data } = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+    return data?.last_modified;
+  }
+
+  private async waitForCaseUpdate(before: string | undefined): Promise<void> {
+    if (!before) {
+      console.warn('⚠️ Case GET has no "last_modified"; cannot detect payment processing, skipping wait.');
+      return;
+    }
+    const timeoutMs = Number(process.env.PAYMENT_SETTLE_TIMEOUT_MS ?? 90_000);
+    const intervalMs = 3_000;
+    const deadline = Date.now() + timeoutMs;
+    let current: string | undefined = before;
+
+    while (Date.now() < deadline) {
+      current = await this.readCaseLastModified();
+      if (current && current !== before) {
+        console.log(`✅ Counterclaim payment processed: last_modified ${before} -> ${current}`);
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+    throw new Error(
+      `Counterclaim payment accepted but the case did not change within ${timeoutMs}ms ` +
+      `(last_modified stayed ${current}).`
+    );
+  }
 
   private async apiRetry<T>(
     fn: () => Promise<T>,
