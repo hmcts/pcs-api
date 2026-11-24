@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import java.time.Clock;
 import java.time.LocalDate;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Component
@@ -32,6 +33,7 @@ public class BreathingSpaceApplicationPage implements CcdPageConfiguration {
         pageBuilder
             .page("breathingSpaceApplication", this::midEvent)
             .label("breathingSpaceApplication-lineSeparator", "---")
+            .readonly(PCSCase::getHasActiveBreathingSpace, NEVER_SHOW, true)
             .complex(PCSCase::getBreathingSpaceDetails)
             .optional(BreathingSpaceDetails::getReferenceNumber)
             .optional(BreathingSpaceDetails::getStartDate)
