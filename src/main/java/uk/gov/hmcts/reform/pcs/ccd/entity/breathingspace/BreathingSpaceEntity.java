@@ -16,11 +16,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -52,10 +53,8 @@ public class BreathingSpaceEntity {
 
     private LocalDate expectedEndDate;
 
-    @Column(name = "created_at",
-        nullable = false,
-        insertable = false,
-        updatable = false)
-    private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
 }

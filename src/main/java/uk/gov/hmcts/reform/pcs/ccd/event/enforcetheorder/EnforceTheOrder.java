@@ -69,7 +69,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
+                .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\"",
+                                   "hasActiveBreathingSpace=\"No\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
