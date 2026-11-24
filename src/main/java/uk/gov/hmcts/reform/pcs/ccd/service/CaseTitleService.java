@@ -47,11 +47,11 @@ public class CaseTitleService {
         if (isCurrentUserInternal(caseReference) && featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
             return buildInternalCaseTitle(pcsCase);
         } else {
-            return buildPublicCaseTitle(pcsCase);
+            return buildDefaultCaseTitle(pcsCase);
         }
     }
 
-    public String buildInternalCaseTitle(PCSCase pcsCase) {
+    private String buildInternalCaseTitle(PCSCase pcsCase) {
 
         return """
             <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
@@ -66,7 +66,7 @@ public class CaseTitleService {
                                   caseBundleLink(pcsCase));
     }
 
-    public String buildPublicCaseTitle(PCSCase pcsCase) {
+    private String buildDefaultCaseTitle(PCSCase pcsCase) {
 
         return """
             <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
@@ -74,7 +74,8 @@ public class CaseTitleService {
             </p>
             <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                 Property address: %s
-            </p>""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER));
+            </p>%s""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER),
+                                caseBundleLink(pcsCase));
     }
 
     private boolean isCurrentUserInternal(long caseReference) {
