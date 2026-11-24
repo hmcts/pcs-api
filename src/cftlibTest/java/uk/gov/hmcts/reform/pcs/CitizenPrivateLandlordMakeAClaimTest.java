@@ -116,7 +116,8 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
             .noElectricalInstallationConditionReason("Not carried out")
             .build();
 
-        CitizenPossessionClaim startedDraft = createSaveAndSubmit(WELSH_PROPERTY_ADDRESS, occupationContract, walesGrounds());
+        CitizenPossessionClaim startedDraft =
+            createSaveAndSubmit(WELSH_PROPERTY_ADDRESS, occupationContract, walesGrounds());
 
         assertThat(startedDraft.getEligibility().getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
     }
