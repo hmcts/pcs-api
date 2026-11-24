@@ -7,10 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addjudicialnote.AddJudicialNotePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.JudicialNoteService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -46,8 +48,8 @@ public class AddJudicialNoteTest extends BaseEventTest {
     }
 
     @Test
-    void shouldShowEventWithoutAFeatureFlagCondition() {
-        assertConfiguredShowConditions(null);
+    void shouldShowEventWithAFeatureFlagCondition() {
+        assertConfiguredShowConditions(ShowConditions.featureFlagsEnabled(FeatureFlag.CASE_MANAGEMENT_R2));
     }
 
 }
