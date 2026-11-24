@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.notify.service.GenAppNotificationService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -52,7 +52,7 @@ public class GenAppService {
     private final ClaimActivityLogService claimActivityLogService;
     private final DocumentIdExtractor documentIdExtractor;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
-    private final NotificationService notificationService;
+    private final GenAppNotificationService genAppNotificationService;
     private final GenAppWaTaskService genAppWaTaskService;
     private final Clock utcClock;
 
@@ -63,7 +63,7 @@ public class GenAppService {
                          ClaimActivityLogService claimActivityLogService,
                          DocumentIdExtractor documentIdExtractor,
                          GenAppDocumentGenerator genAppDocumentGenerator,
-                         NotificationService notificationService,
+                         GenAppNotificationService genAppNotificationService,
                          GenAppWaTaskService genAppWaTaskService,
                          @Qualifier("utcClock") Clock utcClock) {
 
@@ -74,7 +74,7 @@ public class GenAppService {
         this.claimActivityLogService = claimActivityLogService;
         this.documentIdExtractor = documentIdExtractor;
         this.genAppDocumentGenerator = genAppDocumentGenerator;
-        this.notificationService = notificationService;
+        this.genAppNotificationService = genAppNotificationService;
         this.genAppWaTaskService = genAppWaTaskService;
         this.utcClock = utcClock;
     }
@@ -219,7 +219,7 @@ public class GenAppService {
 
         long caseReference = genAppEntity.getPcsCase().getCaseReference();
         genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-        notificationService.sendGenAppReceivedEmail(genAppEntity);
+        genAppNotificationService.sendGenAppIssuedNotifications(genAppId);
         genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
         genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
     }

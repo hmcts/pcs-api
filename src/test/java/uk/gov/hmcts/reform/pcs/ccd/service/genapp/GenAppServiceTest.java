@@ -47,7 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.notify.service.GenAppNotificationService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -99,7 +99,7 @@ class GenAppServiceTest {
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
     @Mock
-    private NotificationService notificationService;
+    private GenAppNotificationService genAppNotificationService;
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
     @Mock(strictness = LENIENT)
@@ -127,7 +127,7 @@ class GenAppServiceTest {
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
                                       documentRepository, claimActivityLogService, documentIdExtractor,
                                       genAppDocumentGenerator,
-                                      notificationService, genAppWaTaskService, utcClock
+                                      genAppNotificationService, genAppWaTaskService, utcClock
         );
     }
 
@@ -1176,7 +1176,7 @@ class GenAppServiceTest {
 
             // Then
             verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
-            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppNotificationService).sendGenAppIssuedNotifications(genAppId);
             verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
             verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
         }
@@ -1212,7 +1212,7 @@ class GenAppServiceTest {
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
-            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
+            verifyNoInteractions(genAppDocumentGenerator, genAppNotificationService, genAppWaTaskService);
         }
 
         @Test
@@ -1226,7 +1226,7 @@ class GenAppServiceTest {
 
             // Then
             assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
-            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
+            verifyNoInteractions(genAppDocumentGenerator, genAppNotificationService, genAppWaTaskService);
         }
     }
 

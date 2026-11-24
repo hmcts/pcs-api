@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.notify.service.GenAppNotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -59,7 +59,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final ConfirmationScreenFactory confirmationScreenFactory;
     private final PaymentService paymentService;
     private final SchedulerClient schedulerClient;
-    private final NotificationService notificationService;
+    private final GenAppNotificationService genAppNotificationService;
     private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
@@ -103,6 +103,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+            genAppNotificationService.sendGenAppIssuedNotifications(genAppEntity.getId());
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
             genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
         } else {
@@ -120,7 +121,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-            notificationService.sendGenAppReceivedEmail(genAppEntity);
+            genAppNotificationService.sendGenAppIssuedNotifications(genAppEntity.getId());
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
             genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
 
