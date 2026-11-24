@@ -92,7 +92,7 @@ public class ServiceHearingValuesMapper {
         values.setHmctsInternalCaseName(caseName);
         values.setPublicCaseName(caseName);
         values.setCaseDeepLink(caseDeepLink(pcsCase.getCaseReference()));
-        values.setCaseSlaStartDate(caseSlaStartDate(pcsCase));
+        values.setCaseSlaStartDate(getClaimIssuedDate(pcsCase));
         values.setHearingWindow(hearingWindow(pcsCase));
         if (isUrgentHearing(pcsCase)) {
             values.setHearingPriorityType(defaults.getHearingPriorityUrgent());
@@ -151,10 +151,6 @@ public class ServiceHearingValuesMapper {
             .map(ClaimEntity::getClaimIssuedDate)
             .map(issued -> issued.atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate())
             .orElse(null);
-    }
-
-    private LocalDate caseSlaStartDate(PcsCaseEntity pcsCase) {
-        return getClaimIssuedDate(pcsCase);
     }
 
     private HearingWindow hearingWindow(PcsCaseEntity pcsCase) {
