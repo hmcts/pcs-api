@@ -66,6 +66,10 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
 
         if (SelectEnforcementType.WARRANT.name().equals(enforcementType)) {
             notificationService.sendWarrantOfPossessionSubmittedEmail(claimant);
+
+        } else if (SelectEnforcementType.WRIT.name().equals(enforcementType)) {
+            notificationService.sendWritOfPossessionSubmittedEmail(claimant);
+
         } else {
             log.info("No submitted email for enforcement type {} on enforcement app {}",
                      enforcementType, enforcementOrderEntity.getId());
