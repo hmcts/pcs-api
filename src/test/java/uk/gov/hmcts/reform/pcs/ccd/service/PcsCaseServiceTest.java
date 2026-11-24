@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -51,10 +52,12 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -227,6 +230,40 @@ class PcsCaseServiceTest {
 
         // Then
         verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity);
+    }
+
+    @Test
+    void shouldCreatePartiesWithExplicitOrganisationOnCase() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        final ClaimEntity mainClaimEntity = stubClaimCreation();
+        PCSCase caseData = PCSCase.builder().build();
+        OrganisationDetailsResponse org = OrganisationDetailsResponse.builder().organisationIdentifier("ORG1").build();
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, org);
+
+        // Then
+        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity, org);
+        verify(partyService, never()).createAllParties(any(), any(), any());
+        verifyNoInteractions(securityContextService);
+    }
+
+    @Test
+    void shouldCreateClaimantStubWithExplicitOrganisation() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+        OrganisationDetailsResponse org = OrganisationDetailsResponse.builder().organisationIdentifier("ORG1").build();
+        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(mock(AddressEntity.class));
+
+        // When
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry, org);
+
+        // Then
+        verify(partyService).createClaimantStub(any(PcsCaseEntity.class), eq(org));
+        verify(partyService, never()).createClaimantStub(any(PcsCaseEntity.class));
+        verifyNoInteractions(securityContextService);
     }
 
     @Test

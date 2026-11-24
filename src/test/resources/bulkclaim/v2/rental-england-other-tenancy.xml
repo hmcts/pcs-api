@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RentalClaimSet xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2">
+  <Version>2.0</Version>
+  <PaymentAccountNumber>PBA1234567</PaymentAccountNumber>
+  <RentalClaim>
+    <CustomerUniqueIdentifier>OTHER-1</CustomerUniqueIdentifier>
+    <Claimant PCOLReferenceNumber="1234">
+      <CompanyName>Example Housing Association</CompanyName>
+      <ContactEmailAddress>lettings@example.org</ContactEmailAddress>
+    </Claimant>
+    <Property>
+      <Address>
+        <AddressLine1>10 Rented Road</AddressLine1>
+        <PostTown>Manchester</PostTown>
+        <PostCode>M1 1AA</PostCode>
+      </Address>
+      <LegislativeCountry>ENGLAND</LegislativeCountry>
+    </Property>
+    <Defendant><Name><FirstName>Ann</FirstName><LastName>Tenant</LastName></Name><AddressSameAsProperty>true</AddressSameAsProperty></Defendant>
+    <Defendant><Name><FirstName>Bob</FirstName><LastName>Tenant</LastName></Name><ContactDetails><Address><AddressLine1>2 Other Road</AddressLine1><PostTown>Leeds</PostTown><PostCode>LS1 1AA</PostCode></Address></ContactDetails></Defendant>
+    <ClaimantDesignation>SocialLandlord</ClaimantDesignation>
+    <ClaimParticulars>
+      <ClaimStatementOfTruth>
+        <SigneeStatus>Claimant</SigneeStatus>
+        <Agreed>true</Agreed>
+        <SignedDate>2026-11-01</SignedDate>
+        <SignedName>Sam Signer</SignedName>
+        <Position>Housing Officer</Position>
+      </ClaimStatementOfTruth>
+      <PreActionProtocolCompleted>true</PreActionProtocolCompleted>
+      <LanguageUsed>ENGLISH</LanguageUsed>
+      <TenancyType>OTHER</TenancyType>
+      <OtherTenancyTypeDetails>A licence agreement.</OtherTenancyTypeDetails>
+      <Grounds>
+        <Ground><Code>BREACH_OF_THE_TENANCY</Code><Reason>Breach of terms.</Reason></Ground>
+        <Ground><Code>OTHER</Code><Reason>Other reasons.</Reason><OtherDescription>Special grounds.</OtherDescription></Ground>
+      </Grounds>
+      <Notice>
+        <Served>true</Served>
+        <ServiceMethod>OTHER</ServiceMethod>
+        <ServedDateTime>2026-10-05T10:30:00</ServedDateTime>
+        <Explanation>Left with a neighbour.</Explanation>
+      </Notice>
+    </ClaimParticulars>
+  </RentalClaim>
+</RentalClaimSet>

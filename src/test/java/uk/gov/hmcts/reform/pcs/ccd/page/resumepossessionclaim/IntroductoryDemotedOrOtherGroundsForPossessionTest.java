@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,8 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), any());
 
         setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(
-            textAreaValidationService
+            textAreaValidationService,
+            new GroundsRules(textAreaValidationService)
         ));
     }
 

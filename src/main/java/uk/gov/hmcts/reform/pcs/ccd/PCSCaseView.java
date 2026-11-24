@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BulkClaimDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
@@ -110,6 +111,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final MessagesView messagesView;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
+    private final BulkClaimDetailsView bulkClaimDetailsView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -207,6 +209,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
         messagesView.setCaseFields(pcsCase, pcsCaseEntity);
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+        bulkClaimDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);

@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BulkClaimDetailsTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -42,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PaymentHistoryTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemDocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemUserOnlyAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -127,6 +129,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
+
+    @CCD(searchable = false, access = {SystemUserOnlyAccess.class})
+    private String bulkClaimSubmissionId;
 
     @CCD(searchable = false)
     @JsonUnwrapped(prefix = "reindexCases_")
@@ -1228,5 +1233,16 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
+
+    @CCD(searchable = false, access = {BulkClaimDetailsTabAccess.class})
+    private String bulkClaimDetailsMarkdown;
+
+    @CCD(
+        label = "${bulkClaimDetailsMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {BulkClaimDetailsTabAccess.class}
+    )
+    private String bulkClaimDetailsMarkdownLabel;
 
 }

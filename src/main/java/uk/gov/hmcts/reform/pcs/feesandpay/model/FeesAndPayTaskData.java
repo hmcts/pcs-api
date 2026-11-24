@@ -28,4 +28,12 @@ public class FeesAndPayTaskData {
 
     private final UUID relatedEntityId;
 
+    private final String pbaAccountNumber;
+
+    private final String pbaCustomerReference;
+
+    private final String organisationName;
+
+    private final UUID bulkClaimSubmissionId;
+
 }

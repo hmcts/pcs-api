@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Set;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 @Service
 @Slf4j
@@ -50,6 +52,18 @@ public class PcsCaseService {
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
+        return createCase(caseReference, propertyAddress, legislativeCountry, partyService::createClaimantStub);
+    }
+
+    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
+                                    LegislativeCountry legislativeCountry, OrganisationDetailsResponse orgDetails) {
+        return createCase(caseReference, propertyAddress, legislativeCountry,
+                          caseEntity -> partyService.createClaimantStub(caseEntity, orgDetails));
+    }
+
+    private PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
+                                     LegislativeCountry legislativeCountry,
+                                     Consumer<PcsCaseEntity> claimantStubCreator) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
         Objects.requireNonNull(legislativeCountry, "Legislative country must be provided to create a case");
@@ -59,13 +73,24 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
-        partyService.createClaimantStub(pcsCaseEntity);
+        claimantStubCreator.accept(pcsCaseEntity);
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
     @Transactional
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
+        createMainClaimOnCase(caseReference, pcsCase, partyService::createAllParties);
+    }
+
+    @Transactional
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, OrganisationDetailsResponse orgDetails) {
+        createMainClaimOnCase(caseReference, pcsCase,
+            (pcsCaseData, caseEntity, claimEntity) ->
+                partyService.createAllParties(pcsCaseData, caseEntity, claimEntity, orgDetails));
+    }
+
+    private void createMainClaimOnCase(long caseReference, PCSCase pcsCase, PartyCreator partyCreator) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
@@ -73,13 +98,18 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+        partyCreator.createParties(pcsCase, pcsCaseEntity, claimEntity);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
 
         pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    @FunctionalInterface
+    private interface PartyCreator {
+        void createParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {

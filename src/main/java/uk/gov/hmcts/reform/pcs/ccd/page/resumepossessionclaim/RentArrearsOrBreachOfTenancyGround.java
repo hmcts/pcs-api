@@ -2,18 +2,27 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
+
+    private final GroundsRules groundsRules;
+
+    public RentArrearsOrBreachOfTenancyGround() {
+        this(new GroundsRules());
+    }
+
+    public RentArrearsOrBreachOfTenancyGround(GroundsRules groundsRules) {
+        this.groundsRules = groundsRules;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -33,11 +42,8 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        if (caseData.getRentArrearsOrBreachOfTenancy().contains(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY)) {
-            caseData.setShowBreachOfTenancyTextarea(YesOrNo.YES);
-        } else {
-            caseData.setShowBreachOfTenancyTextarea(YesOrNo.NO);
-        }
+        caseData.setShowBreachOfTenancyTextarea(
+            groundsRules.showBreachOfTenancyTextarea(caseData.getRentArrearsOrBreachOfTenancy()));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

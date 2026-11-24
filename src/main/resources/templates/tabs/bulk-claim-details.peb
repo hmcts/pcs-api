@@ -1,0 +1,132 @@
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <br>
+      {% macro rows(rows) %}
+      <dl class="govuk-summary-list">
+        {% for row in rows %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key govuk-!-font-size-16">{{ row.label }}</dt>
+          <dd class="govuk-summary-list__value govuk-!-font-size-16">{{ row.value }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+      {% endmacro %}
+      {% if details.submission is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Submission</h2>
+        </div>
+        <div class="govuk-summary-card__content">{{ rows(details.submission) }}</div>
+      </div>
+      {% endif %}
+      {% for party in details.parties %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">{{ party.heading }}</h2>
+        </div>
+        <div class="govuk-summary-card__content">{{ rows(party.rows) }}</div>
+      </div>
+      {% endfor %}
+      {% if details.paymentHistory is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Arrears payment history</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Due date</th>
+                <th scope="col" class="govuk-table__header">Amount due</th>
+                <th scope="col" class="govuk-table__header">Amount paid</th>
+                <th scope="col" class="govuk-table__header">Cumulative arrears</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for line in details.paymentHistory %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ line.dueDate }}</td>
+                <td class="govuk-table__cell">{{ line.amountDue }}</td>
+                <td class="govuk-table__cell">{{ line.amountPaid }}</td>
+                <td class="govuk-table__cell">{{ line.cumulativeArrears }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+      {% if details.mortgage is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Mortgage particulars</h2>
+        </div>
+        <div class="govuk-summary-card__content">{{ rows(details.mortgage) }}</div>
+      </div>
+      {% endif %}
+      {% if details.additionalPayments is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Additional payments</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Amount</th>
+                <th scope="col" class="govuk-table__header">Reason</th>
+                <th scope="col" class="govuk-table__header">Arrears</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for payment in details.additionalPayments %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ payment.amount }}</td>
+                <td class="govuk-table__cell">{{ payment.reason }}</td>
+                <td class="govuk-table__cell">{{ payment.arrears }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+      {% if details.originalProvider is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Original mortgage provider</h2>
+        </div>
+        <div class="govuk-summary-card__content">{{ rows(details.originalProvider) }}</div>
+      </div>
+      {% endif %}
+      {% if details.occupants is not empty %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">Occupants</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Name</th>
+                <th scope="col" class="govuk-table__header">Other names</th>
+                <th scope="col" class="govuk-table__header">Initials</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for occupant in details.occupants %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ occupant.name }}</td>
+                <td class="govuk-table__cell">{{ occupant.otherNames }}</td>
+                <td class="govuk-table__cell">{{ occupant.initials }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

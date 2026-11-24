@@ -4,9 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
@@ -261,6 +263,43 @@ class ClaimFormPayloadBuilderTest {
                     "Additional defendant 1 details",
                     "Additional defendant 2 details",
                     "Additional defendant 3 details");
+        }
+    }
+
+    @Nested
+    class MortgageClaim {
+
+        @Test
+        void buildsWithoutTenancyGroundsNoticeOrRentArrears() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimantType(ClaimantType.MORTGAGE_LENDER);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIsMortgageClaim()).isEqualTo("Yes");
+            assertThat(payload.isEngland()).isTrue();
+            assertThat(payload.getGrounds()).isEmpty();
+            assertThat(payload.isShowGroundsList()).isFalse();
+            assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
+            assertThat(payload.isShowTenancyUploadedQuestion()).isFalse();
+            assertThat(payload.getTenancyTypeLabel()).isNull();
+            assertThat(payload.getRentArrearsTotal()).isNull();
+            assertThat(payload.isNoticeServedYes()).isFalse();
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = ClaimantType.class, names = "MORTGAGE_LENDER", mode = EnumSource.Mode.EXCLUDE)
+        void otherClaimantTypesAreNotMortgageClaims(ClaimantType claimantType) {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimantType(claimantType);
+
+            assertThat(builder.build(pcsCase).getIsMortgageClaim()).isEqualTo("No");
+        }
+
+        @Test
+        void claimWithNoClaimantTypeIsNotAMortgageClaim() {
+            assertThat(builder.build(minimalCase(LegislativeCountry.ENGLAND)).getIsMortgageClaim())
+                .isEqualTo("No");
         }
     }
 

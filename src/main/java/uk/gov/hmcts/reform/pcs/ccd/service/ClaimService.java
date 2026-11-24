@@ -40,6 +40,11 @@ public class ClaimService {
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
         ClaimEntity claimEntity = buildClaimEntity(pcsCase);
 
+        if (claimEntity.getClaimantType() != null && claimEntity.getClaimantType().isMortgageLender()) {
+            claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
+            return claimRepository.save(claimEntity);
+        }
+
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
         claimEntity.addClaimGrounds(claimGrounds);
 

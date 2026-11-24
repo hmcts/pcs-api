@@ -4,15 +4,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.PossessiveNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.ClaimantNameRules;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -71,14 +70,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
     private void setClaimantNamePossessiveForm(PCSCase caseData) {
         ClaimantInformation claimantInfo = caseData.getClaimantInformation();
 
-        String claimantName;
-        if (claimantInfo.getOrgNameFound() == YesOrNo.NO) {
-            claimantName = claimantInfo.getFallbackClaimantName();
-        } else if (claimantInfo.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
-            claimantName = claimantInfo.getOverriddenClaimantName();
-        } else {
-            claimantName = claimantInfo.getClaimantName();
-        }
+        String claimantName = ClaimantNameRules.resolveClaimantName(claimantInfo).name();
 
         caseData.getClaimantCircumstances()
             .setClaimantNamePossessiveForm(possessiveNameService.applyApostrophe(claimantName));

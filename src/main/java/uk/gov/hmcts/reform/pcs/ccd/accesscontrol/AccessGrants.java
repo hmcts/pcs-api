@@ -61,6 +61,21 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] BULK_CLAIM_DETAILS_READ_ROLES = {
+        PCS_SOLICITOR,
+        GA_CLAIMANT_SOLICITOR,
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
+        HEARING_CENTRE_TEAM_LEADER,
+        HEARING_CENTRE_ADMIN,
+        CTSC_TEAM_LEADER,
+        CTSC_ADMIN,
+        WLU_TEAM_LEADER,
+        WLU_ADMIN
+    };
+
     static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {
         JUDGE,
         FEE_PAID_JUDGE,
@@ -114,6 +129,10 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {
         return internalReadAccess();
+    }
+
+    static SetMultimap<HasRole, Permission> bulkClaimDetailsReadAccess() {
+        return readAccess(BULK_CLAIM_DETAILS_READ_ROLES);
     }
 
     static SetMultimap<HasRole, Permission> paymentHistoryReadAccess() {

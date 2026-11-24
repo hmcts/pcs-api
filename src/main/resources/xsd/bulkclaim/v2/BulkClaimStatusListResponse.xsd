@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hmcts.gov.uk/pcs/bulkclaim/v2"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="BulkClaimStatusResponse.xsd"/>
+
+  <xs:element name="BulkClaimStatusListResponse">
+    <xs:annotation>
+      <xs:documentation>
+        One Claim per identifier in the BulkClaimStatusRequest, in request order. A Claim for an identifier with no
+        claim in the calling organisation has ClaimStatus StatusCode 2 and FailReasonCode 17 (claim not found).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Claim" type="ClaimStatusType" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

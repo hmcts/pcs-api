@@ -2,25 +2,32 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.GroundsRules;
 
+import java.util.List;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
+
+    private final GroundsRules groundsRules;
+
+    public SecureOrFlexibleGroundsForPossession() {
+        this(new GroundsRules());
+    }
+
+    public SecureOrFlexibleGroundsForPossession(GroundsRules groundsRules) {
+        this.groundsRules = groundsRules;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -58,48 +65,18 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         PCSCase caseData = details.getData();
         SecureOrFlexiblePossessionGrounds grounds = caseData.getSecureOrFlexiblePossessionGrounds();
 
-        Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
-                grounds.getSecureOrFlexibleDiscretionaryGrounds();
-
-        Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt =
-                grounds.getSecureOrFlexibleDiscretionaryGroundsAlt();
-
-        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = grounds.getSecureOrFlexibleMandatoryGrounds();
-
-        Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt =
-                grounds.getSecureOrFlexibleMandatoryGroundsAlt();
-
-        boolean hasOtherDiscretionaryGrounds = discretionaryGrounds
-                .stream()
-                .anyMatch(ground -> ground != RENT_ARREARS_OR_BREACH_OF_TENANCY
-                );
-
-        if (discretionaryGrounds.isEmpty() && discretionaryGroundsAlt.isEmpty() && mandatoryGrounds.isEmpty()
-            && mandatoryGroundsAlt.isEmpty()) {
+        List<String> errors = groundsRules.validateSecureOrFlexibleGrounds(grounds);
+        if (!errors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride("Please select at least one ground")
-                .build();
-        } else if (mandatoryGrounds.contains(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL)
-                && grounds.getSecureAntisocialAdditionalGrounds().isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride("Please select at least one absolute ground for possession for antisocial "
-                        + "behaviour")
+                .errorMessageOverride(errors.get(0))
                 .build();
         }
 
-        if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
+        if (!groundsRules.isRentArrearsOrBreachOfTenancyGroundSelected(grounds)) {
             // Ground 1 not selected - clear rent arrears data
             caseData.setRentArrearsOrBreachOfTenancy(Set.of());
         }
-        if (hasOtherDiscretionaryGrounds
-                || !discretionaryGroundsAlt.isEmpty()
-                || !mandatoryGrounds.isEmpty()
-                || !mandatoryGroundsAlt.isEmpty()
-        ) {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
-        } else {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
-        }
+        caseData.setShowReasonsForGroundsPage(groundsRules.showReasonsForSecureOrFlexibleGrounds(grounds));
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

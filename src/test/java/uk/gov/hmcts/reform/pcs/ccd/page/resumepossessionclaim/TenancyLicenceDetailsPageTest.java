@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.rules.TenancyDateRules;
 import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.time.Clock;
@@ -64,7 +65,7 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
         setPageUnderTest(new TenancyLicenceDetailsPage(
-            ukClock, textAreaValidationService,
+            new TenancyDateRules(ukClock), textAreaValidationService,
             DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 

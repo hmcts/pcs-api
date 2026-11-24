@@ -109,6 +109,16 @@ spring:
         provider:
           idam:
             token-uri: ${IDAM_API_URL:http://localhost:5062}/o/token
+bulk-claims:
+  apim-service-names: ${BULK_CLAIMS_APIM_SERVICE_NAMES:pcs_bulk_claims_apim}
+  organisation-header: ${BULK_CLAIMS_ORGANISATION_HEADER:X-Organisation-Id}
+  max-claims-per-request: ${BULK_CLAIMS_MAX_CLAIMS_PER_REQUEST:100}
+  max-request-size: ${BULK_CLAIMS_MAX_REQUEST_SIZE:10MB}
+  parallelism: ${BULK_CLAIMS_PARALLELISM:4}
+  enabled-claimant-types: ${BULK_CLAIMS_ENABLED_CLAIMANT_TYPES:PROVIDER_OF_SOCIAL_HOUSING,COMMUNITY_LANDLORD,PRIVATE_LANDLORD,MORTGAGE_LENDER}
+  pending-retry-after: ${BULK_CLAIMS_PENDING_RETRY_AFTER:10m}
+  request-timeout: ${BULK_CLAIMS_REQUEST_TIMEOUT:120s}
+  system-reason-no-documents: ${BULK_CLAIMS_SYSTEM_REASON_NO_DOCUMENTS:Not supplied via bulk interface}
 flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:false}
@@ -120,7 +130,7 @@ idam:
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
-    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app}
+    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app,pcs_bulk_claims_apim}
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}

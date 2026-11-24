@@ -138,6 +138,8 @@ class CaseTypeTest {
         when(builder.tab("Messages", "Messages")).thenReturn(messagesTabBuilder);
         final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         when(builder.tab("orders", "Orders")).thenReturn(ordersTabBuilder);
+        final TabBuilder<PCSCase, AccessProfile> bulkClaimDetailsTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        when(builder.tab("bulkClaimDetails", "Bulk claim details")).thenReturn(bulkClaimDetailsTabBuilder);
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(judicialNotesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
@@ -162,6 +164,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
         final Tab<PCSCase, AccessProfile> messagesTab = messagesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> bulkClaimDetailsTab = bulkClaimDetailsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> bundleTab = bundleTabBuilder.build();
         final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
 
@@ -181,6 +184,9 @@ class CaseTypeTest {
         assertThat(ordersTab.getFields()).extracting(TabField::getId)
             .containsExactly("orderListMarkdownLabel", "orderListMarkdown");
         assertThat(ordersTab.getShowCondition()).isEqualTo("featureFlags.makeOrderEnabled=\"YES\"");
+        assertThat(bulkClaimDetailsTab.getFields()).extracting(TabField::getId)
+            .containsExactly("bulkClaimDetailsMarkdownLabel", "bulkClaimDetailsMarkdown");
+        assertThat(bulkClaimDetailsTab.getShowCondition()).isEqualTo("bulkClaimDetailsMarkdown!=\"\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
             .contains("LinkedCasesComponentLauncher!=\"\"");
         assertThat(caseFileViewTab.getFields()).hasSize(1);
@@ -194,7 +200,7 @@ class CaseTypeTest {
         // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
         for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
             serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
-            caseNotesTab, caseFlagsTab, judicialNotesTab, messagesTab, ordersTab)) {
+            caseNotesTab, caseFlagsTab, judicialNotesTab, messagesTab, ordersTab, bulkClaimDetailsTab)) {
             assertThat(tab.getForRoles()).as(tab.getTabID()).isEmpty();
         }
         verify(builder).tabsRespectDeclaredFieldAccess();
@@ -309,6 +315,8 @@ class CaseTypeTest {
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("Messages", "Messages")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("orders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("bulkClaimDetails", "Bulk claim details"))
+            .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
