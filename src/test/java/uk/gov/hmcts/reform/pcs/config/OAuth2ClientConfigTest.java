@@ -1,16 +1,15 @@
 package uk.gov.hmcts.reform.pcs.config;
 
+import cft.idam.legacy.auth.support.PasswordGrantAuthorizedClientProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Map;
@@ -50,15 +49,15 @@ class OAuth2ClientConfigTest {
         OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
             .withClientRegistrationId("system-user")
             .principal("system-user")
-            .attribute(OAuth2ParameterNames.USERNAME, "alice")
-            .attribute(OAuth2ParameterNames.PASSWORD, "s3cret")
+            .attribute(PasswordGrantAuthorizedClientProvider.USERNAME, "alice")
+            .attribute(PasswordGrantAuthorizedClientProvider.PASSWORD, "s3cret")
             .build();
 
         Map<String, Object> attrs = mapper.apply(request);
 
         assertThat(attrs)
-            .containsEntry(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, "alice")
-            .containsEntry(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, "s3cret")
+            .containsEntry(PasswordGrantAuthorizedClientProvider.USERNAME, "alice")
+            .containsEntry(PasswordGrantAuthorizedClientProvider.PASSWORD, "s3cret")
             .hasSize(2);
     }
 
@@ -69,7 +68,7 @@ class OAuth2ClientConfigTest {
         OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
             .withClientRegistrationId("system-user")
             .principal("system-user")
-            .attribute(OAuth2ParameterNames.PASSWORD, "s3cret")
+            .attribute(PasswordGrantAuthorizedClientProvider.PASSWORD, "s3cret")
             .build();
 
         Map<String, Object> attrs = mapper.apply(request);
@@ -84,7 +83,7 @@ class OAuth2ClientConfigTest {
         OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
             .withClientRegistrationId("system-user")
             .principal("system-user")
-            .attribute(OAuth2ParameterNames.USERNAME, "alice")
+            .attribute(PasswordGrantAuthorizedClientProvider.USERNAME, "alice")
             .build();
 
         Map<String, Object> attrs = mapper.apply(request);
@@ -99,8 +98,8 @@ class OAuth2ClientConfigTest {
         OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
             .withClientRegistrationId("system-user")
             .principal("system-user")
-            .attribute(OAuth2ParameterNames.USERNAME, "   ")
-            .attribute(OAuth2ParameterNames.PASSWORD, "s3cret")
+            .attribute(PasswordGrantAuthorizedClientProvider.USERNAME, "   ")
+            .attribute(PasswordGrantAuthorizedClientProvider.PASSWORD, "s3cret")
             .build();
 
         Map<String, Object> attrs = mapper.apply(request);

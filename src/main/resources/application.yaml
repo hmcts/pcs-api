@@ -46,6 +46,9 @@ security:
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
+  http:
+    converters:
+      preferred-json-mapper: jackson2
   application:
     name: pcs api
   cloud:
