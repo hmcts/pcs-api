@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimantClaimSummary;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CitizenClaimListService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -50,5 +51,30 @@ public class CitizenClaimListController {
             idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
         );
         return ResponseEntity.ok(citizenClaimListService.getClaimsAgainst(idamId));
+    }
+
+    @GetMapping(value = "/citizen-claims/as-claimant", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+        summary = "Get all claims made by the authenticated citizen",
+        description = "Returns the possession claims the authenticated user created as claimant, newest first, "
+            + "each with its CCD state (AWAITING_SUBMISSION_TO_HMCTS while it is a draft) and property address",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
+    @ApiResponse(responseCode = "200", description = "Claims retrieved successfully")
+    @ApiResponse(responseCode = "401", description = "Invalid access token")
+    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization")
+    public ResponseEntity<List<ClaimantClaimSummary>> getClaimantClaims(
+        @Parameter(description = "Bearer token for user authentication", required = true)
+        @RequestHeader("Authorization") String authorization,
+        @Parameter(description = "Service-to-Service (S2S) authorization token", required = true)
+        @RequestHeader("ServiceAuthorization") String s2sToken
+    ) {
+        String idamId = IdamUserIds.normalise(
+            idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
+        );
+        return ResponseEntity.ok(citizenClaimListService.getClaimsMadeBy(idamId, authorization));
     }
 }

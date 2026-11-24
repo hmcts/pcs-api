@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -34,6 +35,14 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
         AND cp.party.removed = false
         """)
     List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") String idamId, @Param("role") PartyRole role);
+
+    @Query("""
+        SELECT p.pcsCase FROM PartyEntity p
+        WHERE p.idamId = :idamId
+        AND p.claimCreator = true
+        AND p.removed = false
+        """)
+    List<PcsCaseEntity> findCasesCreatedBy(@Param("idamId") String idamId);
 
     Optional<PartyEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 
