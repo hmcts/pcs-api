@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -25,11 +24,15 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.Set;
 import java.util.Objects;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
 
 @Service
 @Slf4j
@@ -51,6 +54,7 @@ public class PcsCaseService {
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
     private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
+    private final FeatureToggleService featureToggleService;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -82,7 +86,12 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
-        setCaseType(pcsCaseEntity, claimEntity);
+
+        if (featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)) {
+            String caseTypeKey = caseTypeKey(claimEntity);
+            pcsCaseEntity.setCaseTypeKey(caseTypeKey);
+            pcsCaseEntity.setCaseSubtypeKey(caseTypeKey);
+        }
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -220,17 +229,14 @@ public class PcsCaseService {
         return pcsCaseEntity.getClaims().getFirst();
     }
 
-    private void setCaseType(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        if (claimEntity.getClaimantType() != ClaimantType.PROVIDER_OF_SOCIAL_HOUSING) {
-            return;
+    private String caseTypeKey(ClaimEntity claimEntity) {
+        if (claimEntity.getClaimantType() != PROVIDER_OF_SOCIAL_HOUSING) {
+            return null;
         }
 
-        String caseTypeKey = isRentArrearsClaim(claimEntity)
+        return isRentArrearsClaim(claimEntity)
             ? SOCIAL_LANDLORD_RENT_ARREARS_KEY
             : SOCIAL_LANDLORD_NON_RENT_ARREARS_KEY;
-
-        pcsCaseEntity.setCaseTypeKey(caseTypeKey);
-        pcsCaseEntity.setCaseSubtypeKey(caseTypeKey);
     }
 
     private static boolean isRentArrearsClaim(ClaimEntity claim) {

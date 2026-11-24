@@ -40,6 +40,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -90,6 +92,8 @@ class PcsCaseServiceTest {
     private SecurityContextService securityContextService;
     @Mock
     private DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -111,7 +115,8 @@ class PcsCaseServiceTest {
             postCodeCourtService,
             locationReferenceService,
             securityContextService,
-            defendantSupportEligibilityResolver
+            defendantSupportEligibilityResolver,
+            featureToggleService
         );
     }
 
@@ -276,6 +281,7 @@ class PcsCaseServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = stubFindCase();
         ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
         when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
         when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false), claimGround(true)));
 
@@ -292,6 +298,7 @@ class PcsCaseServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = stubFindCase();
         ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
         when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
         when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false), claimGround(null)));
 
@@ -308,6 +315,7 @@ class PcsCaseServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = stubFindCase();
         ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
         when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING);
         when(mainClaimEntity.getClaimGrounds()).thenReturn(null);
 
@@ -320,11 +328,28 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldNotSetCaseTypeWhenClaimantIsNotSocialLandlord() {
+    void shouldSetNullCaseTypeWhenClaimantIsNotSocialLandlord() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PRIVATE_LANDLORD);
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey(null);
+        verify(pcsCaseEntity).setCaseSubtypeKey(null);
+        verify(mainClaimEntity, never()).getClaimGrounds();
+    }
+
+    @Test
+    void shouldNotSetCaseTypeWhenHmcIntegrationDisabled() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
-        ClaimEntity mainClaimEntity = stubClaimCreation();
-        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.PRIVATE_LANDLORD);
+        final ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(false);
 
         // When
         underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
@@ -332,7 +357,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseEntity, never()).setCaseTypeKey(any());
         verify(pcsCaseEntity, never()).setCaseSubtypeKey(any());
-        verify(mainClaimEntity, never()).getClaimGrounds();
+        verify(mainClaimEntity, never()).getClaimantType();
     }
 
     @Test
