@@ -80,6 +80,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetai
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.BreathingSpaceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -1028,6 +1029,13 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "summaryTab_")
     @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private SummaryTab summaryTab;
+
+    @CCD(
+        label = "Breathing space details",
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private BreathingSpaceTabDetails breathingSpaceSummaryDetails;
 
     @JsonUnwrapped(prefix = "detailsTab_")
     @CCD(access = {PartyVisibleTabAccess.class})

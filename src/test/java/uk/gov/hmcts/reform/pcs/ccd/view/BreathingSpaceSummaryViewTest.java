@@ -53,7 +53,7 @@ class BreathingSpaceSummaryViewTest {
 
         // Then
         BreathingSpaceTabDetails result =
-            pcsCase.getSummaryTab().getBreathingSpaceDetails();
+            pcsCase.getBreathingSpaceSummaryDetails();
 
         assertThat(result.getReferenceNumber()).isEqualTo("BS123456");
         assertThat(result.getStartDate()).isEqualTo("12/11/2026");
@@ -81,7 +81,7 @@ class BreathingSpaceSummaryViewTest {
 
         // Then
         BreathingSpaceTabDetails result =
-            pcsCase.getSummaryTab().getBreathingSpaceDetails();
+            pcsCase.getBreathingSpaceSummaryDetails();
 
         assertThat(result.getReferenceNumber()).isEqualTo("Not provided");
         assertThat(result.getStartDate()).isEqualTo("Not provided");
@@ -103,7 +103,7 @@ class BreathingSpaceSummaryViewTest {
         );
 
         // Then
-        assertThat(pcsCase.getSummaryTab().getBreathingSpaceDetails())
+        assertThat(pcsCase.getBreathingSpaceSummaryDetails())
             .isNull();
     }
 
@@ -127,8 +127,7 @@ class BreathingSpaceSummaryViewTest {
         verify(breathingSpaceService)
             .getLatestBreathingSpace(CASE_REFERENCE);
 
-        assertThat(pcsCase.getSummaryTab()
-                       .getBreathingSpaceDetails()
+        assertThat(pcsCase.getBreathingSpaceSummaryDetails()
                        .getReferenceNumber())
             .isEqualTo("BS123456");
     }
@@ -151,8 +150,7 @@ class BreathingSpaceSummaryViewTest {
         );
 
         // Then
-        assertThat(pcsCase.getSummaryTab()
-                       .getBreathingSpaceDetails()
+        assertThat(pcsCase.getBreathingSpaceSummaryDetails()
                        .getReferenceNumber())
             .isEqualTo("Not provided");
     }

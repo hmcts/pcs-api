@@ -29,9 +29,11 @@ public class BreathingSpaceSummaryView {
 
         pcsCase.setHasActiveBreathingSpace(YesOrNo.from(latestBreathingSpace.isPresent()));
 
-        latestBreathingSpace.ifPresent(details ->
-                                           pcsCase.getSummaryTab().setBreathingSpaceDetails(
-                                               buildTabDetails(details)));
+        pcsCase.setBreathingSpaceSummaryDetails(
+            latestBreathingSpace
+                .map(this::buildTabDetails)
+                .orElse(null)
+        );
     }
 
     private BreathingSpaceTabDetails buildTabDetails(BreathingSpaceDetails details) {
