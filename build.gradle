@@ -5,11 +5,14 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '13.5.0'
+    jackson3Version = '3.1.6'
     serenityBddVersion = '5.3.11'
     serenityPluginVersion = '5.3.9'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    // Flyway needs Jackson here to parse the PostgreSQL migration-lock setting.
+    classpath("tools.jackson.core:jackson-databind:$jackson3Version")
   }
 }
 
@@ -421,7 +424,6 @@ ext {
   httpCore5Version = "5.4.3"
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
-  jackson3Version = "3.1.6"
   cucumberVersion = "7.34.9"
 }
 
@@ -587,6 +589,7 @@ bootJar {
 }
 
 flyway {
+  pluginConfiguration = ['postgresql.transactional.lock': 'false']
   url = System.getenv('FLYWAY_URL')
   user = System.getenv('FLYWAY_USER')
   password = System.getenv('FLYWAY_PASSWORD')
@@ -689,7 +692,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'IDAM_URL', 'http://localhost:5062'
   environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
   environment 'WA_SYSTEM_PASSWORD', 'password'
-  environment 'WA_S2S_AUTHORIZED_SERVICES', 'wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,wa_task_monitor,pcs_api'
+  environment 'WA_S2S_AUTHORIZED_SERVICES', 'wa_workflow_api,wa_case_event_handler,camunda_bpm,xui_webapp,wa_task_management_api,wa_task_monitor,pcs_api,camunda_local'
+  environment 'TASK_MANAGEMENT_EXCLUSIVE_CLIENTS', 'wa_task_management_api,wa_task_monitor,wa_case_event_handler,wa_workflow_api,camunda_bpm,camunda_local'
   environment 'ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES', 'am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_task_monitor,wa_case_event_handler,pcs_api'
 
   if (System.getenv("LOCAL_DOC_SERVICES") == "true") {
