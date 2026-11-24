@@ -227,9 +227,10 @@ class CitizenClaimTabDetailsBuilderTest {
     }
 
     @Test
-    void shouldChangeNothingForAWalesCase() {
+    void shouldChangeNothingForAWalesCaseNotMadeByAPrivateLandlord() {
         flag(true);
         pcsCaseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+        claim.setClaimantType(ClaimantType.COMMUNITY_LANDLORD);
         servedByPostAndEmail();
         NoticeTabDetails notice = NoticeTabDetails.builder().noticeServed("Yes").build();
         SummaryTab summary = SummaryTab.builder().build();
@@ -239,6 +240,19 @@ class CitizenClaimTabDetailsBuilderTest {
 
         assertThat(notice).isEqualTo(NoticeTabDetails.builder().noticeServed("Yes").build());
         assertThat(summary).isEqualTo(SummaryTab.builder().build());
+    }
+
+    @Test
+    void shouldAddTheCitizenAnswersToAWalesCaseMadeByAPrivateLandlord() {
+        flag(true);
+        pcsCaseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+        servedByPostAndEmail();
+        SummaryTab summary = SummaryTab.builder().build();
+
+        underTest.addSummaryDetails(summary, pcsCaseEntity);
+
+        assertThat(summary.getNoticeDetails().getNoticeMethod())
+            .isEqualTo(NoticeServiceMethod.FIRST_CLASS_POST.getLabel() + ", " + NoticeServiceMethod.EMAIL.getLabel());
     }
 
     @Test
