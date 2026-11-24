@@ -60,11 +60,16 @@ class HearingRecords {
     private final UserNameService userNameService;
     private final Clock utcClock;
 
-    /** One of the case's hearings that has not been cancelled. */
+    /** Whether a judge can choose to make an order at the hearing: it has not been cancelled. */
+    static boolean canHaveOrder(HearingEntity hearing) {
+        return !Boolean.TRUE.equals(hearing.getCancelled());
+    }
+
+    /** One of the case's hearings that an order can be made at. */
     HearingEntity hearing(PcsCaseEntity pcsCase, int hearingId) {
         return hearingRepository.findById(hearingId)
             .filter(hearing -> hearing.getPcsCase() != null && hearing.getPcsCase().getId().equals(pcsCase.getId()))
-            .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+            .filter(HearingRecords::canHaveOrder)
             .orElseThrow(() -> ExternalRejection.because("The hearing is not one of this case's hearings"));
     }
 

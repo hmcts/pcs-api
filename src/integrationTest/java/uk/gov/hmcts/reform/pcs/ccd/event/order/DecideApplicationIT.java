@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Application;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.ApplicationDocument;
@@ -41,7 +43,9 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SOMETHING_ELSE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.SUSPEND;
@@ -198,6 +202,115 @@ class DecideApplicationIT extends OrderEventIT {
         issue(judgeDecides(genAppId, "grant"));
         assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
             String.class, genAppId)).containsExactlyInAnyOrder("OTHER", "GRANT");
+    }
+
+    @Test
+    @DisplayName("decides the task's application, with the case's other open applications, at a hearing the judge "
+        + "chooses, and issues the order as made that day")
+    void decidesTheApplicationAtAChosenHearing() {
+        int hearing = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
+        var atHearing = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("genAppId", genAppId.toString(), "madeAt", Map.of("hearingId", hearing)));
+
+        OrderStart start = atHearing.start();
+        assertThat(start.taskGenAppId()).isEqualTo(genAppId);
+        assertThat(start.hearing().id()).isEqualTo(hearing);
+        assertThat(start.hearing().caseFacts()).as("the hearing's facts to record").isNotNull();
+        assertThat(asJudgeDeciding(genAppId).start().hearing()).as("without the judge's choice, box work").isNull();
+
+        Order order = start.order();
+        UUID orderId = atHearing.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+                new OrderChange(order.id(), order.version(), NO_ORDER_ON_CLAIM,
+                    Map.of("app-" + genAppId + "-decision", "grant"), WORDING, decided("grant")), "decide-task",
+                new HearingChange(hearing, null, null, null)))
+            .changed("orders", OrderRow.class).id();
+        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
+
+        Order reviewed = asCaseworkerReviewing(orderId).start().order();
+        assertThat(asCaseworkerReviewing(orderId).start().hearing().id()).isEqualTo(hearing);
+        issue(reviewed);
+        assertThat(jdbcTemplate.queryForObject("SELECT made_on FROM orders WHERE id = ?", LocalDate.class, orderId))
+            .isEqualTo(LocalDate.of(2026, 10, 14));
+        assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
+            String.class, genAppId)).containsExactly("GRANT");
+    }
+
+    @Test
+    @DisplayName("reopens the judge's draft deciding the application, saved at a hearing, from the application's link "
+        + "and from the case, as it was saved, and keeps it one draft as they move it")
+    void reopensADraftSavedAtAHearingFromTheApplicationsLink() {
+        final int hearing = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
+        Map<String, Object> answers = Map.of("app-" + genAppId + "-decision", "grant",
+            "order-notice", "without-notice", "without-notice-by-day", "21", "without-notice-by-month", "10",
+            "without-notice-by-year", "2026");
+        // The judge follows the application's link, chooses the hearing on the page and saves.
+        assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();
+        var choosingHearing = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("genAppId", genAppId.toString(), "madeAt", Map.of("hearingId", hearing)));
+        UUID draftId = choosingHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
+                new OrderChange(null, 0, NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")), "decide-task",
+                new HearingChange(hearing, null, null, null)))
+            .changed("orders", OrderRow.class).id();
+
+        // The application's link, the case's own, and the draft's with the application all open it as saved.
+        OrderStart fromApplication = asJudgeDeciding(genAppId).start();
+        OrderStart fromCase = events.external(caseReference, MAKE_ORDER).as(judge).start();
+        OrderStart byId = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("orderId", draftId.toString(), "genAppId", genAppId.toString())).start();
+        assertThat(List.of(fromApplication, fromCase, byId)).allSatisfy(reopened -> {
+            assertThat(reopened.order().id()).isEqualTo(draftId);
+            assertThat(reopened.order().state()).isEqualTo(OrderState.DRAFT);
+            assertThat(reopened.order().formData()).isEqualTo(answers);
+            assertThat(reopened.order().docweaveSnapshot()).isEqualTo(WORDING);
+            assertThat(reopened.hearing().id()).isEqualTo(hearing);
+        });
+        assertThat(fromApplication.taskGenAppId()).isEqualTo(genAppId);
+        assertThat(byId.taskGenAppId()).as("the application the order must decide").isEqualTo(genAppId);
+        assertThat(fromCase.taskGenAppId()).isNull();
+
+        // Moved to no hearing and back from the application's link, it is the same one draft.
+        var choosingNone = events.external(caseReference, MAKE_ORDER).as(judge)
+            .withClientContext(Map.of("genAppId", genAppId.toString(), "madeAt", Map.of()));
+        choosingNone.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
+            fromApplication.order().version(), NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")),
+            "decide-task"));
+        assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();
+        choosingHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
+            asJudgeDeciding(genAppId).start().order().version(), NO_ORDER_ON_CLAIM, answers, WORDING,
+            decided("grant")), "decide-task", new HearingChange(hearing, null, null, null)));
+        assertThat(jdbcTemplate.queryForList("SELECT id, state, hearing_id FROM orders WHERE case_id = "
+            + "(SELECT id FROM pcs_case WHERE case_reference = ?)", caseReference))
+            .extracting(row -> row.get("id"), row -> row.get("state"), row -> row.get("hearing_id"))
+            .containsExactly(tuple(draftId, "DRAFT", hearing));
+        assertThat(asJudgeDeciding(genAppId).start().order().formData()).isEqualTo(answers);
+        // Saving and moving a draft completes no task; sending it does.
+        verifyNoInteractions(taskManagementApi);
+        asJudgeDeciding(genAppId).submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+            new OrderChange(draftId, asJudgeDeciding(genAppId).start().order().version(), NO_ORDER_ON_CLAIM, answers,
+                WORDING, decided("grant")), "decide-task", new HearingChange(hearing, null, null, null)));
+        verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
+        assertThat(asJudgeDeciding(genAppId).start().order()).isEqualTo(Order.NONE);
+    }
+
+    @Test
+    @DisplayName("reopens the judge's order from its link after the application it names has closed, and starts no "
+        + "new order on the closed application")
+    void reopensAnOrderAfterItsApplicationCloses() {
+        var asJudge = asJudgeDeciding(genAppId);
+        UUID draftId = asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "grant", null))
+            .changed("orders", OrderRow.class).id();
+        cases.update(caseReference, pcsCase ->
+            pcsCase.findGenApp(genAppId).orElseThrow().setState(PENDING_GEN_APP_ISSUED));
+
+        OrderStart reopened = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
+            Map.of("orderId", draftId.toString(), "genAppId", genAppId.toString())).start();
+        assertThat(reopened.order().id()).isEqualTo(draftId);
+        assertThat(reopened.taskGenAppId()).isNull();
+
+        Actor otherJudge = events.registerActor("Other", "Judge", "caseworker-pcs");
+        assertThat(events.external(caseReference, MAKE_ORDER).as(otherJudge)
+            .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
+            .containsExactly(MakeOrder.NOT_OPEN);
     }
 
     private void issue(Order order) {

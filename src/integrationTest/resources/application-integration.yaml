@@ -42,3 +42,7 @@ logging:
 
 testing-support:
   enabled: true
+
+# No network in tests: no bank holidays, so working days skip only weekends.
+bank-holidays:
+  url: ""

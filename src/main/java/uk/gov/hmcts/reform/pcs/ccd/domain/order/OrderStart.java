@@ -19,34 +19,42 @@ import java.util.UUID;
 
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
- * made for, if any, and the application the judge's task asks them to decide, if it asks them to decide one.
+ * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
+ * name of the judge the order is made by, which it names as made before them. The bank holidays are those of the
+ * coming year in England and Wales, which a date the order gives to apply by moves off.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId) {
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judgeName,
+                         List<LocalDate> bankHolidays) {
+
+    /** How far ahead the bank holidays go: a year, beyond any date an order gives to apply by. */
+    public static final int BANK_HOLIDAY_DAYS = 400;
 
     /**
-     * No id means the judge has no draft for the hearing, or made without one, yet. The version is the latest
-     * step's id, sent back with a change to the order.
+     * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent
+     * back with a change to the order.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
                         long version,
+                        OrderState state,
                         OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
                         String queryFromCaseworker) {
 
-        public static final Order NONE = new Order(null, 0, null, Map.of(), null, null);
+        public static final Order NONE = new Order(null, 0, null, null, Map.of(), null, null);
 
         /** An order as its latest step left it, with the query it was returned with if it was. */
         public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
-            return new Order(order.getId(), latest.getId(), latest.getOrderType(),
+            return new Order(order.getId(), latest.getId(), order.getState(), latest.getOrderType(),
                 latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
 
     /**
      * Open means issued: nothing yet closes a counterclaim. The applications are every one the order can decide,
-     * in the order they were made.
+     * in the order they were made. The hearings are the case's that have not been cancelled, earliest first, any of
+     * which a judge can choose to make the order at.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
@@ -54,7 +62,17 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Party> defendants,
                               boolean openCounterclaim,
                               List<Application> applications,
-                              CaseBundle caseBundle) {
+                              CaseBundle caseBundle,
+                              List<HearingOption> hearings,
+                              Court court) {
+    }
+
+    /** The court managing the case, as an order names where the judge sits: its name and its venue's short name. */
+    public record Court(String name, String venueShortName) {
+    }
+
+    /** One of the case's hearings, as a judge chooses which one an order is made at. */
+    public record HearingOption(int id, LocalDateTime date) {
     }
 
     /** The case's bundle, every document on it in one PDF, for a judge once one has been made. */
@@ -64,7 +82,9 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
      * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
-     * the make order form. Granting an application to suspend enforcement suspends it on conditions.
+     * the make order form. Granting an application to suspend enforcement suspends it on conditions. The draft
+     * order wording is the applicant's draft order as rich text (HTML); whatOrderWanted is their explanation, which
+     * held the order they asked for before they could give it as a draft.
      */
     public record Application(UUID id,
                               boolean enforcementSuspension,
