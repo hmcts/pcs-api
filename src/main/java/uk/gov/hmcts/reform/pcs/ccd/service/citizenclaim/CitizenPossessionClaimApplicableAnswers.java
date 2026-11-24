@@ -26,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -54,7 +56,7 @@ public class CitizenPossessionClaimApplicableAnswers {
         reduceAdditionalClaimants(applicable);
         reduceDefendants(applicable);
         reduceTenancy(applicable.getTenancy(), isWales(applicable));
-        reduceGrounds(applicable.getGrounds(), isExcludedTenancy(applicable));
+        reduceGrounds(applicable.getGrounds(), isWales(applicable), isExcludedTenancy(applicable));
         if (!hasRentArrearsGround(applicable)) {
             applicable.setRentArrears(null);
         }
@@ -92,7 +94,8 @@ public class CitizenPossessionClaimApplicableAnswers {
                 && grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
         }
         return CitizenPossessionClaimValidator.allGrounds(applicable.getGrounds()).stream()
-            .anyMatch(PrivateLandlordAssuredGround::isRentArrears);
+            .anyMatch(PrivateLandlordAssuredGround::isRentArrears)
+            || CitizenPossessionClaimValidator.hasWalesRentArrearsGround(applicable.getGrounds());
     }
 
     private static void reduceAdditionalClaimants(CitizenPossessionClaim claim) {
@@ -206,12 +209,51 @@ public class CitizenPossessionClaimApplicableAnswers {
         } else {
             tenancy.setNoTenancyAgreementReason(null);
         }
+        if (wales) {
+            reduceRequiredDocuments(tenancy);
+        } else {
+            tenancy.setHasEnergyPerformanceCertificate(null);
+            tenancy.setEnergyPerformanceDocuments(null);
+            tenancy.setNoEnergyPerformanceCertificateReason(null);
+            tenancy.setHasGasSafetyReport(null);
+            tenancy.setGasSafetyReportDocuments(null);
+            tenancy.setNoGasSafetyReportReason(null);
+            tenancy.setHasElectricalInstallationConditionReport(null);
+            tenancy.setElectricalInstallationDocuments(null);
+            tenancy.setNoElectricalInstallationConditionReason(null);
+        }
     }
 
-    private static void reduceGrounds(CitizenClaimGrounds grounds, boolean excludedTenancy) {
+    private static void reduceRequiredDocuments(CitizenClaimTenancy tenancy) {
+        if (tenancy.getHasEnergyPerformanceCertificate() == VerticalYesNo.NO) {
+            tenancy.setEnergyPerformanceDocuments(null);
+        } else {
+            tenancy.setNoEnergyPerformanceCertificateReason(null);
+        }
+        if (tenancy.getHasGasSafetyReport() == VerticalYesNo.NO) {
+            tenancy.setGasSafetyReportDocuments(null);
+        } else {
+            tenancy.setNoGasSafetyReportReason(null);
+        }
+        if (tenancy.getHasElectricalInstallationConditionReport() == VerticalYesNo.NO) {
+            tenancy.setElectricalInstallationDocuments(null);
+        } else {
+            tenancy.setNoElectricalInstallationConditionReason(null);
+        }
+    }
+
+    private static void reduceGrounds(CitizenClaimGrounds grounds, boolean wales, boolean excludedTenancy) {
         if (grounds == null) {
             return;
         }
+        if (wales) {
+            clearExcludedGrounds(grounds);
+            reduceWalesGrounds(grounds);
+            return;
+        }
+        grounds.setWalesDiscretionaryGrounds(null);
+        grounds.setWalesMandatoryGrounds(null);
+        grounds.setWalesGroundReasons(null);
         if (excludedTenancy) {
             reduceExcludedGrounds(grounds);
             return;
@@ -257,6 +299,28 @@ public class CitizenPossessionClaimApplicableAnswers {
         grounds.setExcludedGrounds(null);
         grounds.setExcludedOtherGroundDetails(null);
         grounds.setExcludedReason(null);
+    }
+
+    private static void reduceWalesGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasOtherGrounds(null);
+        grounds.setRentArrearsGrounds(null);
+        grounds.setGroundReasons(null);
+        Set<PrivateLandlordAssuredGround> other = grounds.getOtherGrounds();
+        boolean hasOther = other != null && other.contains(PrivateLandlordAssuredGround.OTHER);
+        grounds.setOtherGrounds(hasOther ? EnumSet.of(PrivateLandlordAssuredGround.OTHER) : null);
+        if (!hasOther) {
+            grounds.setOtherGroundsDetails(null);
+        }
+        if (grounds.getWalesGroundReasons() != null) {
+            // Rent arrears grounds are not asked for a reason
+            Set<String> asked = new HashSet<>(CitizenPossessionClaimValidator.walesGroundCodes(grounds));
+            grounds.setWalesGroundReasons(grounds.getWalesGroundReasons().stream()
+                                              .filter(item -> item != null && item.getValue() != null)
+                                              .filter(item -> asked.contains(item.getValue().getGround()))
+                                              .filter(item -> !CitizenPossessionClaimValidator
+                                                  .isWalesRentArrearsGround(item.getValue().getGround()))
+                                              .toList());
+        }
     }
 
     private static boolean isAskedForAReason(PrivateLandlordAssuredGround ground,

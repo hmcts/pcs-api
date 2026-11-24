@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -390,6 +391,67 @@ class CitizenPossessionClaimSubmitServiceTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
         return claim;
+    }
+
+    @Test
+    void shouldMapTheWalesGroundsAsTheLegalRepClaimDoes() {
+        pcsCaseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+
+        submit(CitizenPossessionClaimFixtures.completeWalesClaim());
+
+        verify(claimRepository).save(claimCaptor.capture());
+        ClaimEntity claim = claimCaptor.getValue();
+        assertThat(claim.getDueToRentArrears()).isEqualTo(YesOrNo.YES);
+        assertThat(claim.getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCode, ClaimGroundEntity::getCategory, ClaimGroundEntity::getReason,
+                        ClaimGroundEntity::getIsRentArrears)
+            .containsExactlyInAnyOrder(
+                tuple("RENT_ARREARS_S157", ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY, null, true),
+                tuple("ESTATE_MANAGEMENT_GROUNDS_S160", ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY, null,
+                      false),
+                tuple("OTHER_ESTATE_MANAGEMENT_REASONS", ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT,
+                      "Building works planned", false),
+                tuple("LANDLORD_BREAK_CLAUSE_S199", ClaimGroundCategory.WALES_STANDARD_OTHER_MANDATORY,
+                      "Break clause used", false),
+                tuple("OTHER", ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_OTHER, null, false));
+        assertThat(claim.getClaimGrounds())
+            .filteredOn(ground -> ground.getCode().equals("OTHER"))
+            .singleElement()
+            .extracting(ClaimGroundEntity::getDescription)
+            .isEqualTo("Another reason");
+    }
+
+    @Test
+    void shouldMapTheRequiredDocumentsOfAPropertyInWalesAsTheLegalRepClaimDoes() {
+        pcsCaseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+
+        submit(CitizenPossessionClaimFixtures.completeWalesClaim());
+
+        verify(claimRepository).save(claimCaptor.capture());
+        ClaimEntity claim = claimCaptor.getValue();
+        assertThat(claim.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claim.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(claim.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claim.getNoGasSafetyReportReason()).isEqualTo("The property has no gas supply");
+        assertThat(claim.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.YES);
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        WalesDocuments documents = documentCaseCaptor.getValue().getRequiredDocumentsWales();
+        assertThat(documents.getEnergyPerformance()).hasSize(1);
+        assertThat(documents.getGasSafetyReport()).isNull();
+        assertThat(documents.getElectricalInstallation()).hasSize(1);
+    }
+
+    @Test
+    void shouldNotMapRequiredDocumentsForAPropertyInEngland() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setHasGasSafetyReport(VerticalYesNo.YES);
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getGasSafetyReportProvided()).isNull();
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        assertThat(documentCaseCaptor.getValue().getRequiredDocumentsWales()).isNull();
     }
 
     @Test

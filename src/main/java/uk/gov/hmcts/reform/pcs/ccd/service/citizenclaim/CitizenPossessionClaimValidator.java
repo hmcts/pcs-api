@@ -21,16 +21,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWalesGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +62,10 @@ public class CitizenPossessionClaimValidator {
     private static final int OTHER_REASONS_MAX = 6400;
     private static final int ADDRESS_LINE_MAX = 100;
     private static final int POSTCODE_MAX = 14;
+    private static final Set<String> WALES_RENT_ARREARS_GROUNDS = Set.of(
+        DiscretionaryGroundWales.RENT_ARREARS_S157.name(),
+        MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.name(),
+        MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.name());
 
     public List<String> validateEligibility(CitizenClaimEligibility eligibility) {
         List<String> errors = new ArrayList<>();
@@ -94,6 +102,25 @@ public class CitizenPossessionClaimValidator {
         validateSubmission(claim.getSubmission(), errors);
 
         return errors;
+    }
+
+    /**
+     * Whether a Wales ground that is claimed for rent arrears is chosen: section 157 rent arrears, or the
+     * mandatory section 181 or 187 grounds.
+     */
+    public static boolean hasWalesRentArrearsGround(CitizenClaimGrounds grounds) {
+        if (grounds == null) {
+            return false;
+        }
+        return walesGroundCodes(grounds).stream().anyMatch(CitizenPossessionClaimValidator::isWalesRentArrearsGround);
+    }
+
+    public static boolean isWalesRentArrearsGround(String ground) {
+        return WALES_RENT_ARREARS_GROUNDS.contains(ground);
+    }
+
+    private static <T> Set<T> setOrEmpty(Set<T> set) {
+        return set != null ? set : Set.of();
     }
 
     public static Set<PrivateLandlordAssuredGround> allGrounds(CitizenClaimGrounds grounds) {
@@ -262,9 +289,32 @@ public class CitizenPossessionClaimValidator {
                         REASON_MAX);
         }
         maxLength(errors, "tenancy.noTenancyAgreementReason", tenancy.getNoTenancyAgreementReason(), REASON_MAX);
+        validateRequiredDocument(errors, "tenancy.hasEnergyPerformanceCertificate",
+                                 tenancy.getHasEnergyPerformanceCertificate(),
+                                 "tenancy.noEnergyPerformanceCertificateReason",
+                                 tenancy.getNoEnergyPerformanceCertificateReason());
+        validateRequiredDocument(errors, "tenancy.hasGasSafetyReport", tenancy.getHasGasSafetyReport(),
+                                 "tenancy.noGasSafetyReportReason", tenancy.getNoGasSafetyReportReason());
+        validateRequiredDocument(errors, "tenancy.hasElectricalInstallationConditionReport",
+                                 tenancy.getHasElectricalInstallationConditionReport(),
+                                 "tenancy.noElectricalInstallationConditionReason",
+                                 tenancy.getNoElectricalInstallationConditionReason());
+    }
+
+    private static void validateRequiredDocument(List<String> errors, String answerPath, VerticalYesNo answer,
+                                                 String reasonPath, String reason) {
+        if (answer == null) {
+            errors.add(required(answerPath));
+        } else if (answer == VerticalYesNo.NO) {
+            requireText(errors, reasonPath, reason, REASON_MAX);
+        }
     }
 
     private static void validateGrounds(CitizenPossessionClaim claim, List<String> errors) {
+        if (CitizenPossessionClaimApplicableAnswers.isWales(claim)) {
+            validateWalesGrounds(claim, errors);
+            return;
+        }
         CitizenClaimGrounds grounds = claim.getGrounds();
         if (CitizenPossessionClaimApplicableAnswers.isExcludedTenancy(claim)) {
             validateExcludedGrounds(claim, errors);
@@ -337,6 +387,64 @@ public class CitizenPossessionClaimValidator {
             }
         }
         requireText(errors, "grounds.excludedReason", grounds.getExcludedReason(), REASON_MAX);
+    }
+
+    private static void validateWalesGrounds(CitizenPossessionClaim claim, List<String> errors) {
+        CitizenClaimGrounds grounds = claim.getGrounds();
+        Set<String> chosen = walesGroundCodes(grounds);
+        boolean other = grounds != null && grounds.getOtherGrounds() != null
+            && grounds.getOtherGrounds().contains(PrivateLandlordAssuredGround.OTHER);
+        if (chosen.isEmpty() && !other) {
+            errors.add(required("grounds"));
+            return;
+        }
+
+        if (hasWalesRentArrearsGround(grounds)) {
+            CitizenClaimRentArrears rentArrears = claim.getRentArrears();
+            if (rentArrears == null || rentArrears.getCurrentArrears() == null) {
+                errors.add(required("rentArrears.currentArrears"));
+            }
+        }
+        if (other) {
+            requireText(errors, "grounds.otherGroundsDetails", grounds.getOtherGroundsDetails(), REASON_MAX);
+        }
+
+        Map<String, String> reasons = walesGroundReasons(grounds);
+        chosen.stream()
+            .filter(code -> !isWalesRentArrearsGround(code))
+            .forEach(code -> requireText(errors, "grounds.walesGroundReasons." + code, reasons.get(code),
+                                         REASON_MAX));
+    }
+
+    /**
+     * The names of the chosen Wales grounds, discretionary before mandatory.
+     */
+    public static Set<String> walesGroundCodes(CitizenClaimGrounds grounds) {
+        Set<String> codes = new LinkedHashSet<>();
+        if (grounds != null) {
+            setOrEmpty(grounds.getWalesDiscretionaryGrounds()).stream()
+                .filter(Objects::nonNull).sorted().forEach(ground -> codes.add(ground.name()));
+            setOrEmpty(grounds.getWalesMandatoryGrounds()).stream()
+                .filter(Objects::nonNull).sorted().forEach(ground -> codes.add(ground.name()));
+        }
+        return codes;
+    }
+
+    /**
+     * The reason given for each Wales ground; the last one wins if a ground is listed twice.
+     */
+    public static Map<String, String> walesGroundReasons(CitizenClaimGrounds grounds) {
+        Map<String, String> reasons = new LinkedHashMap<>();
+        if (grounds == null || grounds.getWalesGroundReasons() == null) {
+            return reasons;
+        }
+        grounds.getWalesGroundReasons().stream()
+            .filter(Objects::nonNull)
+            .map(ListValue::getValue)
+            .filter(reason -> reason != null && StringUtils.isNotBlank(reason.getGround()))
+            .filter(reason -> StringUtils.isNotBlank(reason.getReason()))
+            .forEach((CitizenClaimWalesGroundReason reason) -> reasons.put(reason.getGround(), reason.getReason()));
+        return reasons;
     }
 
     /**

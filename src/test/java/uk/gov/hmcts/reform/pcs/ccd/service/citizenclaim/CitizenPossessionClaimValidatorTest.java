@@ -20,8 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -272,9 +272,61 @@ class CitizenPossessionClaimValidatorTest {
     }
 
     private static CitizenPossessionClaim walesClaim() {
-        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        claim.getEligibility().setLegislativeCountry(LegislativeCountry.WALES);
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getTenancy().setOccupationContractType(null);
         return claim;
+    }
+
+    @Test
+    void shouldAcceptACompleteClaimForAPropertyInWales() {
+        assertThat(validate(CitizenPossessionClaimFixtures.completeWalesClaim())).isEmpty();
+    }
+
+    @Test
+    void shouldAskAPropertyInWalesWhetherItCanUploadEachRequiredDocument() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getTenancy().setHasEnergyPerformanceCertificate(null);
+        claim.getTenancy().setHasGasSafetyReport(VerticalYesNo.NO);
+        claim.getTenancy().setNoGasSafetyReportReason(" ");
+        claim.getTenancy().setHasElectricalInstallationConditionReport(VerticalYesNo.NO);
+        claim.getTenancy().setNoElectricalInstallationConditionReason("x".repeat(501));
+
+        assertThat(validate(claim)).containsExactly(
+            "REQUIRED:tenancy.hasEnergyPerformanceCertificate",
+            "REQUIRED:tenancy.noGasSafetyReportReason",
+            "TOO_LONG:tenancy.noElectricalInstallationConditionReason");
+    }
+
+    @Test
+    void shouldNeedAReasonForEachWalesGroundExceptRentArrearsAndOthers() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getGrounds().setWalesGroundReasons(List.of());
+        claim.getGrounds().setOtherGroundsDetails(null);
+
+        assertThat(validate(claim)).containsExactlyInAnyOrder(
+            "REQUIRED:grounds.otherGroundsDetails",
+            "REQUIRED:grounds.walesGroundReasons.ESTATE_MANAGEMENT_GROUNDS_S160",
+            "REQUIRED:grounds.walesGroundReasons.LANDLORD_BREAK_CLAUSE_S199");
+    }
+
+    @Test
+    void shouldNeedAWalesGround() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getGrounds().setWalesDiscretionaryGrounds(null);
+        claim.getGrounds().setWalesMandatoryGrounds(null);
+        claim.getGrounds().setOtherGrounds(null);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds");
+    }
+
+    @Test
+    void shouldNeedTheArrearsOfAWalesRentArrearsGround() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getGrounds().setWalesDiscretionaryGrounds(Set.of());
+        claim.getGrounds().setWalesMandatoryGrounds(Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187));
+        claim.getRentArrears().setCurrentArrears(null);
+
+        assertThat(validate(claim)).contains("REQUIRED:rentArrears.currentArrears");
     }
 
     @Test

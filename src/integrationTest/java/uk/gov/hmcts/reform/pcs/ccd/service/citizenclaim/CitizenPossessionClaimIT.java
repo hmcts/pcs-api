@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -35,15 +36,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWalesGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -600,6 +606,25 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         CitizenClaimTenancy tenancy = answers.getTenancy();
         tenancy.setOccupationContractType(OccupationLicenceTypeWales.OTHER);
         tenancy.setOtherOccupationContractDetails("Supported standard contract");
+        tenancy.setHasEnergyPerformanceCertificate(VerticalYesNo.YES);
+        tenancy.setEnergyPerformanceDocuments(List.of(requiredDocument("epc.pdf")));
+        tenancy.setHasGasSafetyReport(VerticalYesNo.NO);
+        tenancy.setNoGasSafetyReportReason("The property has no gas supply");
+        tenancy.setHasElectricalInstallationConditionReport(VerticalYesNo.YES);
+        tenancy.setElectricalInstallationDocuments(List.of(requiredDocument("eicr.pdf")));
+        CitizenClaimGrounds grounds = answers.getGrounds();
+        grounds.setHasRentArrearsGrounds(VerticalYesNo.YES);
+        grounds.setRentArrearsGrounds(null);
+        grounds.setHasOtherGrounds(null);
+        grounds.setGroundReasons(null);
+        grounds.setWalesDiscretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157,
+                                                    DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160));
+        grounds.setWalesMandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199));
+        grounds.setOtherGrounds(Set.of(PrivateLandlordAssuredGround.OTHER));
+        grounds.setOtherGroundsDetails("Another reason");
+        grounds.setWalesGroundReasons(List.of(
+            walesReason(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160.name(), "Building works planned"),
+            walesReason(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.name(), "Break clause used")));
         CitizenPossessionClaim applicable = applicableAnswers.of(answers);
         assertThat(applicable.getTenancy().getTenancyType()).isNull();
 
@@ -615,8 +640,40 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(pcsCase.getTenancyLicence().getHasCopyOfTenancyLicence()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getClaims().getFirst().getClaimDocuments())
             .extracting(claimDocument -> claimDocument.getDocument().getType())
-            .contains(DocumentType.OCCUPATION_LICENCE)
-            .doesNotContain(DocumentType.TENANCY_AGREEMENT);
+            .contains(DocumentType.OCCUPATION_LICENCE, DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
+                      DocumentType.EICR_REPORT)
+            .doesNotContain(DocumentType.TENANCY_AGREEMENT, DocumentType.GAS_SAFETY_CERTIFICATE);
+
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+        assertThat(claim.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claim.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claim.getNoGasSafetyReportReason()).isEqualTo("The property has no gas supply");
+        assertThat(claim.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claim.getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCode, ClaimGroundEntity::getReason, ClaimGroundEntity::getIsRentArrears)
+            .containsExactlyInAnyOrder(
+                tuple("RENT_ARREARS_S157", null, true),
+                tuple("ESTATE_MANAGEMENT_GROUNDS_S160", null, false),
+                tuple("OTHER_ESTATE_MANAGEMENT_REASONS", "Building works planned", false),
+                tuple("LANDLORD_BREAK_CLAUSE_S199", "Break clause used", false),
+                tuple("OTHER", null, false));
+        assertThat(claim.getRentArrears()).isNotNull();
+    }
+
+    private static ListValue<Document> requiredDocument(String filename) {
+        return ListValue.<Document>builder()
+            .value(Document.builder()
+                       .url("http://dm-store/documents/" + UUID.randomUUID())
+                       .binaryUrl("http://dm-store/documents/" + UUID.randomUUID() + "/binary")
+                       .filename(filename)
+                       .build())
+            .build();
+    }
+
+    private static ListValue<CitizenClaimWalesGroundReason> walesReason(String ground, String reason) {
+        return ListValue.<CitizenClaimWalesGroundReason>builder()
+            .value(CitizenClaimWalesGroundReason.builder().ground(ground).reason(reason).build())
+            .build();
     }
 
     @Test

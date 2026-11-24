@@ -9,6 +9,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 
 import java.util.List;
 import java.util.Set;
@@ -48,5 +50,13 @@ public class CitizenClaimGrounds {
 
     @CCD(typeOverride = TextArea)
     private String excludedReason;
+    // Asked instead of the England grounds for a property in Wales; "Others" is kept in otherGrounds
+    @CCD(typeOverride = MultiSelectList, typeParameterOverride = "DiscretionaryGroundWales")
+    private Set<DiscretionaryGroundWales> walesDiscretionaryGrounds;
+
+    @CCD(typeOverride = MultiSelectList, typeParameterOverride = "MandatoryGroundWales")
+    private Set<MandatoryGroundWales> walesMandatoryGrounds;
+
+    private List<ListValue<CitizenClaimWalesGroundReason>> walesGroundReasons;
 
 }
