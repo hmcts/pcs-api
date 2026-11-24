@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim"
+                  xmlns:tns1="http://impl.service.bulkclaim.webservice.pcol.dca.gov.uk"
+                  xmlns:impl="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim"
+                  xmlns:intf="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim"
+                  xmlns:apachesoap="http://xml.apache.org/xml-soap"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:documentation>
+    Bulk claims service. The message shapes are those of PCOL's BulkClaim service; only the endpoint
+    address differs. Each request and response element carries one string holding an XML document in the
+    http://hmcts.gov.uk/pcs/bulkclaim/v2 namespace:
+    processRentalClaim takes a RentalClaimSet and returns a BulkClaimResponse;
+    processMortgageClaim takes a MortgageClaimSet and returns a BulkClaimResponse;
+    getClaimStatus takes a customer unique identifier and returns a BulkClaimStatusResponse;
+    getClaimStatuses takes a BulkClaimStatusRequest and returns a BulkClaimStatusListResponse.
+    The documents are described by RentalClaim.xsd, MortgageClaim.xsd, BulkClaimResponse.xsd,
+    BulkClaimStatusRequest.xsd, BulkClaimStatusResponse.xsd and BulkClaimStatusListResponse.xsd, served under
+    the schema/ path next to this service. A request that is accepted but cannot be processed is reported in the
+    returned BulkClaimResponse; a malformed SOAP message, an oversized request, too many claims or an
+    unavailable operation is a SOAP Client fault.
+    validateOnly is optional and defaults to false; when true nothing is stored and no case is created.
+  </wsdl:documentation>
+  <wsdl:types>
+    <schema elementFormDefault="qualified" targetNamespace="http://impl.service.bulkclaim.webservice.pcol.dca.gov.uk" xmlns="http://www.w3.org/2001/XMLSchema">
+      <element name="processRentalClaim">
+        <complexType>
+          <sequence>
+            <element name="rentalRequest" type="xsd:string"/>
+            <element name="validateOnly" type="xsd:boolean" minOccurs="0"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="processRentalClaimResponse">
+        <complexType>
+          <sequence>
+            <element name="processRentalClaimReturn" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="processMortgageClaim">
+        <complexType>
+          <sequence>
+            <element name="mortgageRequest" type="xsd:string"/>
+            <element name="validateOnly" type="xsd:boolean" minOccurs="0"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="processMortgageClaimResponse">
+        <complexType>
+          <sequence>
+            <element name="processMortgageClaimReturn" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="getClaimStatus">
+        <complexType>
+          <sequence>
+            <element name="customerUniqueIdentifier" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="getClaimStatusResponse">
+        <complexType>
+          <sequence>
+            <element name="getClaimStatusReturn" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="getClaimStatuses">
+        <complexType>
+          <sequence>
+            <element name="statusRequest" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+      <element name="getClaimStatusesResponse">
+        <complexType>
+          <sequence>
+            <element name="getClaimStatusesReturn" type="xsd:string"/>
+          </sequence>
+        </complexType>
+      </element>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="processMortgageClaimRequest">
+    <wsdl:part name="parameters" element="tns1:processMortgageClaim"/>
+  </wsdl:message>
+  <wsdl:message name="processMortgageClaimResponse">
+    <wsdl:part name="parameters" element="tns1:processMortgageClaimResponse"/>
+  </wsdl:message>
+  <wsdl:message name="processRentalClaimRequest">
+    <wsdl:part name="parameters" element="tns1:processRentalClaim"/>
+  </wsdl:message>
+  <wsdl:message name="processRentalClaimResponse">
+    <wsdl:part name="parameters" element="tns1:processRentalClaimResponse"/>
+  </wsdl:message>
+  <wsdl:message name="getClaimStatusRequest">
+    <wsdl:part name="parameters" element="tns1:getClaimStatus"/>
+  </wsdl:message>
+  <wsdl:message name="getClaimStatusResponse">
+    <wsdl:part name="parameters" element="tns1:getClaimStatusResponse"/>
+  </wsdl:message>
+  <wsdl:message name="getClaimStatusesRequest">
+    <wsdl:part name="parameters" element="tns1:getClaimStatuses"/>
+  </wsdl:message>
+  <wsdl:message name="getClaimStatusesResponse">
+    <wsdl:part name="parameters" element="tns1:getClaimStatusesResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="BulkClaimServiceImpl">
+    <wsdl:operation name="processRentalClaim">
+      <wsdl:input name="processRentalClaimRequest" message="impl:processRentalClaimRequest"/>
+      <wsdl:output name="processRentalClaimResponse" message="impl:processRentalClaimResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="processMortgageClaim">
+      <wsdl:input name="processMortgageClaimRequest" message="impl:processMortgageClaimRequest"/>
+      <wsdl:output name="processMortgageClaimResponse" message="impl:processMortgageClaimResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="getClaimStatus">
+      <wsdl:input name="getClaimStatusRequest" message="impl:getClaimStatusRequest"/>
+      <wsdl:output name="getClaimStatusResponse" message="impl:getClaimStatusResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="getClaimStatuses">
+      <wsdl:input name="getClaimStatusesRequest" message="impl:getClaimStatusesRequest"/>
+      <wsdl:output name="getClaimStatusesResponse" message="impl:getClaimStatusesResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BulkClaimSoapBinding" type="impl:BulkClaimServiceImpl">
+    <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="processRentalClaim">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="processRentalClaimRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processRentalClaimResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processMortgageClaim">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="processMortgageClaimRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processMortgageClaimResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getClaimStatus">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getClaimStatusRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getClaimStatusResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getClaimStatuses">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getClaimStatusesRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getClaimStatusesResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="BulkClaimServiceImplService">
+    <wsdl:port name="BulkClaim" binding="impl:BulkClaimSoapBinding">
+      <wsdlsoap:address location="http://localhost:8080/v2/bulk-claims/services/BulkClaim"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

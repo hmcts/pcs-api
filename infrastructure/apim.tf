@@ -1,12 +1,14 @@
 locals {
-  apim_count          = var.bulk_claims_apim_enabled ? 1 : 0
-  api_mgmt_suffix     = var.apim_suffix == "" ? var.env : var.apim_suffix
-  api_mgmt_name       = "cft-api-mgmt-${local.api_mgmt_suffix}"
-  api_mgmt_rg         = "cft-${var.env}-network-rg"
-  api_mgmt_logger_id  = "/subscriptions/${var.aks_subscription_id}/resourceGroups/${local.api_mgmt_rg}/providers/Microsoft.ApiManagement/service/${local.api_mgmt_name}/loggers/${local.api_mgmt_name}-logger"
-  bulk_claims_product = "${var.product}-bulk-claims"
-  bulk_claims_api     = "${var.product}-bulk-claims-api"
-  bulk_claims_path    = "pcs-bulk-claims"
+  apim_count                     = var.bulk_claims_apim_enabled ? 1 : 0
+  api_mgmt_suffix                = var.apim_suffix == "" ? var.env : var.apim_suffix
+  api_mgmt_name                  = "cft-api-mgmt-${local.api_mgmt_suffix}"
+  api_mgmt_rg                    = "cft-${var.env}-network-rg"
+  api_mgmt_logger_id             = "/subscriptions/${var.aks_subscription_id}/resourceGroups/${local.api_mgmt_rg}/providers/Microsoft.ApiManagement/service/${local.api_mgmt_name}/loggers/${local.api_mgmt_name}-logger"
+  bulk_claims_product            = "${var.product}-bulk-claims"
+  bulk_claims_api                = "${var.product}-bulk-claims-api"
+  bulk_claims_path               = "pcs-bulk-claims"
+  bulk_claims_wsdl               = "${path.module}/../src/main/resources/wsdl/bulkclaim/v2/BulkClaimService.wsdl"
+  bulk_claims_wildcard_operation = "${var.product}-bulk-claims-wildcard"
 
   pcs_api_url = "http://pcs-api-${var.env}.service.core-compute-${var.env}.internal"
   s2s_url     = "http://rpe-service-auth-provider-${var.env}.service.core-compute-${var.env}.internal"
@@ -88,7 +90,7 @@ module "api_mgmt_product" {
   }
 }
 
-# Declared by hand rather than imported from the pcs-api OpenAPI spec, which would publish every pcs-api endpoint.
+# SOAP pass-through API imported from the service WSDL, as the Civil SDT gateway is.
 resource "azurerm_api_management_api" "bulk_claims" {
   count                 = local.apim_count
   provider              = azurerm.aks-cftapps
@@ -97,113 +99,45 @@ resource "azurerm_api_management_api" "bulk_claims" {
   api_management_name   = local.api_mgmt_name
   resource_group_name   = local.api_mgmt_rg
   path                  = local.bulk_claims_path
-  service_url           = "${local.pcs_api_url}/v2/bulk-claims"
+  service_url           = "${local.pcs_api_url}/v2/bulk-claims/services/BulkClaim"
   protocols             = ["https"]
+  api_type              = "soap"
   revision              = "1"
   subscription_required = false
-}
 
-resource "azurerm_api_management_api_operation" "submit_rental" {
-  count               = local.apim_count
-  provider            = azurerm.aks-cftapps
-  operation_id        = "submit-rental"
-  api_name            = azurerm_api_management_api.bulk_claims[0].name
-  api_management_name = local.api_mgmt_name
-  resource_group_name = local.api_mgmt_rg
-  display_name        = "Submit rental claims"
-  method              = "POST"
-  url_template        = "/rental"
-
-  request {
-    query_parameter {
-      name          = "validateOnly"
-      type          = "boolean"
-      required      = false
-      default_value = "false"
-      description   = "Validate the submission without creating anything"
-    }
-    representation {
-      content_type = "application/xml"
+  import {
+    content_format = "wsdl"
+    content_value  = file(local.bulk_claims_wsdl)
+    wsdl_selector {
+      service_name  = "BulkClaimServiceImplService"
+      endpoint_name = "BulkClaim"
     }
   }
 }
 
-resource "azurerm_api_management_api_operation" "submit_mortgage" {
+# Lets requests without a SOAPAction header through; the service selects the operation from the body.
+resource "azurerm_api_management_api_operation" "bulk_claims_wildcard" {
   count               = local.apim_count
   provider            = azurerm.aks-cftapps
-  operation_id        = "submit-mortgage"
+  operation_id        = local.bulk_claims_wildcard_operation
+  display_name        = "wildcard"
+  description         = "Allows requests without a soapAction header"
   api_name            = azurerm_api_management_api.bulk_claims[0].name
   api_management_name = local.api_mgmt_name
   resource_group_name = local.api_mgmt_rg
-  display_name        = "Submit mortgage claims"
   method              = "POST"
-  url_template        = "/mortgage"
-
-  request {
-    query_parameter {
-      name          = "validateOnly"
-      type          = "boolean"
-      required      = false
-      default_value = "false"
-      description   = "Validate the submission without creating anything"
-    }
-    representation {
-      content_type = "application/xml"
-    }
-  }
-}
-
-resource "azurerm_api_management_api_operation" "get_claims" {
-  count               = local.apim_count
-  provider            = azurerm.aks-cftapps
-  operation_id        = "get-claims"
-  api_name            = azurerm_api_management_api.bulk_claims[0].name
-  api_management_name = local.api_mgmt_name
-  resource_group_name = local.api_mgmt_rg
-  display_name        = "Get claims for a customer unique identifier"
-  method              = "GET"
-  url_template        = "/claims/{customerUniqueIdentifier}"
+  url_template        = "/?soapAction={any}"
 
   template_parameter {
-    name     = "customerUniqueIdentifier"
+    name     = "any"
     required = true
     type     = "string"
   }
-}
-
-resource "azurerm_api_management_api_operation" "post_claims_status" {
-  count               = local.apim_count
-  provider            = azurerm.aks-cftapps
-  operation_id        = "post-claims-status"
-  api_name            = azurerm_api_management_api.bulk_claims[0].name
-  api_management_name = local.api_mgmt_name
-  resource_group_name = local.api_mgmt_rg
-  display_name        = "Get the status of several claims"
-  method              = "POST"
-  url_template        = "/claims/status"
 
   request {
     representation {
-      content_type = "application/xml"
+      content_type = "text/xml"
     }
-  }
-}
-
-resource "azurerm_api_management_api_operation" "get_schema" {
-  count               = local.apim_count
-  provider            = azurerm.aks-cftapps
-  operation_id        = "get-schema"
-  api_name            = azurerm_api_management_api.bulk_claims[0].name
-  api_management_name = local.api_mgmt_name
-  resource_group_name = local.api_mgmt_rg
-  display_name        = "Get a submission schema"
-  method              = "GET"
-  url_template        = "/schema/{fileName}"
-
-  template_parameter {
-    name     = "fileName"
-    required = true
-    type     = "string"
   }
 }
 
@@ -228,10 +162,7 @@ module "api_mgmt_policy" {
   }
 
   depends_on = [
-    azurerm_api_management_api_operation.submit_rental,
-    azurerm_api_management_api_operation.submit_mortgage,
-    azurerm_api_management_api_operation.get_claims,
-    azurerm_api_management_api_operation.get_schema,
+    azurerm_api_management_api_operation.bulk_claims_wildcard,
     azurerm_api_management_named_value.bulk_claims_s2s_secret,
     azurerm_key_vault_access_policy.apim_bulk_claims,
   ]
@@ -254,7 +185,7 @@ resource "azurerm_api_management_api_diagnostic" "bulk_claims" {
   http_correlation_protocol = "W3C"
 
   frontend_request {
-    headers_to_log = ["content-type", "content-length", "accept"]
+    headers_to_log = ["content-type", "content-length", "accept", "soapaction"]
   }
 
   frontend_response {

@@ -490,6 +490,7 @@ dependencies {
   implementation 'com.github.hmcts:ccd-runtime-indexing'
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web-services', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: springFrameworkBootVersion
@@ -598,6 +599,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+  testImplementation group: 'org.springframework.ws', name: 'spring-ws-test'
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersAdditionsVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersAdditionsVersion

@@ -54,6 +54,8 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
 
     private static final String PCS_API = "http://localhost:3206";
     private static final String SHARED_WIREMOCK = "http://localhost:8083";
+    private static final String SERVICES_PATH = "/v2/bulk-claims/services";
+    private static final String SOAP_NAMESPACE = "http://impl.service.bulkclaim.webservice.pcol.dca.gov.uk";
     private static final String APIM_SERVICE = "pcs_bulk_claims_apim";
     private static final String ORGANISATION_ID = "BULKORG1";
     private static final String PBA_ACCOUNT = "PBA1234567";
@@ -205,7 +207,7 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
             .pollInterval(Duration.ofSeconds(1))
             .until(() -> pendingTasks("claim-form-generation-task", caseReference) == 0);
 
-        Response status = get("/v2/bulk-claims/claims/" + validCui, APIM_SERVICE, ORGANISATION_ID);
+        Response status = getClaimStatus(validCui, APIM_SERVICE, ORGANISATION_ID);
         assertThat(status.status()).isEqualTo(200);
         Document xml = parse(status.body());
         assertThat(text(xml, "/BulkClaimStatusResponse/CaseReference")).isEqualTo(String.valueOf(caseReference));
@@ -267,8 +269,7 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
         assertThat(postRental(requestXml, APIM_SERVICE, null).status()).isEqualTo(403);
         assertThat(postRental(requestXml, APIM_SERVICE, "  ").status()).isEqualTo(403);
 
-        assertThat(get("/v2/bulk-claims/claims/" + validCui, "xui_webapp", ORGANISATION_ID).status())
-            .isEqualTo(403);
+        assertThat(getClaimStatus(validCui, "xui_webapp", ORGANISATION_ID).status()).isEqualTo(403);
     }
 
     @Test
@@ -290,39 +291,68 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
 
     @Test
     @Order(9)
-    void servesTheSchemaAndReportsUnknownClaims() throws Exception {
-        Response schema = get("/v2/bulk-claims/schema/RentalClaim.xsd", APIM_SERVICE, ORGANISATION_ID);
+    void servesTheWsdlAndSchemaAndReportsUnknownClaimsInTheResponse() throws Exception {
+        Response wsdl = get(SERVICES_PATH + "/BulkClaim.wsdl", APIM_SERVICE, ORGANISATION_ID);
+        assertThat(wsdl.status()).isEqualTo(200);
+        assertThat(wsdl.body()).contains("BulkClaimSoapBinding", "processRentalClaim", "getClaimStatuses");
+        assertThat(get(SERVICES_PATH + "/BulkClaim?wsdl", APIM_SERVICE, ORGANISATION_ID).status()).isEqualTo(200);
+
+        Response schema = get(SERVICES_PATH + "/schema/RentalClaim.xsd", APIM_SERVICE, ORGANISATION_ID);
         assertThat(schema.status()).isEqualTo(200);
         assertThat(schema.body()).contains("RentalClaimSet");
+        assertThat(get(SERVICES_PATH + "/schema/Unknown.xsd", APIM_SERVICE, ORGANISATION_ID).status())
+            .isEqualTo(404);
 
-        assertThat(get("/v2/bulk-claims/schema/Unknown.xsd", APIM_SERVICE, ORGANISATION_ID).status())
-            .isEqualTo(404);
-        assertThat(get("/v2/bulk-claims/claims/NO-SUCH-" + UUID.randomUUID(), APIM_SERVICE, ORGANISATION_ID)
-                       .status()).isEqualTo(404);
-        assertThat(get("/v2/bulk-claims/claims/" + validCui, APIM_SERVICE, "OTHERORG").status())
-            .isEqualTo(404);
+        Response unknown = getClaimStatus("NO-SUCH-" + UUID.randomUUID(), APIM_SERVICE, ORGANISATION_ID);
+        assertThat(unknown.status()).isEqualTo(200);
+        assertThat(text(parse(unknown.body()), "/BulkClaimStatusResponse/ClaimStatus/FailReasonCode"))
+            .isEqualTo("17");
+        Response otherOrganisation = getClaimStatus(validCui, APIM_SERVICE, "OTHERORG");
+        assertThat(text(parse(otherOrganisation.body()), "/BulkClaimStatusResponse/ClaimStatus/FailReasonCode"))
+            .isEqualTo("17");
     }
 
     private Response postRental(String body, String serviceName, String organisationId) {
-        return restClient.post()
-            .uri("/v2/bulk-claims/rental")
-            .contentType(MediaType.APPLICATION_XML)
-            .headers(headers -> applyHeaders(headers, serviceName, organisationId))
-            .body(body.getBytes(StandardCharsets.UTF_8))
-            .exchange((request, response) -> new Response(
-                response.getStatusCode().value(),
-                new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8)));
+        return soap("processRentalClaim", "rentalRequest", body, serviceName, organisationId);
     }
 
     private Response postStatusBatch(String body, String serviceName, String organisationId) {
-        return restClient.post()
-            .uri("/v2/bulk-claims/claims/status")
-            .contentType(MediaType.APPLICATION_XML)
+        return soap("getClaimStatuses", "statusRequest", body, serviceName, organisationId);
+    }
+
+    private Response getClaimStatus(String customerUniqueIdentifier, String serviceName, String organisationId) {
+        return soap("getClaimStatus", "customerUniqueIdentifier", customerUniqueIdentifier, serviceName,
+                    organisationId);
+    }
+
+    /**
+     * Posts the SOAP envelope an Axis client generated from PCOL's WSDL would send. A 200 response is returned
+     * as the v2 XML document carried in the return string; anything else as the raw body.
+     */
+    private Response soap(String operation, String child, String value, String serviceName,
+                          String organisationId) {
+        String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+            + "<soapenv:Body><ns1:" + operation + " xmlns:ns1=\"" + SOAP_NAMESPACE + "\"><ns1:" + child + ">"
+            + value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            + "</ns1:" + child + "></ns1:" + operation + "></soapenv:Body></soapenv:Envelope>";
+        Response response = restClient.post()
+            .uri(SERVICES_PATH + "/BulkClaim")
+            .contentType(MediaType.TEXT_XML)
+            .header("SOAPAction", "urn:" + operation)
             .headers(headers -> applyHeaders(headers, serviceName, organisationId))
-            .body(body.getBytes(StandardCharsets.UTF_8))
-            .exchange((request, response) -> new Response(
-                response.getStatusCode().value(),
-                new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8)));
+            .body(envelope.getBytes(StandardCharsets.UTF_8))
+            .exchange((request, result) -> new Response(
+                result.getStatusCode().value(),
+                new String(result.getBody().readAllBytes(), StandardCharsets.UTF_8)));
+        if (response.status() != 200) {
+            return response;
+        }
+        try {
+            return new Response(200, text(parse(response.body()),
+                "/*[local-name()='Envelope']/*[local-name()='Body']/*/*"));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static String statusRequest(String... identifiers) {
