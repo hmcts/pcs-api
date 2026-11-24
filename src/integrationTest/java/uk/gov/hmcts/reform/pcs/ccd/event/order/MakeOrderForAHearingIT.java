@@ -29,7 +29,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -283,16 +282,17 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             new OrderChange(null, 0, OrderType.ADJOURNMENT, Map.of("notes", "kept"), WORDING), null,
             new HearingChange(firstHearing, null, null, null)));
 
-        // The judge opened the first hearing's draft, then chose the second hearing.
-        OrderStart chosen = madeAt(firstJudge, firstHearing, secondHearing).start();
-        assertThat(chosen.hearing().id()).isEqualTo(secondHearing);
-        assertThat(chosen.order().formData()).containsEntry("notes", "kept");
-        assertThat(orders(firstJudge)).as("choosing saves nothing")
-            .containsExactly(tuple(chosen.order().id(), "DRAFT", firstHearing));
-        madeAt(firstJudge, firstHearing, secondHearing).submitExpectingSuccess(new MakeOrderRequest(
+        // The judge opened the first hearing's draft, which came with the second hearing to choose, then chose it.
+        OrderStart chosen = forHearing(firstJudge, firstHearing).start();
+        assertThat(chosen.hearing().id()).isEqualTo(firstHearing);
+        assertThat(chosen.otherHearings()).singleElement().satisfies(other -> {
+            assertThat(other.id()).isEqualTo(secondHearing);
+            assertThat(other.caseFacts()).as("the facts the judge would start from there").isNotNull();
+        });
+        forHearing(firstJudge, firstHearing).submitExpectingSuccess(new MakeOrderRequest(
             SAVE_DRAFT, new OrderChange(chosen.order().id(), chosen.order().version(), OrderType.ADJOURNMENT,
-                chosen.order().formData(), WORDING), null,
-            new HearingChange(secondHearing, chosen.hearing().version(), facts("925.00"), "at the second")));
+                chosen.order().formData(), WORDING), null, new HearingChange(secondHearing,
+                chosen.otherHearings().getFirst().version(), facts("925.00"), "at the second")));
 
         // The link to the first hearing, which opened it, opens it still, where it is now made.
         OrderStart moved = forHearing(firstJudge, firstHearing).start();
@@ -302,20 +302,20 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         assertThat(moved.hearing().id()).isEqualTo(secondHearing);
         assertThat(moved.hearing().caseFacts().currentRent()).isEqualByComparingTo("925.00");
         assertThat(moved.hearing().note()).isEqualTo("at the second");
+        assertThat(moved.otherHearings()).extracting(Hearing::id).containsExactly(firstHearing);
 
         // Then without a hearing.
-        var withoutHearing = events.external(caseReference, MAKE_ORDER).as(firstJudge)
-            .withClientContext(Map.of("hearingId", String.valueOf(secondHearing), "madeAt", Map.of()));
-        assertThat(withoutHearing.start().hearing()).isNull();
-        withoutHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(moved.order().id(),
-            moved.order().version(), OrderType.ADJOURNMENT, moved.order().formData(), WORDING), null));
+        forHearing(firstJudge, secondHearing).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
+            new OrderChange(moved.order().id(), moved.order().version(), OrderType.ADJOURNMENT,
+                moved.order().formData(), WORDING), null));
         OrderStart papers = forHearing(firstJudge, secondHearing).start();
         assertThat(papers.order().id()).isEqualTo(chosen.order().id());
         assertThat(papers.hearing()).isNull();
+        assertThat(papers.otherHearings()).extracting(Hearing::id).containsExactly(firstHearing, secondHearing);
 
         // And back to the first hearing.
-        madeAt(firstJudge, null, firstHearing).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(papers.order().id(), papers.order().version(), OrderType.ADJOURNMENT,
+        events.external(caseReference, MAKE_ORDER).as(firstJudge).submitExpectingSuccess(new MakeOrderRequest(
+            SAVE_DRAFT, new OrderChange(papers.order().id(), papers.order().version(), OrderType.ADJOURNMENT,
                 papers.order().formData(), WORDING), null, new HearingChange(firstHearing, null, null, null)));
         assertThat(orders(firstJudge)).containsExactly(tuple(chosen.order().id(), "DRAFT", firstHearing));
         assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).start().order().formData())
@@ -332,21 +332,19 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             new HearingChange(firstHearing, null, null, null)));
         jdbcTemplate.update("UPDATE hearing SET cancelled = true WHERE id = ?", firstHearing);
 
-        var atCancelledHearing = madeAt(firstJudge, firstHearing, firstHearing);
+        var atCancelledHearing = events.external(caseReference, MAKE_ORDER).as(firstJudge);
         OrderStart reopened = atCancelledHearing.start();
         assertThat(reopened.hearing().id()).isEqualTo(firstHearing);
+        assertThat(reopened.otherHearings()).extracting(Hearing::id).containsExactly(secondHearing);
         assertThat(reopened.order().formData()).containsEntry("notes", "kept");
         atCancelledHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(reopened.order().id(), reopened.order().version(), OrderType.ADJOURNMENT,
                 reopened.order().formData(), WORDING), null, new HearingChange(firstHearing, null, null, null)));
 
-        var boxwork = events.external(caseReference, MAKE_ORDER).as(firstJudge)
-            .withClientContext(Map.of("madeAt", Map.of()));
-        OrderStart moved = boxwork.start();
-        assertThat(moved.hearing()).isNull();
-        boxwork.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
-            new OrderChange(moved.order().id(), moved.order().version(), OrderType.ADJOURNMENT,
-                moved.order().formData(), WORDING), null));
+        OrderStart saved = atCancelledHearing.start();
+        atCancelledHearing.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
+            new OrderChange(saved.order().id(), saved.order().version(), OrderType.ADJOURNMENT,
+                saved.order().formData(), WORDING), null));
         assertThat(orders(firstJudge))
             .containsExactly(tuple(reopened.order().id(), "SUBMITTED_FOR_REVIEW", null));
     }
@@ -354,12 +352,14 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     @Test
     @DisplayName("only lets the judge choose one of the case's own hearings that has not been cancelled")
     void onlyChoosesTheCasesOwnHearings() {
-        int otherCasesHearing = cases.hearing(cases.issue(), FIRST_HEARING, false);
         events.external(caseReference, MAKE_ORDER).as(firstJudge).submitExpectingSuccess(startDraft("on the papers"));
         OrderStart.Order onPapers = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().order();
 
-        assertThat(madeAt(firstJudge, null, otherCasesHearing)
-            .startExpectingRejection()).containsExactly("The hearing is not one of this case's hearings");
+        cases.hearing(caseReference, SECOND_HEARING.plusDays(7), true);
+        assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).start().otherHearings())
+            .extracting(Hearing::id).as("the case's own hearings that have not been cancelled, earliest first")
+            .containsExactly(firstHearing, secondHearing);
+        int otherCasesHearing = cases.hearing(cases.issue(), FIRST_HEARING, false);
         assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).submitExpectingRejection(
                 new MakeOrderRequest(SAVE_DRAFT, new OrderChange(onPapers.id(), onPapers.version(),
                     onPapers.orderType(), Map.of(), WORDING), null,
@@ -421,15 +421,6 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     private ExternalEvent<OrderStart, MakeOrderRequest> forHearing(Actor judge, int hearingId) {
         return events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("hearingId", String.valueOf(hearingId)));
-    }
-
-    /** The judge's own choice, on the page, of the hearing the order is made at, over the one their link named. */
-    private ExternalEvent<OrderStart, MakeOrderRequest> madeAt(Actor judge, Integer linkHearingId, int hearingId) {
-        Map<String, Object> context = new HashMap<>(Map.of("madeAt", Map.of("hearingId", hearingId)));
-        if (linkHearingId != null) {
-            context.put("hearingId", String.valueOf(linkHearingId));
-        }
-        return events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(context);
     }
 
     /** The judge's orders on the case: each one's id, state and hearing. */

@@ -209,14 +209,15 @@ class DecideApplicationIT extends OrderEventIT {
         + "chooses, and issues the order as made that day")
     void decidesTheApplicationAtAChosenHearing() {
         int hearing = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
-        var atHearing = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
-            Map.of("genAppId", genAppId.toString(), "madeAt", Map.of("hearingId", hearing)));
+        var atHearing = asJudgeDeciding(genAppId);
 
         OrderStart start = atHearing.start();
         assertThat(start.taskGenAppId()).isEqualTo(genAppId);
-        assertThat(start.hearing().id()).isEqualTo(hearing);
-        assertThat(start.hearing().caseFacts()).as("the hearing's facts to record").isNotNull();
-        assertThat(asJudgeDeciding(genAppId).start().hearing()).as("without the judge's choice, box work").isNull();
+        assertThat(start.hearing()).as("box work, until the judge chooses the hearing").isNull();
+        assertThat(start.otherHearings()).singleElement().satisfies(choice -> {
+            assertThat(choice.id()).isEqualTo(hearing);
+            assertThat(choice.caseFacts()).as("the hearing's facts to record").isNotNull();
+        });
 
         Order order = start.order();
         UUID orderId = atHearing.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
@@ -245,8 +246,7 @@ class DecideApplicationIT extends OrderEventIT {
             "without-notice-by-year", "2026");
         // The judge follows the application's link, chooses the hearing on the page and saves.
         assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();
-        var choosingHearing = events.external(caseReference, MAKE_ORDER).as(judge).withClientContext(
-            Map.of("genAppId", genAppId.toString(), "madeAt", Map.of("hearingId", hearing)));
+        var choosingHearing = asJudgeDeciding(genAppId);
         UUID draftId = choosingHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
                 new OrderChange(null, 0, NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")), "decide-task",
                 new HearingChange(hearing, null, null, null)))
@@ -269,9 +269,7 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(fromCase.taskGenAppId()).isNull();
 
         // Moved to no hearing and back from the application's link, it is the same one draft.
-        var choosingNone = events.external(caseReference, MAKE_ORDER).as(judge)
-            .withClientContext(Map.of("genAppId", genAppId.toString(), "madeAt", Map.of()));
-        choosingNone.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
+        asJudgeDeciding(genAppId).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
             fromApplication.order().version(), NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")),
             "decide-task"));
         assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();

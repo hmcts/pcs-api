@@ -22,12 +22,14 @@ import java.util.UUID;
 
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
- * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
+ * made for, if any, the case's other hearings a judge can choose to make it at instead, each as they would start an
+ * order for it, the application the judge's task asks them to decide, if it asks them to decide one, and the
  * judge the order is made by, as it names them as made before them. The bank holidays are England and Wales's as
- * GOV.UK publishes them, which a date the order gives to apply by moves off.
+ * GOV.UK publishes them, which a date the order gives to apply by moves off. Court staff reviewing an order choose
+ * no hearing, so are sent no others.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judge,
-                         List<LocalDate> bankHolidays) {
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, List<Hearing> otherHearings,
+                         UUID taskGenAppId, String judge, List<LocalDate> bankHolidays) {
 
     /** The judge as an order names them: their title and name, or a placeholder for them to fill in. */
     public static String judge(String name) {

@@ -39,11 +39,13 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
@@ -134,24 +136,23 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             }
             task = null;
         }
-        // The judge's own choice of hearing, or of none, wins over the order's, and a link's is only a new order's.
-        HearingEntity hearing;
-        if (link.madeAt() != null) {
-            HearingEntity savedHearing = order.map(OrderEntity::getHearing).orElse(null);
-            Integer savedHearingId = savedHearing == null ? null : savedHearing.getId();
-            // Keep the order usable if its hearing was cancelled after the draft was saved.
-            hearing = Objects.equals(savedHearingId, link.madeAt().hearingId()) ? savedHearing
-                : madeAt(pcsCase, link.madeAt().hearingId());
-        } else {
-            // A saved order made without a hearing stays so, whichever hearing the link names.
-            hearing = order.isPresent() ? order.get().getHearing() : madeAt(pcsCase, link.hearingId());
-        }
+        // A saved order stays where it is made, even if its hearing was cancelled since, whichever hearing the link
+        // names: a link's is only where a new order starts. The judge chooses another on the page, which has them all.
+        HearingEntity hearing = order.isPresent() ? order.get().getHearing() : madeAt(pcsCase, link.hearingId());
+        List<HearingEntity> choices = Stream.concat(Stream.ofNullable(hearing), pcsCase.getHearings().stream()
+                .filter(HearingRecords::canHaveOrder)
+                .filter(other -> hearing == null || !other.getId().equals(hearing.getId()))
+                .sorted(Comparator.comparing(HearingEntity::getHearingDate)))
+            .toList();
+        List<OrderStart.Hearing> started = hearingRecords.start(pcsCase, choices);
+        int others = hearing == null ? 0 : 1;
         OrderStart.Order workingOrder = order
             .map(o -> OrderStart.Order.of(o, orderSteps.latest(o),
                 link.orderId() != null ? messageService.lastQuery(o).orElse(null) : null))
             .orElse(OrderStart.Order.NONE);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
+            hearing == null ? null : started.getFirst(), started.subList(others, started.size()),
+            task == null ? null : task.getId(),
             OrderStart.judge(securityContextService.getCurrentUserDetails().getName()),
             OrderStart.bankHolidays(bankHolidays)));
     }

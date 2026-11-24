@@ -73,9 +73,14 @@ class HearingRecords {
             .orElseThrow(() -> ExternalRejection.because("The hearing is not one of this case's hearings"));
     }
 
-    /** The hearing as a judge starts an order for it, falling back to the claim's facts. */
-    OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing) {
+    /** Each of the hearings as a judge starts an order for it, falling back to the claim's facts. */
+    List<OrderStart.Hearing> start(PcsCaseEntity pcsCase, List<HearingEntity> hearings) {
         List<HearingFactsEntity> recorded = hearingFactsRepository.findByHearingPcsCaseId(pcsCase.getId());
+        return hearings.stream().map(hearing -> start(pcsCase, hearing, recorded)).toList();
+    }
+
+    private static OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing,
+                                            List<HearingFactsEntity> recorded) {
         Optional<HearingFactsEntity> own = recorded.stream()
             .filter(facts -> facts.getHearingId().equals(hearing.getId()))
             .findFirst();
