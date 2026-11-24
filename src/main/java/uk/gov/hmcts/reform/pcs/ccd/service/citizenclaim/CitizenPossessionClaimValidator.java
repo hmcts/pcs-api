@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformat
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentLedgerEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -336,16 +335,6 @@ public class CitizenPossessionClaimValidator {
         }
         maxLength(errors, "rentArrears.otherFrequencyDetails", rentArrears.getOtherFrequencyDetails(), NAME_MAX);
         maxLength(errors, "rentArrears.recoverySteps", rentArrears.getRecoverySteps(), REASON_MAX);
-        List<ListValue<CitizenClaimRentLedgerEntry>> ledger = rentArrears.getRentHistoryLedger();
-        if (ledger != null) {
-            for (int i = 0; i < ledger.size(); i++) {
-                CitizenClaimRentLedgerEntry entry = ledger.get(i) != null ? ledger.get(i).getValue() : null;
-                if (entry != null) {
-                    maxLength(errors, "rentArrears.rentHistoryLedger[" + i + "].description",
-                              entry.getDescription(), REASON_MAX);
-                }
-            }
-        }
     }
 
     private static void validateCircumstances(CitizenClaimCircumstances circumstances, List<String> errors) {

@@ -176,17 +176,13 @@ public class CitizenPossessionClaimApplicableAnswers {
             rentArrears.setOtherFrequencyDetails(null);
         }
         CitizenClaimRentProofType proofType = rentArrears.getProofType();
-        // The frontend asks for it only in the table design with monthly rent. The design is not sent, but
-        // a ledger can only be chosen in the ledger design.
+        // Asked only to lay out a created rent statement in months
         if (rentArrears.getRentFrequency() != RentPaymentFrequency.MONTHLY
-            || proofType == CitizenClaimRentProofType.LEDGER) {
+            || proofType != CitizenClaimRentProofType.TABLE) {
             rentArrears.setRentDueDay(null);
         }
         if (proofType != CitizenClaimRentProofType.UPLOAD_STATEMENT) {
             rentArrears.setRentStatementDocuments(null);
-        }
-        if (proofType != CitizenClaimRentProofType.LEDGER) {
-            rentArrears.setRentHistoryLedger(null);
         }
         if (proofType != CitizenClaimRentProofType.TABLE) {
             rentArrears.setRentHistoryTable(null);

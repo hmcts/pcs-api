@@ -89,22 +89,14 @@ class CitizenPossessionClaimApplicableAnswersTest {
                                                     .value(CitizenClaimRentPeriodEntry.builder().build())
                                                     .build()));
 
-        rentArrears.setProofType(CitizenClaimRentProofType.LEDGER);
-        CitizenClaimRentArrears ledger = underTest.of(claim).getRentArrears();
-        assertThat(ledger.getRentHistoryLedger()).hasSize(2);
-        assertThat(ledger.getRentHistoryTable()).isNull();
-        assertThat(ledger.getRentStatementDocuments()).isNull();
-
         rentArrears.setProofType(CitizenClaimRentProofType.TABLE);
         CitizenClaimRentArrears table = underTest.of(claim).getRentArrears();
         assertThat(table.getRentHistoryTable()).hasSize(1);
-        assertThat(table.getRentHistoryLedger()).isNull();
         assertThat(table.getRentStatementDocuments()).isNull();
 
         rentArrears.setProofType(CitizenClaimRentProofType.UPLOAD_STATEMENT);
         CitizenClaimRentArrears upload = underTest.of(claim).getRentArrears();
         assertThat(upload.getRentStatementDocuments()).hasSize(1);
-        assertThat(upload.getRentHistoryLedger()).isNull();
         assertThat(upload.getRentHistoryTable()).isNull();
     }
 
@@ -220,17 +212,18 @@ class CitizenPossessionClaimApplicableAnswersTest {
     }
 
     @Test
-    void shouldKeepTheRentDueDayOnlyForMonthlyRentOutsideTheLedgerDesign() {
+    void shouldKeepTheRentDueDayOnlyForACreatedStatementOfMonthlyRent() {
         CitizenPossessionClaim table = CitizenPossessionClaimFixtures.completeClaim();
         table.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
         table.getRentArrears().setRentDueDay(15);
-        CitizenPossessionClaim ledger = table.toBuilder().build();
-        ledger.setRentArrears(table.getRentArrears().toBuilder().proofType(CitizenClaimRentProofType.LEDGER).build());
+        CitizenPossessionClaim upload = table.toBuilder().build();
+        upload.setRentArrears(table.getRentArrears().toBuilder()
+                                  .proofType(CitizenClaimRentProofType.UPLOAD_STATEMENT).build());
         CitizenPossessionClaim weekly = table.toBuilder().build();
         weekly.setRentArrears(table.getRentArrears().toBuilder().rentFrequency(RentPaymentFrequency.WEEKLY).build());
 
         assertThat(underTest.of(table).getRentArrears().getRentDueDay()).isEqualTo(15);
-        assertThat(underTest.of(ledger).getRentArrears().getRentDueDay()).isNull();
+        assertThat(underTest.of(upload).getRentArrears().getRentDueDay()).isNull();
         assertThat(underTest.of(weekly).getRentArrears().getRentDueDay()).isNull();
     }
 

@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOr
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -56,7 +57,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ResolvedRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -112,8 +112,6 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     private PcsCaseRepository pcsCaseRepository;
     @Autowired
     private DraftCaseDataService draftCaseDataService;
-    @Autowired
-    private RentHistoryLedgerEntryRepository ledgerEntryRepository;
     @Autowired
     private RentHistoryPeriodRepository periodRepository;
     @Autowired
@@ -379,8 +377,13 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .extracting(ListValue::getValue)
             .containsExactly("Jane Landlord");
 
-        assertThat(ledgerEntryRepository.findByClaimId(claim.getId())).hasSize(2);
-        assertThat(periodRepository.findByClaimId(claim.getId())).isEmpty();
+        assertThat(periodRepository.findByClaimId(claim.getId()))
+            .extracting(RentHistoryPeriodEntity::getRank, RentHistoryPeriodEntity::getPeriodStart)
+            .containsExactlyInAnyOrder(
+                tuple(1, LocalDate.of(2026, 9, 1)),
+                tuple(2, LocalDate.of(2026, 9, 1)),
+                tuple(3, LocalDate.of(2026, 10, 1)));
+        assertThat(pcsCase.getTenancyLicence().getRentDueDay()).isEqualTo(1);
         assertThat(submissionRepository.findByClaimId(claim.getId())).singleElement()
             .satisfies(row -> assertThat(row.getSubmittedClaim())
                 .contains("tom.tenant@example.com")
@@ -452,7 +455,6 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         answers.getNotice().setHandedToName("Tom Tenant");
         answers.getNotice().setHandedDate(LocalDate.of(2026, 8, 2));
         answers.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
-        answers.getRentArrears().setRentHistoryLedger(null);
         answers.getRentArrears().setRentHistoryTable(List.of(ListValue.<CitizenClaimRentPeriodEntry>builder()
             .value(CitizenClaimRentPeriodEntry.builder()
                        .periodStart(LocalDate.of(2026, 9, 1))

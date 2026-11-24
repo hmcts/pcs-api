@@ -48,8 +48,6 @@ public class CitizenClaimRentArrears {
 
     private List<ListValue<Document>> rentStatementDocuments;
 
-    private List<ListValue<CitizenClaimRentLedgerEntry>> rentHistoryLedger;
-
     private List<ListValue<CitizenClaimRentPeriodEntry>> rentHistoryTable;
 
     private VerticalYesNo moneyJudgmentWanted;

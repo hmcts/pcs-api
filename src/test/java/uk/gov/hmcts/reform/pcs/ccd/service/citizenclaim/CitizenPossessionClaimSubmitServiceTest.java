@@ -43,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
@@ -55,7 +54,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -116,8 +114,6 @@ class CitizenPossessionClaimSubmitServiceTest {
     @Mock
     private AddressMapper addressMapper;
     @Mock
-    private RentHistoryLedgerEntryRepository ledgerEntryRepository;
-    @Mock
     private RentHistoryPeriodRepository periodRepository;
     @Mock
     private CitizenClaimSubmissionRepository submissionRepository;
@@ -128,8 +124,6 @@ class CitizenPossessionClaimSubmitServiceTest {
 
     @Captor
     private ArgumentCaptor<ClaimEntity> claimCaptor;
-    @Captor
-    private ArgumentCaptor<List<RentHistoryLedgerEntryEntity>> ledgerCaptor;
     @Captor
     private ArgumentCaptor<List<RentHistoryPeriodEntity>> periodCaptor;
     @Captor
@@ -186,7 +180,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         Clock clock = Clock.fixed(Instant.parse("2026-11-06T10:00:00Z"), ZoneOffset.UTC);
         underTest = new CitizenPossessionClaimSubmitService(
             pcsCaseService, pcsCaseRepository, claimRepository, partyRepository, partyService, documentService,
-            addressMapper, ledgerEntryRepository, periodRepository, submissionRepository, feeService,
+            addressMapper, periodRepository, submissionRepository, feeService,
             paymentService, objectMapper, clock);
     }
 
@@ -463,7 +457,6 @@ class CitizenPossessionClaimSubmitServiceTest {
 
         submit(claim);
 
-        verify(ledgerEntryRepository, never()).saveAll(any());
         verify(periodRepository, never()).saveAll(any());
         verify(documentService).createAllDocuments(documentCaseCaptor.capture());
         assertThat(documentCaseCaptor.getValue().getRentArrears().getStatementDocuments()).hasSize(1);
@@ -513,7 +506,6 @@ class CitizenPossessionClaimSubmitServiceTest {
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getRentArrears()).isNull();
         assertThat(claimCaptor.getValue().getDueToRentArrears()).isEqualTo(YesOrNo.NO);
-        verify(ledgerEntryRepository, never()).saveAll(any());
         verify(periodRepository, never()).saveAll(any());
         assertThat(pcsCaseEntity.getTenancyLicence().getRentAmount()).isNull();
         assertThat(pcsCaseEntity.getTenancyLicence().getRentFrequency()).isNull();
@@ -521,7 +513,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         assertThat(documentCaseCaptor.getValue().getRentArrears()).isNull();
 
         verify(submissionRepository).save(submissionCaptor.capture());
-        assertThat(submissionCaptor.getValue().getSubmittedClaim()).contains("rentHistoryLedger");
+        assertThat(submissionCaptor.getValue().getSubmittedClaim()).contains("rentHistoryTable");
     }
 
     @Test
@@ -600,21 +592,21 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldPersistTheLedgerRentHistory() {
+    void shouldPersistACreatedRentStatementWithEveryPaymentInItsPeriod() {
         submit(CitizenPossessionClaimFixtures.completeClaim());
 
-        verify(periodRepository, never()).saveAll(any());
-
-        verify(ledgerEntryRepository).saveAll(ledgerCaptor.capture());
-        List<RentHistoryLedgerEntryEntity> ledger = ledgerCaptor.getValue();
-        assertThat(ledger).hasSize(2);
-        assertThat(ledger.getFirst().getRank()).isEqualTo(1);
-        assertThat(ledger.getFirst().isRentCharge()).isTrue();
-        assertThat(ledger.getFirst().isTenantPayment()).isFalse();
-        assertThat(ledger.getFirst().getAmountCharged()).isEqualByComparingTo("1250.00");
-        assertThat(ledger.get(1).isTenantPayment()).isTrue();
-        assertThat(ledger.get(1).getAmountPaid()).isEqualByComparingTo("250.00");
-        assertThat(ledger.get(1).getClaim()).isNotNull();
+        verify(periodRepository).saveAll(periodCaptor.capture());
+        List<RentHistoryPeriodEntity> periods = periodCaptor.getValue();
+        assertThat(periods).extracting(RentHistoryPeriodEntity::getRank).containsExactly(1, 2, 3);
+        assertThat(periods).extracting(RentHistoryPeriodEntity::getPeriodStart).containsExactly(
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 1));
+        assertThat(periods.getFirst().getAmountDue()).isEqualByComparingTo("1250.00");
+        assertThat(periods.getFirst().getAmountPaid()).isEqualByComparingTo("250.00");
+        assertThat(periods.get(1).getAmountDue()).isNull();
+        assertThat(periods.get(1).getDatePaid()).isEqualTo(LocalDate.of(2026, 9, 20));
+        assertThat(periods.get(1).getAmountPaid()).isEqualByComparingTo("100.00");
+        assertThat(periods.get(2).getDatePaid()).isNull();
+        assertThat(periods).allSatisfy(period -> assertThat(period.getClaim()).isNotNull());
     }
 
     @Test
@@ -633,7 +625,6 @@ class CitizenPossessionClaimSubmitServiceTest {
 
         submit(claim);
 
-        verify(ledgerEntryRepository, never()).saveAll(any());
 
         verify(periodRepository).saveAll(periodCaptor.capture());
         assertThat(periodCaptor.getValue()).singleElement().satisfies(period -> {
@@ -769,8 +760,8 @@ class CitizenPossessionClaimSubmitServiceTest {
         RentArrearsEntity rentArrears = claimCaptor.getValue().getRentArrears();
         assertThat(rentArrears.getArrearsAtNoticeDate()).isEqualByComparingTo("3750.00");
         assertThat(rentArrears.getTotalRentArrearsDate()).isEqualTo(LocalDate.of(2026, 11, 1));
-        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.LEDGER);
-        assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isNull();
+        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.TABLE);
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isEqualTo(1);
     }
 
     @Test
@@ -782,6 +773,17 @@ class CitizenPossessionClaimSubmitServiceTest {
         submit(claim);
 
         assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isEqualTo(15);
+    }
+
+    @Test
+    void shouldRecordNoRentDueDayOrPeriodsForAnUploadedRentStatement() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getRentArrears().setProofType(CitizenClaimRentProofType.UPLOAD_STATEMENT);
+
+        submit(claim);
+
+        assertThat(pcsCaseEntity.getTenancyLicence().getRentDueDay()).isNull();
+        verify(periodRepository, never()).saveAll(any());
     }
 
 }

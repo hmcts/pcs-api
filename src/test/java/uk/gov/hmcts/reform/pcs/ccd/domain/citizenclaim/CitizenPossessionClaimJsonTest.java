@@ -34,13 +34,15 @@ class CitizenPossessionClaimJsonTest {
         CitizenClaimRentArrears rentArrears = claim.getRentArrears();
         assertThat(rentArrears.getRentAmount()).isEqualByComparingTo(new BigDecimal("1250.00"));
         assertThat(rentArrears.getRentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY);
-        assertThat(rentArrears.getRentHistoryLedger()).hasSize(2);
-        assertThat(rentArrears.getRentHistoryLedger().getFirst().getValue().getTransactionTypes())
-            .containsExactly(CitizenClaimRentTransactionType.RENT_CHARGE);
-        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.LEDGER);
-        assertThat(rentArrears.getRentHistoryLedger().get(1).getValue().getTransactionDate())
-            .isEqualTo(LocalDate.of(2026, 9, 15));
-        assertThat(rentArrears.getRentHistoryTable()).isNull();
+        assertThat(rentArrears.getRentDueDay()).isEqualTo(1);
+        assertThat(rentArrears.getProofType()).isEqualTo(CitizenClaimRentProofType.TABLE);
+        assertThat(rentArrears.getRentHistoryTable()).hasSize(3);
+        CitizenClaimRentPeriodEntry september = rentArrears.getRentHistoryTable().getFirst().getValue();
+        assertThat(september.getPeriodStart()).isEqualTo(LocalDate.of(2026, 9, 1));
+        assertThat(september.getAmountDue()).isEqualByComparingTo(new BigDecimal("1250.00"));
+        assertThat(september.getDatePaid()).isEqualTo(LocalDate.of(2026, 9, 5));
+        assertThat(rentArrears.getRentHistoryTable().get(1).getValue().getAmountDue()).isNull();
+        assertThat(rentArrears.getRentStatementDocuments()).isNull();
     }
 
     @Test
@@ -52,7 +54,7 @@ class CitizenPossessionClaimJsonTest {
         JsonNode json = objectMapper.valueToTree(pcsCase).get("citizenPossessionClaim");
 
         assertThat(json.at("/rentArrears/currentArrears").asText()).isEqualTo("500000");
-        assertThat(json.at("/rentArrears/rentHistoryLedger/0/value/amountCharged").asText()).isEqualTo("125000");
+        assertThat(json.at("/rentArrears/rentHistoryTable/0/value/amountDue").asText()).isEqualTo("125000");
         assertThat(json.at("/tenancy/tenancyType").asText()).isEqualTo("ASSURED");
         assertThat(json.at("/tenancy/tenancyStartDate").asText()).isEqualTo("2023-04-01");
         assertThat(json.at("/submission/statementOfTruthAgreed").asText()).isEqualTo("YES");

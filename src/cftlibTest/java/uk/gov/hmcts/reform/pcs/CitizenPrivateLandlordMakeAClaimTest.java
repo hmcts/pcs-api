@@ -173,13 +173,23 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                              .rentAmount(new BigDecimal("1250.00"))
                              .rentFrequency(RentPaymentFrequency.MONTHLY)
                              .currentArrears(new BigDecimal("5000.00"))
+                             .rentDueDay(1)
                              .proofType(CitizenClaimRentProofType.TABLE)
-                             .rentHistoryTable(List.of(ListValue.<CitizenClaimRentPeriodEntry>builder()
-                                                           .value(CitizenClaimRentPeriodEntry.builder()
-                                                                      .periodStart(LocalDate.of(2026, 10, 1))
-                                                                      .amountDue(new BigDecimal("1250.00"))
-                                                                      .build())
-                                                           .build()))
+                             .rentHistoryTable(List.of(
+                                 rentPeriod(CitizenClaimRentPeriodEntry.builder()
+                                                .periodStart(LocalDate.of(2026, 10, 1))
+                                                .dateDue(LocalDate.of(2026, 10, 1))
+                                                .amountDue(new BigDecimal("1250.00"))
+                                                .datePaid(LocalDate.of(2026, 10, 5))
+                                                .amountPaid(new BigDecimal("50.00"))),
+                                 rentPeriod(CitizenClaimRentPeriodEntry.builder()
+                                                .periodStart(LocalDate.of(2026, 10, 1))
+                                                .datePaid(LocalDate.of(2026, 10, 15))
+                                                .amountPaid(new BigDecimal("200.00"))),
+                                 rentPeriod(CitizenClaimRentPeriodEntry.builder()
+                                                .periodStart(LocalDate.of(2026, 11, 1))
+                                                .dateDue(LocalDate.of(2026, 11, 1))
+                                                .amountDue(new BigDecimal("1250.00")))))
                              .moneyJudgmentWanted(VerticalYesNo.YES)
                              .build())
             .otherInformation(CitizenClaimOtherInformation.builder()
@@ -191,6 +201,11 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                             .statementOfTruthFullName("Jane Landlord")
                             .build())
             .build();
+    }
+
+    private static ListValue<CitizenClaimRentPeriodEntry> rentPeriod(
+        CitizenClaimRentPeriodEntry.CitizenClaimRentPeriodEntryBuilder period) {
+        return ListValue.<CitizenClaimRentPeriodEntry>builder().value(period.build()).build();
     }
 
 }

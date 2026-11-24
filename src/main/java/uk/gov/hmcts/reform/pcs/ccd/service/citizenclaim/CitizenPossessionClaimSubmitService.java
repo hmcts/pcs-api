@@ -32,9 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentLedgerEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentTransactionType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -48,7 +46,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.CitizenClaimSubmissionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryLedgerEntryEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.citizenclaim.RentHistoryPeriodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
@@ -61,7 +58,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryLedgerEntryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -106,7 +102,6 @@ public class CitizenPossessionClaimSubmitService {
     private final PartyService partyService;
     private final DocumentService documentService;
     private final AddressMapper addressMapper;
-    private final RentHistoryLedgerEntryRepository ledgerEntryRepository;
     private final RentHistoryPeriodRepository periodRepository;
     private final CitizenClaimSubmissionRepository submissionRepository;
     private final FeeService feeService;
@@ -121,7 +116,6 @@ public class CitizenPossessionClaimSubmitService {
                                                PartyService partyService,
                                                DocumentService documentService,
                                                AddressMapper addressMapper,
-                                               RentHistoryLedgerEntryRepository ledgerEntryRepository,
                                                RentHistoryPeriodRepository periodRepository,
                                                CitizenClaimSubmissionRepository submissionRepository,
                                                FeeService feeService,
@@ -135,7 +129,6 @@ public class CitizenPossessionClaimSubmitService {
         this.partyService = partyService;
         this.documentService = documentService;
         this.addressMapper = addressMapper;
-        this.ledgerEntryRepository = ledgerEntryRepository;
         this.periodRepository = periodRepository;
         this.submissionRepository = submissionRepository;
         this.feeService = feeService;
@@ -546,27 +539,6 @@ public class CitizenPossessionClaimSubmitService {
         if (rentArrears == null) {
             return;
         }
-        List<CitizenClaimRentLedgerEntry> ledger = values(rentArrears.getRentHistoryLedger());
-        List<RentHistoryLedgerEntryEntity> ledgerEntities = new ArrayList<>();
-        for (int i = 0; i < ledger.size(); i++) {
-            CitizenClaimRentLedgerEntry entry = ledger.get(i);
-            Set<CitizenClaimRentTransactionType> types = Optional.ofNullable(entry.getTransactionTypes())
-                .orElse(Set.of());
-            ledgerEntities.add(RentHistoryLedgerEntryEntity.builder()
-                                   .claim(claimEntity)
-                                   .rank(i + 1)
-                                   .transactionDate(entry.getTransactionDate())
-                                   .rentCharge(types.contains(CitizenClaimRentTransactionType.RENT_CHARGE))
-                                   .tenantPayment(types.contains(CitizenClaimRentTransactionType.TENANT_PAYMENT))
-                                   .description(entry.getDescription())
-                                   .amountCharged(entry.getAmountCharged())
-                                   .amountPaid(entry.getAmountPaid())
-                                   .build());
-        }
-        if (!ledgerEntities.isEmpty()) {
-            ledgerEntryRepository.saveAll(ledgerEntities);
-        }
-
         List<CitizenClaimRentPeriodEntry> table = values(rentArrears.getRentHistoryTable());
         List<RentHistoryPeriodEntity> periodEntities = new ArrayList<>();
         for (int i = 0; i < table.size(); i++) {

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
@@ -230,12 +229,10 @@ class CitizenPossessionClaimValidatorTest {
         claim.getRentArrears().setRecoverySteps("x".repeat(501));
         claim.getRentArrears().setRentFrequency(RentPaymentFrequency.OTHER);
         claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
-        claim.getRentArrears().getRentHistoryLedger().get(1).getValue().setDescription("x".repeat(501));
 
         assertThat(validate(claim)).containsExactly(
             "TOO_LONG:rentArrears.otherFrequencyDetails",
-            "TOO_LONG:rentArrears.recoverySteps",
-            "TOO_LONG:rentArrears.rentHistoryLedger[1].description");
+            "TOO_LONG:rentArrears.recoverySteps");
     }
 
     @Test
@@ -363,15 +360,6 @@ class CitizenPossessionClaimValidatorTest {
         claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
         claim.setAdditionalDefendants(VerticalYesNo.NO);
         claim.getDefendants().get(1).getValue().setNameKnown(null);
-
-        assertThat(validate(claim)).isEmpty();
-    }
-
-    @Test
-    void shouldNotCheckTheRentHistoryTheProofTypeDidNotChoose() {
-        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        claim.getRentArrears().getRentHistoryLedger().getFirst().getValue().setDescription("x".repeat(501));
-        claim.getRentArrears().setProofType(CitizenClaimRentProofType.TABLE);
 
         assertThat(validate(claim)).isEmpty();
     }

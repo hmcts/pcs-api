@@ -127,30 +127,33 @@
       "arrearsAtNoticeDate": "375000",
       "currentArrears": "500000",
       "currentArrearsDate": "2026-11-01",
-      "proofType": "LEDGER",
-      "rentHistoryLedger": [
+      "rentDueDay": 1,
+      "proofType": "TABLE",
+      "rentHistoryTable": [
         {
           "id": null,
           "value": {
-            "transactionDate": "2026-09-01",
-            "transactionTypes": [
-              "RENT_CHARGE"
-            ],
-            "description": "September rent",
-            "amountCharged": "125000",
-            "amountPaid": "0"
+            "periodStart": "2026-09-01",
+            "dateDue": "2026-09-01",
+            "amountDue": "125000",
+            "datePaid": "2026-09-05",
+            "amountPaid": "25000"
           }
         },
         {
           "id": null,
           "value": {
-            "transactionDate": "2026-09-15",
-            "transactionTypes": [
-              "TENANT_PAYMENT"
-            ],
-            "description": "Part payment",
-            "amountCharged": "0",
-            "amountPaid": "25000"
+            "periodStart": "2026-09-01",
+            "datePaid": "2026-09-20",
+            "amountPaid": "10000"
+          }
+        },
+        {
+          "id": null,
+          "value": {
+            "periodStart": "2026-10-01",
+            "dateDue": "2026-10-01",
+            "amountDue": "125000"
           }
         }
       ],
