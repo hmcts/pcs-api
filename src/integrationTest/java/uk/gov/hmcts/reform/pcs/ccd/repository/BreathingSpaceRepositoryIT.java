@@ -77,7 +77,7 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
         jdbcTemplate.update(
             """
                 INSERT INTO breathing_space
-                    (id, pcs_case_id, reference_number)
+                    (id, case_id, reference_number)
                 VALUES (?, ?, ?)
                 """,
             id,
@@ -111,7 +111,7 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     ) {
         jdbcTemplate.update("""
             INSERT INTO breathing_space
-                (id, pcs_case_id, reference_number, created_at)
+                (id, case_id, reference_number, created_at)
             VALUES (?, ?, ?, ?)
             """,
                             UUID.randomUUID(),
