@@ -27,31 +27,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASE_MANAGEMENT_R2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_GENAPP_SET_ASIDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_GENAPP_SET_ASIDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureFlagViewTest {
 
-    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.of(
-        CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled,
-        RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
-        RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
-        RELEASE_1B, FeatureFlags::getRelease1bEnabled,
-        CUI_GENAPP_SET_ASIDE, FeatureFlags::getCuiGenAppSetAsideEnabled,
-        RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
-        WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
-        CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
-        MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
-        ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
-        CASE_MANAGEMENT_R2, FeatureFlags::getCaseManagementR2Enabled
+    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.ofEntries(
+        Map.entry(CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled),
+        Map.entry(RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled),
+        Map.entry(RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled),
+        Map.entry(RELEASE_1B, FeatureFlags::getRelease1bEnabled),
+        Map.entry(CUI_GENAPP_SET_ASIDE, FeatureFlags::getCuiGenAppSetAsideEnabled),
+        Map.entry(RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled),
+        Map.entry(WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled),
+        Map.entry(CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled),
+        Map.entry(MAKE_ORDER, FeatureFlags::getMakeOrderEnabled),
+        Map.entry(ENFORCEMENT, FeatureFlags::getEnforcementEnabled),
+        Map.entry(CASE_MANAGEMENT_R2, FeatureFlags::getCaseManagementR2Enabled)
     );
 
     @Mock
