@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class CaseTitleService {
 
     private final AddressFormatter addressFormatter;
     private final UserRoleService userRoleService;
+    private final FeatureToggleService featureToggleService;
 
     /**
      * Builds a markdown string for the case title which appears near the top of every page in the case overview.
@@ -41,7 +44,7 @@ public class CaseTitleService {
      */
     public String buildCaseTitle(PCSCase pcsCase, long caseReference) {
 
-        if (isCurrentUserInternal(caseReference)) {
+        if (isCurrentUserInternal(caseReference) && featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
             return buildInternalCaseTitle(pcsCase);
         } else {
             return buildPublicCaseTitle(pcsCase);

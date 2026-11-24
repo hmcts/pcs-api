@@ -8,6 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 
@@ -24,20 +26,22 @@ class CaseTitleServiceTest {
     @Mock
     private UserRoleService userRoleService;
     @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
     private PCSCase pcsCase;
 
     private CaseTitleService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseTitleService(addressFormatter, userRoleService);
+        underTest = new CaseTitleService(addressFormatter, userRoleService, featureToggleService);
     }
-
 
     @Test
     void shouldGenerateCaseTitleWithCaseNameForInternalUsers() {
         // Given
         stubUserRole(UserRole.JUDGE);
+        stubFeatureFlag(FeatureFlag.RELEASE_1B, true);
 
         // When
         String actualCaseTitle = underTest.buildCaseTitle(pcsCase, CASE_REFERENCE);
@@ -52,6 +56,26 @@ class CaseTitleServiceTest {
               </p>
               <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                   ${caseNameHmctsInternal}
+              </p>""";
+        assertThat(actualCaseTitle).isEqualTo(expectedCaseTitle);
+    }
+
+    @Test
+    void shouldGenerateCaseTitleWithoutCaseNameForInternalUsersWhenNotEnabled() {
+        // Given
+        stubUserRole(UserRole.JUDGE);
+        stubFeatureFlag(FeatureFlag.RELEASE_1B, false);
+
+        // When
+        String actualCaseTitle = underTest.buildCaseTitle(pcsCase, CASE_REFERENCE);
+
+        // Then
+        String expectedCaseTitle = """
+              <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
+                  Case number: ${[CASE_REFERENCE]}
+              </p>
+              <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
+                  Property address: null
               </p>""";
         assertThat(actualCaseTitle).isEqualTo(expectedCaseTitle);
     }
@@ -79,6 +103,11 @@ class CaseTitleServiceTest {
         UserRoles userRoles = new UserRoles("some-user-id", List.of(userRole.getRole()));
         when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
             .thenReturn(userRoles);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void stubFeatureFlag(FeatureFlag featureFlag, boolean isEnabled) {
+        when(featureToggleService.isEnabled(featureFlag)).thenReturn(isEnabled);
     }
 
 }
