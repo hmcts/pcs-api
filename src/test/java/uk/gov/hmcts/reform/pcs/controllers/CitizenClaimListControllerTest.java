@@ -90,7 +90,7 @@ class CitizenClaimListControllerTest {
         List<ClaimantClaimSummary> claims = List.of(
             ClaimantClaimSummary.builder().caseReference("123").state("AWAITING_SUBMISSION_TO_HMCTS").build()
         );
-        when(citizenClaimListService.getClaimsMadeBy(IDAM_ID, AUTH_HEADER)).thenReturn(claims);
+        when(citizenClaimListService.getClaimsMadeBy(IDAM_ID)).thenReturn(claims);
 
         // When
         ResponseEntity<List<ClaimantClaimSummary>> response = underTest.getClaimantClaims(AUTH_HEADER, S2S_TOKEN);

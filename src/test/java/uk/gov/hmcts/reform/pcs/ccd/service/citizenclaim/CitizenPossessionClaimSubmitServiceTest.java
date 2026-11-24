@@ -326,10 +326,28 @@ class CitizenPossessionClaimSubmitServiceTest {
                         ClaimGroundEntity::getDescription)
             .containsExactlyInAnyOrder(
                 tuple("RENT_ARREARS", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, true, null, null),
-                tuple("ANTI_SOCIAL", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, false,
-                      "The occupier is a lodger", null),
+                tuple("ANTI_SOCIAL", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, false, null, null),
                 tuple("OTHER", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, false,
                       "The occupier is a lodger", "Unlicensed occupier"));
+    }
+
+    @Test
+    void shouldKeepTheExcludedReasonOnOneGroundWhenNoAbsoluteOrOtherGroundIsChosen() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(
+            IntroductoryDemotedOrOtherGrounds.RENT_ARREARS, IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
+            IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL));
+        claim.getGrounds().setExcludedReason("The occupier is a lodger");
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimGrounds())
+            .filteredOn(ground -> ground.getReason() != null)
+            .singleElement()
+            .extracting(ClaimGroundEntity::getCode)
+            .isEqualTo("ANTI_SOCIAL");
     }
 
     @Test

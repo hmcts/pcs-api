@@ -368,8 +368,9 @@ public class CitizenPossessionClaimSubmitService {
 
     /**
      * The grounds for an excluded tenancy, as legal-rep claims for introductory, demoted and other tenancies hold
-     * them. The one reason the claimant gives is kept on each ground that takes a reason, or on rent arrears when
-     * that is the only ground.
+     * them. The claimant gives one reason, so it is kept once, on the ground the claim form reads it from: the
+     * absolute or other ground (which answer "why is the claimant claiming possession"), else the first antisocial
+     * or breach ground, else rent arrears when that is the only ground.
      */
     private static List<ClaimGroundEntity> buildExcludedClaimGrounds(CitizenClaimGrounds grounds) {
         String reason = blankToNull(grounds.getExcludedReason());
@@ -382,18 +383,29 @@ public class CitizenPossessionClaimSubmitService {
                                .build());
         }
         Set<IntroductoryDemotedOrOtherGrounds> chosen = grounds.getExcludedGrounds();
-        boolean onlyRentArrears = chosen.size() == 1 && chosen.contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
+        IntroductoryDemotedOrOtherGrounds reasonGround = groundCarryingExcludedReason(chosen);
         return chosen.stream()
             .sorted(Comparator.comparingInt(IntroductoryDemotedOrOtherGrounds::getRank))
             .map(ground -> ClaimGroundEntity.builder()
                 .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
                 .code(ground.name())
-                .reason(ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS || onlyRentArrears ? reason : null)
+                .reason(ground == reasonGround ? reason : null)
                 .description(ground == IntroductoryDemotedOrOtherGrounds.OTHER
                                  ? blankToNull(grounds.getExcludedOtherGroundDetails()) : null)
                 .isRentArrears(ground == IntroductoryDemotedOrOtherGrounds.RENT_ARREARS)
                 .build())
             .toList();
+    }
+
+    private static IntroductoryDemotedOrOtherGrounds groundCarryingExcludedReason(
+        Set<IntroductoryDemotedOrOtherGrounds> chosen) {
+        return Stream.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS, IntroductoryDemotedOrOtherGrounds.OTHER,
+                         IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+                         IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
+                         IntroductoryDemotedOrOtherGrounds.RENT_ARREARS)
+            .filter(chosen::contains)
+            .findFirst()
+            .orElse(null);
     }
 
     private static RentArrearsEntity buildRentArrears(CitizenPossessionClaim claim) {

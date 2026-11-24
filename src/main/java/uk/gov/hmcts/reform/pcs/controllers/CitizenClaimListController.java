@@ -75,6 +75,6 @@ public class CitizenClaimListController {
         String idamId = IdamUserIds.normalise(
             idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
         );
-        return ResponseEntity.ok(citizenClaimListService.getClaimsMadeBy(idamId, authorization));
+        return ResponseEntity.ok(citizenClaimListService.getClaimsMadeBy(idamId));
     }
 }

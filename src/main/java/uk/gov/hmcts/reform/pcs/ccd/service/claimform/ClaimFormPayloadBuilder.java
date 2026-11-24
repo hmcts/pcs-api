@@ -137,9 +137,11 @@ public class ClaimFormPayloadBuilder {
         // England-only: Wales "Other" shares CombinedLicenceType.OTHER, but the grounds yes/no
         // question belongs to the England intro/demoted/other journey, not the Wales flow.
         payloadBuilder.showGroundsYesNoQuestion(isEngland && isIntroDemotedOther);
-        // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured).
-        payloadBuilder.showDescriptionOfGrounds(isEngland && hasOtherGround);
-        payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
+        // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured), and the
+        // Other ground of a citizen Wales claim, which legal-rep Wales claims have no equivalent of.
+        payloadBuilder.showDescriptionOfGrounds((isEngland || isCitizenClaim(claim)) && hasOtherGround);
+        payloadBuilder.showAsbSection(isWales && hasWalesAsbGround
+            && (!isCitizenClaim(claim) || claim.getAsbProhibitedConductEntity() != null));
         // ExUI England claims never record a notice type, so only citizen claims show it in England.
         boolean hasNoticeType = claim.getNoticeOfPossession() != null
             && isPopulated(claim.getNoticeOfPossession().getNoticeType());

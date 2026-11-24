@@ -2328,6 +2328,62 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.isShowRentProofType()).isFalse();
             assertThat(payload.isShowPreActionProtocolFollowed()).isTrue();
         }
+
+        @Test
+        void citizenWalesClaimShowsTheOtherGroundDescription() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.PRIVATE_LANDLORD_ASSURED_OTHER)
+                .code("OTHER")
+                .description("The tenant sublet the property")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
+            assertThat(payload.getOtherGroundsDescription()).isEqualTo("The tenant sublet the property");
+        }
+
+        @Test
+        void citizenWalesClaimOnTheAntisocialGroundHidesTheEmptyAsbSection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY)
+                .code("ANTISOCIAL_BEHAVIOUR_S157")
+                .claim(claim)
+                .build());
+
+            assertThat(builder.build(pcsCase).isShowAsbSection()).isFalse();
+        }
+
+        @Test
+        void citizenExcludedClaimShowsTheReasonOnce() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+            claim.getClaimGrounds().add(excludedGround("ANTI_SOCIAL", null, claim));
+            claim.getClaimGrounds().add(excludedGround("OTHER", "The occupier is a lodger", claim));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getWhyClaimingPossessionGrounds())
+                .extracting(ClaimFormGround::getReasonFreeText).containsExactly("The occupier is a lodger");
+            assertThat(payload.getGroundsWithReasons()).isEmpty();
+        }
+
+        private ClaimGroundEntity excludedGround(String code, String reason, ClaimEntity claim) {
+            return ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                .code(code)
+                .reason(reason)
+                .claim(claim)
+                .build();
+        }
     }
 
     // =====================================================================
