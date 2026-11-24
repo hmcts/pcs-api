@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
@@ -21,9 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +35,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
-import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildPcsCaseEntity;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderServiceTest {
@@ -54,23 +50,19 @@ class EnforcementOrderServiceTest {
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
-    private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
-    private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
-
     private static final long CASE_REFERENCE = 1234L;
 
     @Test
     void shouldReturnEnforcementOrderIfFoundInDatabase() {
         // Given
-        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
         EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
         claimEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
+
         // When
         EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
 
@@ -81,10 +73,8 @@ class EnforcementOrderServiceTest {
     @Test
     void shouldReturnNullIfNotFoundInDatabase() {
         // Given
-        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
 
         // When
         EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
@@ -93,32 +83,15 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
-    @Test
-    void shouldReturnFirstClaimFromPcsCaseEntity() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        ClaimEntity firstClaim = new ClaimEntity();
-        ClaimEntity secondClaim = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
-
-        // When
-        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
-
-        // Then
-        assertThat(result).isSameAs(firstClaim);
-    }
-
     @ParameterizedTest
     @MethodSource("enforcementOrderTypes")
     void shouldSetDependenciesDataBeforeSavingEnforcementOrderData(SelectEnforcementType enforcementType) {
         // Given
-        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
         final ClaimEntity claimEntity = new ClaimEntity();
-        pcsCaseEntity.setClaims(List.of(claimEntity));
         final EnforcementOrder enforcementOrder = buildEnforcementOrderWithSpecifiedType(enforcementType);
         final EnforcementTypeStrategy strategy = mock(EnforcementTypeStrategy.class);
 
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.retrieveClaimEntity(CASE_REFERENCE)).thenReturn(claimEntity);
         when(strategyFactory.getStrategy(enforcementType)).thenReturn(strategy);
 
         // When
@@ -126,17 +99,18 @@ class EnforcementOrderServiceTest {
 
         // Then
         ArgumentCaptor<EnforcementOrderEntity> processedEntityCaptor =
-                ArgumentCaptor.forClass(EnforcementOrderEntity.class);
+            ArgumentCaptor.forClass(EnforcementOrderEntity.class);
         inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
+            .verify(strategy).process(processedEntityCaptor.capture(), eq(enforcementOrder));
         inOrder(strategyFactory, strategy, enforcementOrderRepository)
-                .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
+            .verify(enforcementOrderRepository).save(processedEntityCaptor.getValue());
 
         EnforcementOrderEntity savedEntity = processedEntityCaptor.getValue();
         assertThat(savedEntity.getClaim()).isSameAs(claimEntity);
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
+
 
     private static Stream<Arguments> enforcementOrderTypes() {
         return Stream.of(
