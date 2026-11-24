@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
@@ -36,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -58,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -112,6 +116,8 @@ class CitizenPossessionClaimSubmitServiceTest {
     private PartyRepository partyRepository;
     @Mock
     private PartyService partyService;
+    @Mock
+    private CaseFlagService caseFlagService;
     @Mock
     private DocumentService documentService;
     @Mock
@@ -182,8 +188,8 @@ class CitizenPossessionClaimSubmitServiceTest {
 
         Clock clock = Clock.fixed(Instant.parse("2026-11-06T10:00:00Z"), ZoneOffset.UTC);
         underTest = new CitizenPossessionClaimSubmitService(
-            pcsCaseService, pcsCaseRepository, claimRepository, partyRepository, partyService, documentService,
-            addressMapper, periodRepository, submissionRepository, feeService,
+            pcsCaseService, pcsCaseRepository, claimRepository, partyRepository, partyService, caseFlagService,
+            documentService, addressMapper, periodRepository, submissionRepository, feeService,
             paymentService, objectMapper, clock);
     }
 
@@ -239,6 +245,151 @@ class CitizenPossessionClaimSubmitServiceTest {
         assertThat(claim.getStatementOfTruth().getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
         assertThat(claim.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
         assertThat(claim.getStatementOfTruth().getFullName()).isEqualTo("Jane Landlord");
+    }
+
+    @Test
+    void shouldAddEachAdditionalClaimantAsAClaimantPartyAfterTheClaimant() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
+        claim.setAdditionalClaimants(List.of(
+            additionalClaimant(CitizenClaimAdditionalClaimant.builder()
+                                   .individualOrOrganisation(CitizenClaimantKind.INDIVIDUAL)
+                                   .firstName("Sam").lastName("Sharer")
+                                   .emailAddress("sam@example.com")
+                                   .contactByPhone(VerticalYesNo.YES).phoneNumber("07700900111")
+                                   .contactByText(VerticalYesNo.YES)
+                                   .build()),
+            additionalClaimant(CitizenClaimAdditionalClaimant.builder()
+                                   .individualOrOrganisation(CitizenClaimantKind.ORGANISATION)
+                                   .organisationName("Joint Lettings Ltd")
+                                   .contactByPhone(VerticalYesNo.NO).contactByText(VerticalYesNo.NO)
+                                   .build())));
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimParties())
+            .extracting(ClaimPartyEntity::getRole)
+            .containsExactly(PartyRole.CLAIMANT, PartyRole.CLAIMANT, PartyRole.CLAIMANT,
+                             PartyRole.DEFENDANT, PartyRole.DEFENDANT);
+        List<PartyEntity> claimants = claimCaptor.getValue().getClaimParties().stream()
+            .filter(party -> party.getRole() == PartyRole.CLAIMANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList();
+        assertThat(claimants.getFirst()).isSameAs(claimantStub);
+        PartyEntity individual = claimants.get(1);
+        assertThat(individual.getOrgName()).isEqualTo("Sam Sharer");
+        assertThat(individual.getFirstName()).isEqualTo("Sam");
+        assertThat(individual.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(individual.getEmailAddress()).isEqualTo("sam@example.com");
+        assertThat(individual.getPhoneNumber()).isEqualTo("07700900111");
+        assertThat(individual.getTextMessageNumber()).isEqualTo("07700900111");
+        assertThat(individual.getContactPreferences().getContactByText()).isEqualTo(VerticalYesNo.YES);
+        PartyEntity organisation = claimants.get(2);
+        assertThat(organisation.getOrgName()).isEqualTo("Joint Lettings Ltd");
+        assertThat(organisation.getFirstName()).isNull();
+        assertThat(pcsCaseEntity.getParties()).contains(individual, organisation);
+    }
+
+    @Test
+    void shouldAddNoAdditionalClaimantPartiesWhenThereAreNoOtherClaimants() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.setAdditionalClaimants(List.of(additionalClaimant(CitizenClaimAdditionalClaimant.builder().build())));
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimParties())
+            .extracting(ClaimPartyEntity::getRole)
+            .containsOnlyOnce(PartyRole.CLAIMANT);
+    }
+
+    @Test
+    void shouldFileAnExcludedTenancyGroundsAsLegalRepClaimsDo() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(
+            IntroductoryDemotedOrOtherGrounds.RENT_ARREARS, IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+            IntroductoryDemotedOrOtherGrounds.OTHER));
+        claim.getGrounds().setExcludedOtherGroundDetails("Unlicensed occupier");
+        claim.getGrounds().setExcludedReason("The occupier is a lodger");
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        ClaimEntity saved = claimCaptor.getValue();
+        assertThat(saved.getDueToRentArrears()).isEqualTo(YesOrNo.YES);
+        assertThat(saved.getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCode, ClaimGroundEntity::getCategory,
+                        ClaimGroundEntity::getIsRentArrears, ClaimGroundEntity::getReason,
+                        ClaimGroundEntity::getDescription)
+            .containsExactlyInAnyOrder(
+                tuple("RENT_ARREARS", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, true, null, null),
+                tuple("ANTI_SOCIAL", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, false,
+                      "The occupier is a lodger", null),
+                tuple("OTHER", ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, false,
+                      "The occupier is a lodger", "Unlicensed occupier"));
+    }
+
+    @Test
+    void shouldKeepTheReasonOnRentArrearsWhenItIsTheOnlyExcludedGround() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS));
+        claim.getGrounds().setExcludedReason("Unpaid rent");
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getClaimGrounds())
+            .singleElement()
+            .extracting(ClaimGroundEntity::getReason)
+            .isEqualTo("Unpaid rent");
+    }
+
+    @Test
+    void shouldFileNoGroundsOnAnExcludedTenancyWithTheReason() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.NO);
+        claim.getGrounds().setExcludedReason("Lodger of the landlord");
+
+        submit(claim);
+
+        verify(claimRepository).save(claimCaptor.capture());
+        ClaimEntity saved = claimCaptor.getValue();
+        assertThat(saved.getDueToRentArrears()).isEqualTo(YesOrNo.NO);
+        assertThat(saved.getClaimGrounds())
+            .singleElement()
+            .satisfies(ground -> {
+                assertThat(ground.getCategory())
+                    .isEqualTo(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS);
+                assertThat(ground.getCode()).isEqualTo("NO_GROUNDS");
+                assertThat(ground.getReason()).isEqualTo("Lodger of the landlord");
+            });
+    }
+
+    @Test
+    void shouldRecordThePcqIdAndSaveTheSupportFlagsOnTheClaimant() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        Flags flags = Flags.builder().partyName("Jane Landlord").roleOnCase("Claimant").details(List.of()).build();
+        claim.getOtherInformation().setPcqId("pcq-123");
+        claim.getOtherInformation().setSupportFlags(flags);
+
+        submit(claim);
+
+        assertThat(claimantStub.getPcqId()).isEqualTo("pcq-123");
+        verify(caseFlagService).saveReasonableAdjustmentFlags(claimantStub, flags, CASE_REFERENCE);
+    }
+
+    private static ListValue<CitizenClaimAdditionalClaimant> additionalClaimant(CitizenClaimAdditionalClaimant value) {
+        return ListValue.<CitizenClaimAdditionalClaimant>builder().id(UUID.randomUUID().toString())
+            .value(value).build();
+    }
+
+    private static CitizenPossessionClaim excludedClaim() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
+        return claim;
     }
 
     @Test

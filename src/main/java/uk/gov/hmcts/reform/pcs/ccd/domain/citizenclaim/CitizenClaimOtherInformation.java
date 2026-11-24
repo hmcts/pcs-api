@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -30,5 +31,13 @@ public class CitizenClaimOtherInformation {
     private VerticalYesNo generalApplicationIntent;
 
     private LanguageUsed languageUsed;
+
+    // Reasonable adjustment flags returned by the Your Support (cui-ra) service for the claimant
+    private Flags supportFlags;
+
+    private CitizenClaimEqualityChoice equalityQuestionsChoice;
+
+    // Reserved before the claimant is handed to PCQ; PCQ correlates their answers by it
+    private String pcqId;
 
 }

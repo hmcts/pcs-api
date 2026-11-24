@@ -33,19 +33,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
@@ -511,6 +516,74 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(reloaded.getTenancyLicence().getRentDueDay()).isEqualTo(15);
     }
 
+
+    @Test
+    @DisplayName("A claim with another claimant gives the claim two claimant parties, the claimant first")
+    void shouldSubmitAClaimWithAnAdditionalClaimant() throws Exception {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS,
+                               CitizenClaimEligibility.builder().claimantType(ClaimantType.PRIVATE_LANDLORD).build(),
+                               LegislativeCountry.ENGLAND);
+        CitizenPossessionClaim answers = completeClaim();
+        answers.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
+        answers.setAdditionalClaimants(List.of(ListValue.<CitizenClaimAdditionalClaimant>builder()
+            .id(UUID.randomUUID().toString())
+            .value(CitizenClaimAdditionalClaimant.builder()
+                       .individualOrOrganisation(CitizenClaimantKind.INDIVIDUAL)
+                       .firstName("Sam").lastName("Sharer")
+                       .address(PROPERTY_ADDRESS)
+                       .contactByPhone(VerticalYesNo.NO).contactByText(VerticalYesNo.NO)
+                       .build())
+            .build()));
+
+        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        submitService.submit(createdCase, answers, applicableAnswers.of(answers));
+        entityManager.flush();
+        entityManager.clear();
+
+        ClaimEntity claim = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow()
+            .getClaims().getFirst();
+        assertThat(claim.getClaimParties())
+            .filteredOn(party -> party.getRole() == PartyRole.CLAIMANT)
+            .extracting(party -> party.getParty().getOrgName())
+            .containsExactlyInAnyOrder("Jane Landlord", "Sam Sharer");
+    }
+
+    @Test
+    @DisplayName("A claim on an excluded tenancy files its grounds as the introductory, demoted and other journey does")
+    void shouldSubmitAnExcludedTenancyClaimWithAndWithoutGrounds() throws Exception {
+        long withGrounds = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        long withoutGrounds = withGrounds + 1;
+        for (long caseReference : new long[] {withGrounds, withoutGrounds}) {
+            caseService.createCase(caseReference, PROPERTY_ADDRESS,
+                                   CitizenClaimEligibility.builder().claimantType(ClaimantType.PRIVATE_LANDLORD)
+                                       .build(),
+                                   LegislativeCountry.ENGLAND);
+            CitizenPossessionClaim answers = completeClaim();
+            answers.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
+            boolean hasGrounds = caseReference == withGrounds;
+            answers.getGrounds().setHasExcludedGrounds(VerticalYesNo.from(hasGrounds));
+            answers.getGrounds().setExcludedGrounds(hasGrounds
+                ? Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS) : null);
+            answers.getGrounds().setExcludedReason("The occupier is a lodger");
+
+            PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+            submitService.submit(createdCase, answers, applicableAnswers.of(answers));
+            entityManager.flush();
+            entityManager.clear();
+        }
+
+        assertThat(pcsCaseRepository.findByCaseReference(withGrounds).orElseThrow()
+                       .getClaims().getFirst().getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCategory, ClaimGroundEntity::getCode, ClaimGroundEntity::getReason)
+            .containsExactly(tuple(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER, "ABSOLUTE_GROUNDS",
+                                   "The occupier is a lodger"));
+        assertThat(pcsCaseRepository.findByCaseReference(withoutGrounds).orElseThrow()
+                       .getClaims().getFirst().getClaimGrounds())
+            .extracting(ClaimGroundEntity::getCategory, ClaimGroundEntity::getCode, ClaimGroundEntity::getReason)
+            .containsExactly(tuple(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS, "NO_GROUNDS",
+                                   "The occupier is a lodger"));
+    }
 
     @Test
     @DisplayName("A claim for a property in Wales maps its occupation contract onto the Wales tenancy and documents")

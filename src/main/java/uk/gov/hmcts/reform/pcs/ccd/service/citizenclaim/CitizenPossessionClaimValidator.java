@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
@@ -45,7 +47,6 @@ public class CitizenPossessionClaimValidator {
     public static final String CLAIMANT_TYPE_NOT_ELIGIBLE = "CLAIMANT_TYPE_NOT_ELIGIBLE";
     public static final String CLAIM_AGAINST_TRESPASSERS_NOT_ELIGIBLE = "CLAIM_AGAINST_TRESPASSERS_NOT_ELIGIBLE";
     public static final String WHO_IS_CLAIMING_NOT_ELIGIBLE = "WHO_IS_CLAIMING_NOT_ELIGIBLE";
-    public static final String MULTIPLE_CLAIMANTS_NOT_ELIGIBLE = "MULTIPLE_CLAIMANTS_NOT_ELIGIBLE";
     public static final String RENT_ARREARS_GROUND_NOT_ALLOWED = "RENT_ARREARS_GROUND_NOT_ALLOWED";
     public static final String OTHER_GROUND_NOT_ALLOWED = "OTHER_GROUND_NOT_ALLOWED";
 
@@ -82,6 +83,7 @@ public class CitizenPossessionClaimValidator {
         List<String> errors = new ArrayList<>(validateEligibility(claim.getEligibility()));
 
         validateClaimant(claim.getClaimant(), errors);
+        validateAdditionalClaimants(claim, errors);
         validateDefendants(claim, errors);
         validateTenancy(claim.getTenancy(), CitizenPossessionClaimApplicableAnswers.isWales(claim), errors);
         validateGrounds(claim, errors);
@@ -110,9 +112,6 @@ public class CitizenPossessionClaimValidator {
         if (claimant == null) {
             errors.add(required("claimant"));
             return;
-        }
-        if (claimant.getMultipleClaimants() == VerticalYesNo.YES) {
-            errors.add(MULTIPLE_CLAIMANTS_NOT_ELIGIBLE);
         }
         CitizenClaimantKind kind = claimant.getIndividualOrOrganisation();
         if (kind == null) {
@@ -146,6 +145,61 @@ public class CitizenPossessionClaimValidator {
             && claimant.getContactByPhone() != VerticalYesNo.YES
             && CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant) == null) {
             errors.add(required("claimant.textMessageNumber"));
+        }
+    }
+
+    private static void validateAdditionalClaimants(CitizenPossessionClaim claim, List<String> errors) {
+        if (claim.getClaimant() == null || claim.getClaimant().getMultipleClaimants() != VerticalYesNo.YES) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(claim.getAdditionalClaimants())) {
+            errors.add(required("additionalClaimants"));
+            return;
+        }
+        List<CitizenClaimAdditionalClaimant> claimants = claim.getAdditionalClaimants().stream()
+            .map(listValue -> listValue == null ? null : listValue.getValue())
+            .toList();
+        for (int i = 0; i < claimants.size(); i++) {
+            String path = "additionalClaimants[" + i + "]";
+            CitizenClaimAdditionalClaimant claimant = claimants.get(i);
+            if (claimant == null) {
+                errors.add(required(path));
+                continue;
+            }
+            validateAdditionalClaimant(path, claimant, errors);
+        }
+    }
+
+    private static void validateAdditionalClaimant(String path, CitizenClaimAdditionalClaimant claimant,
+                                                   List<String> errors) {
+        CitizenClaimantKind kind = claimant.getIndividualOrOrganisation();
+        if (kind == null) {
+            errors.add(required(path + ".individualOrOrganisation"));
+        } else if (kind == CitizenClaimantKind.INDIVIDUAL) {
+            requireText(errors, path + ".firstName", claimant.getFirstName(), NAME_MAX);
+            requireText(errors, path + ".lastName", claimant.getLastName(), NAME_MAX);
+            if (fitsIn(claimant.getFirstName(), NAME_MAX) && fitsIn(claimant.getLastName(), NAME_MAX)) {
+                maxLength(errors, path + ".name", claimant.getFirstName() + " " + claimant.getLastName(), NAME_MAX);
+            }
+        } else {
+            requireText(errors, path + ".organisationName", claimant.getOrganisationName(), NAME_MAX);
+        }
+        errors.addAll(requireAddress(path + ".address", claimant.getAddress()));
+        errors.addAll(validateAddressLengths(path + ".address", claimant.getAddress()));
+        maxLength(errors, path + ".emailAddress", claimant.getEmailAddress(), EMAIL_MAX);
+        if (claimant.getContactByPhone() == null) {
+            errors.add(required(path + ".contactByPhone"));
+        } else if (claimant.getContactByPhone() == VerticalYesNo.YES) {
+            requireText(errors, path + ".phoneNumber", claimant.getPhoneNumber(), NAME_MAX);
+        }
+        if (claimant.getContactByText() == null) {
+            errors.add(required(path + ".contactByText"));
+        } else if (claimant.getContactByText() == VerticalYesNo.YES) {
+            if (StringUtils.isBlank(claimant.getTextMessageNumber())
+                && claimant.getContactByPhone() != VerticalYesNo.YES) {
+                errors.add(required(path + ".textMessageNumber"));
+            }
+            maxLength(errors, path + ".textMessageNumber", claimant.getTextMessageNumber(), NAME_MAX);
         }
     }
 
@@ -212,6 +266,10 @@ public class CitizenPossessionClaimValidator {
 
     private static void validateGrounds(CitizenPossessionClaim claim, List<String> errors) {
         CitizenClaimGrounds grounds = claim.getGrounds();
+        if (CitizenPossessionClaimApplicableAnswers.isExcludedTenancy(claim)) {
+            validateExcludedGrounds(claim, errors);
+            return;
+        }
         Set<PrivateLandlordAssuredGround> allGrounds = allGrounds(grounds);
         if (grounds == null || allGrounds.isEmpty()) {
             errors.add(required("grounds"));
@@ -253,6 +311,32 @@ public class CitizenPossessionClaimValidator {
             .filter(ground -> !ground.isRentArrears() && ground != PrivateLandlordAssuredGround.OTHER)
             .forEach(ground -> requireText(errors, "grounds.groundReasons." + ground.name(), reasons.get(ground),
                                            REASON_MAX));
+    }
+
+    private static void validateExcludedGrounds(CitizenPossessionClaim claim, List<String> errors) {
+        CitizenClaimGrounds grounds = claim.getGrounds();
+        if (grounds == null || grounds.getHasExcludedGrounds() == null) {
+            errors.add(required("grounds.hasExcludedGrounds"));
+            return;
+        }
+        if (grounds.getHasExcludedGrounds() == VerticalYesNo.YES) {
+            Set<IntroductoryDemotedOrOtherGrounds> chosen = grounds.getExcludedGrounds();
+            if (chosen == null || chosen.isEmpty() || chosen.stream().anyMatch(Objects::isNull)) {
+                errors.add(required("grounds.excludedGrounds"));
+            } else {
+                if (chosen.contains(IntroductoryDemotedOrOtherGrounds.OTHER)) {
+                    requireText(errors, "grounds.excludedOtherGroundDetails", grounds.getExcludedOtherGroundDetails(),
+                                REASON_MAX);
+                }
+                if (chosen.contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS)) {
+                    CitizenClaimRentArrears rentArrears = claim.getRentArrears();
+                    if (rentArrears == null || rentArrears.getCurrentArrears() == null) {
+                        errors.add(required("rentArrears.currentArrears"));
+                    }
+                }
+            }
+        }
+        requireText(errors, "grounds.excludedReason", grounds.getExcludedReason(), REASON_MAX);
     }
 
     /**

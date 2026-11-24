@@ -728,6 +728,31 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
+        void excludedTenancyGroundsFromTheCitizenJourneyFeedTheIntroDemotedOtherRows() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.OTHER)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("ANTI_SOCIAL")
+                .reason("Lodger").claim(claim).build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("OTHER")
+                .description("Unlicensed occupier").reason("Lodger").claim(claim).build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsYesNoQuestion()).isTrue();
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowGroundsList()).isTrue();
+            assertThat(payload.getGrounds()).hasSize(2);
+            assertThat(payload.getWhyClaimingPossessionGrounds())
+                .extracting(ClaimFormGround::getNameAndNumber, ClaimFormGround::getReasonFreeText)
+                .containsExactly(tuple("Other grounds", "Lodger"));
+        }
+
+        @Test
         void englandIntroNoGrounds_groundsListStaysHiddenAsNoGroundIsSelected() {
             // "No grounds" is not a selected ground (no checkbox in the journey), so it must not appear
             // in the grounds list; it only shows as the "(No grounds)" label on the why-claiming row.
