@@ -77,6 +77,7 @@ export class ActionRegistry {
     ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['updateCaseStateAPI', new CreateCaseAPIAction()],
     ['midEventRespondPossessionClaimCitizenAPI', new CreateCaseAPIAction()],
     ['fetchPINsAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
     ['validateAccessCodeAPI', new FetchPINsAndValidateAccessCodeAPIAction()],

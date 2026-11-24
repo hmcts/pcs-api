@@ -18,7 +18,9 @@ import {
   manageHearingEventTokenApiData, manageHearingApiData,
   respondPossessionClaimSolicitorEventTokenApiData,
   submitPossessionClaimResponseApiDataForLR,
-  respondPossessionClaimCitizenApiData
+  respondPossessionClaimCitizenApiData,
+  updateCaseStateApiData,
+  updateCaseStateEventTokenApiData
 } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
@@ -62,7 +64,7 @@ export class CreateCaseAPIAction implements IAction {
       ['updatePaymentAPILRCC', () => this.updatePaymentAPILRCC(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimCitizenAPI', () => this.midEventRespondPossessionClaimCitizenAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseCitizenAPI', () => this.submitPossessionClaimResponseCitizenAPI()],
-
+      ['updateCaseStateAPI', () => this.updateCaseStateAPI(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -157,9 +159,7 @@ export class CreateCaseAPIAction implements IAction {
         event: { id: enforceWarrantApiData.enforceCaseEventName },
         event_token: process.env.ENFORCE_EVENT_TOKEN,
       });
-      caseInfo.id = enforceResponse.data.id;
-      caseInfo.fid = enforceResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
-      caseInfo.state = enforceResponse.data.state;
+      console.log(`\n✅ ENFORCEMENT APPLICATION SUCCESSFUL WITH STATUS: ${enforceResponse.status}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -267,7 +267,7 @@ export class CreateCaseAPIAction implements IAction {
       console.error("Full response body:", JSON.stringify(responseBody, null, 2));
 
       if (!status) {
-        throw new Error('Defendant id not retrieved: no response from server.');
+        throw new Error('Defendant id not retrieved: no response from server.'+status);
       }
       throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
@@ -973,6 +973,44 @@ export class CreateCaseAPIAction implements IAction {
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       return this.apiRetry(fn, retries - 1, delay * 2);
+    }
+  }
+
+  private async updateCaseStateAPI(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const changeCaseStateApi = Axios.create(updateCaseStateEventTokenApiData.updateCaseStateEventTokenApiInstance());
+    let updateStatePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    try {
+      process.env.CaseStateChange_EVENT_TOKEN = (await changeCaseStateApi.get(updateCaseStateEventTokenApiData.updateCaseStateEventTokenApiEndPoint())).data.token;
+      updateStatePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const changeStateResponse = await changeCaseStateApi.post(updateCaseStateApiData.updateCaseStateApiEndPoint(), {
+        data: updateStatePayloadData,
+        event: { id: updateCaseStateApiData.changeStateEventName },
+        event_token: process.env.CaseStateChange_EVENT_TOKEN,
+        case_reference: process.env.CASE_NUMBER,
+      });
+      console.log(`\n✅ CASE STATE CHANGED SUCCESSFUL : STATUS ${changeStateResponse.status}`);
+    }
+    catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(updateStatePayloadData);
+        throw new Error(`Add a hearing: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Case State Change: no response from server.');
+      }
+      throw new Error(`Case State Change failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 }

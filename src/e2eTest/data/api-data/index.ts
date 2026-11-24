@@ -19,3 +19,5 @@ export * from '@data/api-data/respondPossessionClaimSubmitLR.api.data'
 export * from '@data/api-data/respondPossessionClaimCitizen.api.data';
 export * from '@data/api-data/fetchPINs.api.data';
 export * from '@data/api-data/validateAccessCode.api.data';
+export * from '@data/api-data/updateCaseState.api.data';
+export * from '@data/api-data/updateCaseStateEventToken.api.data';

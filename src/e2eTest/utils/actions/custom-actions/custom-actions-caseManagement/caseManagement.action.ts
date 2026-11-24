@@ -32,7 +32,9 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace,enterBreathingSpacecheckYourAnswers
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace,enterBreathingSpacecheckYourAnswers,
+  decideEnforcement,
+  confirmEnforcementDecision
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -105,6 +107,8 @@ export class CaseManagementAction implements IAction {
       ['submitCheckYourAnswers', () => this.submitCheckYourAnswers()],
       ['clickPreviousAndValidateAnswersRetained', () => this.clickPreviousAndValidateAnswersRetained()],
       ['cancelCheckYourAnswersAndValidate', () => this.cancelCheckYourAnswersAndValidate(fieldName as any)],
+      ['decideEnforcementDecision', () => this.decideEnforcementDecision(fieldName as any)],
+      ['confirmEnforcementDecision', () => this.confirmEnforcementDecision(page, fieldName as any)],
     ]); 
     
 
@@ -1594,5 +1598,53 @@ private formatDisplayDate(entered: string): string {
     return page
       .locator(`dt.case-field__label:text-is("${label}") + dd.case-field__value`)
       .innerText();
+  }
+
+  private async decideEnforcementDecision(enfDecision: actionRecord) {
+    await performAction('clickRadioButton', { question: enfDecision.acceptOrRejectQn, option: enfDecision.option });   
+
+    if (enfDecision.option === 'Reject') {
+      const { rejectOption, rejectLabel } = this.checkValueExistence(enfDecision.rejectOption as string);
+      await performAction('clickRadioButton', { question: enfDecision.reasonForRejectQn, option: enfDecision.rejectOption });
+      if (rejectOption) {
+        await performAction('inputText', rejectLabel, enfDecision.rejectTextInput as string);
+      } else if (enfDecision.rejectOption === 'Other') {
+        await performAction('inputText', decideEnforcement.explainOtherHiddenTextLabel, enfDecision.rejectTextInput as string);
+      }
+    }
+    await performAction('reTryOnCallBackError', decideEnforcement.continueButton, enfDecision.nextPage as string);
+  }
+
+  private async confirmEnforcementDecision(page: Page, confirmEnf: actionRecord): Promise<void> {
+    const submitPayLoad = confirmEnf.submitPayload as Record<string, any>;
+    const text = `Case number #${caseInfo.fid} ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode} ${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
+    const loc = page.locator(`span:has-Text("${text}")`).filter({ visible: true }).first();
+
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+
+    await performValidation('mainHeader', confirmEnforcementDecision.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: confirmEnf.decisionText });
+    const actual = await loc.innerText();
+
+    const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
+    expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
+    await performAction('clickButton', confirmEnforcementDecision.closeAndReturnToCaseDetailsButton);
+  }
+
+  private checkValueExistence(option: string): { rejectOption: boolean; rejectLabel?: string } {
+    const reasonMap: Record<string, string> = {
+      'Change in party circumstances': 'Provide details about the change in party circumstances',
+      'Order not enforceable': 'Provide details about why the order is not enforceable',
+      'Possession order set aside or suspended': 'Provide more details about the possession order being set aside or suspended',
+    };
+
+    return {
+      rejectOption: option in reasonMap,
+      rejectLabel: reasonMap[option],
+    };
   }
 }
