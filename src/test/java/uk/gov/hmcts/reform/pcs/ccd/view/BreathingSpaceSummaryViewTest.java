@@ -18,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -58,6 +59,8 @@ class BreathingSpaceSummaryViewTest {
         assertThat(result.getStartDate()).isEqualTo("12/11/2026");
         assertThat(result.getType()).isEqualTo("Standard Breathing Space");
         assertThat(result.getExpectedEndDate()).isEqualTo("12/01/2027");
+        assertThat(pcsCase.getHasActiveBreathingSpace())
+            .isEqualTo(YesOrNo.YES);
     }
 
     @Test
