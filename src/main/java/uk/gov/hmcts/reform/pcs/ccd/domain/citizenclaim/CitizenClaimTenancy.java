@@ -39,4 +39,26 @@ public class CitizenClaimTenancy {
 
     private List<ListValue<Document>> tenancyAgreementDocuments;
 
+    // Wales only: the documents a landlord must have given the contract holder
+    private VerticalYesNo hasEnergyPerformanceCertificate;
+
+    private List<ListValue<Document>> energyPerformanceDocuments;
+
+    @CCD(typeOverride = TextArea)
+    private String noEnergyPerformanceCertificateReason;
+
+    private VerticalYesNo hasGasSafetyReport;
+
+    private List<ListValue<Document>> gasSafetyReportDocuments;
+
+    @CCD(typeOverride = TextArea)
+    private String noGasSafetyReportReason;
+
+    private VerticalYesNo hasElectricalInstallationConditionReport;
+
+    private List<ListValue<Document>> electricalInstallationDocuments;
+
+    @CCD(typeOverride = TextArea)
+    private String noElectricalInstallationConditionReason;
+
 }

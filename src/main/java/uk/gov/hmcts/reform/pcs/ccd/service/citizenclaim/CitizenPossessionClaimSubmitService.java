@@ -40,8 +40,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -163,8 +168,8 @@ public class CitizenPossessionClaimSubmitService {
         final String submittedAnswers = writeSubmittedAnswers(claim);
         final boolean wales = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
 
-        ClaimEntity newClaim = buildClaimEntity(applicable);
-        newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds()));
+        ClaimEntity newClaim = buildClaimEntity(applicable, wales);
+        newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds(), wales));
         newClaim.setRentArrears(buildRentArrears(applicable));
         newClaim.setNoticeOfPossession(buildNotice(applicable.getNotice()));
         newClaim.setStatementOfTruth(buildStatementOfTruth(applicable));
@@ -222,7 +227,22 @@ public class CitizenPossessionClaimSubmitService {
         }
     }
 
-    private static ClaimEntity buildClaimEntity(CitizenPossessionClaim claim) {
+    private static void applyRequiredDocuments(ClaimEntity.ClaimEntityBuilder builder, CitizenClaimTenancy tenancy) {
+        builder
+            .energyPerformanceCertificateProvided(tenancy.getHasEnergyPerformanceCertificate())
+            .noEnergyPerformanceCertificateReason(
+                tenancy.getHasEnergyPerformanceCertificate() == VerticalYesNo.NO
+                    ? tenancy.getNoEnergyPerformanceCertificateReason() : null)
+            .gasSafetyReportProvided(tenancy.getHasGasSafetyReport())
+            .noGasSafetyReportReason(
+                tenancy.getHasGasSafetyReport() == VerticalYesNo.NO ? tenancy.getNoGasSafetyReportReason() : null)
+            .electricalInstallationConditionProvided(tenancy.getHasElectricalInstallationConditionReport())
+            .noElectricalInstallationConditionReason(
+                tenancy.getHasElectricalInstallationConditionReport() == VerticalYesNo.NO
+                    ? tenancy.getNoElectricalInstallationConditionReason() : null);
+    }
+
+    private static ClaimEntity buildClaimEntity(CitizenPossessionClaim claim, boolean wales) {
         CitizenClaimCircumstances circumstances = claim.getCircumstances();
         CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
         boolean rentArrearsClaim = CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(claim);
@@ -234,6 +254,10 @@ public class CitizenPossessionClaimSubmitService {
             .additionalDefendants(claim.getAdditionalDefendants())
             // The citizen journey no longer asks it, but the claim form always shows the question
             .underlesseeOrMortgagee(VerticalYesNo.NO);
+
+        if (wales && claim.getTenancy() != null) {
+            applyRequiredDocuments(builder, claim.getTenancy());
+        }
 
         if (circumstances != null) {
             builder
@@ -256,7 +280,59 @@ public class CitizenPossessionClaimSubmitService {
         return builder.build();
     }
 
-    private static List<ClaimGroundEntity> buildClaimGrounds(CitizenClaimGrounds grounds) {
+    private static List<ClaimGroundEntity> buildClaimGrounds(CitizenClaimGrounds grounds, boolean wales) {
+        return wales ? buildWalesClaimGrounds(grounds) : buildAssuredClaimGrounds(grounds);
+    }
+
+    private static List<ClaimGroundEntity> buildWalesClaimGrounds(CitizenClaimGrounds grounds) {
+        Map<String, String> reasons = CitizenPossessionClaimValidator.walesGroundReasons(grounds);
+        List<ClaimGroundEntity> entities = new ArrayList<>();
+
+        Set<DiscretionaryGroundWales> discretionary = Objects.requireNonNullElse(
+            grounds.getWalesDiscretionaryGrounds(), Set.<DiscretionaryGroundWales>of());
+        discretionary.stream().sorted().forEach(ground -> {
+            entities.add(ClaimGroundEntity.builder()
+                             .category(ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY)
+                             .code(ground.name())
+                             .reason(ground == DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
+                                         ? null : reasons.get(ground.name()))
+                             .isRentArrears(ground == DiscretionaryGroundWales.RENT_ARREARS_S157)
+                             .build());
+            if (ground == DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160) {
+                // The claim form shows estate management through a specific ground, so the one reason goes on that
+                entities.add(ClaimGroundEntity.builder()
+                                 .category(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT)
+                                 .code(EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS.name())
+                                 .reason(reasons.get(ground.name()))
+                                 .isRentArrears(false)
+                                 .build());
+            }
+        });
+
+        Set<MandatoryGroundWales> mandatory = Objects.requireNonNullElse(
+            grounds.getWalesMandatoryGrounds(), Set.<MandatoryGroundWales>of());
+        mandatory.stream().sorted().forEach(ground -> entities.add(
+            ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_MANDATORY)
+                .code(ground.name())
+                .reason(reasons.get(ground.name()))
+                .isRentArrears(ground == MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
+                                   || ground == MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187)
+                .build()));
+
+        if (grounds.getOtherGrounds() != null
+            && grounds.getOtherGrounds().contains(PrivateLandlordAssuredGround.OTHER)) {
+            entities.add(ClaimGroundEntity.builder()
+                             .category(PrivateLandlordAssuredGround.OTHER.getCategory())
+                             .code(PrivateLandlordAssuredGround.OTHER.name())
+                             .description(blankToNull(grounds.getOtherGroundsDetails()))
+                             .isRentArrears(false)
+                             .build());
+        }
+        return entities;
+    }
+
+    private static List<ClaimGroundEntity> buildAssuredClaimGrounds(CitizenClaimGrounds grounds) {
         Map<PrivateLandlordAssuredGround, String> reasons = CitizenPossessionClaimValidator.groundReasons(grounds);
         String otherGroundsDetails = grounds != null ? blankToNull(grounds.getOtherGroundsDetails()) : null;
 
@@ -396,7 +472,7 @@ public class CitizenPossessionClaimSubmitService {
     private static PCSCase toDocumentCase(CitizenPossessionClaim claim, boolean wales) {
         CitizenClaimTenancy tenancy = claim.getTenancy();
         CitizenClaimNotice notice = claim.getNotice();
-        CitizenClaimRentArrears rentArrears = claim.getRentArrears();
+        final CitizenClaimRentArrears rentArrears = claim.getRentArrears();
         final CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
 
         PCSCase.PCSCaseBuilder builder = PCSCase.builder();
@@ -408,6 +484,13 @@ public class CitizenPossessionClaimSubmitService {
             builder.tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                               .tenancyLicenceDocuments(tenancy.getTenancyAgreementDocuments())
                                               .build());
+        }
+        if (tenancy != null && wales) {
+            builder.requiredDocumentsWales(WalesDocuments.builder()
+                                               .energyPerformance(tenancy.getEnergyPerformanceDocuments())
+                                               .gasSafetyReport(tenancy.getGasSafetyReportDocuments())
+                                               .electricalInstallation(tenancy.getElectricalInstallationDocuments())
+                                               .build());
         }
         if (notice != null && hasItems(notice.getNoticeDocuments())) {
             builder.noticeServedDetails(NoticeServedDetails.builder()

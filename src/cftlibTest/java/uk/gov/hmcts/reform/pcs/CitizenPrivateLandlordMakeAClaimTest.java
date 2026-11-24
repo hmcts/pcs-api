@@ -30,11 +30,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEnt
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWalesGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePossessionClaimDraftSavePage;
@@ -93,27 +96,33 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
             .tenancyStartDate(LocalDate.of(2023, 4, 1))
             .tenancyAgreementAvailable(VerticalYesNo.NO)
             .noTenancyAgreementReason("Lost it")
-            .build());
+            .build(), englandGrounds());
 
         assertThat(startedDraft.getEligibility().getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
     @Test
-    void citizenCanClaimForAPropertyInWalesWithItsOccupationContract() throws Exception {
+    void citizenCanClaimForAPropertyInWalesWithItsGroundsAndMandatoryDocuments() throws Exception {
         CitizenClaimTenancy occupationContract = CitizenClaimTenancy.builder()
             .occupationContractType(OccupationLicenceTypeWales.STANDARD_CONTRACT)
             .tenancyStartDate(LocalDate.of(2023, 4, 1))
             .tenancyAgreementAvailable(VerticalYesNo.NO)
             .noTenancyAgreementReason("Lost it")
+            .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+            .noEnergyPerformanceCertificateReason("Not issued")
+            .hasGasSafetyReport(VerticalYesNo.NO)
+            .noGasSafetyReportReason("No gas supply")
+            .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+            .noElectricalInstallationConditionReason("Not carried out")
             .build();
 
-        CitizenPossessionClaim startedDraft = createSaveAndSubmit(WELSH_PROPERTY_ADDRESS, occupationContract);
+        CitizenPossessionClaim startedDraft = createSaveAndSubmit(WELSH_PROPERTY_ADDRESS, occupationContract, walesGrounds());
 
         assertThat(startedDraft.getEligibility().getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
     }
 
-    private CitizenPossessionClaim createSaveAndSubmit(AddressUK propertyAddress, CitizenClaimTenancy tenancy)
-        throws Exception {
+    private CitizenPossessionClaim createSaveAndSubmit(AddressUK propertyAddress, CitizenClaimTenancy tenancy,
+                                                       CitizenClaimGrounds grounds) throws Exception {
         CitizenClaimEligibility eligibility = CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD)
             .isTrespass(VerticalYesNo.NO)
@@ -135,7 +144,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
         CitizenPossessionClaim startedDraft = toPcsCase(start.getCaseDetails().getData()).getCitizenPossessionClaim();
         assertThat(startedDraft.getEligibility().getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
 
-        CitizenPossessionClaim answers = completeAnswers(eligibility, tenancy);
+        CitizenPossessionClaim answers = completeAnswers(eligibility, tenancy, grounds);
         CaseDetails saved = ccdClient.midEvent(
             EventId.citizenMakePossessionClaim, caseReference, DRAFT_PAGE_ID,
             PCSCase.builder().citizenPossessionClaim(answers).build(), start.getToken(), citizenToken);
@@ -158,12 +167,47 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
         return startedDraft;
     }
 
+
+    private static CitizenClaimGrounds englandGrounds() {
+        return CitizenClaimGrounds.builder()
+            .hasRentArrearsGrounds(VerticalYesNo.YES)
+            .rentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_8))
+            .hasOtherGrounds(VerticalYesNo.YES)
+            .otherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A))
+            .groundReasons(List.of(ListValue.<CitizenClaimGroundReason>builder()
+                                       .value(CitizenClaimGroundReason.builder()
+                                                  .ground(PrivateLandlordAssuredGround.GROUND_1A)
+                                                  .reason("I am selling the property.")
+                                                  .build())
+                                       .build()))
+            .build();
+    }
+
+    private static CitizenClaimGrounds walesGrounds() {
+        return CitizenClaimGrounds.builder()
+            .hasRentArrearsGrounds(VerticalYesNo.YES)
+            .walesDiscretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157,
+                                              DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157))
+            .walesMandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+            .walesGroundReasons(List.of(
+                walesReason(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157, "Keeps a dog"),
+                walesReason(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199, "Break clause used")))
+            .build();
+    }
+
+    private static ListValue<CitizenClaimWalesGroundReason> walesReason(Enum<?> ground, String reason) {
+        return ListValue.<CitizenClaimWalesGroundReason>builder()
+            .value(CitizenClaimWalesGroundReason.builder().ground(ground.name()).reason(reason).build())
+            .build();
+    }
+
     private PCSCase toPcsCase(Map<String, Object> data) {
         return objectMapper.convertValue(data, PCSCase.class);
     }
 
     private static CitizenPossessionClaim completeAnswers(CitizenClaimEligibility eligibility,
-                                                          CitizenClaimTenancy tenancy) {
+                                                          CitizenClaimTenancy tenancy,
+                                                          CitizenClaimGrounds grounds) {
         return CitizenPossessionClaim.builder()
             .eligibility(eligibility)
             .claimant(CitizenClaimClaimant.builder()
@@ -188,18 +232,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                                     .build()))
             .additionalDefendants(VerticalYesNo.NO)
             .tenancy(tenancy)
-            .grounds(CitizenClaimGrounds.builder()
-                         .hasRentArrearsGrounds(VerticalYesNo.YES)
-                         .rentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_8))
-                         .hasOtherGrounds(VerticalYesNo.YES)
-                         .otherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A))
-                         .groundReasons(List.of(ListValue.<CitizenClaimGroundReason>builder()
-                                                    .value(CitizenClaimGroundReason.builder()
-                                                               .ground(PrivateLandlordAssuredGround.GROUND_1A)
-                                                               .reason("I am selling the property.")
-                                                               .build())
-                                                    .build()))
-                         .build())
+            .grounds(grounds)
             .notice(CitizenClaimNotice.builder().noticeServed(VerticalYesNo.NO).build())
             .rentArrears(CitizenClaimRentArrears.builder()
                              .rentAmount(new BigDecimal("1250.00"))

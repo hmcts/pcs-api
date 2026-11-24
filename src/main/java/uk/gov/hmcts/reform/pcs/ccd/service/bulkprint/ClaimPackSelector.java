@@ -40,7 +40,8 @@ public class ClaimPackSelector {
     private static final String MDC_CASE_REFERENCE = "caseReference";
     private static final String MDC_PARTY_ID = "partyId";
     private static final List<DocumentType> UPLOAD_ORDER = List.of(
-        DocumentType.TENANCY_AGREEMENT, DocumentType.OCCUPATION_LICENCE, DocumentType.POSSESSION_NOTICE,
+        DocumentType.TENANCY_AGREEMENT, DocumentType.OCCUPATION_LICENCE, DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
+        DocumentType.GAS_SAFETY_CERTIFICATE, DocumentType.EICR_REPORT, DocumentType.POSSESSION_NOTICE,
         DocumentType.RENT_STATEMENT);
 
     private final ClaimActivityLogRepository claimActivityLogRepository;

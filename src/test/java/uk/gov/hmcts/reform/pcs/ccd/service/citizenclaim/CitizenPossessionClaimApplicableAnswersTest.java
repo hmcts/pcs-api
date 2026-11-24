@@ -12,11 +12,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -54,6 +57,54 @@ class CitizenPossessionClaimApplicableAnswersTest {
         assertThat(tenancy.getOtherOccupationContractDetails()).isNull();
         assertThat(tenancy.getTenancyStartDate()).isEqualTo(claim.getTenancy().getTenancyStartDate());
         assertThat(tenancy.getTenancyAgreementDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldKeepOnlyTheWalesGroundsForAPropertyInWales() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getGrounds().setRentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_8));
+        claim.getGrounds().setHasOtherGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
+                                                  PrivateLandlordAssuredGround.OTHER));
+
+        CitizenClaimGrounds grounds = underTest.of(claim).getGrounds();
+
+        assertThat(grounds.getRentArrearsGrounds()).isNull();
+        assertThat(grounds.getHasOtherGrounds()).isNull();
+        assertThat(grounds.getOtherGrounds()).containsExactly(PrivateLandlordAssuredGround.OTHER);
+        assertThat(grounds.getWalesDiscretionaryGrounds()).hasSize(2);
+        assertThat(grounds.getWalesGroundReasons()).hasSize(2);
+        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(underTest.of(claim))).isTrue();
+    }
+
+    @Test
+    void shouldDropTheWalesGroundsAndDocumentsForAPropertyInEngland() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setWalesDiscretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157));
+        claim.getGrounds().setWalesMandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199));
+        claim.getTenancy().setHasEnergyPerformanceCertificate(VerticalYesNo.NO);
+        claim.getTenancy().setNoEnergyPerformanceCertificateReason("Not asked");
+
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(applicable.getGrounds().getWalesDiscretionaryGrounds()).isNull();
+        assertThat(applicable.getGrounds().getWalesMandatoryGrounds()).isNull();
+        assertThat(applicable.getTenancy().getHasEnergyPerformanceCertificate()).isNull();
+        assertThat(applicable.getTenancy().getNoEnergyPerformanceCertificateReason()).isNull();
+    }
+
+    @Test
+    void shouldKeepAReasonOrADocumentForEachRequiredDocumentAnswer() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeWalesClaim();
+        claim.getTenancy().setNoEnergyPerformanceCertificateReason("Left from Yes");
+        claim.getTenancy().setGasSafetyReportDocuments(claim.getTenancy().getEnergyPerformanceDocuments());
+
+        CitizenClaimTenancy tenancy = underTest.of(claim).getTenancy();
+
+        assertThat(tenancy.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(tenancy.getEnergyPerformanceDocuments()).hasSize(1);
+        assertThat(tenancy.getGasSafetyReportDocuments()).isNull();
+        assertThat(tenancy.getNoGasSafetyReportReason()).isEqualTo("The property has no gas supply");
     }
 
     @Test
