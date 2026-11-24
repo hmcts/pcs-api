@@ -88,7 +88,8 @@ class CitizenClaimListControllerTest {
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
 
         List<ClaimantClaimSummary> claims = List.of(
-            ClaimantClaimSummary.builder().caseReference("123").state("AWAITING_SUBMISSION_TO_HMCTS").build()
+            ClaimantClaimSummary.builder().caseReference("123").state("PENDING_CASE_ISSUED")
+                .paymentStatus("NOT_PAID").build()
         );
         when(citizenClaimListService.getClaimsMadeBy(IDAM_ID)).thenReturn(claims);
 

@@ -17,6 +17,9 @@ public class ClaimantClaimSummary {
     /** The CCD case state, for example AWAITING_SUBMISSION_TO_HMCTS while the claim is still a draft. */
     private String state;
 
+    /** The claim fee's payment status, for example PAID; null until the fee has been requested. */
+    private String paymentStatus;
+
     private PropertyAddress propertyAddress;
 
     @Builder

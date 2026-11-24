@@ -137,7 +137,7 @@ class CitizenClaimListServiceTest {
         ClaimantClaimSummary newest = ClaimantClaimSummary.builder()
             .caseReference("2000000000000002").state("AWAITING_SUBMISSION_TO_HMCTS").build();
         ClaimantClaimSummary oldest = ClaimantClaimSummary.builder()
-            .caseReference("1000000000000001").state("CASE_ISSUED").build();
+            .caseReference("1000000000000001").state("CASE_ISSUED").paymentStatus("PAID").build();
         when(claimantCaseSummaryRepository.findCasesCreatedBy(IDAM_ID)).thenReturn(List.of(newest, oldest));
 
         // When

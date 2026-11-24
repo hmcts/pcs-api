@@ -75,6 +75,9 @@ class CitizenClaimListControllerIT extends AbstractPostgresContainerIT {
         saveCase(5555666677778888L, "citizen-2", true, "CASE_ISSUED");
         saveCase(9999000011112222L, "citizen-1", false, "CASE_ISSUED");
         saveCase(2222333344445555L, "citizen-1", true, "CASE_ISSUED");
+        saveFeePayment(2222333344445555L, "NOT_PAID", "CLAIM");
+        saveFeePayment(2222333344445555L, "PAID", "CLAIM");
+        saveFeePayment(2222333344445555L, "NOT_PAID", "COUNTER_CLAIM_ISSUE");
 
         mockMvc.perform(get(PATH)
                             .header(AUTHORIZATION, "Bearer citizen-token")
@@ -83,12 +86,27 @@ class CitizenClaimListControllerIT extends AbstractPostgresContainerIT {
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].caseReference").value("2222333344445555"))
             .andExpect(jsonPath("$[0].state").value("CASE_ISSUED"))
+            .andExpect(jsonPath("$[0].paymentStatus").value("PAID"))
             .andExpect(jsonPath("$[1].caseReference").value("1111222233334444"))
             .andExpect(jsonPath("$[1].state").value("AWAITING_SUBMISSION_TO_HMCTS"))
+            .andExpect(jsonPath("$[1].paymentStatus").doesNotExist())
             .andExpect(jsonPath("$[1].propertyAddress.addressLine1").value("15 Garden Drive"))
             .andExpect(jsonPath("$[1].propertyAddress.postcode").value("LU1 1AB"));
 
         verifyNoInteractions(coreCaseDataApi);
+    }
+
+    private void saveFeePayment(long caseReference, String status, String handlerType) {
+        jdbcTemplate.update(
+            "INSERT INTO claim (id, case_id) SELECT gen_random_uuid(), id FROM pcs_case "
+                + "WHERE case_reference = ? AND NOT EXISTS (SELECT 1 FROM claim WHERE case_id = pcs_case.id)",
+            caseReference);
+        jdbcTemplate.update(
+            "INSERT INTO fee_payment (request_date, service_request_reference, status, "
+                + "payment_callback_handler_type, possession_claim_id) "
+                + "SELECT now(), 'SR-' || gen_random_uuid(), ?, ?, c.id FROM claim c "
+                + "JOIN pcs_case pc ON pc.id = c.case_id "
+                + "WHERE pc.case_reference = ?", status, handlerType, caseReference);
     }
 
     private void saveCase(long caseReference, String idamId, boolean claimCreator, String state) {

@@ -19,7 +19,15 @@ public class ClaimantCaseSummaryRepository {
                a.post_town,
                a.county,
                a.postcode,
-               a.id AS address_id
+               a.id AS address_id,
+               (SELECT fp.status
+                FROM fee_payment fp
+                JOIN claim c ON c.id = fp.possession_claim_id
+                WHERE c.case_id = pc.id
+                AND fp.payment_callback_handler_type = 'CLAIM'
+                AND fp.service_request_reference IS NOT NULL
+                ORDER BY fp.id DESC
+                LIMIT 1) AS payment_status
         FROM party p
         JOIN pcs_case pc ON pc.id = p.case_id
         JOIN ccd.case_data cd ON cd.reference = pc.case_reference
@@ -38,7 +46,8 @@ public class ClaimantCaseSummaryRepository {
 
     /**
      * The cases the user created as claimant, newest first, read in one query from this service's own tables:
-     * the case state is held in the decentralised case store, so CCD does not need to be called.
+     * the case state is held in the decentralised case store, so CCD does not need to be called. The payment status
+     * is that of the claim fee's latest payment request, and is null until a fee has been requested.
      */
     public List<ClaimantClaimSummary> findCasesCreatedBy(String idamId) {
         return jdbcTemplate.query(
@@ -47,6 +56,7 @@ public class ClaimantCaseSummaryRepository {
             (rs, rowNum) -> ClaimantClaimSummary.builder()
                 .caseReference(String.valueOf(rs.getLong("case_reference")))
                 .state(rs.getString("state"))
+                .paymentStatus(rs.getString("payment_status"))
                 .propertyAddress(rs.getObject("address_id") == null ? null
                     : ClaimantClaimSummary.PropertyAddress.builder()
                         .addressLine1(rs.getString("address_line1"))
