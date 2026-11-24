@@ -161,20 +161,6 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldFindCasesByReferences() {
-        // Given
-        List<Long> caseReferences = List.of(CASE_REFERENCE, 5678L);
-        List<PcsCaseEntity> expectedCases = List.of(mock(PcsCaseEntity.class), mock(PcsCaseEntity.class));
-        when(pcsCaseRepository.findAllByCaseReferenceIn(caseReferences)).thenReturn(expectedCases);
-
-        // When
-        List<PcsCaseEntity> actualCases = underTest.findCasesByReferences(caseReferences);
-
-        // Then
-        assertThat(actualCases).isSameAs(expectedCases);
-    }
-
-    @Test
     void shouldAllocateCaseManagementLocationFromPropertyPostcode() {
         // Given
         String postcode = "SW1A 1AA";

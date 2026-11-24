@@ -38,6 +38,20 @@ class IndividualDetailsFlagMapperTest {
         assertThat(result.getOtherReasonableAdjustmentDetails()).isNull();
     }
 
+    @Test
+    void shouldIgnoreFlagsWithNullFlagCodeOrRefData() {
+        CasePartyFlagEntity missingRefData = new CasePartyFlagEntity();
+        missingRefData.setDefaultStatus("Active");
+
+        CasePartyFlagEntity missingFlagCode = flag(null, "Unknown flag", "Active", "comment", true);
+
+        IndividualDetails result = underTest.map(List.of(missingRefData, missingFlagCode));
+
+        assertThat(result.getVulnerableFlag()).isFalse();
+        assertThat(result.getReasonableAdjustments()).isNull();
+        assertThat(result.getOtherReasonableAdjustmentDetails()).isNull();
+    }
+
     @Nested
     class VulnerableUser {
 

@@ -24,6 +24,9 @@ public class IndividualDetailsFlagMapper {
     static final String SIGN_LANGUAGE_INTERPRETER = "RA0042";
     static final int MAX_OTHER_DETAILS_LENGTH = 3000;
 
+    private static final Set<FlagGroup> ADJUSTMENT_GROUPS =
+        EnumSet.of(FlagGroup.REASONABLE_ADJUSTMENTS, FlagGroup.SPECIAL_MEASURES);
+
     private static final Comparator<CasePartyFlagEntity> BY_FLAG_CODE =
         Comparator.comparing(IndividualDetailsFlagMapper::code);
 
@@ -45,6 +48,9 @@ public class IndividualDetailsFlagMapper {
 
         // Interpreter flags are reported with party flags, even the sign language one which has an RA code
         static Optional<FlagGroup> of(CasePartyFlagEntity flag) {
+            if (flag.getFlagRefData() == null || flag.getFlagRefData().getFlagCode() == null) {
+                return Optional.empty();
+            }
             if (isInterpreter(flag)) {
                 return Optional.of(PARTY_FLAGS);
             }
@@ -53,9 +59,6 @@ public class IndividualDetailsFlagMapper {
                 .findFirst();
         }
     }
-
-    private static final Set<FlagGroup> ADJUSTMENT_GROUPS =
-        EnumSet.of(FlagGroup.REASONABLE_ADJUSTMENTS, FlagGroup.SPECIAL_MEASURES);
 
     public IndividualDetails map(List<CasePartyFlagEntity> flags) {
         List<CasePartyFlagEntity> activeFlags = activeFlags(flags);
@@ -162,6 +165,7 @@ public class IndividualDetailsFlagMapper {
         return extras.isEmpty() ? name : name + " (" + String.join(", ", extras) + ")";
     }
 
+    // Only called for flags kept by activeFlags, which drops null flag_ref_data / flag_code
     private static String code(CasePartyFlagEntity flag) {
         return flag.getFlagRefData().getFlagCode();
     }

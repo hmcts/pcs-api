@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
@@ -27,14 +28,12 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -54,28 +53,30 @@ public class ServiceHearingValuesMapper {
     static final String PARTY_TYPE_INDIVIDUAL = "IND";
     static final String PARTY_TYPE_ORGANISATION = "ORG";
     static final String UNDERLESSEE_OR_MORTGAGEE_LAST_NAME = "N/A";
+    static final String OTHER_FLAG_CODE = "OT0001";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
-    static final int MAX_COMMENT_LENGTH = 200;
-    static final int FULL_TEXT_MAX_COMMENTED_FLAGS = 8;
     static final String ELLIPSIS = "...";
     private static final String FLAG_SEPARATOR = ", ";
     private static final String COMMENT_OPEN = " (Comments: ";
     private static final String COMMENT_CLOSE = ")";
-    private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/PCS/PCS/%d#Case%%20File%%20View";
+    private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
+    private final PcsCaseRepository pcsCaseRepository;
     private final CaseNameFormatter caseNameFormatter;
     private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
+                                      PcsCaseRepository pcsCaseRepository,
                                       CaseNameFormatter caseNameFormatter,
                                       IndividualDetailsFlagMapper individualDetailsFlagMapper,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
+        this.pcsCaseRepository = pcsCaseRepository;
         this.caseNameFormatter = caseNameFormatter;
         this.individualDetailsFlagMapper = individualDetailsFlagMapper;
         this.manageCaseUrl = manageCaseUrl;
@@ -137,7 +138,7 @@ public class ServiceHearingValuesMapper {
             return Map.of();
         }
 
-        return pcsCaseService.findCasesByReferences(linkedCaseReferences).stream()
+        return pcsCaseRepository.findAllByCaseReferenceIn(linkedCaseReferences).stream()
             .collect(Collectors.toMap(PcsCaseEntity::getCaseReference, Function.identity()));
     }
 
@@ -193,6 +194,7 @@ public class ServiceHearingValuesMapper {
             .toList();
     }
 
+    // defendantFlags is the historical name on PartyEntity for a person's flags, including claimants
     private PartyDetails partyDetails(PartyEntity party) {
         String partyType = partyType(party);
         if (PARTY_TYPE_ORGANISATION.equals(partyType)) {
@@ -265,14 +267,6 @@ public class ServiceHearingValuesMapper {
         return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
     }
 
-    /**
-     * Lists the case's active case-level flags for the listing officer, as
-     * {@code Case Flags: name, name (Comments: comment)}, within HMC's 2000-character limit.
-     *
-     * <p>With fewer than {@value #FULL_TEXT_MAX_COMMENTED_FLAGS} commented flags the full text is tried
-     * first and returned if it fits. Otherwise every flag name is kept in full and the comments are
-     * shortened to share the space that is left (see {@link #fitCommentsFairly}).
-     */
     private String listingComments(PcsCaseEntity pcsCase) {
         List<FlagText> flags = pcsCase.getCaseFlags().stream()
             .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
@@ -284,16 +278,14 @@ public class ServiceHearingValuesMapper {
             return null;
         }
 
-        // less than 8 flags + comments should fit in the limit
-        long commentedFlags = flags.stream().filter(FlagText::hasComment).count();
-        if (commentedFlags < FULL_TEXT_MAX_COMMENTED_FLAGS) {
-            String fullText = render(flags);
-            if (fullText.length() <= MAX_LISTING_COMMENTS_LENGTH) {
-                return fullText;
-            }
+        String fullText = render(flags);
+        if (fullText.length() <= MAX_LISTING_COMMENTS_LENGTH) {
+            return fullText;
         }
 
-        // case has more than 8 flags + comments or fulltext was over the limit
+        // text is over 2000 characters
+        log.info("listingComments has been truncated for case {} ({} characters, limit {})",
+                 pcsCase.getCaseReference(), fullText.length(), MAX_LISTING_COMMENTS_LENGTH);
         String fittedText = render(fitCommentsFairly(flags));
         // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request
         return fittedText.length() > MAX_LISTING_COMMENTS_LENGTH
@@ -303,43 +295,35 @@ public class ServiceHearingValuesMapper {
 
     /**
      * Shortens the comments so the listing fits in {@value #MAX_LISTING_COMMENTS_LENGTH} characters,
-     * keeping every flag name whole. The space left after the fixed text is shared out smallest
-     * comment first: each comment gets the lesser of its own length (at most
-     * {@value #MAX_COMMENT_LENGTH}) and an equal share of what is still unallocated. Short comments
-     * therefore stay whole, and the space they don't use goes to the longer ones.
+     * keeping every flag name whole. The space left after is equally split between all comments.
+     * Comments shorter than the new commentLength remain whole and comments longer than this limit will be truncated.
      */
     private static List<FlagText> fitCommentsFairly(List<FlagText> flags) {
         int commentedFlags = (int) flags.stream().filter(FlagText::hasComment).count();
+        // max listing hsas been reached with just flag names
+        if (commentedFlags == 0) {
+            return flags;
+        }
         int fixedLength = render(flags.stream().map(FlagText::withoutComment).toList()).length()
-            + commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length());
+            + (commentedFlags * (COMMENT_OPEN.length() + COMMENT_CLOSE.length()));
         int remaining = MAX_LISTING_COMMENTS_LENGTH - fixedLength;
 
-        List<Integer> smallestFirst = IntStream.range(0, flags.size())
-            .filter(i -> flags.get(i).hasComment())
-            .boxed()
-            .sorted(Comparator.comparingInt(i -> commentDemand(flags.get(i))))
-            .toList();
+        int commentLength = Math.max(0,remaining / commentedFlags);
 
         List<FlagText> fitted = new ArrayList<>(flags);
-        int unallocated = smallestFirst.size();
-        for (int i : smallestFirst) {
-            FlagText flag = flags.get(i);
-            int share = Math.max(0, remaining) / unallocated--;
-            int allowance = Math.min(commentDemand(flag), share);
-            fitted.set(i, flag.withComment(shorten(flag.comment(), allowance)));
-            remaining -= allowance;
+        for (int i = 0; i < fitted.size(); i++) {
+            FlagText flag = fitted.get(i);
+            if (flag.hasComment()) {
+                fitted.set(i, flag.withComment(shorten(flag.comment(), commentLength)));
+            }
         }
+
         return fitted;
     }
 
-    private static int commentDemand(FlagText flag) {
-        return Math.min(flag.comment().length(), MAX_COMMENT_LENGTH);
-    }
-
     /**
-     * Cuts a comment to at most {@code maxLength} characters, ending it with {@value #ELLIPSIS} so the
-     * listing officer knows there is more. Cuts at the last whitespace where that keeps at least half
-     * the space, otherwise mid-word. Returns null (show the flag without comments) when there isn't
+     * Cuts a comment to {@code maxLength} characters, replacing the last 3 with {@value #ELLIPSIS} so the
+     * listing officer knows there is more. Returns null (show the flag without comments) when there isn't
      * room for any text before the ellipsis.
      */
     static String shorten(String comment, int maxLength) {
@@ -350,20 +334,7 @@ public class ServiceHearingValuesMapper {
         if (limit <= 0) {
             return null;
         }
-        int cut = lastWhitespaceAtOrBefore(comment, limit);
-        if (cut < limit / 2) {
-            cut = limit;
-        }
-        return comment.substring(0, cut).stripTrailing() + ELLIPSIS;
-    }
-
-    private static int lastWhitespaceAtOrBefore(String text, int index) {
-        for (int i = Math.min(index, text.length() - 1); i >= 0; i--) {
-            if (Character.isWhitespace(text.charAt(i))) {
-                return i;
-            }
-        }
-        return -1;
+        return comment.substring(0, limit) + ELLIPSIS;
     }
 
     private static String render(List<FlagText> flags) {
@@ -380,9 +351,16 @@ public class ServiceHearingValuesMapper {
 
         static FlagText of(BaseCaseFlag flag) {
             String comment = flag.getFlagComment() == null ? "" : flag.getFlagComment().strip();
-            return new FlagText(
-                Objects.toString(flag.getFlagRefData().getFlagName(), "").strip(),
-                comment.isEmpty() ? null : comment);
+            return new FlagText(name(flag), comment.isEmpty() ? null : comment);
+        }
+
+        // An "Other" flag's real name is the description the user entered, not "Other"
+        private static String name(BaseCaseFlag flag) {
+            String otherDescription = Objects.toString(flag.getOtherDescription(), "").strip();
+            if (OTHER_FLAG_CODE.equals(flag.getFlagRefData().getFlagCode()) && !otherDescription.isEmpty()) {
+                return otherDescription;
+            }
+            return Objects.toString(flag.getFlagRefData().getFlagName(), "").strip();
         }
 
         boolean hasComment() {
