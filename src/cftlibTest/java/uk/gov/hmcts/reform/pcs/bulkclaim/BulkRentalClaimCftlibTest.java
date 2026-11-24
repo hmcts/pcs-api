@@ -31,12 +31,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathConstants;
@@ -211,6 +213,18 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
         assertThat(text(xml, "/BulkClaimStatusResponse/PaymentStatus")).isEqualTo("PAID");
         assertThat(text(xml, "/BulkClaimStatusResponse/ServiceRequestReference"))
             .isEqualTo(serviceRequestReference);
+
+        Response batch = postStatusBatch(statusRequest(validCui, "NO-SUCH-CLAIM"), APIM_SERVICE, ORGANISATION_ID);
+        assertThat(batch.status()).isEqualTo(200);
+        List<Node> entries = nodes(parse(batch.body()), "/BulkClaimStatusListResponse/Claim");
+        assertThat(entries).hasSize(2);
+        assertThat(text(entries.get(0), "CustomerUniqueIdentifier")).isEqualTo(validCui);
+        assertThat(text(entries.get(0), "CaseReference")).isEqualTo(String.valueOf(caseReference));
+        assertThat(text(entries.get(0), "CaseState")).isEqualTo(State.CASE_ISSUED.name());
+        assertThat(text(entries.get(0), "PaymentStatus")).isEqualTo("PAID");
+        assertThat(text(entries.get(1), "CustomerUniqueIdentifier")).isEqualTo("NO-SUCH-CLAIM");
+        assertThat(text(entries.get(1), "ClaimStatus/StatusCode")).isEqualTo("2");
+        assertThat(text(entries.get(1), "ClaimStatus/FailReasonCode")).isEqualTo("17");
     }
 
     @Test
@@ -298,6 +312,25 @@ class BulkRentalClaimCftlibTest extends CftlibTest {
             .exchange((request, response) -> new Response(
                 response.getStatusCode().value(),
                 new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8)));
+    }
+
+    private Response postStatusBatch(String body, String serviceName, String organisationId) {
+        return restClient.post()
+            .uri("/v2/bulk-claims/claims/status")
+            .contentType(MediaType.APPLICATION_XML)
+            .headers(headers -> applyHeaders(headers, serviceName, organisationId))
+            .body(body.getBytes(StandardCharsets.UTF_8))
+            .exchange((request, response) -> new Response(
+                response.getStatusCode().value(),
+                new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8)));
+    }
+
+    private static String statusRequest(String... identifiers) {
+        return "<BulkClaimStatusRequest xmlns=\"http://hmcts.gov.uk/pcs/bulkclaim/v2\">"
+            + Arrays.stream(identifiers)
+                .map(identifier -> "<CustomerUniqueIdentifier>" + identifier + "</CustomerUniqueIdentifier>")
+                .collect(Collectors.joining())
+            + "</BulkClaimStatusRequest>";
     }
 
     private Response get(String path, String serviceName, String organisationId) {

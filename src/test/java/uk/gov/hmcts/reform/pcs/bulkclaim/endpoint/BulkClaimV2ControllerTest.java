@@ -61,6 +61,9 @@ class BulkClaimV2ControllerTest {
         mockMvc.perform(post("/v2/bulk-claims/mortgage").contentType(MediaType.APPLICATION_XML).content("<a/>"))
             .andExpect(status().isNotFound());
         mockMvc.perform(get("/v2/bulk-claims/claims/abc")).andExpect(status().isNotFound());
+        mockMvc.perform(post("/v2/bulk-claims/claims/status").contentType(MediaType.APPLICATION_XML)
+                .content("<a/>"))
+            .andExpect(status().isNotFound());
         mockMvc.perform(get("/v2/bulk-claims/schema/x.xsd")).andExpect(status().isNotFound());
 
         verifyNoInteractions(handler);
@@ -99,6 +102,31 @@ class BulkClaimV2ControllerTest {
                 .requestAttr(BulkClaimApimS2sFilter.ORGANISATION_ID_ATTRIBUTE, ORGANISATION_ID))
             .andExpect(status().isOk())
             .andExpect(content().string("<ok/>"));
+    }
+
+    @Test
+    void shouldRouteBatchStatusToHandlerWithBodyAndOrganisation() throws Exception {
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_CLAIMS_V2)).thenReturn(true);
+        byte[] body = "<a/>".getBytes(StandardCharsets.UTF_8);
+        when(handler.statusBatch(eq(body), eq(ORGANISATION_ID)))
+            .thenReturn(ResponseEntity.ok("<ok/>".getBytes(StandardCharsets.UTF_8)));
+
+        mockMvc.perform(post("/v2/bulk-claims/claims/status").contentType(MediaType.APPLICATION_XML)
+                .content(body)
+                .requestAttr(BulkClaimApimS2sFilter.ORGANISATION_ID_ATTRIBUTE, ORGANISATION_ID))
+            .andExpect(status().isOk())
+            .andExpect(content().string("<ok/>"));
+    }
+
+    @Test
+    void shouldReturnPayloadTooLargeForOversizedBatchStatusBody() throws Exception {
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_CLAIMS_V2)).thenReturn(true);
+
+        mockMvc.perform(post("/v2/bulk-claims/claims/status").contentType(MediaType.APPLICATION_XML)
+                .content("<a>0123456789012345</a>"))
+            .andExpect(status().isPayloadTooLarge());
+
+        verify(handler, never()).statusBatch(any(), any());
     }
 
     @Test

@@ -14,17 +14,30 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:complexType name="ClaimStatusType">
+    <xs:annotation>
+      <xs:documentation>
+        The status of one submitted claim. When no claim exists for the customer unique identifier in the calling
+        organisation, as can happen in a BulkClaimStatusListResponse, ClaimStatus carries StatusCode 2 with
+        FailReasonCode 17 and no other optional element is present.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="CustomerUniqueIdentifier" type="xs:string"/>
+      <xs:element name="ClaimStatus" type="StatusType"/>
+      <xs:element name="CaseReference" type="xs:string" minOccurs="0"/>
+      <xs:element name="CaseState" type="xs:string" minOccurs="0"/>
+      <xs:element name="ServiceRequestReference" type="xs:string" minOccurs="0"/>
+      <xs:element name="PaymentStatus" type="PaymentStatusType" minOccurs="0"/>
+      <xs:element name="PaymentFailureReason" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:element name="BulkClaimStatusResponse">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element name="CustomerUniqueIdentifier" type="xs:string"/>
-        <xs:element name="ClaimStatus" type="StatusType"/>
-        <xs:element name="CaseReference" type="xs:string" minOccurs="0"/>
-        <xs:element name="CaseState" type="xs:string" minOccurs="0"/>
-        <xs:element name="ServiceRequestReference" type="xs:string" minOccurs="0"/>
-        <xs:element name="PaymentStatus" type="PaymentStatusType" minOccurs="0"/>
-        <xs:element name="PaymentFailureReason" type="xs:string" minOccurs="0"/>
-      </xs:sequence>
+      <xs:complexContent>
+        <xs:extension base="ClaimStatusType"/>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
 </xs:schema>

@@ -14,5 +14,7 @@ public interface BulkClaimV2Handler {
 
     ResponseEntity<byte[]> status(String organisationId, String customerUniqueIdentifier);
 
+    ResponseEntity<byte[]> statusBatch(byte[] xml, String organisationId);
+
     ResponseEntity<byte[]> schema(String fileName);
 }

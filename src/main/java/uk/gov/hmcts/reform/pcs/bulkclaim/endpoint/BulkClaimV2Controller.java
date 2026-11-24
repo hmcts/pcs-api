@@ -124,6 +124,34 @@ public class BulkClaimV2Controller {
     }
 
     @Operation(
+        summary = "Get the status of up to 100 submitted claims",
+        description = "Reports the status of each requested claim, in request order. A customer unique identifier "
+            + "with no claim for this organisation is listed with status code 2 and fail reason code 17 rather "
+            + "than failing the call. A repeated identifier is answered at each position.",
+        requestBody = @RequestBody(content = @Content(
+            mediaType = XML, schema = @Schema(type = "string", format = "xml"))),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "One status entry per requested identifier",
+                content = @Content(mediaType = XML, schema = @Schema(type = "string", format = "xml"))),
+            @ApiResponse(responseCode = "400", description = "The request does not conform to the XML schema",
+                content = @Content(mediaType = XML, schema = @Schema(type = "string", format = "xml"))),
+            @ApiResponse(responseCode = "413", description = "Too many identifiers or the request is too large",
+                content = @Content),
+            @ApiResponse(responseCode = "404", description = "Bulk claims are not enabled", content = @Content)
+        })
+    @PostMapping(value = "/claims/status", consumes = {XML, TEXT_XML}, produces = XML)
+    public ResponseEntity<byte[]> statusBatch(HttpServletRequest request) throws IOException {
+        if (!bulkClaimsEnabled()) {
+            return notFound();
+        }
+        byte[] body = readBounded(request);
+        if (body == null) {
+            return payloadTooLarge();
+        }
+        return handler.statusBatch(body, organisationId(request));
+    }
+
+    @Operation(
         summary = "Get a bulk claim XML schema file",
         responses = {
             @ApiResponse(responseCode = "200", description = "The schema file",

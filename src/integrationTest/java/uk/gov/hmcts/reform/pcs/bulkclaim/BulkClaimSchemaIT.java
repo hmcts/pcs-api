@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -151,6 +153,23 @@ class BulkClaimSchemaIT extends AbstractPostgresContainerIT {
 
         assertThat(entityManager.find(ClaimEntity.class, claimId).getSubmissionChannel())
             .isEqualTo(SubmissionChannel.UI);
+    }
+
+    @Test
+    void findsSubmissionsForAnOrganisationByAnyOfSeveralIdentifiers() {
+        submissionRepository.saveAndFlush(submission("ORG-IN-1", "CUST-A"));
+        submissionRepository.saveAndFlush(submission("ORG-IN-1", "CUST-B"));
+        submissionRepository.saveAndFlush(submission("ORG-IN-1", "CUST-C"));
+        submissionRepository.saveAndFlush(submission("ORG-IN-2", "CUST-A"));
+        entityManager.clear();
+
+        List<BulkClaimSubmissionEntity> found = submissionRepository
+            .findByOrganisationIdAndCustomerUniqueIdentifierIn("ORG-IN-1", Set.of("CUST-A", "CUST-C", "CUST-Z"));
+
+        assertThat(found).extracting(BulkClaimSubmissionEntity::getOrganisationId)
+            .containsOnly("ORG-IN-1");
+        assertThat(found).extracting(BulkClaimSubmissionEntity::getCustomerUniqueIdentifier)
+            .containsExactlyInAnyOrder("CUST-A", "CUST-C");
     }
 
     @Test

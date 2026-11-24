@@ -15,6 +15,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusListResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusRequest;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusResponse;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.MortgageClaimSet;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ObjectFactory;
@@ -47,6 +49,7 @@ public class BulkClaimXmlCodec {
     private final JAXBContext context;
     private final Schema rentalSchema;
     private final Schema mortgageSchema;
+    private final Schema statusRequestSchema;
 
     public BulkClaimXmlCodec() {
         try {
@@ -56,6 +59,7 @@ public class BulkClaimXmlCodec {
         }
         this.rentalSchema = loadSchema("RentalClaim.xsd");
         this.mortgageSchema = loadSchema("MortgageClaim.xsd");
+        this.statusRequestSchema = loadSchema("BulkClaimStatusRequest.xsd");
     }
 
     public RentalClaimSet parseRental(byte[] xml) {
@@ -66,11 +70,19 @@ public class BulkClaimXmlCodec {
         return parse(xml, mortgageSchema, MortgageClaimSet.class);
     }
 
+    public BulkClaimStatusRequest parseStatusRequest(byte[] xml) {
+        return parse(xml, statusRequestSchema, BulkClaimStatusRequest.class);
+    }
+
     public byte[] write(BulkClaimResponse response) {
         return marshal(response, false);
     }
 
     public byte[] write(BulkClaimStatusResponse response) {
+        return marshal(response, false);
+    }
+
+    public byte[] write(BulkClaimStatusListResponse response) {
         return marshal(response, false);
     }
 

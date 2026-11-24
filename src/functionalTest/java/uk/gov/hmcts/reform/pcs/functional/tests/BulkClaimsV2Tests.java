@@ -18,7 +18,9 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsTestOrganisation;
 import uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsV2Client;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -37,6 +39,7 @@ class BulkClaimsV2Tests extends BaseApi {
     private static final int STATUS_FAILED = 2;
     private static final int FAIL_REASON_VALIDATION = 9;
     private static final int FAIL_REASON_IDENTIFIER_REUSED = 14;
+    private static final int FAIL_REASON_CLAIM_NOT_FOUND = 17;
     private static final String SOCIAL_LANDLORD = "SocialLandlord";
     private static final String PRIVATE_LANDLORD = "PrivateLandlord";
 
@@ -122,6 +125,30 @@ class BulkClaimsV2Tests extends BaseApi {
         assertThat(statusBody.getString("BulkClaimStatusResponse.PaymentStatus")).isNotBlank();
 
         assertThat(submitAndGetCaseReference("rental", claimXml, cui)).isEqualTo(caseReference);
+    }
+
+    @Title("Batch status lists a submitted claim and reports an unknown identifier as not found, in request order")
+    @Test
+    void batchStatusReportsKnownAndUnknownIdentifiers() {
+        String cui = BulkClaimsV2Client.uniqueCustomerIdentifier();
+        String unknown = BulkClaimsV2Client.uniqueCustomerIdentifier();
+        String caseReference = submitAndGetCaseReference("rental", rentalXml(cui, SOCIAL_LANDLORD), cui);
+
+        Response response = client.statusBatch(statusRequest(unknown, cui), organisationId);
+
+        assertThat(response.statusCode()).as(response.asString()).isEqualTo(200);
+        XmlPath body = xml(response);
+        assertThat(body.getList("BulkClaimStatusListResponse.Claim")).hasSize(2);
+        assertThat(body.getString("BulkClaimStatusListResponse.Claim[0].CustomerUniqueIdentifier"))
+            .isEqualTo(unknown);
+        assertThat(body.getInt("BulkClaimStatusListResponse.Claim[0].ClaimStatus.StatusCode"))
+            .isEqualTo(STATUS_FAILED);
+        assertThat(body.getInt("BulkClaimStatusListResponse.Claim[0].ClaimStatus.FailReasonCode"))
+            .isEqualTo(FAIL_REASON_CLAIM_NOT_FOUND);
+        assertThat(body.getString("BulkClaimStatusListResponse.Claim[1].CustomerUniqueIdentifier")).isEqualTo(cui);
+        assertThat(body.getInt("BulkClaimStatusListResponse.Claim[1].ClaimStatus.StatusCode"))
+            .isEqualTo(STATUS_SUCCESS);
+        assertThat(body.getString("BulkClaimStatusListResponse.Claim[1].CaseReference")).isEqualTo(caseReference);
     }
 
     @Title("Reusing a customer unique identifier for a changed claim fails with reason 14")
@@ -236,6 +263,14 @@ class BulkClaimsV2Tests extends BaseApi {
             "pba", pba,
             "customerUniqueIdentifier", cui
         ));
+    }
+
+    private static String statusRequest(String... identifiers) {
+        return "<BulkClaimStatusRequest xmlns=\"http://hmcts.gov.uk/pcs/bulkclaim/v2\">"
+            + Arrays.stream(identifiers)
+                .map(identifier -> "<CustomerUniqueIdentifier>" + identifier + "</CustomerUniqueIdentifier>")
+                .collect(Collectors.joining())
+            + "</BulkClaimStatusRequest>";
     }
 
     private static XmlPath xml(Response response) {

@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimSubmissionEntity;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +18,9 @@ public interface BulkClaimSubmissionRepository extends JpaRepository<BulkClaimSu
 
     Optional<BulkClaimSubmissionEntity> findByOrganisationIdAndCustomerUniqueIdentifier(
         String organisationId, String customerUniqueIdentifier);
+
+    List<BulkClaimSubmissionEntity> findByOrganisationIdAndCustomerUniqueIdentifierIn(
+        String organisationId, Collection<String> customerUniqueIdentifiers);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM BulkClaimSubmissionEntity s WHERE s.id = :id")

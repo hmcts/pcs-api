@@ -47,7 +47,9 @@ public enum BulkFailReason {
     CLAIM_KIND_NOT_ENABLED(2, BulkFailReason.CLAIM_FAILED_TEXT, 15,
                            "This kind of bulk claim is not enabled"),
     PBA_OVERRIDE_NOT_VALID(2, BulkFailReason.CLAIM_FAILED_TEXT, 16,
-                           "The payment account supplied for this claim is not valid for this organisation");
+                           "The payment account supplied for this claim is not valid for this organisation"),
+    CLAIM_NOT_FOUND(2, "This claim could not be found", 17,
+                    "No claim was found for this customer unique identifier");
 
     public static final String BULK_FAILED_TEXT =
         "At least one claim failed to process completely. See individual claim responses for reason";

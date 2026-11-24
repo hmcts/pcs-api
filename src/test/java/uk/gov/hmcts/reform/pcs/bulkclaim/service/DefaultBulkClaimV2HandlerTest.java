@@ -34,7 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -279,9 +281,80 @@ class DefaultBulkClaimV2HandlerTest {
         assertThat(underTest.status(ORG, "NOPE").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    void shouldListStatusesInRequestOrderWithNotFoundEntries() {
+        BulkClaimSubmissionEntity found = BulkClaimSubmissionEntity.builder()
+            .customerUniqueIdentifier("CLAIM-0001")
+            .status(BulkClaimSubmissionStatus.CASE_CREATED)
+            .caseReference(1781000000000001L)
+            .paymentStatus(BulkClaimPaymentStatus.PAID)
+            .build();
+        BulkClaimSubmissionEntity pending = BulkClaimSubmissionEntity.builder()
+            .customerUniqueIdentifier("CLAIM-0003")
+            .status(BulkClaimSubmissionStatus.PENDING)
+            .build();
+        when(submissionRepository.findByOrganisationIdAndCustomerUniqueIdentifierIn(eq(ORG), any()))
+            .thenReturn(List.of(pending, found));
+        when(caseStateReader.statesOf(any())).thenReturn(Map.of(1781000000000001L, "CASE_ISSUED"));
+
+        ResponseEntity<byte[]> response = underTest.statusBatch(
+            statusRequest("CLAIM-0003", "UNKNOWN", "CLAIM-0001", "CLAIM-0003"), ORG);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
+        String xml = body(response);
+        assertThat(xml).contains("<BulkClaimStatusListResponse");
+        assertThat(xml.split("<Claim>", -1)).hasSize(5);
+        assertThat(xml).containsSubsequence(
+            "<CustomerUniqueIdentifier>CLAIM-0003<", "<CustomerUniqueIdentifier>UNKNOWN<",
+            "<CustomerUniqueIdentifier>CLAIM-0001<", "<CustomerUniqueIdentifier>CLAIM-0003<");
+        assertThat(xml).containsPattern(
+            "<CustomerUniqueIdentifier>UNKNOWN</CustomerUniqueIdentifier>\\s*<ClaimStatus>"
+                + "\\s*<StatusCode>2</StatusCode>(?s:.*?)<FailReasonCode>17</FailReasonCode>")
+            .contains("<CaseState>CASE_ISSUED</CaseState>")
+            .contains("<PaymentStatus>PAID</PaymentStatus>");
+        verify(submissionRepository).findByOrganisationIdAndCustomerUniqueIdentifierIn(
+            eq(ORG), eq(Set.of("CLAIM-0003", "UNKNOWN", "CLAIM-0001")));
+        verify(caseStateReader).statesOf(Set.of(1781000000000001L));
+    }
+
+    @Test
+    void shouldReportAnotherOrganisationsIdentifierAsNotFound() {
+        when(submissionRepository.findByOrganisationIdAndCustomerUniqueIdentifierIn(eq(ORG), any()))
+            .thenReturn(List.of());
+        when(caseStateReader.statesOf(any())).thenReturn(Map.of());
+
+        String xml = body(underTest.statusBatch(statusRequest("THEIRS-1"), ORG));
+
+        assertThat(xml).contains("<FailReasonCode>17</FailReasonCode>").doesNotContain("<CaseReference>");
+        verify(submissionRepository).findByOrganisationIdAndCustomerUniqueIdentifierIn(eq(ORG), any());
+    }
+
+    @Test
+    void shouldRejectStatusRequestOverTheConfiguredMaximumWithPayloadTooLarge() {
+        properties.setMaxClaimsPerRequest(2);
+
+        ResponseEntity<byte[]> response = underTest.statusBatch(statusRequest("A-1", "A-2", "A-3"), ORG);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+        verifyNoInteractions(submissionRepository, caseStateReader);
+    }
+
+    @Test
+    void shouldReturnSchemaInvalidForMalformedStatusRequest() {
+        ResponseEntity<byte[]> response = underTest.statusBatch(
+            "<BulkClaimStatusRequest xmlns=\"http://hmcts.gov.uk/pcs/bulkclaim/v2\"/>"
+                .getBytes(StandardCharsets.UTF_8), ORG);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(body(response)).contains("<FailReasonCode>3</FailReasonCode>")
+            .contains("<Code>SCHEMA_INVALID</Code>");
+        verifyNoInteractions(submissionRepository, caseStateReader);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd",
-        "BulkClaimStatusResponse.xsd"})
+        "BulkClaimStatusResponse.xsd", "BulkClaimStatusRequest.xsd", "BulkClaimStatusListResponse.xsd"})
     void shouldServeAllowedSchemaFiles(String fileName) {
         ResponseEntity<byte[]> response = underTest.schema(fileName);
 
@@ -295,6 +368,14 @@ class DefaultBulkClaimV2HandlerTest {
         "RentalClaim.xsd/", "xsd/bulkclaim/v2/RentalClaim.xsd", "Other.xsd", ""})
     void shouldNotServeFilesOutsideTheAllowList(String fileName) {
         assertThat(underTest.schema(fileName).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    private static byte[] statusRequest(String... identifiers) {
+        StringBuilder xml = new StringBuilder("<BulkClaimStatusRequest xmlns=\"" + BulkClaimXmlCodec.NAMESPACE + "\">");
+        for (String identifier : identifiers) {
+            xml.append("<CustomerUniqueIdentifier>").append(identifier).append("</CustomerUniqueIdentifier>");
+        }
+        return xml.append("</BulkClaimStatusRequest>").toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private void givenUsableOrganisation() {

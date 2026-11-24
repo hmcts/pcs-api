@@ -125,7 +125,8 @@ tasks.register('generateBulkClaimXmlClasses', JavaExec) {
     bulkClaimXjcOutput.get().asFile.mkdirs()
   }
   argumentProviders.add({
-    def xsds = ['RentalClaim.xsd', 'MortgageClaim.xsd', 'BulkClaimResponse.xsd', 'BulkClaimStatusResponse.xsd']
+    def xsds = ['RentalClaim.xsd', 'MortgageClaim.xsd', 'BulkClaimResponse.xsd', 'BulkClaimStatusResponse.xsd',
+               'BulkClaimStatusRequest.xsd', 'BulkClaimStatusListResponse.xsd']
       .collect { new File(bulkClaimXsdDir, it).absolutePath }
     ['-quiet', '-no-header', '-encoding', 'UTF-8',
      '-p', 'uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated',
