@@ -20,11 +20,17 @@ import java.util.UUID;
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
- * name of the judge the order is made by, which it names as made before them. The bank holidays are those of the
- * coming year in England and Wales, which a date the order gives to apply by moves off.
+ * judge the order is made by, as it names them as made before them. The bank holidays are those of the coming year
+ * in England and Wales, which a date the order gives to apply by moves off.
  */
-public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judgeName,
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judge,
                          List<LocalDate> bankHolidays) {
+
+    /** The judge as an order names them: their title and name, or a placeholder for them to fill in. */
+    public static String judge(String name) {
+        // TODO: the judge's title from Judicial Reference Data. Until then every judge is a District Judge.
+        return name == null || name.isBlank() ? "[judge’s name and title]" : "District Judge " + name;
+    }
 
     /** How far ahead the bank holidays go: a year, beyond any date an order gives to apply by. */
     public static final int BANK_HOLIDAY_DAYS = 400;
@@ -64,11 +70,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Application> applications,
                               CaseBundle caseBundle,
                               List<HearingOption> hearings,
-                              Court court) {
-    }
-
-    /** The court managing the case, as an order names where the judge sits: its name and its venue's short name. */
-    public record Court(String name, String venueShortName) {
+                              String court) {
     }
 
     /** One of the case's hearings, as a judge chooses which one an order is made at. */

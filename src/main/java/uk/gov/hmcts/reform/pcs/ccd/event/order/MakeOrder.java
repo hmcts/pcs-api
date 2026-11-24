@@ -152,7 +152,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElse(OrderStart.Order.NONE);
         return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
             hearing == null ? null : hearingRecords.start(pcsCase, hearing), task == null ? null : task.getId(),
-            securityContextService.getCurrentUserDetails().getName(),
+            OrderStart.judge(securityContextService.getCurrentUserDetails().getName()),
             bankHolidays.upcoming(OrderStart.BANK_HOLIDAY_DAYS)));
     }
 

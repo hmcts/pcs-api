@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
@@ -66,11 +67,22 @@ class OrderCaseContext {
                 .sorted(Comparator.comparing(HearingEntity::getHearingDate))
                 .map(hearing -> new OrderStart.HearingOption(hearing.getId(), hearing.getHearingDate()))
                 .toList(),
-            caseCourts.of(pcsCase)
-                .map(venue -> new OrderStart.Court(venue.courtName(),
-                    Optional.ofNullable(venue.externalShortName()).orElse(venue.venueName())))
-                .orElse(null)
+            court(pcsCase)
         );
+    }
+
+    /**
+     * The court managing the case, as an order names where the judge sits: its name and its venue's short name, or a
+     * placeholder for the judge to fill in.
+     */
+    private String court(PcsCaseEntity pcsCase) {
+        return caseCourts.of(pcsCase)
+            .map(venue -> Stream.of(venue.courtName(),
+                    Optional.ofNullable(venue.externalShortName()).orElse(venue.venueName()))
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(" ")))
+            .filter(StringUtils::isNotBlank)
+            .orElse("[court]");
     }
 
     /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */

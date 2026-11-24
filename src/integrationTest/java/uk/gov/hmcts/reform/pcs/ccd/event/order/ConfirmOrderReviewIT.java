@@ -104,7 +104,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(start.caseContext().caseReference()).isEqualTo(caseReference);
         assertThat(start.caseContext().defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
         // Made before the judge who made it, not the caseworker reviewing it.
-        assertThat(start.judgeName()).isEqualTo("A Judge");
+        assertThat(start.judge()).isEqualTo("District Judge A Judge");
         assertThat(events.view(caseReference, caseworker).getOrderListMarkdown())
             .contains("Outright possession", "Waiting for review");
     }
