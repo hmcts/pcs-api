@@ -311,6 +311,40 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldSetSocialLandlordRentArrearsCaseTypeWhenCommunityLandlordClaimHasRentArrearsGround() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.COMMUNITY_LANDLORD);
+        when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false), claimGround(true)));
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey("AAA3-RA-SL");
+        verify(pcsCaseEntity).setCaseSubtypeKey("AAA3-RA-SL");
+    }
+
+    @Test
+    void shouldSetSocialLandlordNonRentArrearsCaseTypeWhenCommunityLandlordClaimHasNoRentArrearsGround() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity mainClaimEntity = stubClaimCreation();
+        when(featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)).thenReturn(true);
+        when(mainClaimEntity.getClaimantType()).thenReturn(ClaimantType.COMMUNITY_LANDLORD);
+        when(mainClaimEntity.getClaimGrounds()).thenReturn(Set.of(claimGround(false)));
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        verify(pcsCaseEntity).setCaseTypeKey("AAA3-RNA-SL");
+        verify(pcsCaseEntity).setCaseSubtypeKey("AAA3-RNA-SL");
+    }
+
+    @Test
     void shouldSetSocialLandlordNonRentArrearsCaseTypeWhenClaimHasNoGrounds() {
         // Given
         final PcsCaseEntity pcsCaseEntity = stubFindCase();

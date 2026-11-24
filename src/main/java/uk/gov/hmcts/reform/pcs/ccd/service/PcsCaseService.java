@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
 
 @Service
 @Slf4j
@@ -230,7 +231,8 @@ public class PcsCaseService {
     }
 
     private String caseTypeKey(ClaimEntity claimEntity) {
-        if (claimEntity.getClaimantType() != PROVIDER_OF_SOCIAL_HOUSING) {
+        if (claimEntity.getClaimantType() != PROVIDER_OF_SOCIAL_HOUSING
+            && claimEntity.getClaimantType() != COMMUNITY_LANDLORD) {
             return null;
         }
 

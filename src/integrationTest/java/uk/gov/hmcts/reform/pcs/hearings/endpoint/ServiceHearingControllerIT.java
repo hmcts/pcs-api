@@ -135,9 +135,8 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.caseSLAStartDate").value("2026-07-01"))
                 .andExpect(jsonPath("$.hearingLocations[0].locationType").value("court"))
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
-                .andExpect(jsonPath("$.listingComments").doesNotExist());
-            // TODO HDPI-8840: restore once the caseTypeKey null guard is back in ServiceHearingValuesMapper
-            // .andExpect(jsonPath("$.caseCategories").doesNotExist());
+                .andExpect(jsonPath("$.listingComments").doesNotExist())
+                .andExpect(jsonPath("$.caseCategories").doesNotExist());
         }
 
         @Test

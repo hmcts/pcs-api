@@ -138,6 +138,9 @@ public class ServiceHearingValuesMapper {
     }
 
     private List<CaseCategory> caseCategories(PcsCaseEntity pcsCase) {
+        if (pcsCase.getCaseTypeKey() == null) {
+            return List.of();
+        }
 
         return List.of(
             CaseCategory.builder()
