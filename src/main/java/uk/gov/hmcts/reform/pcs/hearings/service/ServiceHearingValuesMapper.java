@@ -43,6 +43,7 @@ public class ServiceHearingValuesMapper {
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
+    static final String OTHER_FLAG_CODE = "OT0001";
     static final int MAX_LISTING_COMMENTS_LENGTH = 2000;
     static final String ELLIPSIS = "...";
     private static final String FLAG_SEPARATOR = ", ";
@@ -245,9 +246,16 @@ public class ServiceHearingValuesMapper {
 
         static FlagText of(BaseCaseFlag flag) {
             String comment = flag.getFlagComment() == null ? "" : flag.getFlagComment().strip();
-            return new FlagText(
-                Objects.toString(flag.getFlagRefData().getFlagName(), "").strip(),
-                comment.isEmpty() ? null : comment);
+            return new FlagText(name(flag), comment.isEmpty() ? null : comment);
+        }
+
+        // An "Other" flag's real name is the description the user entered, not "Other"
+        private static String name(BaseCaseFlag flag) {
+            String otherDescription = Objects.toString(flag.getOtherDescription(), "").strip();
+            if (OTHER_FLAG_CODE.equals(flag.getFlagRefData().getFlagCode()) && !otherDescription.isEmpty()) {
+                return otherDescription;
+            }
+            return Objects.toString(flag.getFlagRefData().getFlagName(), "").strip();
         }
 
         boolean hasComment() {

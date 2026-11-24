@@ -190,7 +190,7 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getFields()).extracting(TabField::getId).doesNotContain("caseReviewDates");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        assertThat(judicialNotesTab.getShowCondition()).isNull();
+        assertThat(judicialNotesTab.getShowCondition()).isEqualTo("featureFlags.caseManagementR2Enabled=\"YES\"");
         // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
         for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
             serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
