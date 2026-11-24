@@ -197,7 +197,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth - ClaimantSOT @enforcement', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth - ClaimantSOT @enforcement @asha @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -251,7 +251,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     });
   });
 
-  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
+  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement @asha @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -272,7 +272,7 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey @enforcement', {
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey @enforcement @asha @regression', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',

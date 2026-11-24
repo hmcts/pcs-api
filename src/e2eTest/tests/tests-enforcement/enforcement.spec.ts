@@ -411,7 +411,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] - ClaimantSOT @enforcement', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] - ClaimantSOT @enforcement @asha @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -564,7 +564,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
      await performValidation('errorMessage', { header: cannotApplyForWarrantInfo.eventCouldNotBeCreatedHeader, message: cannotApplyForWarrantInfo.errorValidationField });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder no defendants added @noDefendants @enforcement',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] NonSuspendedOrder no defendants added @noDefendants @enforcement @asha @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -704,7 +704,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement @asha @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
