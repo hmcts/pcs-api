@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentInternalAccess;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class EnforcementEventShowConditions {
 
     @CCD

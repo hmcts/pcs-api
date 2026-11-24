@@ -174,7 +174,7 @@ class CaseTypeTest {
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
         assertThat(hiddenTab.getFields()).hasSize(5);
         assertThat(hiddenTab.getFields())
-            .filteredOn(field -> "enfShowConditions_CanViewRiskAssessment".equals(field.getId()))
+            .filteredOn(field -> "enfShowConditions".equals(field.getId()))
             .singleElement().satisfies(field ->
                 assertThat(field.getShowCondition()).isEqualTo(ShowConditions.NEVER_SHOW));
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
@@ -200,7 +200,7 @@ class CaseTypeTest {
         Tab<PCSCase, AccessProfile> riskAssessmentTab = riskAssessmentTabBuilder.build();
         assertThat(riskAssessmentTab.getForRoles()).isEmpty();
         assertThat(riskAssessmentTab.getShowCondition())
-            .isEqualTo("enfShowConditions_CanViewRiskAssessment=\"Yes\"");
+            .isEqualTo("enfShowConditions.canViewRiskAssessment=\"Yes\"");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId).containsExactly(
             "riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown",
             "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown"

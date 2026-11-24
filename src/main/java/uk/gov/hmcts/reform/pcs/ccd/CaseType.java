@@ -146,7 +146,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags)
             // CCD requires fields used by tab conditions to be included on a tab, even when hidden.
-            .field("enfShowConditions_CanViewRiskAssessment", NEVER_SHOW);
+            .field("enfShowConditions", NEVER_SHOW);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -322,7 +322,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("riskAssessment", "Risk assessment")
-            .showCondition("enfShowConditions_CanViewRiskAssessment=\"Yes\"")
+            .showCondition("enfShowConditions.canViewRiskAssessment=\"Yes\"")
             .field("riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown!=\"\"")
             .field("riskAssessmentInternalMarkdown", NEVER_SHOW)
             .field("riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown!=\"\"")

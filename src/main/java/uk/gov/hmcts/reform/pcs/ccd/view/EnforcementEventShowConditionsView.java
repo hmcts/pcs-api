@@ -54,7 +54,7 @@ public class EnforcementEventShowConditionsView {
                 .filter(RISK_ASSESSMENT_STATES::contains)
                 .isPresent();
 
-        pcsCase.setEnforcementEventShowConditions(EnforcementEventShowConditions.builder()
+        pcsCase.setEnfShowConditions(EnforcementEventShowConditions.builder()
             .recordWarrantReturn(YesOrNo.from(canRecordWarrantReturn))
             .canViewRiskAssessment(YesOrNo.from(canViewRiskAssessment))
             .build());

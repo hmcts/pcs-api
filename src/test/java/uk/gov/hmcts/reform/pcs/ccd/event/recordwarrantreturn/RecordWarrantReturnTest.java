@@ -52,7 +52,7 @@ public class RecordWarrantReturnTest extends BaseEventTest {
     void shouldBeConfiguredAsShowForFeatureFlagAndRecordWarrantReturnShowCondition() {
         assertConfiguredShowConditions(ShowConditions.and(
             ShowConditions.featureFlagsEnabled(FeatureFlag.RECORD_WARRANT_RETURN),
-            "enfShowConditions_RecordWarrantReturn=\"Yes\""
+            "enfShowConditions.recordWarrantReturn=\"Yes\""
         ));
     }
 

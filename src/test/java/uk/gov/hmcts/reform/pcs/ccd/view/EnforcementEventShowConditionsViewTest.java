@@ -1,11 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,6 +47,35 @@ class EnforcementEventShowConditionsViewTest {
     }
 
     @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSerializeNestedCamelCaseConditionsForBothFlagStates(boolean enabled) {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(enabled);
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        EnforcementOrderEntity application = EnforcementOrderEntity.builder()
+            .state(EnforcementState.AWAITING_BAILIFF_ALLOCATION).build();
+        when(enforcementOrderMediator.getEnforcementOrder(entity)).thenReturn(Optional.of(application));
+        if (enabled) {
+            when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+                .thenReturn(Optional.of(application));
+        }
+
+        enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode data = mapper.valueToTree(pcsCase);
+        JsonNode conditions = data.path("enfShowConditions");
+        assertThat(conditions.path("recordWarrantReturn")).isEqualTo(mapper.valueToTree(YesOrNo.YES));
+        assertThat(conditions.path("canViewRiskAssessment"))
+            .isEqualTo(mapper.valueToTree(YesOrNo.from(enabled)));
+        assertThat(conditions.has("RecordWarrantReturn")).isFalse();
+        assertThat(conditions.has("CanViewRiskAssessment")).isFalse();
+        assertThat(data.has("enforcementEventShowConditions")).isFalse();
+        assertThat(data.has("enfShowConditions_RecordWarrantReturn")).isFalse();
+        assertThat(data.has("enfShowConditions_CanViewRiskAssessment")).isFalse();
+    }
+
+    @ParameterizedTest
     @MethodSource("recordWarrantReturnScenarios")
     void shouldPreserveWarrantReturnEligibilityAndSkipRiskAssessmentWhenFlagIsOff(EnforcementState state,
                                                                                YesOrNo expected) {
@@ -55,8 +87,8 @@ class EnforcementEventShowConditionsViewTest {
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
         verify(enforcementOrderMediator, never()).getLatestSubmittedWarrantApplication(entity);
     }
 
@@ -74,7 +106,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
     }
 
     @Test
@@ -88,7 +120,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -103,7 +135,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     @ParameterizedTest
@@ -116,7 +148,7 @@ class EnforcementEventShowConditionsViewTest {
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(expected);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(expected);
     }
 
     @Test
@@ -126,7 +158,7 @@ class EnforcementEventShowConditionsViewTest {
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -138,7 +170,7 @@ class EnforcementEventShowConditionsViewTest {
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

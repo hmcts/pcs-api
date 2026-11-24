@@ -1268,9 +1268,8 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {BailiffAccess.class}
+        access = {BailiffAccess.class, RiskAssessmentInternalAccess.class, RiskAssessmentClaimantAccess.class}
     )
-    @JsonUnwrapped(prefix = "enfShowConditions_")
-    private EnforcementEventShowConditions enforcementEventShowConditions;
+    private EnforcementEventShowConditions enfShowConditions;
 
 }

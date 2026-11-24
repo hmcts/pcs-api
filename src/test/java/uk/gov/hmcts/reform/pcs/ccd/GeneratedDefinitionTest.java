@@ -221,14 +221,22 @@ class GeneratedDefinitionTest {
         assertThat(tabs.get("riskAssessment"))
             .filteredOn(row -> row.has("TabShowCondition"))
             .extracting(row -> row.get("TabShowCondition").asText())
-            .containsExactly("enfShowConditions_CanViewRiskAssessment=\"Yes\"");
+            .containsExactly("enfShowConditions.canViewRiskAssessment=\"Yes\"");
     }
 
     @Test
     void riskAssessmentTabConditionFieldIsRegisteredOnAHiddenTabForCcdImport() {
-        String visibilityField = "enfShowConditions_CanViewRiskAssessment";
+        String visibilityField = "enfShowConditions";
         assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
-            .extracting(row -> row.path("ID").asText()).contains(visibilityField);
+            .filteredOn(row -> visibilityField.equals(row.path("ID").asText()))
+            .singleElement().satisfies(row ->
+                assertThat(row.path("FieldType").asText()).isEqualTo("EnforcementEventShowConditions"));
+        assertThat(rows(DEFINITION_DIR.resolve("ComplexTypes")))
+            .filteredOn(row -> "EnforcementEventShowConditions".equals(row.path("ID").asText()))
+            .extracting(row -> row.path("ListElementCode").asText())
+            .containsExactlyInAnyOrder("recordWarrantReturn", "canViewRiskAssessment");
+        assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
+            .noneMatch(row -> row.path("ID").asText().startsWith("enfShowConditions_"));
         assertThat(tabs.get("hidden"))
             .filteredOn(row -> visibilityField.equals(row.path("CaseFieldID").asText()))
             .singleElement().satisfies(row ->
@@ -243,11 +251,8 @@ class GeneratedDefinitionTest {
     void riskAssessmentShowConditionIsReadableByTheSameUsersAsTheTab() {
         Set<String> profiles = union(readers.get("riskAssessmentInternalMarkdownLabel"),
                                      Set.of("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"));
-        assertThat(readers.get("enfShowConditions_CanViewRiskAssessment"))
+        assertThat(readers.get("enfShowConditions"))
             .containsExactlyInAnyOrderElementsOf(profiles);
-        assertThat(readers.get("enfShowConditions_RecordWarrantReturn"))
-            .containsExactlyInAnyOrder("bailiff", "bailiff-admin", "bailiff-manager");
-        assertThat(readers).doesNotContainKey("enfShowConditions_CanRecordWarrantReturn");
     }
 
     @ParameterizedTest
@@ -255,7 +260,8 @@ class GeneratedDefinitionTest {
     void claimantSideProfilesHaveOnlyReadAccessToTheirAssessment(String profile) {
         assertThat(visible(tabs.get("riskAssessment"), Set.of(profile))).isTrue();
         List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseField"));
-        for (String field : List.of("riskAssessmentClaimantMarkdown", "riskAssessmentClaimantMarkdownLabel")) {
+        for (String field : List.of("riskAssessmentClaimantMarkdown", "riskAssessmentClaimantMarkdownLabel",
+                                    "enfShowConditions")) {
             assertThat(permissions).filteredOn(row -> field.equals(row.path("CaseFieldID").asText())
                 && profile.equals(row.path("UserRole").asText()))
                 .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
@@ -263,7 +269,7 @@ class GeneratedDefinitionTest {
         for (String field : List.of("riskAssessmentInternalMarkdown", "riskAssessmentInternalMarkdownLabel")) {
             assertThat(readers.get(field)).doesNotContain(profile);
         }
-        assertThat(readers.get("enfShowConditions_CanViewRiskAssessment")).contains(profile);
+        assertThat(readers.get("enfShowConditions")).contains(profile);
     }
 
     @ParameterizedTest

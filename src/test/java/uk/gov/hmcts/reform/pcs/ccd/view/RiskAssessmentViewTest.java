@@ -89,15 +89,15 @@ class RiskAssessmentViewTest {
         conditions.setCaseFields(entity, pcsCase);
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
         assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNotBlank();
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
 
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
         view.setCaseFields(pcsCase, entity);
         conditions.setCaseFields(entity, pcsCase);
 
         assertNoAssessment();
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -352,7 +352,7 @@ class RiskAssessmentViewTest {
         new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
             .setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment())
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment())
             .isEqualTo(type == SelectEnforcementType.WARRANT ? YesOrNo.YES : YesOrNo.NO);
         if (type == SelectEnforcementType.WARRANT) {
             assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains("12 October 2026");
@@ -368,12 +368,12 @@ class RiskAssessmentViewTest {
         EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
             enforcementOrderMediator, featureToggleService);
         conditions.setCaseFields(entity, pcsCase);
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
 
         application.setState(EnforcementState.PENDING_CASE_ISSUED);
         conditions.setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -385,7 +385,7 @@ class RiskAssessmentViewTest {
         new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
             .setCaseFields(entity, pcsCase);
 
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     private void assertNoAssessment() {
