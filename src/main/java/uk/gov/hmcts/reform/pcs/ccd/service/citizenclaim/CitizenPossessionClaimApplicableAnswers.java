@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
@@ -57,7 +56,6 @@ public class CitizenPossessionClaimApplicableAnswers {
         reduceRentArrears(applicable.getRentArrears());
         applicable.setNotice(reduceNotice(applicable.getNotice()));
         reduceArrearsAtNoticeDate(applicable);
-        reduceCircumstances(applicable.getCircumstances());
         reduceOtherInformation(applicable.getOtherInformation());
 
         return applicable;
@@ -245,13 +243,6 @@ public class CitizenPossessionClaimApplicableAnswers {
         CitizenClaimNotice notice = claim.getNotice();
         if (claim.getRentArrears() != null && (notice == null || notice.getNoticeServed() != VerticalYesNo.YES)) {
             claim.getRentArrears().setArrearsAtNoticeDate(null);
-        }
-    }
-
-    private static void reduceCircumstances(CitizenClaimCircumstances circumstances) {
-        if (circumstances != null && circumstances.getUnderlesseeExists() != VerticalYesNo.YES) {
-            circumstances.setUnderlesseeName(null);
-            circumstances.setUnderlesseeAddress(null);
         }
     }
 

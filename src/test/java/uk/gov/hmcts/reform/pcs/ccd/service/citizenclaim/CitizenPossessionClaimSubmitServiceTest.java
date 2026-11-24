@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -171,13 +170,6 @@ class CitizenPossessionClaimSubmitServiceTest {
         lenient().when(feeService.getFee(FeeType.CASE_ISSUE_FEE)).thenReturn(caseIssueFee);
         lenient().when(partyService.getPartyName(claimantStub)).thenReturn("Jane Landlord");
         lenient().when(partyService.mapAddress(any())).thenAnswer(invocation -> new AddressEntity());
-        lenient().when(partyService.createUnderlesseeOrMortgagee(any(UnderlesseeMortgageeDetails.class)))
-            .thenAnswer(invocation -> {
-                UnderlesseeMortgageeDetails details = invocation.getArgument(0);
-                PartyEntity underlessee = new PartyEntity();
-                underlessee.setOrgName(details.getName());
-                return underlessee;
-            });
         lenient().when(partyService.createDefendant(any(DefendantDetails.class))).thenAnswer(invocation -> {
             DefendantDetails details = invocation.getArgument(0);
             PartyEntity defendant = new PartyEntity();
@@ -214,7 +206,8 @@ class CitizenPossessionClaimSubmitServiceTest {
         assertThat(claim.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(claim.getAdditionalReasons()).isEqualTo("The tenant has refused access for repairs.");
         assertThat(claim.getDefendantCircumstances()).isEqualTo("The tenant has lost their job.");
-        assertThat(claim.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claim.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claim.getAdditionalUnderlesseesOrMortgagees()).isNull();
         assertThat(claim.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
         assertThat(claim.getPcsCase()).isSameAs(pcsCaseEntity);
 
@@ -434,34 +427,19 @@ class CitizenPossessionClaimSubmitServiceTest {
         verify(claimRepository).save(claimCaptor.capture());
         assertThat(claimCaptor.getValue().getClaimParties())
             .extracting(ClaimPartyEntity::getRole)
-            .containsExactly(PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+            .containsExactly(PartyRole.CLAIMANT, PartyRole.DEFENDANT);
     }
 
     @Test
-    void shouldAddNoUnderlesseeUnlessOneExists() {
-        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
-
-        submit(claim);
+    void shouldRecordThatThereIsNoUnderlesseeAndAddNoUnderlesseeParty() {
+        submit(CitizenPossessionClaimFixtures.completeClaim());
 
         verify(claimRepository).save(claimCaptor.capture());
+        assertThat(claimCaptor.getValue().getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
         assertThat(claimCaptor.getValue().getClaimParties())
             .extracting(ClaimPartyEntity::getRole)
             .doesNotContain(PartyRole.UNDERLESSEE_OR_MORTGAGEE);
         verify(partyService, never()).createUnderlesseeOrMortgagee(any());
-    }
-
-    @Test
-    void shouldMapTheUnderlesseeThroughThePartyService() {
-        submit(CitizenPossessionClaimFixtures.completeClaim());
-
-        verify(partyService).createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails.builder()
-                                                              .nameKnown(VerticalYesNo.YES)
-                                                              .name("Sub Tenant Ltd")
-                                                              .addressKnown(VerticalYesNo.YES)
-                                                              .address(CitizenPossessionClaimFixtures.completeClaim()
-                                                                           .getCircumstances().getUnderlesseeAddress())
-                                                              .build());
     }
 
     @Test
@@ -567,7 +545,7 @@ class CitizenPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldPopulateTheCitizenClaimantAndAddDefendantsAndUnderlessee() {
+    void shouldPopulateTheCitizenClaimantAndAddDefendants() {
         submit(CitizenPossessionClaimFixtures.completeClaim());
 
         assertThat(claimantStub.getFirstName()).isEqualTo("Jane");
@@ -580,7 +558,7 @@ class CitizenPossessionClaimSubmitServiceTest {
         verify(claimRepository).save(claimCaptor.capture());
         List<ClaimPartyEntity> claimParties = claimCaptor.getValue().getClaimParties();
         assertThat(claimParties).extracting(ClaimPartyEntity::getRole).containsExactly(
-            PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.DEFENDANT, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+            PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.DEFENDANT);
 
         PartyEntity firstDefendant = claimParties.get(1).getParty();
         assertThat(firstDefendant.getFirstName()).isEqualTo("Tom");
@@ -596,7 +574,6 @@ class CitizenPossessionClaimSubmitServiceTest {
                                                      CitizenPossessionClaimFixtures.completeClaim().getDefendants()
                                                          .get(1).getValue().getAddress())
                                                  .build());
-        assertThat(claimParties.get(3).getParty().getOrgName()).isEqualTo("Sub Tenant Ltd");
     }
 
     @Test

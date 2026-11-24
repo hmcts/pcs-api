@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
@@ -186,10 +185,6 @@ public class CitizenPossessionClaimSubmitService {
             pcsCaseEntity.addParty(defendant);
             claimEntity.addParty(defendant, PartyRole.DEFENDANT);
         }
-        buildUnderlessee(applicable.getCircumstances()).ifPresent(underlessee -> {
-            pcsCaseEntity.addParty(underlessee);
-            claimEntity.addParty(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
-        });
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(applicable));
         allocateLocation(pcsCaseEntity);
@@ -239,17 +234,16 @@ public class CitizenPossessionClaimSubmitService {
             .claimantType(ClaimantType.PRIVATE_LANDLORD)
             .againstTrespassers(VerticalYesNo.NO)
             .dueToRentArrears(YesOrNo.from(rentArrearsClaim))
-            .additionalDefendants(claim.getAdditionalDefendants());
+            .additionalDefendants(claim.getAdditionalDefendants())
+            // The citizen journey no longer asks it, but the claim form always shows the question
+            .underlesseeOrMortgagee(VerticalYesNo.NO);
 
         if (circumstances != null) {
             builder
                 .claimantCircumstancesProvided(providedIfText(circumstances.getClaimantCircumstances()))
                 .claimantCircumstances(blankToNull(circumstances.getClaimantCircumstances()))
                 .defendantCircumstancesProvided(providedIfText(circumstances.getDefendantCircumstances()))
-                .defendantCircumstances(blankToNull(circumstances.getDefendantCircumstances()))
-                .underlesseeOrMortgagee(circumstances.getUnderlesseeExists())
-                .additionalUnderlesseesOrMortgagees(
-                    circumstances.getUnderlesseeExists() != null ? VerticalYesNo.NO : null);
+                .defendantCircumstances(blankToNull(circumstances.getDefendantCircumstances()));
         }
 
         if (otherInformation != null) {
@@ -319,13 +313,13 @@ public class CitizenPossessionClaimSubmitService {
 
         List<CitizenClaimNoticeMethod> methods = noticeMethodsInOrder(notice);
         if (methods.isEmpty()) {
-            entity.setNoticeDate(notice.getNoticeDate());
             return entity;
         }
 
         CitizenClaimNoticeMethod primary = methods.getFirst();
         entity.setServingMethod(primary.getNoticeServiceMethod());
-        entity.setNoticeDate(Optional.ofNullable(noticeMethodDate(notice, primary)).orElse(notice.getNoticeDate()));
+        // The served date is the one given under the primary method; each method keeps its own below
+        entity.setNoticeDate(noticeMethodDate(notice, primary));
         entity.setNoticeDetails(noticeMethodDetails(notice, primary));
 
         for (int i = 0; i < methods.size(); i++) {
@@ -506,21 +500,6 @@ public class CitizenPossessionClaimSubmitService {
             .addressSameAsPossession(defendant.getAddressSameAsProperty())
             .correspondenceAddress(defendant.getAddress())
             .build();
-    }
-
-    private Optional<PartyEntity> buildUnderlessee(CitizenClaimCircumstances circumstances) {
-        if (circumstances == null || circumstances.getUnderlesseeExists() != VerticalYesNo.YES) {
-            return Optional.empty();
-        }
-        boolean nameKnown = StringUtils.isNotBlank(circumstances.getUnderlesseeName());
-        boolean addressKnown = circumstances.getUnderlesseeAddress() != null;
-        UnderlesseeMortgageeDetails details = UnderlesseeMortgageeDetails.builder()
-            .nameKnown(VerticalYesNo.from(nameKnown))
-            .name(nameKnown ? circumstances.getUnderlesseeName() : null)
-            .addressKnown(VerticalYesNo.from(addressKnown))
-            .address(circumstances.getUnderlesseeAddress())
-            .build();
-        return Optional.of(partyRepository.save(partyService.createUnderlesseeOrMortgagee(details)));
     }
 
     private static TenancyLicenceEntity buildTenancyLicence(CitizenPossessionClaim claim) {

@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
@@ -355,7 +356,9 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .containsExactlyInAnyOrder("GROUND_1A", "GROUND_8", "GROUND_10", "GROUND_14");
         assertThat(claim.getRentArrears().getTotalRentArrears()).isEqualByComparingTo("5000.00");
         assertThat(claim.getClaimParties()).extracting(ClaimPartyEntity::getRole).containsExactlyInAnyOrder(
-            PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.DEFENDANT, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+            PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.DEFENDANT);
+        assertThat(claim.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
+        assertThat(claim.getNoticeOfPossession().getNoticeDate()).isEqualTo(LocalDate.of(2026, 8, 1));
         assertThat(claim.getClaimParties())
             .filteredOn(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
             .singleElement()

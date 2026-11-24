@@ -282,9 +282,6 @@ public class CitizenPossessionClaimValidator {
         if (notice.getNoticeType() == null) {
             errors.add(required("notice.noticeType"));
         }
-        if (notice.getNoticeDate() == null) {
-            errors.add(required("notice.noticeDate"));
-        }
         Set<CitizenClaimNoticeMethod> methods = notice.getNoticeMethods();
         if (methods == null || methods.isEmpty() || methods.stream().anyMatch(Objects::isNull)) {
             errors.add(required("notice.noticeMethods"));
@@ -359,11 +356,6 @@ public class CitizenPossessionClaimValidator {
                   circumstances.getDefendantCircumstances(), CIRCUMSTANCES_MAX);
         maxLength(errors, "circumstances.claimantCircumstances",
                   circumstances.getClaimantCircumstances(), CIRCUMSTANCES_MAX);
-        if (circumstances.getUnderlesseeExists() == VerticalYesNo.YES) {
-            requireText(errors, "circumstances.underlesseeName", circumstances.getUnderlesseeName(), NAME_MAX);
-            errors.addAll(validateAddressLengths("circumstances.underlesseeAddress",
-                                                 circumstances.getUnderlesseeAddress()));
-        }
     }
 
     private static void validateOtherInformation(CitizenClaimOtherInformation otherInformation, List<String> errors) {

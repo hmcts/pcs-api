@@ -243,12 +243,10 @@ class CitizenPossessionClaimValidatorTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().getAddress().setAddressLine1("x".repeat(101));
         claim.getDefendants().get(1).getValue().getAddress().setPostCode("x".repeat(15));
-        claim.getCircumstances().getUnderlesseeAddress().setPostTown("x".repeat(101));
 
         assertThat(validate(claim)).containsExactly(
             "TOO_LONG:claimant.address.AddressLine1",
-            "TOO_LONG:defendants[1].address.PostCode",
-            "TOO_LONG:circumstances.underlesseeAddress.PostTown");
+            "TOO_LONG:defendants[1].address.PostCode");
     }
 
     @Test
@@ -300,13 +298,11 @@ class CitizenPossessionClaimValidatorTest {
     void shouldNeedTheDetailsOfAServedNotice() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getNotice().setNoticeType(null);
-        claim.getNotice().setNoticeDate(null);
         claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.PERSONALLY_HANDED,
                                                   CitizenClaimNoticeMethod.OTHER));
 
         assertThat(validate(claim)).containsExactly(
             "REQUIRED:notice.noticeType",
-            "REQUIRED:notice.noticeDate",
             "REQUIRED:notice.handedToName",
             "REQUIRED:notice.handedDate",
             "REQUIRED:notice.otherMethodDetails",
@@ -363,8 +359,6 @@ class CitizenPossessionClaimValidatorTest {
         claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_11));
         claim.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.FIRST_CLASS_POST));
         claim.getNotice().setEmailedTo("x".repeat(300));
-        claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
-        claim.getCircumstances().setUnderlesseeName("x".repeat(61));
         claim.getRentArrears().setRentFrequency(RentPaymentFrequency.MONTHLY);
         claim.getRentArrears().setOtherFrequencyDetails("x".repeat(61));
         claim.setAdditionalDefendants(VerticalYesNo.NO);

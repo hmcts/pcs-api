@@ -18,7 +18,7 @@ public enum CitizenClaimSection implements HasLabel {
     TENANCY("tenancy-cya", "Tenancy and grounds"),
     NOTICE("notice-cya", "Notice"),
     ARREARS("arrears-cya", "Rent arrears"),
-    SITUATION("situation-cya", "Circumstances and other information");
+    SITUATION("situation-cya", "Circumstances");
 
     @JsonValue
     private final String code;

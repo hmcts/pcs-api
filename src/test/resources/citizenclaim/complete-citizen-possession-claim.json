@@ -102,7 +102,6 @@
     "notice": {
       "noticeServed": "YES",
       "noticeType": "NOTICE_SEEKING_POSSESSION",
-      "noticeDate": "2026-08-01",
       "noticeMethods": [
         "FIRST_CLASS_POST",
         "EMAIL"
@@ -160,14 +159,7 @@
     },
     "circumstances": {
       "defendantCircumstances": "The tenant has lost their job.",
-      "claimantCircumstances": "I rely on the rent to pay my mortgage.",
-      "underlesseeExists": "YES",
-      "underlesseeName": "Sub Tenant Ltd",
-      "underlesseeAddress": {
-        "AddressLine1": "1 Test Street",
-        "PostTown": "London",
-        "PostCode": "SW1A 1AA"
-      }
+      "claimantCircumstances": "I rely on the rent to pay my mortgage."
     },
     "otherInformation": {
       "otherDocuments": [

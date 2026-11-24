@@ -31,8 +31,6 @@ public class CitizenClaimNotice {
 
     private String noticeTypeOther;
 
-    private LocalDate noticeDate;
-
     @CCD(typeOverride = MultiSelectList, typeParameterOverride = "CitizenClaimNoticeMethod")
     private Set<CitizenClaimNoticeMethod> noticeMethods;
 

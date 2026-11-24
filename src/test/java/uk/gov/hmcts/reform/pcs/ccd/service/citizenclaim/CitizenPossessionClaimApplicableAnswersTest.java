@@ -143,17 +143,6 @@ class CitizenPossessionClaimApplicableAnswersTest {
     }
 
     @Test
-    void shouldIgnoreTheUnderlesseeUnlessOneExists() {
-        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
-        claim.getCircumstances().setUnderlesseeExists(VerticalYesNo.NO);
-
-        CitizenPossessionClaim applicable = underTest.of(claim);
-
-        assertThat(applicable.getCircumstances().getUnderlesseeName()).isNull();
-        assertThat(applicable.getCircumstances().getUnderlesseeAddress()).isNull();
-    }
-
-    @Test
     void shouldKeepOnlyTheFirstDefendantUnlessAdditionalDefendantsIsYes() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.setAdditionalDefendants(VerticalYesNo.NO);
