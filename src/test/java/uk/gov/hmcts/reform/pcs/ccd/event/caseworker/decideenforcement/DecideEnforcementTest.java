@@ -476,7 +476,7 @@ class DecideEnforcementTest extends BaseEventTest {
                     RejectionReason.APPLYING_BEFORE_POSSESSION_DATE, null
                 ),
                 argumentSet(
-                    "Case not transferred to high court",
+                    "Case not transferred to the High Court",
                     EnforcementDecision.builder()
                         .acceptReject(AcceptReject.REJECT)
                         .rejectionReason(RejectionReason.CASE_NOT_TRANSFERRED_TO_HIGH_COURT)
