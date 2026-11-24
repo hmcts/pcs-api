@@ -473,11 +473,12 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("HDPI-9007 scenario 9: serves the LR defence pack on the claimant when the only defendant is "
-        + "represented, an HWF reference is present and the counterclaim is pending with no translation")
-    void shouldServeDefencePackToClaimantWhenOnlyDefendantRepresentedAndCounterClaimPendingWithHwf() {
+    @DisplayName("HDPI-9007 row 9: sends the LR defence pack to postal co-defendants when the counterclaim is "
+        + "pending with an HWF reference and no translation")
+    void shouldSendDefencePackWhenCounterClaimPendingWithHwfAndNoTranslation() {
         PartyEntity representedDefendant = representedParty(YesOrNo.YES);
-        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant, postalCoDefendant);
         DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
         DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
         pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
@@ -494,22 +495,22 @@ class DefencePackSelectorTest {
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
 
         assertThat(result).singleElement().satisfies(candidate -> {
-            assertThat(candidate.recipient()).isEqualTo(claimant);
-            assertThat(candidate.role()).isEqualTo(PartyRole.CLAIMANT);
+            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
+            assertThat(candidate.role()).isEqualTo(PartyRole.DEFENDANT);
             assertThat(candidate.documents()).containsExactlyInAnyOrder(lrDefence, lrCounterClaim);
         });
     }
 
     @Test
-    @DisplayName("Excludes the claimant fallback when the release 1.4 claimant exclusion is on")
-    void shouldNotServeClaimantFallbackWhenClaimantExclusionOn() {
+    @DisplayName("Never sends the defence pack to the claimant, even when the only defendant is represented")
+    void shouldNotSendDefencePackToClaimantWhenOnlyDefendantRepresented() {
         PartyEntity representedDefendant = representedParty(YesOrNo.YES);
         PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant);
         DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
         pcsCase.setDocuments(List.of(lrDefence));
         pcsCase.setDefendantResponses(List.of(submittedDefence(representedDefendant, LanguageUsed.ENGLISH)));
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        lenient().when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
     }
