@@ -58,6 +58,30 @@ class FeatureToggleServiceTest {
     }
 
     @Test
+    void shouldDisableRiskAssessmentWhenLaunchDarklyIsUnavailable() throws Exception {
+        try (LDClient client = new LDClient("test", new LDConfig.Builder().offline(true).build())) {
+            assertThat(new FeatureToggleService(client, "prod").isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)).isFalse();
+        }
+    }
+
+    @Test
+    void shouldToggleRiskAssessmentAtRuntime() throws Exception {
+        TestData data = TestData.dataSource();
+        data.update(data.flag(FeatureFlag.ASSESS_RISK_LEVEL.key()).variationForAll(false));
+        try (LDClient client = new LDClient("test", new LDConfig.Builder()
+            .dataSource(data).events(Components.noEvents()).build())) {
+            var service = new FeatureToggleService(client, "preview");
+            assertThat(service.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)).isFalse();
+
+            data.update(data.flag(FeatureFlag.ASSESS_RISK_LEVEL.key()).variationForAll(true));
+            assertThat(service.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)).isTrue();
+
+            data.update(data.flag(FeatureFlag.ASSESS_RISK_LEVEL.key()).variationForAll(false));
+            assertThat(service.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)).isFalse();
+        }
+    }
+
+    @Test
     void shouldReturnVariationValueFromLdClient() {
         FeatureToggleService underTest = new FeatureToggleService(ldClient, "aat");
         when(ldClient.boolVariation(eq(FLAG_KEY), any(LDContext.class), eq(false))).thenReturn(true);

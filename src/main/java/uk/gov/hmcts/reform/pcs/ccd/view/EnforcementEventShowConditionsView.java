@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import java.util.Set;
 public class EnforcementEventShowConditionsView {
 
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final FeatureToggleService featureToggleService;
 
     private static final Set<EnforcementState> RECORD_WARRANT_RETURN_STATES = EnumSet.of(
         EnforcementState.CASE_PROGRESSION,
@@ -34,30 +37,26 @@ public class EnforcementEventShowConditionsView {
         EnforcementState.CASE_STAYED
     );
 
+    // HDPI-7350 follows the enforcement-state eligibility supplied for the bailiff events.
+    private static final Set<EnforcementState> RISK_ASSESSMENT_STATES = EnumSet.copyOf(RECORD_WARRANT_RETURN_STATES);
+
     public void setCaseFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         setEnforcementEventShowConditions(pcsCaseEntity, pcsCase);
     }
 
     private void setEnforcementEventShowConditions(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
-        Optional<EnforcementOrderEntity>  enforcementOrderEntity =
-            enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity);
-        Optional<EnforcementState> enforcementStateOptional = enforcementOrderEntity.map(
-            EnforcementOrderEntity::getState
-        );
+        Optional<EnforcementState> activeState = enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)
+            .map(EnforcementOrderEntity::getState);
+        boolean canRecordWarrantReturn = activeState.filter(RECORD_WARRANT_RETURN_STATES::contains).isPresent();
+        boolean canViewRiskAssessment = featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)
+            && enforcementOrderMediator.getLatestSubmittedWarrantApplication(pcsCaseEntity)
+                .map(EnforcementOrderEntity::getState)
+                .filter(RISK_ASSESSMENT_STATES::contains)
+                .isPresent();
 
-        if (enforcementStateOptional.isEmpty()) {
-            EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
-                .recordWarrantReturn(YesOrNo.NO)
-                .build();
-            pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
-            return;
-        }
-
-        EnforcementState activeState = enforcementStateOptional.get();
-        EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
-            .recordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
-            .build();
-
-        pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
+        pcsCase.setEnforcementEventShowConditions(EnforcementEventShowConditions.builder()
+            .recordWarrantReturn(YesOrNo.from(canRecordWarrantReturn))
+            .canViewRiskAssessment(YesOrNo.from(canViewRiskAssessment))
+            .build());
     }
 }

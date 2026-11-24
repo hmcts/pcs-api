@@ -1,0 +1,31 @@
+{% if not claimantView %}
+<h2 class="govuk-heading-m">Bailiff note</h2>
+<dl class="govuk-summary-list">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Note</dt>
+    <dd class="govuk-summary-list__value">not added yet (click on the 'select action' button above)</dd>
+  </div>
+</dl>
+<h2 class="govuk-heading-m">Risk assessment level</h2>
+<dl class="govuk-summary-list">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Risk level</dt>
+    <dd class="govuk-summary-list__value">not set yet (click on the 'select action' button above)</dd>
+  </div>
+</dl>
+{% endif %}
+<h2 class="govuk-heading-m">{% if claimantView %}Your risk assessment{% else %}Claimant risk assessment{% endif %}</h2>
+<p class="govuk-body">Information provided by {% if claimantView %}you{% else %}the claimant{% endif %} on {{ submittedDate }} when {% if claimantView %}you were{% else %}they were{% endif %} applying for enforcement</p>
+<dl class="govuk-summary-list">
+{% for row in rows %}
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ row.question }}</dt>
+    <dd class="govuk-summary-list__value">
+      <p class="govuk-body">{{ row.answer | plaintext }}</p>
+      {% for detail in row.details %}
+      <p class="govuk-body">{{ detail | plaintext }}</p>
+      {% endfor %}
+    </dd>
+  </div>
+{% endfor %}
+</dl>

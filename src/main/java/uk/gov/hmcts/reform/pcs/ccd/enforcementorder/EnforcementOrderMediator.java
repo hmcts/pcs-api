@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -12,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,6 +29,39 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 public class EnforcementOrderMediator {
 
     private final FeatureToggleService featureToggleService;
+
+    private static final Set<EnforcementState> UNSUBMITTED_STATES = Set.of(
+        EnforcementState.AWAITING_SUBMISSION_TO_HMCTS,
+        EnforcementState.REQUESTED_FOR_DELETION,
+        EnforcementState.DRAFT_DISCARDED
+    );
+
+    /** Shares the same submitted application between risk-assessment content and visibility. */
+    public Optional<EnforcementOrderEntity> getLatestSubmittedWarrantApplication(PcsCaseEntity pcsCaseEntity) {
+        Set<EnforcementOrderEntity> applications = pcsCaseEntity.getEnforcementOrders();
+        if (applications == null) {
+            return Optional.empty();
+        }
+        // Select before checking the type: a newer writ must not expose an older warrant's assessment.
+        return applications.stream()
+            .filter(this::isSubmitted)
+            .max(Comparator.comparing(application -> application.getStatementOfTruth().getCompletedDate()))
+            .filter(this::isWarrant);
+    }
+
+    private boolean isSubmitted(EnforcementOrderEntity application) {
+        return application.getState() != null && !UNSUBMITTED_STATES.contains(application.getState())
+            && application.getStatementOfTruth() != null
+            && application.getStatementOfTruth().getAccepted() == YesOrNo.YES
+            && application.getStatementOfTruth().getCompletedDate() != null;
+    }
+
+    private boolean isWarrant(EnforcementOrderEntity application) {
+        EnforcementOrder order = application.getEnforcementOrder();
+        return order != null && order.getChooseEnforcementType() != null
+            && SelectEnforcementType.WARRANT.name().equals(order.getChooseEnforcementType().getValueCode())
+            && order.getWarrantDetails() != null;
+    }
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)

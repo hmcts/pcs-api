@@ -91,6 +91,7 @@ class CaseTypeTest {
     void shouldConfigureCaseTypeTabs() {
         // Given
         final TabBuilder<PCSCase, AccessProfile> nextStepsTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> riskAssessmentTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> summaryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> hiddenTabBuilder = TabBuilder.builder(PCSCase.class, utils);
@@ -139,6 +140,7 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         when(builder.tab("orders", "Orders")).thenReturn(ordersTabBuilder);
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(judicialNotesTabBuilder);
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(riskAssessmentTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -170,7 +172,11 @@ class CaseTypeTest {
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
-        assertThat(hiddenTab.getFields()).hasSize(4);
+        assertThat(hiddenTab.getFields()).hasSize(5);
+        assertThat(hiddenTab.getFields())
+            .filteredOn(field -> "enfShowConditions_CanViewRiskAssessment".equals(field.getId()))
+            .singleElement().satisfies(field ->
+                assertThat(field.getShowCondition()).isEqualTo(ShowConditions.NEVER_SHOW));
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");
@@ -191,6 +197,14 @@ class CaseTypeTest {
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
         assertThat(judicialNotesTab.getShowCondition()).isNull();
+        Tab<PCSCase, AccessProfile> riskAssessmentTab = riskAssessmentTabBuilder.build();
+        assertThat(riskAssessmentTab.getForRoles()).isEmpty();
+        assertThat(riskAssessmentTab.getShowCondition())
+            .isEqualTo("enfShowConditions_CanViewRiskAssessment=\"Yes\"");
+        assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId).containsExactly(
+            "riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown",
+            "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown"
+        );
         // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
         for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
             serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
@@ -311,6 +325,7 @@ class CaseTypeTest {
         when(builder.tab("orders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("riskAssessment", "Risk assessment")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }

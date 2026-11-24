@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RiskAssessmentView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
@@ -175,6 +176,9 @@ class PCSCaseViewTest {
     @Mock
     private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
 
+    @Mock
+    private RiskAssessmentView riskAssessmentView;
+
     private PCSCaseView underTest;
 
     @BeforeEach
@@ -194,8 +198,15 @@ class PCSCaseViewTest {
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
                                     messagesView, judicialNoteView, enforcementOrderView,
-                                    breathingSpaceSummaryView, enforcementEventShowConditionsView
+                                    breathingSpaceSummaryView, enforcementEventShowConditionsView, riskAssessmentView
         );
+    }
+
+    @Test
+    void shouldPopulateRiskAssessmentFromSubmittedCase() {
+        underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        verify(riskAssessmentView).setCaseFields(any(PCSCase.class), org.mockito.ArgumentMatchers.eq(pcsCaseEntity));
     }
 
     @Test

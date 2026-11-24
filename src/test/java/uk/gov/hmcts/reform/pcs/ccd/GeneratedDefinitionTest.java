@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -84,7 +86,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(19);
+        assertThat(roleByTab).hasSize(20);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -193,10 +195,82 @@ class GeneratedDefinitionTest {
     }
 
     @Test
-    void bailiffRoleRegistrationDoesNotAssignAnyEvents() {
-        Set<String> roles = Set.of("bailiff", "bailiff-admin", "bailiff-manager", "hmcts-enforcement");
+    void riskAssessmentDoesNotAddBailiffEventPermissions() {
+        Set<String> roles = Set.of("bailiff", "bailiff-manager", "hmcts-enforcement");
         assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseEvent")))
             .noneMatch(row -> roles.contains(row.path("UserRole").asText()));
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseEvent")))
+            .filteredOn(row -> "bailiff-admin".equals(row.path("UserRole").asText()))
+            .extracting(row -> row.path("CaseEventID").asText())
+            .containsExactly("ext:recordWarrantReturn");
+    }
+
+    @Test
+    void riskAssessmentFieldsKeepInternalInformationSeparateFromClaimants() {
+        Set<String> internal = union(INTERNAL_PROFILES, Set.of(
+            "bailiff", "bailiff-admin", "bailiff-manager",
+            "hearing-centre-team-leader", "ctsc-team-leader", "wlu-team-leader"
+        ));
+        for (String field : List.of("riskAssessmentInternalMarkdown", "riskAssessmentInternalMarkdownLabel")) {
+            assertThat(readers.get(field)).containsExactlyInAnyOrderElementsOf(internal);
+        }
+        for (String field : List.of("riskAssessmentClaimantMarkdown", "riskAssessmentClaimantMarkdownLabel")) {
+            assertThat(readers.get(field))
+                .containsExactlyInAnyOrder("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]");
+        }
+        assertThat(tabs.get("riskAssessment"))
+            .filteredOn(row -> row.has("TabShowCondition"))
+            .extracting(row -> row.get("TabShowCondition").asText())
+            .containsExactly("enfShowConditions_CanViewRiskAssessment=\"Yes\"");
+    }
+
+    @Test
+    void riskAssessmentTabConditionFieldIsRegisteredOnAHiddenTabForCcdImport() {
+        String visibilityField = "enfShowConditions_CanViewRiskAssessment";
+        assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
+            .extracting(row -> row.path("ID").asText()).contains(visibilityField);
+        assertThat(tabs.get("hidden"))
+            .filteredOn(row -> visibilityField.equals(row.path("CaseFieldID").asText()))
+            .singleElement().satisfies(row ->
+                assertThat(row.path("FieldShowCondition").asText()).isEqualTo(ShowConditions.NEVER_SHOW));
+        assertThat(tabs.get("hidden"))
+            .filteredOn(row -> row.has("TabShowCondition"))
+            .extracting(row -> row.path("TabShowCondition").asText())
+            .containsExactly(ShowConditions.NEVER_SHOW);
+    }
+
+    @Test
+    void riskAssessmentShowConditionIsReadableByTheSameUsersAsTheTab() {
+        Set<String> profiles = union(readers.get("riskAssessmentInternalMarkdownLabel"),
+                                     Set.of("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"));
+        assertThat(readers.get("enfShowConditions_CanViewRiskAssessment"))
+            .containsExactlyInAnyOrderElementsOf(profiles);
+        assertThat(readers.get("enfShowConditions_RecordWarrantReturn"))
+            .containsExactlyInAnyOrder("bailiff", "bailiff-admin", "bailiff-manager");
+        assertThat(readers).doesNotContainKey("enfShowConditions_CanRecordWarrantReturn");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"})
+    void claimantSideProfilesHaveOnlyReadAccessToTheirAssessment(String profile) {
+        assertThat(visible(tabs.get("riskAssessment"), Set.of(profile))).isTrue();
+        List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseField"));
+        for (String field : List.of("riskAssessmentClaimantMarkdown", "riskAssessmentClaimantMarkdownLabel")) {
+            assertThat(permissions).filteredOn(row -> field.equals(row.path("CaseFieldID").asText())
+                && profile.equals(row.path("UserRole").asText()))
+                .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
+        }
+        for (String field : List.of("riskAssessmentInternalMarkdown", "riskAssessmentInternalMarkdownLabel")) {
+            assertThat(readers.get(field)).doesNotContain(profile);
+        }
+        assertThat(readers.get("enfShowConditions_CanViewRiskAssessment")).contains(profile);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"citizen", "caseworker-pcs-solicitor", "[DEFENDANT]", "defendant-solicitor",
+        "[DEFENDANTSOLICITOR]", "duty-advisor-request", "caseworker-caa"})
+    void genericAndDefendantProfilesCannotSeeTheRiskAssessmentTab(String profile) {
+        assertThat(visible(tabs.get("riskAssessment"), Set.of(profile))).isFalse();
     }
 
     @Test

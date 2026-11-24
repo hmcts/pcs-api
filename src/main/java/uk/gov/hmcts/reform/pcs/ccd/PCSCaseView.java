@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RiskAssessmentView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
@@ -114,6 +115,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final EnforcementOrderView enforcementOrderView;
     private final BreathingSpaceSummaryView breathingSpaceSummaryView;
     private final EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+    private final RiskAssessmentView riskAssessmentView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -214,6 +216,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
         messagesView.setCaseFields(pcsCase, pcsCaseEntity);
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+        riskAssessmentView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
