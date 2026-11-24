@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.HtmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -27,6 +28,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -55,6 +57,8 @@ public class BulkClaimSoapFilter extends OncePerRequestFilter {
     private static final String WSDL_ADDRESS_PLACEHOLDER = "http://localhost:8080" + ENDPOINT_PATH;
     private static final String SOAP_11_ENVELOPE_NAMESPACE = "http://schemas.xmlsoap.org/soap/envelope/";
     private static final String SOAP_12_ENVELOPE_NAMESPACE = "http://www.w3.org/2003/05/soap-envelope";
+    private static final Pattern HOST_NAME = Pattern.compile("[A-Za-z0-9](?:[A-Za-z0-9.-]{0,252}[A-Za-z0-9])?");
+    private static final Pattern CONTEXT_PATH = Pattern.compile("(?:/[A-Za-z0-9._-]+)*");
     private static final String XML_CONTENT_TYPE = "text/xml;charset=UTF-8";
     private static final String FAULT = """
         <?xml version="1.0" encoding="UTF-8"?>\
@@ -138,11 +142,19 @@ public class BulkClaimSoapFilter extends OncePerRequestFilter {
         }
     }
 
+    /** The endpoint address as the caller reached it, or the placeholder when the Host is not a plain hostname. */
     private static String endpointUrl(HttpServletRequest request) {
-        boolean defaultPort = request.getServerPort() == ("https".equals(request.getScheme()) ? 443 : 80);
-        return request.getScheme() + "://" + request.getServerName()
-            + (defaultPort ? "" : ":" + request.getServerPort())
-            + request.getContextPath() + ENDPOINT_PATH;
+        String scheme = request.getScheme();
+        String host = request.getServerName();
+        String contextPath = request.getContextPath();
+        if (!("http".equals(scheme) || "https".equals(scheme))
+            || host == null || !HOST_NAME.matcher(host).matches()
+            || !CONTEXT_PATH.matcher(contextPath).matches()) {
+            return WSDL_ADDRESS_PLACEHOLDER;
+        }
+        boolean defaultPort = request.getServerPort() == ("https".equals(scheme) ? 443 : 80);
+        return HtmlUtils.htmlEscape(scheme + "://" + host + (defaultPort ? "" : ":" + request.getServerPort())
+            + contextPath + ENDPOINT_PATH);
     }
 
     /** Reads the body, never holding more than the configured maximum; null when it is over the limit. */

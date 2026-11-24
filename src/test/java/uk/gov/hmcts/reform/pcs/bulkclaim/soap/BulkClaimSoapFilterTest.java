@@ -156,6 +156,20 @@ class BulkClaimSoapFilterTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"evil.example\"/><script>alert(1)</script>", "a b", "-bad.example"})
+    void shouldNotReflectAHostileHostIntoTheWsdl(String host) throws Exception {
+        MockHttpServletRequest request = get(BulkClaimSoapFilter.WSDL_PATH);
+        request.setServerName(host);
+
+        underTest.doFilter(request, response, chain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getContentAsString())
+            .contains("location=\"http://localhost:8080/v2/bulk-claims/services/BulkClaim\"")
+            .doesNotContain("<script>", host);
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd",
         "BulkClaimStatusResponse.xsd", "BulkClaimStatusRequest.xsd", "BulkClaimStatusListResponse.xsd"})
     void shouldServeAllowedSchemaFiles(String fileName) throws Exception {

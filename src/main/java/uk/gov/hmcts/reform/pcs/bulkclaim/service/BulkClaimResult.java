@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.service;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * Transport-neutral outcome of a bulk claim request. The XML is the response document; it is absent only
  * for {@link Outcome#TOO_MANY_CLAIMS}, which the transport reports as a refusal of the whole request.
@@ -17,6 +20,21 @@ public record BulkClaimResult(Outcome outcome, byte[] xml) {
         TOO_MANY_CLAIMS,
         /** A single status request for a claim the organisation has not submitted. */
         CLAIM_NOT_FOUND
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof BulkClaimResult that && outcome == that.outcome && Arrays.equals(xml, that.xml);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * Objects.hashCode(outcome) + Arrays.hashCode(xml);
+    }
+
+    @Override
+    public String toString() {
+        return "BulkClaimResult[outcome=" + outcome + ", xml=" + (xml == null ? "null" : xml.length + " bytes") + "]";
     }
 
     static BulkClaimResult of(Outcome outcome, byte[] xml) {
