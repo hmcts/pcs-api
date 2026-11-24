@@ -40,6 +40,17 @@ class DeleteThisCaseTest extends BaseEventTest {
     }
 
     @Test
+    void shouldShowWarningAndMandatoryQuestion() {
+        // Given
+        setEventUnderTest(underTest);
+
+        // Then
+        assertThat(getEventFieldIds()).contains("deleteDraftClaim-warning", "deleteDraftClaim");
+        assertThat(DeleteThisCase.DELETE_CASE_WARNING)
+            .contains("If you delete this case, you will not be able to view any case details");
+    }
+
+    @Test
     void shouldReturnPendingDisposalStateWhenDeleteDraftClaimIsYes() {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -54,8 +65,8 @@ class DeleteThisCaseTest extends BaseEventTest {
 
         // Then
         assertThat(submitResponse.getState()).isEqualTo(State.PendingDisposal);
+        assertThat(submitResponse.getConfirmationBody()).isEqualTo(DeleteThisCase.CONFIRMATION_MARKUP);
         assertThat(submitResponse.getConfirmationBody()).contains("Case deleted");
-        assertThat(submitResponse.getConfirmationBody()).contains("Case number: " + TEST_CASE_REFERENCE);
     }
 
     @Test
