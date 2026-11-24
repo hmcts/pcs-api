@@ -139,6 +139,7 @@ public class ServiceHearingValuesMapper {
 
     private List<CaseCategory> caseCategories(PcsCaseEntity pcsCase) {
         if (pcsCase.getCaseTypeKey() == null) {
+            log.warn("No case type key found for case {}", pcsCase.getCaseReference());
             return List.of();
         }
 
@@ -180,7 +181,7 @@ public class ServiceHearingValuesMapper {
         }
 
         // text is over 2000 characters
-        log.info("listingComments has been truncated for case {} ({} characters, limit {})",
+        log.warn("listingComments has been truncated for case {} ({} characters, limit {})",
                  pcsCase.getCaseReference(), fullText.length(), MAX_LISTING_COMMENTS_LENGTH);
         String fittedText = render(fitCommentsFairly(flags));
         // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request
