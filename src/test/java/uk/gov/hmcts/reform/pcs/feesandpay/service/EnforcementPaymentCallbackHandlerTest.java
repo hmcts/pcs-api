@@ -112,7 +112,6 @@ class EnforcementPaymentCallbackHandlerTest {
             enforcementApplicationId,EnforcementState.PENDING_CASE_ISSUED);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        PartyEntity expectedClaimant = new PartyEntity();
 
         enforcementOrderEntity.setPcsCase(pcsCaseEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrderOfType(SelectEnforcementType.WARRANT));
@@ -123,6 +122,7 @@ class EnforcementPaymentCallbackHandlerTest {
         when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT))
             .thenReturn(true);
 
+        PartyEntity expectedClaimant = new PartyEntity();
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity))
             .thenReturn(expectedClaimant);
 
