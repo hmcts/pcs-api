@@ -22,8 +22,11 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimResponseBuilder;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimSchemaValidationException;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusListResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusRequest;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusResponse;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimResponseType;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimStatusType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.MortgageClaimSet;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.PaymentStatusType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
@@ -31,11 +34,17 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Handles bulk claim requests: XML in, PCOL-style XML out.
@@ -56,7 +65,8 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
 
     static final String SCHEMA_ERROR_CODE = "SCHEMA_INVALID";
     static final Set<String> SCHEMA_FILES = Set.of(
-        "Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd", "BulkClaimStatusResponse.xsd");
+        "Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd", "BulkClaimStatusResponse.xsd",
+        "BulkClaimStatusRequest.xsd", "BulkClaimStatusListResponse.xsd");
 
     private static final String SCHEMA_DIR = "xsd/bulkclaim/v2/";
     private static final int MAX_SCHEMA_ERRORS = 100;
@@ -119,8 +129,39 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
     public ResponseEntity<byte[]> status(String organisationId, String customerUniqueIdentifier) {
         return submissionRepository
             .findByOrganisationIdAndCustomerUniqueIdentifier(organisationId, customerUniqueIdentifier)
-            .map(submission -> xml(codec.write(statusOf(submission))))
+            .map(submission -> xml(codec.write(singleStatusOf(submission))))
             .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public ResponseEntity<byte[]> statusBatch(byte[] xml, String organisationId) {
+        BulkClaimStatusRequest request;
+        try {
+            request = codec.parseStatusRequest(xml);
+        } catch (BulkClaimSchemaValidationException e) {
+            return schemaInvalid(e);
+        }
+        List<String> identifiers = request.getCustomerUniqueIdentifier();
+        if (identifiers.size() > properties.getMaxClaimsPerRequest()) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
+        }
+
+        Map<String, BulkClaimSubmissionEntity> submissions = new HashMap<>();
+        submissionRepository
+            .findByOrganisationIdAndCustomerUniqueIdentifierIn(organisationId, new HashSet<>(identifiers))
+            .forEach(submission -> submissions.put(submission.getCustomerUniqueIdentifier(), submission));
+        Map<Long, String> caseStates = caseStateReader.statesOf(
+            submissions.values().stream().map(BulkClaimSubmissionEntity::getCaseReference)
+                .filter(Objects::nonNull).collect(Collectors.toSet()));
+
+        BulkClaimStatusListResponse response = new BulkClaimStatusListResponse();
+        for (String identifier : identifiers) {
+            BulkClaimSubmissionEntity submission = submissions.get(identifier);
+            response.getClaim().add(submission == null
+                ? notFoundStatus(identifier)
+                : statusOf(submission, caseState(caseStates, submission)));
+        }
+        return xml(codec.write(response));
     }
 
     @Override
@@ -185,21 +226,45 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         return new BulkValidationError("/", SCHEMA_ERROR_CODE, error);
     }
 
-    private BulkClaimStatusResponse statusOf(BulkClaimSubmissionEntity submission) {
+    private BulkClaimStatusResponse singleStatusOf(BulkClaimSubmissionEntity submission) {
         BulkClaimStatusResponse status = new BulkClaimStatusResponse();
+        populate(status, submission, submission.getCaseReference() == null
+            ? Optional.empty()
+            : caseStateReader.stateOf(submission.getCaseReference()));
+        return status;
+    }
+
+    private ClaimStatusType statusOf(BulkClaimSubmissionEntity submission, Optional<String> caseState) {
+        ClaimStatusType status = new ClaimStatusType();
+        populate(status, submission, caseState);
+        return status;
+    }
+
+    private static Optional<String> caseState(Map<Long, String> caseStates, BulkClaimSubmissionEntity submission) {
+        return submission.getCaseReference() == null
+            ? Optional.empty()
+            : Optional.ofNullable(caseStates.get(submission.getCaseReference()));
+    }
+
+    private ClaimStatusType notFoundStatus(String customerUniqueIdentifier) {
+        ClaimStatusType status = new ClaimStatusType();
+        status.setCustomerUniqueIdentifier(customerUniqueIdentifier);
+        status.setClaimStatus(responseBuilder.status(BulkFailReason.CLAIM_NOT_FOUND));
+        return status;
+    }
+
+    private void populate(ClaimStatusType status, BulkClaimSubmissionEntity submission, Optional<String> caseState) {
         status.setCustomerUniqueIdentifier(submission.getCustomerUniqueIdentifier());
         status.setClaimStatus(responseBuilder.status(claimReason(submission)));
         if (submission.getCaseReference() != null) {
-            String caseReference = String.valueOf(submission.getCaseReference());
-            status.setCaseReference(caseReference);
-            caseStateReader.stateOf(submission.getCaseReference()).ifPresent(status::setCaseState);
+            status.setCaseReference(String.valueOf(submission.getCaseReference()));
+            caseState.ifPresent(status::setCaseState);
         }
         status.setServiceRequestReference(submission.getServiceRequestReference());
         if (submission.getPaymentStatus() != null) {
             status.setPaymentStatus(PaymentStatusType.fromValue(submission.getPaymentStatus().name()));
         }
         status.setPaymentFailureReason(submission.getPaymentFailureReason());
-        return status;
     }
 
     private static BulkFailReason claimReason(BulkClaimSubmissionEntity submission) {

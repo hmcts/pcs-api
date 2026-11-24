@@ -4,8 +4,11 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkFailReason;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkValidationError;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusListResponse;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusRequest;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.BulkClaimStatusResponse;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimResponseType;
+import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.ClaimStatusType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.MortgageClaimSet;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.PaymentStatusType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
@@ -18,6 +21,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -170,6 +174,88 @@ class BulkClaimXmlCodecTest {
     }
 
     @Test
+    void shouldParseStatusRequestInOrderKeepingDuplicates() {
+        BulkClaimStatusRequest request = codec.parseStatusRequest(statusRequest("A-1", "B-2", "A-1"));
+
+        assertThat(request.getCustomerUniqueIdentifier()).containsExactly("A-1", "B-2", "A-1");
+    }
+
+    @Test
+    void shouldRejectStatusRequestWithNoIdentifiers() {
+        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest()))
+            .isInstanceOf(BulkClaimSchemaValidationException.class);
+    }
+
+    @Test
+    void shouldRejectStatusRequestWithMoreThanOneHundredIdentifiers() {
+        String[] identifiers = IntStream.rangeClosed(1, 101).mapToObj(i -> "ID-" + i).toArray(String[]::new);
+
+        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest(identifiers)))
+            .isInstanceOf(BulkClaimSchemaValidationException.class);
+    }
+
+    @Test
+    void shouldRejectStatusRequestWithInvalidIdentifierOrWrongRoot() {
+        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest("bad id!")))
+            .isInstanceOf(BulkClaimSchemaValidationException.class);
+        byte[] wrongRoot = ("<BulkClaimStatusResponse xmlns=\"" + BulkClaimXmlCodec.NAMESPACE + "\"/>")
+            .getBytes(StandardCharsets.UTF_8);
+        assertThatThrownBy(() -> codec.parseStatusRequest(wrongRoot))
+            .isInstanceOf(BulkClaimSchemaValidationException.class);
+    }
+
+    @Test
+    void shouldRejectStatusRequestDeclaringADoctype() {
+        byte[] xml = ("<!DOCTYPE a [<!ENTITY x SYSTEM \"file:///etc/passwd\">]>"
+            + new String(statusRequest("A-1"), StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+
+        assertThatThrownBy(() -> codec.parseStatusRequest(xml))
+            .isInstanceOf(BulkClaimSchemaValidationException.class);
+    }
+
+    @Test
+    void shouldWriteStatusListResponseInOrder() throws Exception {
+        ClaimStatusType first = new ClaimStatusType();
+        first.setCustomerUniqueIdentifier("A-1");
+        first.setClaimStatus(responseBuilder.status(BulkFailReason.CLAIM_SUCCESS));
+        first.setPaymentStatus(PaymentStatusType.PAID);
+        ClaimStatusType second = new ClaimStatusType();
+        second.setCustomerUniqueIdentifier("B-2");
+        second.setClaimStatus(responseBuilder.status(BulkFailReason.CLAIM_NOT_FOUND));
+        BulkClaimStatusListResponse response = new BulkClaimStatusListResponse();
+        response.getClaim().add(first);
+        response.getClaim().add(second);
+
+        byte[] xml = codec.write(response);
+
+        BulkClaimStatusListResponse unmarshalled = (BulkClaimStatusListResponse) jakarta.xml.bind.JAXBContext
+            .newInstance(BulkClaimStatusListResponse.class)
+            .createUnmarshaller()
+            .unmarshal(new java.io.ByteArrayInputStream(xml));
+        assertThat(unmarshalled.getClaim()).extracting(ClaimStatusType::getCustomerUniqueIdentifier)
+            .containsExactly("A-1", "B-2");
+        assertThat(unmarshalled.getClaim().get(0).getPaymentStatus()).isEqualTo(PaymentStatusType.PAID);
+        assertThat(unmarshalled.getClaim().get(1).getClaimStatus().getFailReasonCode()).isEqualTo(17);
+        assertThat(new String(xml, StandardCharsets.UTF_8)).contains("<BulkClaimStatusListResponse");
+    }
+
+    @Test
+    void shouldKeepSingleStatusResponseRootAndElementOrder() {
+        BulkClaimStatusResponse response = new BulkClaimStatusResponse();
+        response.setCustomerUniqueIdentifier("A-1");
+        response.setClaimStatus(responseBuilder.status(BulkFailReason.CLAIM_SUCCESS));
+        response.setCaseReference("1781000000000001");
+        response.setPaymentStatus(PaymentStatusType.PAID);
+
+        String xml = new String(codec.write(response), StandardCharsets.UTF_8);
+
+        assertThat(xml).contains("<BulkClaimStatusResponse")
+            .containsPattern("<CustomerUniqueIdentifier>A-1</CustomerUniqueIdentifier>\\s*<ClaimStatus>"
+                                 + "(?s:.*)</ClaimStatus>\\s*<CaseReference>1781000000000001</CaseReference>"
+                                 + "\\s*<PaymentStatus>PAID</PaymentStatus>");
+    }
+
+    @Test
     void shouldCreateSuccessResponse() {
         ClaimResponseType claim = responseBuilder.claimSuccess("A-1", "1234567890123456");
 
@@ -211,6 +297,14 @@ class BulkClaimXmlCodecTest {
     void shouldComputeSha256Hex() {
         assertThat(codec.sha256Hex("abc".getBytes(StandardCharsets.UTF_8)))
             .isEqualTo("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    }
+
+    private static byte[] statusRequest(String... identifiers) {
+        StringBuilder xml = new StringBuilder("<BulkClaimStatusRequest xmlns=\"" + BulkClaimXmlCodec.NAMESPACE + "\">");
+        for (String identifier : identifiers) {
+            xml.append("<CustomerUniqueIdentifier>").append(identifier).append("</CustomerUniqueIdentifier>");
+        }
+        return xml.append("</BulkClaimStatusRequest>").toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] sample(String name) throws IOException {

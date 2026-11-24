@@ -77,6 +77,13 @@ public class BulkClaimsV2Client {
         return apimRequest(organisationId).get(BASE_PATH + "/claims/" + customerUniqueIdentifier);
     }
 
+    public Response statusBatch(String xml, String organisationId) {
+        return apimRequest(organisationId)
+            .contentType(APPLICATION_XML_VALUE)
+            .body(xml)
+            .post(BASE_PATH + "/claims/status");
+    }
+
     public Response schema(String fileName, String organisationId) {
         return apimRequest(organisationId).get(BASE_PATH + "/schema/" + fileName);
     }

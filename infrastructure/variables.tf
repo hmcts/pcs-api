@@ -45,6 +45,18 @@ variable "apim_rate_limit_renewal_period" {
   default     = 60
 }
 
+variable "apim_status_rate_limit_calls" {
+  description = "Calls allowed per bulk claims client username in each status rate limit period, shared by the status and schema operations."
+  type        = number
+  default     = 600
+}
+
+variable "apim_status_rate_limit_renewal_period" {
+  description = "Status rate limit period in seconds."
+  type        = number
+  default     = 60
+}
+
 variable "apim_max_request_bytes" {
   description = "Largest request body APIM accepts, in bytes. Keep in line with bulk-claims.max-request-size in pcs-api."
   type        = number

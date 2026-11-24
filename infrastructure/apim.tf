@@ -16,15 +16,17 @@ locals {
   bulk_claims_s2s_named_value_name = "pcs-bulk-claims-s2s-secret"
 
   bulk_claims_policy_vars = {
-    key_vault_name            = data.azurerm_key_vault.pcs_key_vault.name
-    s2s_base_url              = local.s2s_url
-    s2s_client_id             = local.bulk_claims_s2s_microservice
-    s2s_secret_named_value    = local.bulk_claims_s2s_named_value_name
-    rate_limit_calls          = var.apim_rate_limit_calls
-    rate_limit_renewal_period = var.apim_rate_limit_renewal_period
-    max_request_bytes         = var.apim_max_request_bytes
-    client_cache_seconds      = var.apim_client_cache_seconds
-    s2s_cache_seconds         = var.apim_s2s_cache_seconds
+    key_vault_name                   = data.azurerm_key_vault.pcs_key_vault.name
+    s2s_base_url                     = local.s2s_url
+    s2s_client_id                    = local.bulk_claims_s2s_microservice
+    s2s_secret_named_value           = local.bulk_claims_s2s_named_value_name
+    rate_limit_calls                 = var.apim_rate_limit_calls
+    rate_limit_renewal_period        = var.apim_rate_limit_renewal_period
+    status_rate_limit_calls          = var.apim_status_rate_limit_calls
+    status_rate_limit_renewal_period = var.apim_status_rate_limit_renewal_period
+    max_request_bytes                = var.apim_max_request_bytes
+    client_cache_seconds             = var.apim_client_cache_seconds
+    s2s_cache_seconds                = var.apim_s2s_cache_seconds
   }
 }
 
@@ -166,6 +168,24 @@ resource "azurerm_api_management_api_operation" "get_claims" {
     name     = "customerUniqueIdentifier"
     required = true
     type     = "string"
+  }
+}
+
+resource "azurerm_api_management_api_operation" "post_claims_status" {
+  count               = local.apim_count
+  provider            = azurerm.aks-cftapps
+  operation_id        = "post-claims-status"
+  api_name            = azurerm_api_management_api.bulk_claims[0].name
+  api_management_name = local.api_mgmt_name
+  resource_group_name = local.api_mgmt_rg
+  display_name        = "Get the status of several claims"
+  method              = "POST"
+  url_template        = "/claims/status"
+
+  request {
+    representation {
+      content_type = "application/xml"
+    }
   }
 }
 
