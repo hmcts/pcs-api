@@ -32,7 +32,7 @@ class EnforcementEventShowConditionsViewTest {
 
     @ParameterizedTest
     @MethodSource("recordWarrantReturnScenarios")
-    void shouldSetCanRecordWarrantReturnFromActiveEnforcementState(EnforcementState enforcementState,
+    void shouldSetRecordWarrantReturnFromActiveEnforcementState(EnforcementState enforcementState,
                                                                    YesOrNo expected) {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
@@ -44,7 +44,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanRecordWarrantReturn()).isEqualTo(expected);
+        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
     }
 
     @Test
@@ -58,7 +58,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -73,7 +73,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getCanRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

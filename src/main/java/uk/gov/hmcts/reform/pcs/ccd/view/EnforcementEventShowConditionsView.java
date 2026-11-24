@@ -47,7 +47,7 @@ public class EnforcementEventShowConditionsView {
 
         if (enforcementStateOptional.isEmpty()) {
             EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
-                .canRecordWarrantReturn(YesOrNo.NO)
+                .recordWarrantReturn(YesOrNo.NO)
                 .build();
             pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
             return;
@@ -55,7 +55,7 @@ public class EnforcementEventShowConditionsView {
 
         EnforcementState activeState = enforcementStateOptional.get();
         EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
-            .canRecordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
+            .recordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
             .build();
 
         pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
