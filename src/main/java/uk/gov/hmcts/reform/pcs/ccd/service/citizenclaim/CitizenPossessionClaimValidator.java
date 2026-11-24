@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class CitizenPossessionClaimValidator {
 
         validateClaimant(claim.getClaimant(), errors);
         validateDefendants(claim, errors);
-        validateTenancy(claim.getTenancy(), errors);
+        validateTenancy(claim.getTenancy(), CitizenPossessionClaimApplicableAnswers.isWales(claim), errors);
         validateGrounds(claim, errors);
         validateNotice(claim.getNotice(), errors);
         validateRentArrears(claim.getRentArrears(), errors);
@@ -182,13 +183,29 @@ public class CitizenPossessionClaimValidator {
         }
     }
 
-    private static void validateTenancy(CitizenClaimTenancy tenancy, List<String> errors) {
+    private static void validateTenancy(CitizenClaimTenancy tenancy, boolean wales, List<String> errors) {
+        if (wales) {
+            validateOccupationContract(tenancy, errors);
+            return;
+        }
         if (tenancy == null || tenancy.getTenancyType() == null) {
             errors.add(required("tenancy.tenancyType"));
             return;
         }
         if (tenancy.getTenancyType() == CitizenClaimTenancyType.OTHER) {
             requireText(errors, "tenancy.otherTenancyTypeDetails", tenancy.getOtherTenancyTypeDetails(), REASON_MAX);
+        }
+        maxLength(errors, "tenancy.noTenancyAgreementReason", tenancy.getNoTenancyAgreementReason(), REASON_MAX);
+    }
+
+    private static void validateOccupationContract(CitizenClaimTenancy tenancy, List<String> errors) {
+        if (tenancy == null || tenancy.getOccupationContractType() == null) {
+            errors.add(required("tenancy.occupationContractType"));
+            return;
+        }
+        if (tenancy.getOccupationContractType() == OccupationLicenceTypeWales.OTHER) {
+            requireText(errors, "tenancy.otherOccupationContractDetails", tenancy.getOtherOccupationContractDetails(),
+                        REASON_MAX);
         }
         maxLength(errors, "tenancy.noTenancyAgreementReason", tenancy.getNoTenancyAgreementReason(), REASON_MAX);
     }

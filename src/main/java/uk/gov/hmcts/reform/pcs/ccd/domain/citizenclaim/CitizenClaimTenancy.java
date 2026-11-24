@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +24,11 @@ public class CitizenClaimTenancy {
     private CitizenClaimTenancyType tenancyType;
 
     private String otherTenancyTypeDetails;
+
+    // Asked instead of the tenancy type for a property in Wales; the start date and agreement fields are shared
+    private OccupationLicenceTypeWales occupationContractType;
+
+    private String otherOccupationContractDetails;
 
     private LocalDate tenancyStartDate;
 

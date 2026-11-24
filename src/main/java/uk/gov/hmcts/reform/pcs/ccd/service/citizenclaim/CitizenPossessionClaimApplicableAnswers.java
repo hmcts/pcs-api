@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -48,7 +50,7 @@ public class CitizenPossessionClaimApplicableAnswers {
 
         reduceClaimant(applicable.getClaimant());
         reduceDefendants(applicable);
-        reduceTenancy(applicable.getTenancy());
+        reduceTenancy(applicable.getTenancy(), isWales(applicable));
         reduceGrounds(applicable.getGrounds());
         if (!hasRentArrearsGround(applicable)) {
             applicable.setRentArrears(null);
@@ -59,6 +61,14 @@ public class CitizenPossessionClaimApplicableAnswers {
         reduceOtherInformation(applicable.getOtherInformation());
 
         return applicable;
+    }
+
+    /**
+     * Whether the claim is for a property in Wales, which asks about the occupation contract instead of the tenancy.
+     */
+    public static boolean isWales(CitizenPossessionClaim claim) {
+        return claim.getEligibility() != null
+            && claim.getEligibility().getLegislativeCountry() == LegislativeCountry.WALES;
     }
 
     public static boolean hasRentArrearsGround(CitizenPossessionClaim applicable) {
@@ -123,12 +133,20 @@ public class CitizenPossessionClaimApplicableAnswers {
         });
     }
 
-    private static void reduceTenancy(CitizenClaimTenancy tenancy) {
+    private static void reduceTenancy(CitizenClaimTenancy tenancy, boolean wales) {
         if (tenancy == null) {
             return;
         }
+        if (wales) {
+            tenancy.setTenancyType(null);
+        } else {
+            tenancy.setOccupationContractType(null);
+        }
         if (tenancy.getTenancyType() != CitizenClaimTenancyType.OTHER) {
             tenancy.setOtherTenancyTypeDetails(null);
+        }
+        if (tenancy.getOccupationContractType() != OccupationLicenceTypeWales.OTHER) {
+            tenancy.setOtherOccupationContractDetails(null);
         }
         if (tenancy.getTenancyAgreementAvailable() == VerticalYesNo.NO) {
             tenancy.setTenancyAgreementDocuments(null);

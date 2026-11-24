@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPropertyEligibilityResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPropertyCheck;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -20,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,34 +55,36 @@ class CitizenPropertyEligibilityControllerTest {
         lenient().when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
     }
 
-    @Test
-    void shouldReportAnEligibleProperty() {
+    @ParameterizedTest
+    @EnumSource(value = LegislativeCountry.class, names = {"ENGLAND", "WALES"})
+    void shouldReportAnEligiblePropertyWithItsCountry(LegislativeCountry country) {
         signedInWith("citizen");
-        when(caseService.checkPostcodeInEngland(POSTCODE, null)).thenReturn(Optional.empty());
+        when(caseService.checkPostcode(POSTCODE, null)).thenReturn(CitizenPropertyCheck.accepted(country));
 
-        assertThat(statusFor(POSTCODE, null)).isEqualTo(CitizenPropertyEligibility.ELIGIBLE);
+        assertThat(responseFor(POSTCODE, null))
+            .isEqualTo(new CitizenPropertyEligibilityResponse(CitizenPropertyEligibility.ELIGIBLE, country));
     }
 
     @ParameterizedTest
     @CsvSource({
-        "PROPERTY_NOT_IN_ENGLAND, NOT_ENGLAND",
-        "POSTCODE_NOT_ASSIGNED_TO_COURT, NOT_COVERED",
-        "PROPERTY_NOT_ELIGIBLE, NOT_COVERED",
+        "PROPERTY_NOT_IN_ENGLAND_OR_WALES, NOT_ENGLAND_OR_WALES",
+        "POSTCODE_NOT_ASSIGNED_TO_COURT, NO_COURT",
         "LEGISLATIVE_COUNTRY_REQUIRED, LEGISLATIVE_COUNTRY_REQUIRED"
     })
     void shouldMapEachCreateRefusalToAStatus(String refusal, CitizenPropertyEligibility expected) {
         signedInWith("citizen");
-        when(caseService.checkPostcodeInEngland(POSTCODE, null)).thenReturn(Optional.of(refusal));
+        when(caseService.checkPostcode(POSTCODE, null)).thenReturn(CitizenPropertyCheck.refused(refusal));
 
-        assertThat(statusFor(POSTCODE, null)).isEqualTo(expected);
+        assertThat(responseFor(POSTCODE, null)).isEqualTo(new CitizenPropertyEligibilityResponse(expected, null));
     }
 
-    @Test
-    void shouldPassTheChosenCountryForACrossBorderPostcode() {
+    @ParameterizedTest
+    @CsvSource({"England, ENGLAND", "Wales, WALES"})
+    void shouldPassTheChosenCountryForACrossBorderPostcode(String label, LegislativeCountry country) {
         signedInWith("citizen");
-        when(caseService.checkPostcodeInEngland(POSTCODE, LegislativeCountry.ENGLAND)).thenReturn(Optional.empty());
+        when(caseService.checkPostcode(POSTCODE, country)).thenReturn(CitizenPropertyCheck.accepted(country));
 
-        assertThat(statusFor(POSTCODE, "England")).isEqualTo(CitizenPropertyEligibility.ELIGIBLE);
+        assertThat(responseFor(POSTCODE, label).legislativeCountry()).isEqualTo(country);
     }
 
     @Test
@@ -101,7 +104,7 @@ class CitizenPropertyEligibilityControllerTest {
         ResponseEntity<?> response = underTest.getPropertyEligibility(AUTH_HEADER, S2S_TOKEN, POSTCODE, null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        verify(caseService, never()).checkPostcodeInEngland(anyString(), any());
+        verify(caseService, never()).checkPostcode(anyString(), any());
     }
 
     @Test
@@ -114,7 +117,7 @@ class CitizenPropertyEligibilityControllerTest {
             .isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(underTest.getPropertyEligibility(AUTH_HEADER, S2S_TOKEN, "x".repeat(15), null).getStatusCode())
             .isEqualTo(HttpStatus.BAD_REQUEST);
-        verify(caseService, never()).checkPostcodeInEngland(anyString(), any());
+        verify(caseService, never()).checkPostcode(anyString(), any());
     }
 
     @Test
@@ -125,11 +128,11 @@ class CitizenPropertyEligibilityControllerTest {
             .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    private CitizenPropertyEligibility statusFor(String postcode, String legislativeCountry) {
+    private CitizenPropertyEligibilityResponse responseFor(String postcode, String legislativeCountry) {
         ResponseEntity<?> response = underTest.getPropertyEligibility(AUTH_HEADER, S2S_TOKEN, postcode,
                                                                       legislativeCountry);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        return ((CitizenPropertyEligibilityResponse) response.getBody()).status();
+        return (CitizenPropertyEligibilityResponse) response.getBody();
     }
 
     private void signedInWith(String role) {

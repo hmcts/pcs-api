@@ -40,6 +40,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -69,6 +71,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -158,6 +161,7 @@ public class CitizenPossessionClaimSubmitService {
             .confirmedSections(null)
             .build();
         final String submittedAnswers = writeSubmittedAnswers(claim);
+        final boolean wales = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
 
         ClaimEntity newClaim = buildClaimEntity(applicable);
         newClaim.addClaimGrounds(buildClaimGrounds(applicable.getGrounds()));
@@ -167,7 +171,7 @@ public class CitizenPossessionClaimSubmitService {
         pcsCaseEntity.addClaim(newClaim);
         ClaimEntity claimEntity = claimRepository.save(newClaim);
 
-        List<DocumentEntity> documents = documentService.createAllDocuments(toDocumentCase(applicable));
+        List<DocumentEntity> documents = documentService.createAllDocuments(toDocumentCase(applicable, wales));
         documents.forEach(document -> document.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documents);
         claimEntity.addClaimDocuments(documents);
@@ -179,7 +183,7 @@ public class CitizenPossessionClaimSubmitService {
             claimEntity.addParty(defendant, PartyRole.DEFENDANT);
         }
 
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(applicable));
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(applicable, wales));
         allocateLocation(pcsCaseEntity);
         pcsCaseRepository.save(pcsCaseEntity);
 
@@ -389,14 +393,18 @@ public class CitizenPossessionClaimSubmitService {
             .collect(Collectors.joining(" "));
     }
 
-    private static PCSCase toDocumentCase(CitizenPossessionClaim claim) {
+    private static PCSCase toDocumentCase(CitizenPossessionClaim claim, boolean wales) {
         CitizenClaimTenancy tenancy = claim.getTenancy();
         CitizenClaimNotice notice = claim.getNotice();
         CitizenClaimRentArrears rentArrears = claim.getRentArrears();
         final CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
 
         PCSCase.PCSCaseBuilder builder = PCSCase.builder();
-        if (tenancy != null && hasItems(tenancy.getTenancyAgreementDocuments())) {
+        if (tenancy != null && hasItems(tenancy.getTenancyAgreementDocuments()) && wales) {
+            builder.occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                                      .licenceDocuments(tenancy.getTenancyAgreementDocuments())
+                                                      .build());
+        } else if (tenancy != null && hasItems(tenancy.getTenancyAgreementDocuments())) {
             builder.tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                               .tenancyLicenceDocuments(tenancy.getTenancyAgreementDocuments())
                                               .build());
@@ -495,16 +503,24 @@ public class CitizenPossessionClaimSubmitService {
             .build();
     }
 
-    private static TenancyLicenceEntity buildTenancyLicence(CitizenPossessionClaim claim) {
+    private static TenancyLicenceEntity buildTenancyLicence(CitizenPossessionClaim claim, boolean wales) {
         CitizenClaimTenancy tenancy = claim.getTenancy();
-        CitizenClaimTenancyType type = tenancy.getTenancyType();
 
         TenancyLicenceEntity entity = new TenancyLicenceEntity();
-        entity.setType(type.getCombinedLicenceType());
-        if (type == CitizenClaimTenancyType.OTHER) {
-            entity.setOtherTypeDetails(tenancy.getOtherTenancyTypeDetails());
-        } else if (type != CitizenClaimTenancyType.ASSURED) {
-            entity.setOtherTypeDetails(type.getLabel());
+        if (wales) {
+            OccupationLicenceTypeWales type = tenancy.getOccupationContractType();
+            entity.setType(type.getCombinedLicenceType());
+            if (type == OccupationLicenceTypeWales.OTHER) {
+                entity.setOtherTypeDetails(tenancy.getOtherOccupationContractDetails());
+            }
+        } else {
+            CitizenClaimTenancyType type = tenancy.getTenancyType();
+            entity.setType(type.getCombinedLicenceType());
+            if (type == CitizenClaimTenancyType.OTHER) {
+                entity.setOtherTypeDetails(tenancy.getOtherTenancyTypeDetails());
+            } else if (type != CitizenClaimTenancyType.ASSURED) {
+                entity.setOtherTypeDetails(type.getLabel());
+            }
         }
         entity.setStartDate(tenancy.getTenancyStartDate());
         entity.setHasCopyOfTenancyLicence(tenancy.getTenancyAgreementAvailable());

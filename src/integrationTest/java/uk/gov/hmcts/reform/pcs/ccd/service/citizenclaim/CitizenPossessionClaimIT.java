@@ -38,7 +38,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim;
@@ -68,6 +70,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -167,7 +170,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     void shouldAcceptASubmitEchoingTheVersionAnUnversionedSaveReturned() {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
-            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
         Event<PCSCase, UserRole, State> event = configuredEvent();
 
         CitizenPossessionClaim answers = completeClaimOrThrow();
@@ -200,7 +203,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     void shouldRoundTripConfirmedSectionsThroughTheDraftSave() {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
-            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
         MidEvent midEvent = configuredEvent().getFields().getPagesToMidEvent().values().iterator().next();
 
         CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(caseService.loadCase(caseReference));
@@ -234,7 +237,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     void shouldPatchConfirmedSectionsOnlyWhenSent() {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
-            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithSections(
             Set.of(CitizenClaimSection.CLAIMANT)), EventId.citizenMakePossessionClaim);
@@ -313,11 +316,12 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         CitizenClaimEligibility eligibility = CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build();
 
-        caseService.createCase(caseReference, PROPERTY_ADDRESS, eligibility);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, eligibility, LegislativeCountry.ENGLAND);
         PcsCaseEntity createdCase = caseService.loadCase(caseReference);
         assertThat(caseService.isCurrentUserClaimCreator(createdCase)).isTrue();
         CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(createdCase);
-        assertThat(started.getEligibility()).isEqualTo(eligibility);
+        assertThat(started.getEligibility())
+            .isEqualTo(eligibility.toBuilder().legislativeCountry(LegislativeCountry.ENGLAND).build());
         assertThat(started.getPropertyAddress().getPostCode()).isEqualTo(PROPERTY_ADDRESS.getPostCode());
 
         CitizenPossessionClaim answers = completeClaim();
@@ -396,7 +400,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     void shouldPostTheCitizenClaimPackToDefendantsOnly() throws Exception {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
-            .claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
         CitizenPossessionClaim answers = completeClaim();
         submitService.submit(caseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
 
@@ -447,7 +451,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
     void shouldWriteTheNoticeMethodsAndRentAnswersToTheirColumns() throws Exception {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS,
-                               CitizenClaimEligibility.builder().claimantType(ClaimantType.PRIVATE_LANDLORD).build());
+                               CitizenClaimEligibility.builder().claimantType(ClaimantType.PRIVATE_LANDLORD).build(),
+                               LegislativeCountry.ENGLAND);
 
         CitizenPossessionClaim answers = completeClaim();
         answers.getNotice().setNoticeMethods(Set.of(CitizenClaimNoticeMethod.EMAIL,
@@ -504,6 +509,65 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .extracting(NoticeServiceMethodEntity::getMethod)
             .containsExactly(NoticeServiceMethod.PERSONALLY_HANDED, NoticeServiceMethod.EMAIL);
         assertThat(reloaded.getTenancyLicence().getRentDueDay()).isEqualTo(15);
+    }
+
+
+    @Test
+    @DisplayName("A claim for a property in Wales maps its occupation contract onto the Wales tenancy and documents")
+    void shouldSubmitAWelshClaimWithItsOccupationContract() throws Exception {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.WALES);
+        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        assertThat(caseService.loadOrInitialiseDraft(createdCase).getEligibility().getLegislativeCountry())
+            .isEqualTo(LegislativeCountry.WALES);
+
+        CitizenPossessionClaim answers =
+            CitizenPossessionClaimCaseService.withCaseCountry(completeClaim(), createdCase);
+        CitizenClaimTenancy tenancy = answers.getTenancy();
+        tenancy.setOccupationContractType(OccupationLicenceTypeWales.OTHER);
+        tenancy.setOtherOccupationContractDetails("Supported standard contract");
+        CitizenPossessionClaim applicable = applicableAnswers.of(answers);
+        assertThat(applicable.getTenancy().getTenancyType()).isNull();
+
+        submitService.submit(createdCase, answers, applicable);
+        entityManager.flush();
+        entityManager.clear();
+
+        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
+        assertThat(pcsCase.getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
+        assertThat(pcsCase.getTenancyLicence().getType()).isEqualTo(CombinedLicenceType.OTHER);
+        assertThat(pcsCase.getTenancyLicence().getOtherTypeDetails()).isEqualTo("Supported standard contract");
+        assertThat(pcsCase.getTenancyLicence().getStartDate()).isEqualTo(LocalDate.of(2023, 4, 1));
+        assertThat(pcsCase.getTenancyLicence().getHasCopyOfTenancyLicence()).isEqualTo(VerticalYesNo.YES);
+        assertThat(pcsCase.getClaims().getFirst().getClaimDocuments())
+            .extracting(claimDocument -> claimDocument.getDocument().getType())
+            .contains(DocumentType.OCCUPATION_LICENCE)
+            .doesNotContain(DocumentType.TENANCY_AGREEMENT);
+    }
+
+    @Test
+    @DisplayName("A claim for a property whose court is not in the pilot is given that court and its region")
+    void shouldGiveAClaimOutsideThePilotItsCourtAndRegion() throws Exception {
+        long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
+        AddressUK nonPilotProperty = AddressUK.builder()
+            .addressLine1("1 Oxford Road").postTown("Manchester").postCode("M13 9PL").build();
+        assertThat(caseService.checkProperty(nonPilotProperty, null))
+            .isEqualTo(CitizenPropertyCheck.accepted(LegislativeCountry.ENGLAND));
+        caseService.createCase(caseReference, nonPilotProperty, CitizenClaimEligibility.builder()
+            .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
+        when(locationReferenceService.getCourtVenues(List.of(144641)))
+            .thenReturn(List.of(draftObjectMapper.readValue("{\"region_id\": \"4\"}", CourtVenue.class)));
+
+        CitizenPossessionClaim answers = completeClaim();
+        submitService.submit(caseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
+        entityManager.flush();
+        entityManager.clear();
+
+        PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
+        assertThat(pcsCase.getCaseManagementLocation()).isEqualTo(144641);
+        assertThat(pcsCase.getBaseLocation()).isEqualTo(144641);
+        assertThat(pcsCase.getRegionId()).isEqualTo(4);
     }
 
 }

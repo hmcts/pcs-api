@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -46,8 +48,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenMakePossessionCla
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.LEGISLATIVE_COUNTRY_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.POSTCODE_NOT_ASSIGNED_TO_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.PROPERTY_ADDRESS_REQUIRED;
-import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.PROPERTY_NOT_ELIGIBLE;
-import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND;
+import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND_OR_WALES;
 
 @ExtendWith(MockitoExtension.class)
 class CitizenPossessionClaimCaseServiceTest {
@@ -85,77 +86,100 @@ class CitizenPossessionClaimCaseServiceTest {
     }
 
     @Test
-    void shouldAcceptAnEligibleEnglishProperty() {
+    void shouldAcceptAnEnglishPropertyAndGiveItsCountry() {
         eligibility(null, EligibilityStatus.ELIGIBLE, LegislativeCountry.ENGLAND);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, null)).isEmpty();
+        assertThat(underTest.checkProperty(ADDRESS, null))
+            .isEqualTo(CitizenPropertyCheck.accepted(LegislativeCountry.ENGLAND));
     }
 
     @Test
-    void shouldRefuseAWelshProperty() {
+    void shouldAcceptAWelshPropertyAndGiveItsCountry() {
         eligibility(null, EligibilityStatus.ELIGIBLE, LegislativeCountry.WALES);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, null)).contains(PROPERTY_NOT_IN_ENGLAND);
+        assertThat(underTest.checkProperty(ADDRESS, null))
+            .isEqualTo(CitizenPropertyCheck.accepted(LegislativeCountry.WALES));
     }
 
-    @Test
-    void shouldRefuseAnEnglishPropertyWhoseCourtIsNotLive() {
-        eligibility(null, EligibilityStatus.NOT_ELIGIBLE, LegislativeCountry.ENGLAND);
+    @ParameterizedTest
+    @EnumSource(value = LegislativeCountry.class, names = {"ENGLAND", "WALES"})
+    void shouldAcceptAPropertyWhoseCourtIsNotInThePilot(LegislativeCountry country) {
+        eligibility(null, EligibilityStatus.NOT_ELIGIBLE, country);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, null)).contains(PROPERTY_NOT_ELIGIBLE);
+        assertThat(underTest.checkProperty(ADDRESS, null)).isEqualTo(CitizenPropertyCheck.accepted(country));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LegislativeCountry.class, names = {"SCOTLAND", "NORTHERN_IRELAND", "ISLE_OF_MAN",
+        "CHANNEL_ISLANDS"})
+    void shouldRefuseAPropertyOutsideEnglandAndWales(LegislativeCountry country) {
+        eligibility(null, EligibilityStatus.ELIGIBLE, country);
+
+        assertThat(underTest.checkProperty(ADDRESS, null).refusal()).isEqualTo(PROPERTY_NOT_IN_ENGLAND_OR_WALES);
     }
 
     @Test
     void shouldRefuseAPostcodeWithNoCourt() {
         eligibility(null, EligibilityStatus.NO_MATCH_FOUND, null);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, null)).contains(POSTCODE_NOT_ASSIGNED_TO_COURT);
+        assertThat(underTest.checkProperty(ADDRESS, null).refusal()).isEqualTo(POSTCODE_NOT_ASSIGNED_TO_COURT);
     }
 
     @Test
     void shouldRefuseAMissingAddress() {
-        assertThat(underTest.checkPropertyInEngland(null, null)).contains(PROPERTY_ADDRESS_REQUIRED);
-        assertThat(underTest.checkPropertyInEngland(AddressUK.builder().addressLine1("x").build(), null))
-            .contains(PROPERTY_ADDRESS_REQUIRED);
+        assertThat(underTest.checkProperty(null, null).refusal()).isEqualTo(PROPERTY_ADDRESS_REQUIRED);
+        assertThat(underTest.checkProperty(AddressUK.builder().addressLine1("x").build(), null).refusal())
+            .isEqualTo(PROPERTY_ADDRESS_REQUIRED);
     }
 
     @Test
     void shouldAskForTheCountryOfACrossBorderPostcode() {
-        crossBorder();
+        crossBorder(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, null)).contains(LEGISLATIVE_COUNTRY_REQUIRED);
+        assertThat(underTest.checkProperty(ADDRESS, null).refusal()).isEqualTo(LEGISLATIVE_COUNTRY_REQUIRED);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LegislativeCountry.class, names = {"ENGLAND", "WALES"})
+    void shouldCheckACrossBorderPropertyAgainstTheCourtOfTheChosenCountry(LegislativeCountry chosen) {
+        crossBorder(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+        eligibility(chosen, EligibilityStatus.ELIGIBLE, chosen);
+
+        assertThat(underTest.checkProperty(ADDRESS, chosen)).isEqualTo(CitizenPropertyCheck.accepted(chosen));
     }
 
     @Test
-    void shouldRefuseACrossBorderPropertyChosenAsWales() {
-        crossBorder();
+    void shouldRefuseACrossBorderPropertyChosenAsACountryThePostcodeIsNotIn() {
+        crossBorder(LegislativeCountry.ENGLAND, LegislativeCountry.SCOTLAND);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, LegislativeCountry.WALES))
-            .contains(PROPERTY_NOT_IN_ENGLAND);
+        assertThat(underTest.checkProperty(ADDRESS, LegislativeCountry.WALES).refusal())
+            .isEqualTo(PROPERTY_NOT_IN_ENGLAND_OR_WALES);
+        assertThat(underTest.checkProperty(ADDRESS, LegislativeCountry.SCOTLAND).refusal())
+            .isEqualTo(PROPERTY_NOT_IN_ENGLAND_OR_WALES);
     }
 
     @Test
-    void shouldCheckACrossBorderPropertyChosenAsEnglandAgainstTheEnglishCourt() {
-        crossBorder();
-        eligibility(LegislativeCountry.ENGLAND, EligibilityStatus.ELIGIBLE, LegislativeCountry.ENGLAND);
+    void shouldRefuseACrossBorderPostcodeOutsideEnglandAndWales() {
+        crossBorder(LegislativeCountry.SCOTLAND, LegislativeCountry.NORTHERN_IRELAND);
 
-        assertThat(underTest.checkPropertyInEngland(ADDRESS, LegislativeCountry.ENGLAND)).isEmpty();
+        assertThat(underTest.checkProperty(ADDRESS, null).refusal()).isEqualTo(PROPERTY_NOT_IN_ENGLAND_OR_WALES);
     }
 
-    @Test
-    void shouldCreateACaseOwnedByTheCitizenWithNoOrganisation() {
+    @ParameterizedTest
+    @EnumSource(value = LegislativeCountry.class, names = {"ENGLAND", "WALES"})
+    void shouldCreateACaseOwnedByTheCitizenWithNoOrganisationInTheCheckedCountry(LegislativeCountry country) {
         AddressEntity addressEntity = new AddressEntity();
         when(addressMapper.toAddressEntityAndNormalise(ADDRESS)).thenReturn(addressEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         CitizenClaimEligibility eligibility = CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build();
 
-        underTest.createCase(CASE_REFERENCE, ADDRESS, eligibility);
+        underTest.createCase(CASE_REFERENCE, ADDRESS, eligibility, country);
 
         verify(pcsCaseRepository).save(caseCaptor.capture());
         PcsCaseEntity created = caseCaptor.getValue();
         assertThat(created.getCaseReference()).isEqualTo(CASE_REFERENCE);
-        assertThat(created.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+        assertThat(created.getLegislativeCountry()).isEqualTo(country);
         assertThat(created.getPropertyAddress()).isSameAs(addressEntity);
         assertThat(created.getParties()).singleElement().satisfies(party -> {
             assertThat(party.isClaimCreator()).isTrue();
@@ -165,7 +189,8 @@ class CitizenPossessionClaimCaseServiceTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(eq(CASE_REFERENCE), draftCaptor.capture(),
                                                                eq(citizenMakePossessionClaim));
-        assertThat(draftCaptor.getValue().getCitizenPossessionClaim().getEligibility()).isEqualTo(eligibility);
+        assertThat(draftCaptor.getValue().getCitizenPossessionClaim().getEligibility())
+            .isEqualTo(eligibility.toBuilder().legislativeCountry(country).build());
         assertThat(draftCaptor.getValue().getCitizenPossessionClaim().getPropertyAddress()).isEqualTo(ADDRESS);
     }
 
@@ -211,6 +236,25 @@ class CitizenPossessionClaimCaseServiceTest {
             .thenReturn(Optional.of(PCSCase.builder().citizenPossessionClaim(saved).build()));
 
         assertThat(underTest.loadOrInitialiseDraft(caseEntity).getPropertyAddress()).isEqualTo(ADDRESS);
+    }
+
+    @Test
+    void shouldGiveASavedDraftTheCaseCountryNotTheOneItWasSavedWith() {
+        PcsCaseEntity caseEntity = caseWithAddress();
+        caseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+        CitizenPossessionClaim saved = CitizenPossessionClaim.builder()
+            .eligibility(CitizenClaimEligibility.builder()
+                             .claimantType(ClaimantType.PRIVATE_LANDLORD)
+                             .legislativeCountry(LegislativeCountry.ENGLAND)
+                             .build())
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, citizenMakePossessionClaim))
+            .thenReturn(Optional.of(PCSCase.builder().citizenPossessionClaim(saved).build()));
+
+        CitizenClaimEligibility eligibility = underTest.loadOrInitialiseDraft(caseEntity).getEligibility();
+
+        assertThat(eligibility.getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
+        assertThat(eligibility.getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
     }
 
     @Test
@@ -302,11 +346,11 @@ class CitizenPossessionClaimCaseServiceTest {
             EligibilityResult.builder().status(status).legislativeCountry(country).build());
     }
 
-    private void crossBorder() {
+    private void crossBorder(LegislativeCountry... countries) {
         when(eligibilityService.checkEligibility(POSTCODE, null)).thenReturn(
             EligibilityResult.builder()
                 .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
-                .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+                .legislativeCountries(List.of(countries))
                 .build());
     }
 

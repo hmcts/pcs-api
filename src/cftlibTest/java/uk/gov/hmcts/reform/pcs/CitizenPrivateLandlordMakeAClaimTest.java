@@ -35,9 +35,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePossessionClaimDraftSavePage;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.math.BigDecimal;
@@ -63,6 +65,13 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
         .postCode("BD10 0JB")
         .build();
 
+    // Mapped to Caernarfon (366572), a Wales court, by db/migration/V026__pilot_postcodes.sql
+    private static final AddressUK WELSH_PROPERTY_ADDRESS = AddressUK.builder()
+        .addressLine1("1 Test Street")
+        .postTown("Betws-y-Coed")
+        .postCode("LL24 0BE")
+        .build();
+
     @Autowired
     private CcdClient ccdClient;
     @Autowired
@@ -79,6 +88,32 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
 
     @Test
     void citizenCanCreateSaveAndSubmitAClaim() throws Exception {
+        CitizenPossessionClaim startedDraft = createSaveAndSubmit(PROPERTY_ADDRESS, CitizenClaimTenancy.builder()
+            .tenancyType(CitizenClaimTenancyType.ASSURED)
+            .tenancyStartDate(LocalDate.of(2023, 4, 1))
+            .tenancyAgreementAvailable(VerticalYesNo.NO)
+            .noTenancyAgreementReason("Lost it")
+            .build());
+
+        assertThat(startedDraft.getEligibility().getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    void citizenCanClaimForAPropertyInWalesWithItsOccupationContract() throws Exception {
+        CitizenClaimTenancy occupationContract = CitizenClaimTenancy.builder()
+            .occupationContractType(OccupationLicenceTypeWales.STANDARD_CONTRACT)
+            .tenancyStartDate(LocalDate.of(2023, 4, 1))
+            .tenancyAgreementAvailable(VerticalYesNo.NO)
+            .noTenancyAgreementReason("Lost it")
+            .build();
+
+        CitizenPossessionClaim startedDraft = createSaveAndSubmit(WELSH_PROPERTY_ADDRESS, occupationContract);
+
+        assertThat(startedDraft.getEligibility().getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
+    }
+
+    private CitizenPossessionClaim createSaveAndSubmit(AddressUK propertyAddress, CitizenClaimTenancy tenancy)
+        throws Exception {
         CitizenClaimEligibility eligibility = CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD)
             .isTrespass(VerticalYesNo.NO)
@@ -86,7 +121,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
             .build();
         PCSCase createData = PCSCase.builder()
             .citizenPossessionClaim(CitizenPossessionClaim.builder()
-                                        .propertyAddress(PROPERTY_ADDRESS)
+                                        .propertyAddress(propertyAddress)
                                         .eligibility(eligibility)
                                         .build())
             .build();
@@ -100,7 +135,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
         CitizenPossessionClaim startedDraft = toPcsCase(start.getCaseDetails().getData()).getCitizenPossessionClaim();
         assertThat(startedDraft.getEligibility().getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
 
-        CitizenPossessionClaim answers = completeAnswers(eligibility);
+        CitizenPossessionClaim answers = completeAnswers(eligibility, tenancy);
         CaseDetails saved = ccdClient.midEvent(
             EventId.citizenMakePossessionClaim, caseReference, DRAFT_PAGE_ID,
             PCSCase.builder().citizenPossessionClaim(answers).build(), start.getToken(), citizenToken);
@@ -120,13 +155,15 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
             .getSubmission();
         assertThat(submission.getServiceRequestReference()).isNotBlank();
         assertThat(submission.getFeeAmount()).isPositive();
+        return startedDraft;
     }
 
     private PCSCase toPcsCase(Map<String, Object> data) {
         return objectMapper.convertValue(data, PCSCase.class);
     }
 
-    private static CitizenPossessionClaim completeAnswers(CitizenClaimEligibility eligibility) {
+    private static CitizenPossessionClaim completeAnswers(CitizenClaimEligibility eligibility,
+                                                          CitizenClaimTenancy tenancy) {
         return CitizenPossessionClaim.builder()
             .eligibility(eligibility)
             .claimant(CitizenClaimClaimant.builder()
@@ -150,12 +187,7 @@ class CitizenPrivateLandlordMakeAClaimTest extends CftlibTest {
                                                .build())
                                     .build()))
             .additionalDefendants(VerticalYesNo.NO)
-            .tenancy(CitizenClaimTenancy.builder()
-                         .tenancyType(CitizenClaimTenancyType.ASSURED)
-                         .tenancyStartDate(LocalDate.of(2023, 4, 1))
-                         .tenancyAgreementAvailable(VerticalYesNo.NO)
-                         .noTenancyAgreementReason("Lost it")
-                         .build())
+            .tenancy(tenancy)
             .grounds(CitizenClaimGrounds.builder()
                          .hasRentArrearsGrounds(VerticalYesNo.YES)
                          .rentArrearsGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_8))

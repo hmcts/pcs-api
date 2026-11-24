@@ -6,8 +6,8 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim;
 public enum CitizenPropertyEligibility {
 
     ELIGIBLE,
-    NOT_ENGLAND,
-    NOT_COVERED,
+    NOT_ENGLAND_OR_WALES,
+    NO_COURT,
     LEGISLATIVE_COUNTRY_REQUIRED
 
 }

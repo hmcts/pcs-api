@@ -110,7 +110,7 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
             return refuse(List.of(DRAFT_NOT_FOUND));
         }
 
-        CitizenPossessionClaim claim = draft.get();
+        CitizenPossessionClaim claim = CitizenPossessionClaimCaseService.withCaseCountry(draft.get(), pcsCaseEntity);
         Long reviewedVersion = reviewedVersion(eventPayload);
         if (reviewedVersion == null || !reviewedVersion.equals(claim.getDraftVersion())) {
             log.warn("Refusing citizen claim submit for case {}: reviewed draft version {} but stored draft is at {}",

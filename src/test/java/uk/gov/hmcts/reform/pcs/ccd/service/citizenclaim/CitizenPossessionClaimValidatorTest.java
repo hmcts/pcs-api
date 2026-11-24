@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +112,41 @@ class CitizenPossessionClaimValidatorTest {
         claim.getTenancy().setTenancyType(CitizenClaimTenancyType.OTHER);
 
         assertThat(validate(claim)).containsExactly("REQUIRED:tenancy.otherTenancyTypeDetails");
+    }
+
+    @Test
+    void shouldNeedTheOccupationContractTypeInsteadOfTheTenancyTypeForAPropertyInWales() {
+        CitizenPossessionClaim claim = walesClaim();
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:tenancy.occupationContractType");
+
+        claim.getTenancy().setOccupationContractType(OccupationLicenceTypeWales.STANDARD_CONTRACT);
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNeedDetailsOfAnOtherOccupationContract() {
+        CitizenPossessionClaim claim = walesClaim();
+        claim.getTenancy().setOccupationContractType(OccupationLicenceTypeWales.OTHER);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:tenancy.otherOccupationContractDetails");
+
+        claim.getTenancy().setOtherOccupationContractDetails("x".repeat(501));
+        assertThat(validate(claim)).containsExactly("TOO_LONG:tenancy.otherOccupationContractDetails");
+    }
+
+    @Test
+    void shouldNotAskAPropertyInEnglandForTheOccupationContract() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setOccupationContractType(OccupationLicenceTypeWales.OTHER);
+
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    private static CitizenPossessionClaim walesClaim() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getEligibility().setLegislativeCountry(LegislativeCountry.WALES);
+        return claim;
     }
 
     @Test

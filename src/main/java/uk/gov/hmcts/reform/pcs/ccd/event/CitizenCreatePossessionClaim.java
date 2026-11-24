@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPropertyCheck;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -88,14 +89,14 @@ public class CitizenCreatePossessionClaim implements CCDConfig<PCSCase, State, U
             return SubmitResponse.<State>builder().errors(addressErrors).build();
         }
 
-        Optional<String> propertyError = citizenPossessionClaimCaseService
-            .checkPropertyInEngland(claim.getPropertyAddress(), eligibility.getLegislativeCountry());
-        if (propertyError.isPresent()) {
-            return refuse(propertyError.get());
+        CitizenPropertyCheck property = citizenPossessionClaimCaseService
+            .checkProperty(claim.getPropertyAddress(), eligibility.getLegislativeCountry());
+        if (property.isRefused()) {
+            return refuse(property.refusal());
         }
 
         citizenPossessionClaimCaseService.createCase(
-            eventPayload.caseReference(), claim.getPropertyAddress(), eligibility);
+            eventPayload.caseReference(), claim.getPropertyAddress(), eligibility, property.legislativeCountry());
 
         return SubmitResponse.defaultResponse();
     }

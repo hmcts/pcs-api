@@ -54,8 +54,10 @@ public class CitizenMakePossessionClaimDraftSavePage implements CcdPageConfigura
                 return error(CASE_ACCESS_DENIED);
             }
 
-            CitizenPossessionClaim claim = Optional.ofNullable(details.getData().getCitizenPossessionClaim())
-                .orElseGet(() -> CitizenPossessionClaim.builder().build());
+            CitizenPossessionClaim claim = CitizenPossessionClaimCaseService.withCaseCountry(
+                Optional.ofNullable(details.getData().getCitizenPossessionClaim())
+                    .orElseGet(() -> CitizenPossessionClaim.builder().build()),
+                pcsCaseEntity);
 
             Long savedVersion = citizenPossessionClaimCaseService.saveDraft(caseReference, claim);
 

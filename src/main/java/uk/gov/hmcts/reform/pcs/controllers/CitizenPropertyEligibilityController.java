@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPropertyEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPropertyEligibilityResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPropertyCheck;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.LEGISLATIVE_COUNTRY_REQUIRED;
-import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.PROPERTY_NOT_IN_ENGLAND;
+import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.POSTCODE_NOT_ASSIGNED_TO_COURT;
 
 @RestController
 @RequestMapping("/cases/citizen-claims")
@@ -47,7 +48,7 @@ public class CitizenPropertyEligibilityController {
     @GetMapping(value = "/property-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
         summary = "Check whether a property can be claimed for by a citizen private landlord",
-        description = "Applies the same postcode check as creating the citizen claim",
+        description = "Applies the same England or Wales check as creating the citizen claim, and gives the country",
         security = {
             @SecurityRequirement(name = "AuthorizationToken"),
             @SecurityRequirement(name = "ServiceAuthorization")
@@ -86,19 +87,20 @@ public class CitizenPropertyEligibilityController {
             return badRequest("Unknown legislative country");
         }
 
-        CitizenPropertyEligibility status = citizenPossessionClaimCaseService
-            .checkPostcodeInEngland(postcode, chosenCountry.orElse(null))
-            .map(CitizenPropertyEligibilityController::toEligibility)
-            .orElse(CitizenPropertyEligibility.ELIGIBLE);
+        CitizenPropertyCheck check = citizenPossessionClaimCaseService
+            .checkPostcode(postcode, chosenCountry.orElse(null));
+        CitizenPropertyEligibilityResponse response = check.isRefused()
+            ? new CitizenPropertyEligibilityResponse(toEligibility(check.refusal()), null)
+            : new CitizenPropertyEligibilityResponse(CitizenPropertyEligibility.ELIGIBLE, check.legislativeCountry());
 
-        return ResponseEntity.ok(new CitizenPropertyEligibilityResponse(status));
+        return ResponseEntity.ok(response);
     }
 
     private static CitizenPropertyEligibility toEligibility(String refusal) {
         return switch (refusal) {
-            case PROPERTY_NOT_IN_ENGLAND -> CitizenPropertyEligibility.NOT_ENGLAND;
             case LEGISLATIVE_COUNTRY_REQUIRED -> CitizenPropertyEligibility.LEGISLATIVE_COUNTRY_REQUIRED;
-            default -> CitizenPropertyEligibility.NOT_COVERED;
+            case POSTCODE_NOT_ASSIGNED_TO_COURT -> CitizenPropertyEligibility.NO_COURT;
+            default -> CitizenPropertyEligibility.NOT_ENGLAND_OR_WALES;
         };
     }
 

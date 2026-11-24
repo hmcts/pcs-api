@@ -12,9 +12,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +36,37 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
 
         assertThat(underTest.of(claim)).isEqualTo(claim);
+    }
+
+    @Test
+    void shouldKeepOnlyTheOccupationContractForAPropertyInWales() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getEligibility().setLegislativeCountry(LegislativeCountry.WALES);
+        claim.getTenancy().setOtherTenancyTypeDetails("Company let");
+        claim.getTenancy().setOccupationContractType(OccupationLicenceTypeWales.SECURE_CONTRACT);
+        claim.getTenancy().setOtherOccupationContractDetails("Left from Other");
+
+        CitizenClaimTenancy tenancy = underTest.of(claim).getTenancy();
+
+        assertThat(tenancy.getTenancyType()).isNull();
+        assertThat(tenancy.getOtherTenancyTypeDetails()).isNull();
+        assertThat(tenancy.getOccupationContractType()).isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
+        assertThat(tenancy.getOtherOccupationContractDetails()).isNull();
+        assertThat(tenancy.getTenancyStartDate()).isEqualTo(claim.getTenancy().getTenancyStartDate());
+        assertThat(tenancy.getTenancyAgreementDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldDropAnOccupationContractForAPropertyInEngland() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setOccupationContractType(OccupationLicenceTypeWales.OTHER);
+        claim.getTenancy().setOtherOccupationContractDetails("Not asked");
+
+        CitizenClaimTenancy tenancy = underTest.of(claim).getTenancy();
+
+        assertThat(tenancy.getOccupationContractType()).isNull();
+        assertThat(tenancy.getOtherOccupationContractDetails()).isNull();
+        assertThat(tenancy.getTenancyType()).isEqualTo(CitizenClaimTenancyType.ASSURED);
     }
 
     @Test

@@ -137,8 +137,8 @@ public class CitizenClaimTabDetailsBuilder {
     }
 
     /**
-     * Whether the citizen claim answers are added: the flag is on and the case is in England, the only
-     * country citizen claims are made for.
+     * Whether the citizen claim answers are added: the flag is on and the case is not in Wales, whose tabs
+     * are built by the Wales builders.
      */
     public boolean applies(PcsCaseEntity pcsCaseEntity) {
         return featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)

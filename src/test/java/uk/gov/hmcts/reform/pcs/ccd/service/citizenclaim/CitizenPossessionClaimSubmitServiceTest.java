@@ -5,6 +5,8 @@ import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
@@ -36,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -589,6 +592,30 @@ class CitizenPossessionClaimSubmitServiceTest {
 
         assertThat(pcsCaseEntity.getTenancyLicence().getType()).isEqualTo(CombinedLicenceType.OTHER);
         assertThat(pcsCaseEntity.getTenancyLicence().getOtherTypeDetails()).isEqualTo("Regulated tenancy");
+    }
+
+    @ParameterizedTest
+    @CsvSource({"STANDARD_CONTRACT, STANDARD_CONTRACT,", "SECURE_CONTRACT, SECURE_CONTRACT,",
+        "OTHER, OTHER, Supported standard contract"})
+    void shouldMapTheOccupationContractOfAPropertyInWalesAsTheLegalRepClaimDoes(
+        OccupationLicenceTypeWales contractType, CombinedLicenceType expectedType, String expectedDetails) {
+        pcsCaseEntity.setLegislativeCountry(LegislativeCountry.WALES);
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getEligibility().setLegislativeCountry(LegislativeCountry.WALES);
+        claim.getTenancy().setOccupationContractType(contractType);
+        claim.getTenancy().setOtherOccupationContractDetails("Supported standard contract");
+
+        submit(claim);
+
+        TenancyLicenceEntity tenancy = pcsCaseEntity.getTenancyLicence();
+        assertThat(tenancy.getType()).isEqualTo(expectedType);
+        assertThat(tenancy.getOtherTypeDetails()).isEqualTo(expectedDetails);
+        assertThat(tenancy.getStartDate()).isEqualTo(LocalDate.of(2023, 4, 1));
+        assertThat(tenancy.getHasCopyOfTenancyLicence()).isEqualTo(VerticalYesNo.YES);
+        verify(documentService).createAllDocuments(documentCaseCaptor.capture());
+        PCSCase documentCase = documentCaseCaptor.getValue();
+        assertThat(documentCase.getTenancyLicenceDetails()).isNull();
+        assertThat(documentCase.getOccupationLicenceDetailsWales().getLicenceDocuments()).hasSize(1);
     }
 
     @Test
