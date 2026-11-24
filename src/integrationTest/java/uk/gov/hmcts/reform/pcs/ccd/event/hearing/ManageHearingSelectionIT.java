@@ -122,7 +122,7 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
 
     @Test
     void cancelsTheChosenHearingWithoutCancellingTheNextHearing() {
-        form.setHearingLocation("Central London County Court");
+        form.setHearingSummaryLocation("Central London County Court");
         select(later, ManageHearingOption.CANCEL);
         assertThat(form.getHearing().getHearingSummaryMarkdown())
             .contains("Central London County Court", "3 February 2030");

@@ -1191,6 +1191,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private String hearingLocation;
 
+    // CCD assigns each event field to one page, so the selection page retains its own copy.
+    @CCD(searchable = false)
+    private String hearingSummaryLocation;
+
     @CCD(
         label = "Which defendant submitted this response?",
         typeOverride = FieldType.DynamicRadioList

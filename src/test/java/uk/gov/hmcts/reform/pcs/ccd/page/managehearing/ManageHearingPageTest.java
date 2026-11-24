@@ -48,7 +48,7 @@ class ManageHearingPageTest extends BasePageTest {
             .toList();
 
         assertThat(fields)
-            .filteredOn(field -> List.of("selectedHearingId", "hearingLocation").contains(field.getId()))
+            .filteredOn(field -> List.of("selectedHearingId", "hearingSummaryLocation").contains(field.getId()))
             .hasSize(2)
             .allSatisfy(field -> {
                 assertThat(field.getShowCondition()).isEqualTo(NEVER_SHOW);

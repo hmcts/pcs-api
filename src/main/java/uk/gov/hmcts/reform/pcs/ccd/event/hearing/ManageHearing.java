@@ -94,6 +94,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
         } else {
+            pcsCase.setHearingSummaryLocation(pcsCase.getHearingLocation());
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
         }
 

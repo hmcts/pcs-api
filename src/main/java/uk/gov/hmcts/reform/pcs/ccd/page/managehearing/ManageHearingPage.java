@@ -39,7 +39,7 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .mandatory(PCSCase::getManageHearingOption)
             .mandatory(PCSCase::getHearingSelection,
                        "manageHearingOption=\"EDIT\" OR manageHearingOption=\"CANCEL\"", true)
-            .readonly(PCSCase::getHearingLocation, NEVER_SHOW, true)
+            .readonly(PCSCase::getHearingSummaryLocation, NEVER_SHOW, true)
             .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
             .complex(PCSCase::getHearing)
@@ -85,7 +85,7 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
                 caseData.setSelectedHearingId(selectedId);
                 hearingService.initialiseEditableHearing(details.getId(), caseData, previousId);
                 caseData.getHearing().setHearingSummaryMarkdown(
-                    hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingLocation()));
+                    hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingSummaryLocation()));
             } catch (HearingNotFoundException e) {
                 return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .data(caseData).errors(List.of(e.getMessage())).build();
