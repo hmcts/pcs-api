@@ -49,7 +49,7 @@ public class EnforcementEventShowConditionsView {
             EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
                 .recordWarrantReturn(YesOrNo.NO)
                 .build();
-            pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
+            pcsCase.setEnfShowConditions(enforcementEventShowConditions);
             return;
         }
 
@@ -58,6 +58,6 @@ public class EnforcementEventShowConditionsView {
             .recordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
             .build();
 
-        pcsCase.setEnforcementEventShowConditions(enforcementEventShowConditions);
+        pcsCase.setEnfShowConditions(enforcementEventShowConditions);
     }
 }

@@ -44,7 +44,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
     }
 
     @Test
@@ -58,7 +58,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -73,7 +73,7 @@ class EnforcementEventShowConditionsViewTest {
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
-        assertThat(pcsCase.getEnforcementEventShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

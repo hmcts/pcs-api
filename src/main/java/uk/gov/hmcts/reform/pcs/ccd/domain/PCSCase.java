@@ -1246,7 +1246,6 @@ public class PCSCase {
         searchable = false,
         access = {BailiffAccess.class}
     )
-    @JsonUnwrapped(prefix = "enfShowConditions_")
-    private EnforcementEventShowConditions enforcementEventShowConditions;
+    private EnforcementEventShowConditions enfShowConditions;
 
 }
