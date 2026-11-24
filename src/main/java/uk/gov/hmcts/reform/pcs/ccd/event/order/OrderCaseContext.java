@@ -106,7 +106,7 @@ class OrderCaseContext {
             genApp.getSomethingElseDetails(),
             applicant(genApp, claim),
             // A paper application court staff entered is dated when the court received it, not when they entered it.
-            genApp.getApplicationReceivedDate() != null || genApp.getApplicationSubmittedDate() == null
+            genApp.getApplicationReceivedDate() != null
                 ? genApp.getApplicationReceivedDate() : genApp.getApplicationSubmittedDate().toLocalDate(),
             genApp.getWithin14Days(),
             genApp.getOtherPartiesAgreed(),
@@ -119,9 +119,6 @@ class OrderCaseContext {
 
     /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */
     private String applicant(GenAppEntity genApp, ClaimEntity claim) {
-        if (genApp.getParty() == null) {
-            return null;
-        }
         String name = partyService.getPartyName(genApp.getParty());
         return Optional.ofNullable(claim).stream()
             .flatMap(c -> c.getClaimParties().stream())
