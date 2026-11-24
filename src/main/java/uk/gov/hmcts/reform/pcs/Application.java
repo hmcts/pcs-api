@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.camunda.WorkAllocationWorkflowApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
+import uk.gov.hmcts.reform.pcs.reference.api.CommonDataApi;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
 @SpringBootApplication(
@@ -32,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamUserInfoApi.class,
         IdamApi.class, // not used by pcs-api code; required so ccd-sdk's IdamClient can wire.
         RdProfessionalApi.class,
+        CommonDataApi.class,
         FeesApi.class,
         CaseDocumentClientApi.class,
         WorkAllocationWorkflowApi.class,
