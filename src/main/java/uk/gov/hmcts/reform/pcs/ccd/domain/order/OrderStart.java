@@ -91,12 +91,14 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
     /**
      * The general application an order decides, as the judge deciding it reads it: what was applied for,
      * by whom, the applicant's answers, the order they asked for, and their documents. The id names its answers on
-     * the make order form. Granting an application to suspend enforcement suspends it on conditions. The draft
+     * the make order form. An order can suspend enforcement on conditions on an application to suspend it. Listed
+     * says an issued order has listed it for a hearing, where it is still to be decided. The draft
      * order wording is the applicant's draft order as rich text (HTML); whatOrderWanted is their explanation, which
      * held the order they asked for before they could give it as a draft.
      */
     public record Application(UUID id,
                               boolean enforcementSuspension,
+                              boolean listed,
                               String reference,
                               String type,
                               String somethingElseDetails,

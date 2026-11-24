@@ -159,14 +159,14 @@ class DecideApplicationIT extends OrderEventIT {
             .extracting(Application::id).containsExactly(genAppId);
 
         issue(listed);
-        Order granted = judgeDecides(genAppId, "grant");
-        issue(granted);
+        Order freeform = judgeDecides(genAppId, "freeform");
+        issue(freeform);
 
         Order dismissed = asCaseworkerReviewing(dismissedId).start().order();
         assertThatThrownBy(() -> asCaseworkerReviewing(dismissedId).submit(issueRequest(dismissed)))
             .hasStackTraceContaining("order_gen_app_decided_once_idx");
         assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
-            String.class, genAppId)).containsExactlyInAnyOrder("LIST", "GRANT");
+            String.class, genAppId)).containsExactlyInAnyOrder("LISTED", "DISPOSED");
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.ALREADY_DECIDED);
@@ -181,27 +181,30 @@ class DecideApplicationIT extends OrderEventIT {
         Order undecided = judgeDecides(genAppId, "none");
         // Sent from the task to decide the application, the order completes it.
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
-        issue(judgeDecides(genAppId, "grant"));
+        issue(judgeDecides(genAppId, "freeform"));
 
         ConfirmOrderReviewRequest changed = new ConfirmOrderReviewRequest(ISSUE, undecided.id(), undecided.version(),
             null, null, new Issue(new IssuedOrder(undecided.orderType(),
                 Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order",
-                List.of(new ApplicationDecision(genAppId, GenAppDecision.DISMISS))),
+                List.of(new ApplicationDecision(genAppId, GenAppDecision.DISPOSED))),
                 List.of(), HIGH_COURT, true, List.of(), true, NO_ORDER));
         assertThatThrownBy(() -> asCaseworkerReviewing(undecided.id()).submit(changed))
             .hasStackTraceContaining("order_gen_app_decided_once_idx");
     }
 
     @Test
-    @DisplayName("leaves the application open after an order that decides it some other way, for another to grant")
-    void leavesTheApplicationOpenAfterSomethingElse() {
-        issue(judgeDecides(genAppId, "other"));
+    @DisplayName("offers an application an order listed for a hearing as listed, and one no order dealt with as not")
+    void saysWhetherAnApplicationIsListed() {
+        assertThat(asJudgeDeciding(genAppId).start().caseContext().applications()).extracting(Application::listed)
+            .containsExactly(false);
+        issue(judgeDecides(genAppId, "none"));
+        assertThat(asJudgeDeciding(genAppId).start().caseContext().applications()).extracting(Application::listed)
+            .containsExactly(false);
 
-        assertThat(asJudgeDeciding(genAppId).start().caseContext().applications()).extracting(Application::id)
-            .containsExactly(genAppId);
-        issue(judgeDecides(genAppId, "grant"));
-        assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
-            String.class, genAppId)).containsExactlyInAnyOrder("OTHER", "GRANT");
+        issue(judgeDecides(genAppId, "list"));
+
+        assertThat(asJudgeDeciding(genAppId).start().caseContext().applications()).extracting(Application::listed)
+            .containsExactly(true);
     }
 
     @Test
@@ -222,7 +225,7 @@ class DecideApplicationIT extends OrderEventIT {
         Order order = start.order();
         UUID orderId = atHearing.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
                 new OrderChange(order.id(), order.version(), NO_ORDER_ON_CLAIM,
-                    Map.of("app-" + genAppId + "-decision", "grant"), WORDING, decided("grant")), "decide-task",
+                    Map.of("app-" + genAppId + "-decision", "freeform"), WORDING, decided("freeform")), "decide-task",
                 new HearingChange(hearing, null, null, null)))
             .changed("orders", OrderRow.class).id();
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
@@ -233,7 +236,7 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(jdbcTemplate.queryForObject("SELECT made_on FROM orders WHERE id = ?", LocalDate.class, orderId))
             .isEqualTo(LocalDate.of(2026, 10, 14));
         assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
-            String.class, genAppId)).containsExactly("GRANT");
+            String.class, genAppId)).containsExactly("DISPOSED");
     }
 
     @Test
@@ -241,14 +244,14 @@ class DecideApplicationIT extends OrderEventIT {
         + "and from the case, as it was saved, and keeps it one draft as they move it")
     void reopensADraftSavedAtAHearingFromTheApplicationsLink() {
         final int hearing = cases.hearing(caseReference, LocalDateTime.of(2026, 10, 14, 10, 0), false);
-        Map<String, Object> answers = Map.of("app-" + genAppId + "-decision", "grant",
+        Map<String, Object> answers = Map.of("app-" + genAppId + "-decision", "freeform",
             "order-notice", "without-notice", "without-notice-by-day", "21", "without-notice-by-month", "10",
             "without-notice-by-year", "2026");
         // The judge follows the application's link, chooses the hearing on the page and saves.
         assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();
         var choosingHearing = asJudgeDeciding(genAppId);
         UUID draftId = choosingHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
-                new OrderChange(null, 0, NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")), "decide-task",
+                new OrderChange(null, 0, NO_ORDER_ON_CLAIM, answers, WORDING, decided("freeform")), "decide-task",
                 new HearingChange(hearing, null, null, null)))
             .changed("orders", OrderRow.class).id();
 
@@ -270,12 +273,12 @@ class DecideApplicationIT extends OrderEventIT {
 
         // Moved to no hearing and back from the application's link, it is the same one draft.
         asJudgeDeciding(genAppId).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
-            fromApplication.order().version(), NO_ORDER_ON_CLAIM, answers, WORDING, decided("grant")),
+            fromApplication.order().version(), NO_ORDER_ON_CLAIM, answers, WORDING, decided("freeform")),
             "decide-task"));
         assertThat(asJudgeDeciding(genAppId).start().hearing()).isNull();
         choosingHearing.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draftId,
             asJudgeDeciding(genAppId).start().order().version(), NO_ORDER_ON_CLAIM, answers, WORDING,
-            decided("grant")), "decide-task", new HearingChange(hearing, null, null, null)));
+            decided("freeform")), "decide-task", new HearingChange(hearing, null, null, null)));
         assertThat(jdbcTemplate.queryForList("SELECT id, state, hearing_id FROM orders WHERE case_id = "
             + "(SELECT id FROM pcs_case WHERE case_reference = ?)", caseReference))
             .extracting(row -> row.get("id"), row -> row.get("state"), row -> row.get("hearing_id"))
@@ -285,7 +288,7 @@ class DecideApplicationIT extends OrderEventIT {
         verifyNoInteractions(taskManagementApi);
         asJudgeDeciding(genAppId).submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,
             new OrderChange(draftId, asJudgeDeciding(genAppId).start().order().version(), NO_ORDER_ON_CLAIM, answers,
-                WORDING, decided("grant")), "decide-task", new HearingChange(hearing, null, null, null)));
+                WORDING, decided("freeform")), "decide-task", new HearingChange(hearing, null, null, null)));
         verify(taskManagementApi).completeTask(any(), any(), eq("decide-task"), any());
         assertThat(asJudgeDeciding(genAppId).start().order()).isEqualTo(Order.NONE);
     }
@@ -295,7 +298,7 @@ class DecideApplicationIT extends OrderEventIT {
         + "new order on the closed application")
     void reopensAnOrderAfterItsApplicationCloses() {
         var asJudge = asJudgeDeciding(genAppId);
-        UUID draftId = asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "grant", null))
+        UUID draftId = asJudge.submitExpectingSuccess(decision(SAVE_DRAFT, asJudge.start().order(), "freeform", null))
             .changed("orders", OrderRow.class).id();
         cases.update(caseReference, pcsCase ->
             pcsCase.findGenApp(genAppId).orElseThrow().setState(PENDING_GEN_APP_ISSUED));
@@ -325,12 +328,9 @@ class DecideApplicationIT extends OrderEventIT {
     /** What the frontend sends for the make order form's decision on the application. */
     private List<ApplicationDecision> decided(String answer) {
         GenAppDecision decision = switch (answer) {
-            case "grant" -> GenAppDecision.GRANT;
-            case "dismiss" -> GenAppDecision.DISMISS;
-            case "strike-out" -> GenAppDecision.STRIKE_OUT;
-            case "list" -> GenAppDecision.LIST;
-            case "other" -> GenAppDecision.OTHER;
-            default -> null;
+            case "none" -> null;
+            case "list" -> GenAppDecision.LISTED;
+            default -> GenAppDecision.DISPOSED;
         };
         return decision == null ? List.of() : List.of(new ApplicationDecision(genAppId, decision));
     }

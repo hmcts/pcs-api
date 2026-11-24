@@ -83,7 +83,7 @@ public class OrderEntity {
     @Setter(AccessLevel.NONE)
     private Set<PartyEntity> servedParties = new HashSet<>();
 
-    /** What the order decided about each application it covers, by application id, recorded when it is issued. */
+    /** Which applications the order disposed of or listed, by application id, recorded when it is issued. */
     @ElementCollection
     @CollectionTable(name = "order_gen_app", joinColumns = @JoinColumn(name = "order_id"))
     @MapKeyColumn(name = "gen_app_id")

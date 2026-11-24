@@ -166,8 +166,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (issue.claimOutcome() == null || !issue.claimOutcome().complete()) {
             throw ExternalRejection.because(NO_CLAIM_OUTCOME);
         }
-        // What the order decides about each of the case's applications, as issued; the database refuses a second order
-        // granting, dismissing or striking out one.
+        // Which of the case's applications the order disposes of or lists, as issued; the database refuses a second
+        // order disposing of one.
         issuing.applicationDecisions().stream()
             .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));

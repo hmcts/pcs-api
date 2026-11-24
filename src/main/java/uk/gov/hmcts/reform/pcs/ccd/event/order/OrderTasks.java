@@ -67,6 +67,11 @@ public class OrderTasks {
         return genApp.isOpen() && !orderRepository.isGenAppDecided(genApp.getId());
     }
 
+    /** Whether an issued order has listed the application for a hearing, where it is still to be decided. */
+    public boolean isListed(GenAppEntity genApp) {
+        return orderRepository.isGenAppListed(genApp.getId());
+    }
+
     /** The task link that starts the judge's order deciding the application. */
     public String decideUrl(long caseReference, GenAppEntity genApp) {
         return "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
