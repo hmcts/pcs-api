@@ -42,15 +42,15 @@ class ManageHearingPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldRetainSelectedHearingIdAsHiddenInternalContext() {
+    void shouldRetainSelectedHearingIdAndLocationAsHiddenInternalContext() {
         List<Field> fields = event.getFields().getFields().stream()
             .map(Field.FieldBuilder::build)
             .toList();
 
         assertThat(fields)
-            .filteredOn(field -> "selectedHearingId".equals(field.getId()))
-            .singleElement()
-            .satisfies(field -> {
+            .filteredOn(field -> List.of("selectedHearingId", "hearingLocation").contains(field.getId()))
+            .hasSize(2)
+            .allSatisfy(field -> {
                 assertThat(field.getShowCondition()).isEqualTo(NEVER_SHOW);
                 assertThat(field.getContext()).isEqualTo(DisplayContext.ReadOnly);
                 assertThat(field.isRetainHiddenValue()).isTrue();

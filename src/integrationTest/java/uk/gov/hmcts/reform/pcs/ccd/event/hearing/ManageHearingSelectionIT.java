@@ -122,8 +122,10 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
 
     @Test
     void cancelsTheChosenHearingWithoutCancellingTheNextHearing() {
+        form.setHearingLocation("Central London County Court");
         select(later, ManageHearingOption.CANCEL);
-        assertThat(form.getHearing().getHearingSummaryMarkdown()).contains("3 February 2030");
+        assertThat(form.getHearing().getHearingSummaryMarkdown())
+            .contains("Central London County Court", "3 February 2030");
         form.getHearing().setCancellationReason("No longer required");
         var cancelledEvent = events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
         assertThat(cancelledEvent.changes("hearing")).singleElement()
