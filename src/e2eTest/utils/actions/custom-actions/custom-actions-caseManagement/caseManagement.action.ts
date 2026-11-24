@@ -1616,6 +1616,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async confirmEnforcementDecision(page: Page, confirmEnf: actionRecord): Promise<void> {
+    const confirm = confirmEnf.confirmData as ReturnType<typeof confirmEnforcementDecision>;
     const submitPayLoad = confirmEnf.submitPayload as Record<string, any>;
     const text = `Case number #${caseInfo.fid} ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode} ${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
     const loc = page.locator(`span:has-Text("${text}")`).filter({ visible: true }).first();
@@ -1626,13 +1627,13 @@ private formatDisplayDate(entered: string): string {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
 
-    await performValidation('mainHeader', confirmEnforcementDecision.mainHeader);
+    await performValidation('mainHeader', confirm.mainHeader);
     await performValidation('text', { elementType: 'inlineText', text: confirmEnf.decisionText });
     const actual = await loc.innerText();
 
     const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
     expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
-    await performAction('clickButton', confirmEnforcementDecision.closeAndReturnToCaseDetailsButton);
+    await performAction('clickButton', confirm.closeAndReturnToCaseDetailsButton);
   }
 
   private checkValueExistence(option: string): { rejectOption: boolean; rejectLabel?: string } {

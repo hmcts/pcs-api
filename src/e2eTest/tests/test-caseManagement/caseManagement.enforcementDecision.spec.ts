@@ -18,6 +18,8 @@ import {
 
 test.use({ storageState: undefined })
 
+let confirmDecision: ReturnType<typeof confirmEnforcementDecision>;
+
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -39,6 +41,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('login', user.hearingCenterAdmin);
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToSummaryPage');
+  confirmDecision = confirmEnforcementDecision(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -81,7 +84,7 @@ test.describe('Case management - Case Worker Manage Enforcement @nightly', async
 
       await test.step(`Then the rejection is submitted successfully`, async () => {
         await performAction('clickButton', checkYourAnswersDecideEnforcement.submitButton);
-        await performAction('confirmEnforcementDecision', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), decisionText: `${confirmEnforcementDecision.decisionHiddenText} rejected`});
+        await performAction('confirmEnforcementDecision', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), decisionText: confirmDecision.decisionHiddenText, confirmData: confirmDecision });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Decide enforcement');
       });
     });
@@ -110,7 +113,7 @@ test.describe('Case management - Case Worker Manage Enforcement @nightly', async
 
       await test.step(`Then the acceptance is submitted successfully`, async () => {
         await performAction('clickButton', checkYourAnswersDecideEnforcement.submitButton);
-        await performAction('confirmEnforcementDecision', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), decisionText: `${confirmEnforcementDecision.decisionHiddenText} approved` });
+        await performAction('confirmEnforcementDecision', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), decisionText: confirmDecision.decisionHiddenText, confirmData: confirmDecision });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Decide enforcement');
       });
     });
