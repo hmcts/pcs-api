@@ -77,7 +77,7 @@ public class RentalRentMapper {
         ValueFrequencyType rent = particulars.getCurrentRent();
         if (rent == null) {
             if (mandatory) {
-                errors.add(path + "/CurrentRent", BulkErrorCollector.REQUIRED,
+                errors.add(path + "/CurrentRent", BulkErrorCollector.REQUIRED_CODE,
                            "Current rent is required when rent arrears are claimed");
                 return RentDetails.builder().build();
             }

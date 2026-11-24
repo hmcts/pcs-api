@@ -46,6 +46,9 @@ import java.util.Set;
 @Component
 public class GroundRouter {
 
+    private static final char PATH_SEPARATOR = '/';
+    private static final String RENT_ARREARS_OR_BREACH = "RentArrearsOrBreach";
+
     /** Code for a claim made without any ground, valid for introductory, demoted and other tenancies. */
     public static final String NO_GROUNDS = "NO_GROUNDS";
 
@@ -69,7 +72,7 @@ public class GroundRouter {
         List<Entry> entries = entries(grounds, path, errors);
 
         if (!grounds.getRentArrearsOrBreach().isEmpty() && !isSecureOrFlexible(tenancy)) {
-            errors.add(path + "/RentArrearsOrBreach", BulkErrorCollector.NOT_ALLOWED,
+            errors.add(path + PATH_SEPARATOR + RENT_ARREARS_OR_BREACH, BulkErrorCollector.NOT_ALLOWED,
                        "RentArrearsOrBreach only applies to secure and flexible tenancies");
         }
 
@@ -95,14 +98,14 @@ public class GroundRouter {
         Set<String> seen = new HashSet<>();
         for (int i = 0; i < grounds.getGround().size(); i++) {
             GroundType ground = grounds.getGround().get(i);
-            String groundPath = path + "/" + BulkErrorCollector.indexed("Ground", i);
+            String groundPath = path + PATH_SEPARATOR + BulkErrorCollector.indexed("Ground", i);
             if (!seen.add(ground.getCode())) {
-                errors.add(groundPath + "/Code", BulkErrorCollector.INVALID_VALUE,
+                errors.add(groundPath + PATH_SEPARATOR + "Code", BulkErrorCollector.INVALID_VALUE,
                            "Ground " + ground.getCode() + " is listed more than once");
                 continue;
             }
             if (!ground.getEstateManagementGround().isEmpty()) {
-                errors.add(groundPath + "/EstateManagementGround", BulkErrorCollector.NOT_ALLOWED,
+                errors.add(groundPath + PATH_SEPARATOR + "EstateManagementGround", BulkErrorCollector.NOT_ALLOWED,
                            "Estate management grounds only apply to Wales");
             }
             entries.add(new Entry(ground, groundPath));
@@ -111,7 +114,7 @@ public class GroundRouter {
     }
 
     private void unknown(Entry entry, TenancyLicenceType tenancy, BulkErrorCollector errors) {
-        errors.add(entry.path() + "/Code", BulkErrorCollector.INVALID_VALUE,
+        errors.add(entry.path() + PATH_SEPARATOR + "Code", BulkErrorCollector.INVALID_VALUE,
                    "Ground " + entry.code() + " is not valid for a " + tenancy + " in England");
     }
 
@@ -251,7 +254,9 @@ public class GroundRouter {
                     case DEATH_OF_TENANT_GROUND7 -> reasons.deathOfTenant(text);
                     case ANTISOCIAL_BEHAVIOUR_GROUND7A -> reasons.antisocialBehaviour(text);
                     case NO_RIGHT_TO_RENT_GROUND7B -> reasons.noRightToRent(text);
-                    case SERIOUS_RENT_ARREARS_GROUND8 -> { }
+                    case SERIOUS_RENT_ARREARS_GROUND8 -> {
+                        // the journey collects no reason for the rent arrears grounds
+                    }
                 }
             } else if (discretionaryGround != null) {
                 discretionary.add(discretionaryGround);
@@ -266,7 +271,9 @@ public class GroundRouter {
                     case DETERIORATION_FURNITURE_GROUND15 -> reasons.furnitureDeterioration(text);
                     case EMPLOYEE_LANDLORD_GROUND16 -> reasons.landlordEmployee(text);
                     case FALSE_STATEMENT_GROUND17 -> reasons.falseStatement(text);
-                    case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> { }
+                    case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> {
+                        // the journey collects no reason for the rent arrears grounds
+                    }
                 }
             } else if ("OTHER".equals(code)) {
                 other.add(AssuredAdditionalOtherGround.OTHER);
@@ -289,7 +296,7 @@ public class GroundRouter {
         target.setNoRentArrearsGroundsReasons(reasons.build());
         target.setShowReasonsForGroundsPage(possessionGrounds.getShowGroundReasonPage());
         if (!groundsRules.hasAtLeastOneAssuredNoArrearsGround(possessionGrounds)) {
-            errors.add(path, BulkErrorCollector.REQUIRED, GroundsRules.AT_LEAST_ONE_GROUND_ERROR);
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, GroundsRules.AT_LEAST_ONE_GROUND_ERROR);
         }
     }
 
@@ -334,48 +341,20 @@ public class GroundRouter {
                 boolean needsReason = discretionaryGround != SecureOrFlexibleDiscretionaryGrounds
                     .RENT_ARREARS_OR_BREACH_OF_TENANCY || breach;
                 String text = reason(entry, needsReason, errors);
-                switch (discretionaryGround) {
-                    case RENT_ARREARS_OR_BREACH_OF_TENANCY -> reasons.breachOfTenancyGround(text);
-                    case NUISANCE_OR_IMMORAL_USE -> reasons.nuisanceOrImmoralUseGround(text);
-                    case DOMESTIC_VIOLENCE -> reasons.domesticViolenceGround(text);
-                    case RIOT_OFFENCE -> reasons.riotOffenceGround(text);
-                    case PROPERTY_DETERIORATION -> reasons.propertyDeteriorationGround(text);
-                    case FURNITURE_DETERIORATION -> reasons.furnitureDeteriorationGround(text);
-                    case TENANCY_OBTAINED_BY_FALSE_STATEMENT -> reasons.tenancyByFalseStatementGround(text);
-                    case PREMIUM_PAID_MUTUAL_EXCHANGE -> reasons.premiumMutualExchangeGround(text);
-                    case UNREASONABLE_CONDUCT_TIED_ACCOMMODATION -> reasons.unreasonableConductGround(text);
-                    case REFUSAL_TO_MOVE_BACK -> reasons.refusalToMoveBackGround(text);
-                }
+                secureOrFlexibleDiscretionaryReason(discretionaryGround, text, reasons);
             } else if (discretionaryAltGround != null) {
                 discretionaryAlt.add(discretionaryAltGround);
                 String text = reason(entry, true, errors);
-                switch (discretionaryAltGround) {
-                    case TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE -> reasons.tiedAccommodationGround(text);
-                    case ADAPTED_ACCOMMODATION -> reasons.adaptedAccommodationGround(text);
-                    case HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES -> reasons.housingAssocSpecialGround(text);
-                    case SPECIAL_NEEDS_ACCOMMODATION -> reasons.specialNeedsAccommodationGround(text);
-                    case UNDER_OCCUPYING_AFTER_SUCCESSION -> reasons.underOccupancySuccessionGround(text);
-                }
+                secureOrFlexibleDiscretionaryAltReason(discretionaryAltGround, text, reasons);
             } else if (mandatoryAltGround != null) {
                 mandatoryAlt.add(mandatoryAltGround);
                 String text = reason(entry, true, errors);
-                switch (mandatoryAltGround) {
-                    case OVERCROWDING -> reasons.overcrowdingGround(text);
-                    case LANDLORD_WORKS -> reasons.landlordWorksGround(text);
-                    case PROPERTY_SOLD -> reasons.propertySoldGround(text);
-                    case CHARITABLE_LANDLORD -> reasons.charitableLandlordGround(text);
-                }
+                secureOrFlexibleMandatoryAltReason(mandatoryAltGround, text, reasons);
             } else if (antisocialGround != null) {
                 antisocial.add(antisocialGround);
                 mandatory.add(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL);
                 String text = reason(entry, true, errors);
-                switch (antisocialGround) {
-                    case S84A_CONDITION_1 -> reasons.antiSocialCondition1OfS84AGround(text);
-                    case S84A_CONDITION_2 -> reasons.antiSocialCondition2OfS84AGround(text);
-                    case S84A_CONDITION_3 -> reasons.antiSocialCondition3OfS84AGround(text);
-                    case S84A_CONDITION_4 -> reasons.antiSocialCondition4OfS84AGround(text);
-                    case S84A_CONDITION_5 -> reasons.antiSocialCondition5OfS84AGround(text);
-                }
+                secureAntisocialReason(antisocialGround, text, reasons);
             } else {
                 unknown(entry, tenancy, errors);
             }
@@ -383,13 +362,7 @@ public class GroundRouter {
 
         boolean rentGround = discretionary
             .contains(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY);
-        if (rentGround && rentOrBreach.isEmpty()) {
-            errors.add(path + "/RentArrearsOrBreach", BulkErrorCollector.REQUIRED,
-                       "RentArrearsOrBreach is required when ground RENT_ARREARS_OR_BREACH_OF_TENANCY is claimed");
-        } else if (!rentGround && !rentOrBreach.isEmpty()) {
-            errors.add(path + "/RentArrearsOrBreach", BulkErrorCollector.NOT_ALLOWED,
-                       "RentArrearsOrBreach requires ground RENT_ARREARS_OR_BREACH_OF_TENANCY");
-        }
+        checkRentArrearsOrBreach(rentGround, rentOrBreach, path, errors);
 
         SecureOrFlexiblePossessionGrounds possessionGrounds = SecureOrFlexiblePossessionGrounds.builder()
             .secureOrFlexibleDiscretionaryGrounds(discretionary)
@@ -403,8 +376,81 @@ public class GroundRouter {
         target.setShowBreachOfTenancyTextarea(groundsRules.showBreachOfTenancyTextarea(rentOrBreach));
         target.setShowReasonsForGroundsPage(groundsRules.showReasonsForSecureOrFlexibleGrounds(possessionGrounds));
         target.setSecureOrFlexibleGroundsReasons(reasons.build());
-        errors.addAll(path, BulkErrorCollector.REQUIRED,
+        errors.addAll(path, BulkErrorCollector.REQUIRED_CODE,
                       groundsRules.validateSecureOrFlexibleGrounds(possessionGrounds));
+    }
+
+    private void secureOrFlexibleDiscretionaryReason(
+        SecureOrFlexibleDiscretionaryGrounds ground,
+        String text,
+        SecureOrFlexibleGroundsReasons.SecureOrFlexibleGroundsReasonsBuilder reasons) {
+
+        switch (ground) {
+            case RENT_ARREARS_OR_BREACH_OF_TENANCY -> reasons.breachOfTenancyGround(text);
+            case NUISANCE_OR_IMMORAL_USE -> reasons.nuisanceOrImmoralUseGround(text);
+            case DOMESTIC_VIOLENCE -> reasons.domesticViolenceGround(text);
+            case RIOT_OFFENCE -> reasons.riotOffenceGround(text);
+            case PROPERTY_DETERIORATION -> reasons.propertyDeteriorationGround(text);
+            case FURNITURE_DETERIORATION -> reasons.furnitureDeteriorationGround(text);
+            case TENANCY_OBTAINED_BY_FALSE_STATEMENT -> reasons.tenancyByFalseStatementGround(text);
+            case PREMIUM_PAID_MUTUAL_EXCHANGE -> reasons.premiumMutualExchangeGround(text);
+            case UNREASONABLE_CONDUCT_TIED_ACCOMMODATION -> reasons.unreasonableConductGround(text);
+            case REFUSAL_TO_MOVE_BACK -> reasons.refusalToMoveBackGround(text);
+        }
+    }
+
+    private void secureOrFlexibleDiscretionaryAltReason(
+        SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm ground,
+        String text,
+        SecureOrFlexibleGroundsReasons.SecureOrFlexibleGroundsReasonsBuilder reasons) {
+
+        switch (ground) {
+            case TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE -> reasons.tiedAccommodationGround(text);
+            case ADAPTED_ACCOMMODATION -> reasons.adaptedAccommodationGround(text);
+            case HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES -> reasons.housingAssocSpecialGround(text);
+            case SPECIAL_NEEDS_ACCOMMODATION -> reasons.specialNeedsAccommodationGround(text);
+            case UNDER_OCCUPYING_AFTER_SUCCESSION -> reasons.underOccupancySuccessionGround(text);
+        }
+    }
+
+    private void secureOrFlexibleMandatoryAltReason(
+        SecureOrFlexibleMandatoryGroundsAlternativeAccomm ground,
+        String text,
+        SecureOrFlexibleGroundsReasons.SecureOrFlexibleGroundsReasonsBuilder reasons) {
+
+        switch (ground) {
+            case OVERCROWDING -> reasons.overcrowdingGround(text);
+            case LANDLORD_WORKS -> reasons.landlordWorksGround(text);
+            case PROPERTY_SOLD -> reasons.propertySoldGround(text);
+            case CHARITABLE_LANDLORD -> reasons.charitableLandlordGround(text);
+        }
+    }
+
+    private void secureAntisocialReason(
+        SecureAntisocialAdditionalGrounds ground,
+        String text,
+        SecureOrFlexibleGroundsReasons.SecureOrFlexibleGroundsReasonsBuilder reasons) {
+
+        switch (ground) {
+            case S84A_CONDITION_1 -> reasons.antiSocialCondition1OfS84AGround(text);
+            case S84A_CONDITION_2 -> reasons.antiSocialCondition2OfS84AGround(text);
+            case S84A_CONDITION_3 -> reasons.antiSocialCondition3OfS84AGround(text);
+            case S84A_CONDITION_4 -> reasons.antiSocialCondition4OfS84AGround(text);
+            case S84A_CONDITION_5 -> reasons.antiSocialCondition5OfS84AGround(text);
+        }
+    }
+
+    private void checkRentArrearsOrBreach(boolean rentGround,
+                                          Set<RentArrearsOrBreachOfTenancy> rentOrBreach,
+                                          String path,
+                                          BulkErrorCollector errors) {
+        if (rentGround && rentOrBreach.isEmpty()) {
+            errors.add(path + PATH_SEPARATOR + RENT_ARREARS_OR_BREACH, BulkErrorCollector.REQUIRED_CODE,
+                       "RentArrearsOrBreach is required when ground RENT_ARREARS_OR_BREACH_OF_TENANCY is claimed");
+        } else if (!rentGround && !rentOrBreach.isEmpty()) {
+            errors.add(path + PATH_SEPARATOR + RENT_ARREARS_OR_BREACH, BulkErrorCollector.NOT_ALLOWED,
+                       "RentArrearsOrBreach requires ground RENT_ARREARS_OR_BREACH_OF_TENANCY");
+        }
     }
 
     // ---- introductory, demoted or other ----
@@ -433,7 +479,9 @@ public class GroundRouter {
                         description = otherDescription(entry, errors);
                         reasons.otherGround(text);
                     }
-                    case RENT_ARREARS -> { }
+                    case RENT_ARREARS -> {
+                        // the journey collects no reason for the rent arrears grounds
+                    }
                 }
             } else {
                 unknown(entry, TenancyLicenceType.INTRODUCTORY_TENANCY, errors);
@@ -444,7 +492,8 @@ public class GroundRouter {
             errors.add("ClaimParticulars/Grounds", BulkErrorCollector.INVALID_VALUE,
                        NO_GROUNDS + " cannot be combined with other grounds");
         } else if (!noGrounds && selected.isEmpty() && !entries.isEmpty()) {
-            errors.add("ClaimParticulars/Grounds", BulkErrorCollector.REQUIRED, "Please select at least one ground");
+            errors.add("ClaimParticulars/Grounds", BulkErrorCollector.REQUIRED_CODE,
+                       "Please select at least one ground");
         }
 
         IntroductoryDemotedOtherGroundsForPossession possessionGrounds =

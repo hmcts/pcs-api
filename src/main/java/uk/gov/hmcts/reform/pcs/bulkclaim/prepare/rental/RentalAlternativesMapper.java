@@ -100,7 +100,7 @@ public class RentalAlternativesMapper {
     private static <E extends Enum<E>> E housingAct(Class<E> type, String value, String path,
                                                     BulkErrorCollector errors) {
         if (StringUtils.isBlank(value)) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "Housing Act section is required");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "Housing Act section is required");
             return null;
         }
         try {

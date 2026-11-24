@@ -40,7 +40,7 @@ public class WalesDetailsMapper {
                       String path,
                       BulkErrorCollector errors) {
         if (wales == null) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "Wales is required for a claim in Wales");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "Wales is required for a claim in Wales");
             return;
         }
 
@@ -74,7 +74,7 @@ public class WalesDetailsMapper {
         if (errors.required(path + "/AgreedTermsOfPeriodicContract", agreedTerms,
                             "AgreedTermsOfPeriodicContract")) {
             terms.agreedTermsOfPeriodicContract(VerticalYesNo.from(agreedTerms));
-            if (agreedTerms) {
+            if (Boolean.TRUE.equals(agreedTerms)) {
                 errors.requiredWithMaxLength(path + "/DetailsOfTerms", conduct.getDetailsOfTerms(),
                                              BulkLimits.SHORT_TEXT, PERIODIC_TERMS_DETAILS_LABEL);
                 terms.detailsOfTerms(conduct.getDetailsOfTerms());

@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
@@ -39,6 +38,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental.RentalPreparerTestSupport.fixture;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental.RentalPreparerTestSupport.organisation;
@@ -55,9 +55,9 @@ class WalesRentalBulkClaimPreparerTest {
 
     @BeforeEach
     void setUp() {
-        eligibility = Mockito.mock(BulkPropertyEligibility.class);
-        resolver = Mockito.mock(BulkClaimantOrganisationResolver.class);
-        featureToggleService = Mockito.mock(FeatureToggleService.class);
+        eligibility = mock(BulkPropertyEligibility.class);
+        resolver = mock(BulkClaimantOrganisationResolver.class);
+        featureToggleService = mock(FeatureToggleService.class);
         when(resolver.isPbaAccountValid(any(), any())).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)).thenReturn(true);
         when(eligibility.check(any(), any())).thenReturn(

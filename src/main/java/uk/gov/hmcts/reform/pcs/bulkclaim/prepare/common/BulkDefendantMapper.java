@@ -67,7 +67,7 @@ public class BulkDefendantMapper {
         }
 
         if (details.isEmpty()) {
-            errors.add(elementName + "[1]", BulkErrorCollector.REQUIRED, "At least one defendant is required");
+            errors.add(elementName + "[1]", BulkErrorCollector.REQUIRED_CODE, "At least one defendant is required");
             return new DefendantsMapping(null, VerticalYesNo.NO, List.of(), extras);
         }
 

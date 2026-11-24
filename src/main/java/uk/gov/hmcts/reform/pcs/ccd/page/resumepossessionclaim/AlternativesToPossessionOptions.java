@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -21,6 +22,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
     private final AlternativesRules alternativesRules;
 
+    @Autowired
     public AlternativesToPossessionOptions() {
         this(new AlternativesRules());
     }

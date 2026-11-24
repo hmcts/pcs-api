@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ws.config.annotation.EnableWs;
-import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointExceptionResolver;
 import org.springframework.ws.server.EndpointInvocationChain;
 import org.springframework.ws.server.EndpointMapping;
@@ -54,14 +53,9 @@ public class BulkClaimSoapConfiguration {
     /** Last resort for a payload no operation claims, so it is a fault rather than a bare HTTP error. */
     @Bean
     public EndpointMapping bulkClaimUnknownOperationMapping() {
-        return new EndpointMapping() {
-            @Override
-            public EndpointInvocationChain getEndpoint(MessageContext messageContext) {
-                return new EndpointInvocationChain((MessageEndpoint) context -> {
-                    throw new BulkClaimSoapRefusalException("Unknown operation");
-                });
-            }
-        };
+        return messageContext -> new EndpointInvocationChain((MessageEndpoint) context -> {
+            throw new BulkClaimSoapRefusalException("Unknown operation");
+        });
     }
 
     @Bean

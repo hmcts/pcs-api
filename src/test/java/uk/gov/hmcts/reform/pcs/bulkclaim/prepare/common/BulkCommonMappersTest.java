@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkFailReason;
 import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimantOrganisationResolver;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.common.BulkPropertyEligibility.PropertyEligibility;
@@ -34,6 +33,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class BulkCommonMappersTest {
@@ -65,12 +67,6 @@ class BulkCommonMappersTest {
         return name;
     }
 
-    private static OrganisationDetailsResponse solicitorOrganisation(String name) {
-        OrganisationDetailsResponse organisation = organisation(name);
-        organisation.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
-        return organisation;
-    }
-
     private static OrganisationDetailsResponse organisation(String name) {
         return OrganisationDetailsResponse.builder()
             .name(name)
@@ -96,7 +92,7 @@ class BulkCommonMappersTest {
         assertThat(errors.maxLength("B", "abcd", 3, "B")).isFalse();
         assertThat(errors.maxLength("C", "abc", 3, "C")).isTrue();
         assertThat(errors.errors()).extracting(e -> e.code())
-            .containsExactly(BulkErrorCollector.REQUIRED, BulkErrorCollector.TOO_LONG);
+            .containsExactly(BulkErrorCollector.REQUIRED_CODE, BulkErrorCollector.TOO_LONG);
     }
 
     // ---- address ----
@@ -365,10 +361,10 @@ class BulkCommonMappersTest {
     // ---- property eligibility ----
 
     private PropertyEligibility check(EligibilityResult result) {
-        EligibilityService service = Mockito.mock(EligibilityService.class);
+        EligibilityService service = mock(EligibilityService.class);
         when(service.checkEligibility(any(), any())).thenReturn(result);
-        PcsCaseService caseService = Mockito.mock(PcsCaseService.class);
-        Mockito.doAnswer(invocation -> {
+        PcsCaseService caseService = mock(PcsCaseService.class);
+        doAnswer(invocation -> {
             invocation.<PCSCase>getArgument(0).setRegionId(7);
             return null;
         }).when(caseService).allocateRegionId(any());
@@ -405,8 +401,8 @@ class BulkCommonMappersTest {
 
     @Test
     void pbaOverrideIsCheckedOnlyWhenSupplied() {
-        BulkClaimantOrganisationResolver resolver = Mockito.mock(BulkClaimantOrganisationResolver.class);
-        when(resolver.isPbaAccountValid(any(), Mockito.eq("PBA0000001"))).thenReturn(false);
+        BulkClaimantOrganisationResolver resolver = mock(BulkClaimantOrganisationResolver.class);
+        when(resolver.isPbaAccountValid(any(), eq("PBA0000001"))).thenReturn(false);
         BulkPbaCheck check = new BulkPbaCheck(resolver);
 
         assertThat(check.validateOverride(null, null, "/p")).isEmpty();

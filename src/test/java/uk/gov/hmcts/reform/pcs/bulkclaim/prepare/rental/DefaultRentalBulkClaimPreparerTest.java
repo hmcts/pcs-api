@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
@@ -32,6 +31,8 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental.RentalPreparerTestSupport.fixture;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.rental.RentalPreparerTestSupport.organisation;
@@ -46,9 +47,9 @@ class DefaultRentalBulkClaimPreparerTest {
 
     @BeforeEach
     void setUp() {
-        eligibility = Mockito.mock(BulkPropertyEligibility.class);
-        resolver = Mockito.mock(BulkClaimantOrganisationResolver.class);
-        featureToggleService = Mockito.mock(FeatureToggleService.class);
+        eligibility = mock(BulkPropertyEligibility.class);
+        resolver = mock(BulkClaimantOrganisationResolver.class);
+        featureToggleService = mock(FeatureToggleService.class);
         when(resolver.isPbaAccountValid(any(), any())).thenReturn(true);
         when(eligibility.check(any(), any())).thenReturn(
             new PropertyEligibility(null, LegislativeCountry.ENGLAND, 20262, 1));
@@ -98,6 +99,12 @@ class DefaultRentalBulkClaimPreparerTest {
         assertThat(pcsCase.getHasOtherAdditionalGrounds()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getRentArrearsGroundsReasons().getOwnerOccupierReason())
             .isEqualTo("Landlord needs the home.");
+    }
+
+    @Test
+    void shouldMapAssuredArrearsClaimNoticeRentAndArrears() {
+        PreparedBulkClaim claim = prepared("rental-england-assured-arrears-valid.xml");
+        PCSCase pcsCase = claim.pcsCase();
 
         assertThat(pcsCase.getNoticeServed()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getNoticeServedDetails().getServiceMethod()).isEqualTo(NoticeServiceMethod.FIRST_CLASS_POST);
@@ -112,6 +119,12 @@ class DefaultRentalBulkClaimPreparerTest {
         assertThat(pcsCase.getRentArrears().getTotal()).isEqualByComparingTo("2400.50");
         assertThat(pcsCase.getRentArrears().getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getArrearsJudgmentWanted()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldMapAssuredArrearsClaimCircumstancesStatementOfTruthAndExtras() {
+        PreparedBulkClaim claim = prepared("rental-england-assured-arrears-valid.xml");
+        PCSCase pcsCase = claim.pcsCase();
 
         assertThat(pcsCase.getDefendantCircumstances().getHasDefendantCircumstancesInfo()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getAdditionalReasonsForPossession().getHasReasons()).isEqualTo(VerticalYesNo.YES);
@@ -353,7 +366,7 @@ class DefaultRentalBulkClaimPreparerTest {
 
     @Test
     void shouldRejectInvalidPbaOverrideAndUseValidOne() {
-        when(resolver.isPbaAccountValid(any(), Mockito.eq("PBA7654321"))).thenReturn(false);
+        when(resolver.isPbaAccountValid(any(), eq("PBA7654321"))).thenReturn(false);
 
         Rejected rejected = (Rejected) prepare("rental-england-assured-arrears-valid.xml",
                                                claim -> claim.setPaymentAccountNumber("PBA7654321"));
@@ -361,7 +374,7 @@ class DefaultRentalBulkClaimPreparerTest {
         assertThat(rejected.errors().getFirst().path())
             .isEqualTo("/RentalClaimSet/RentalClaim[1]/PaymentAccountNumber");
 
-        when(resolver.isPbaAccountValid(any(), Mockito.eq("PBA7654321"))).thenReturn(true);
+        when(resolver.isPbaAccountValid(any(), eq("PBA7654321"))).thenReturn(true);
         PreparedBulkClaim prepared = ((Prepared) prepare("rental-england-assured-arrears-valid.xml",
             claim -> claim.setPaymentAccountNumber("PBA7654321"))).claim();
         assertThat(prepared.pbaAccountNumber()).isEqualTo("PBA7654321");

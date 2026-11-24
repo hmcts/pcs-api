@@ -157,7 +157,7 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
         PCSCase pcsCase = PCSCase.builder().build();
         eligibility.applyTo(pcsCase);
         pcsCase.setClaimantType(claimantTypeList(claimantType, country));
-        BulkClaimExtras extras = populate(claimSet, claim, organisation, country, pcsCase, errors);
+        BulkClaimExtras extras = populate(claim, organisation, country, pcsCase, errors);
 
         if (errors.hasErrors()) {
             return new Rejected(cui, BulkFailReason.VALIDATION_FAILED, errors.errors());
@@ -177,8 +177,7 @@ public class DefaultRentalBulkClaimPreparer implements RentalBulkClaimPreparer {
             errors.absolutePath(path), reason.name(), reason.getReason())));
     }
 
-    private BulkClaimExtras populate(RentalClaimSet claimSet,
-                                     RentalClaimSet.RentalClaim claim,
+    private BulkClaimExtras populate(RentalClaimSet.RentalClaim claim,
                                      OrganisationDetailsResponse organisation,
                                      LegislativeCountry country,
                                      PCSCase pcsCase,

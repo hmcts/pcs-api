@@ -128,7 +128,9 @@ class BulkClaimXmlCodecTest {
 
     @Test
     void shouldRejectMalformedXml() {
-        assertThatThrownBy(() -> codec.parseRental("<RentalClaimSet".getBytes(StandardCharsets.UTF_8)))
+        byte[] malformed = "<RentalClaimSet".getBytes(StandardCharsets.UTF_8);
+
+        assertThatThrownBy(() -> codec.parseRental(malformed))
             .isInstanceOf(BulkClaimSchemaValidationException.class);
     }
 
@@ -182,21 +184,25 @@ class BulkClaimXmlCodecTest {
 
     @Test
     void shouldRejectStatusRequestWithNoIdentifiers() {
-        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest()))
+        byte[] noIdentifiers = statusRequest();
+
+        assertThatThrownBy(() -> codec.parseStatusRequest(noIdentifiers))
             .isInstanceOf(BulkClaimSchemaValidationException.class);
     }
 
     @Test
     void shouldRejectStatusRequestWithMoreThanOneHundredIdentifiers() {
         String[] identifiers = IntStream.rangeClosed(1, 101).mapToObj(i -> "ID-" + i).toArray(String[]::new);
+        byte[] tooMany = statusRequest(identifiers);
 
-        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest(identifiers)))
+        assertThatThrownBy(() -> codec.parseStatusRequest(tooMany))
             .isInstanceOf(BulkClaimSchemaValidationException.class);
     }
 
     @Test
     void shouldRejectStatusRequestWithInvalidIdentifierOrWrongRoot() {
-        assertThatThrownBy(() -> codec.parseStatusRequest(statusRequest("bad id!")))
+        byte[] invalidIdentifier = statusRequest("bad id!");
+        assertThatThrownBy(() -> codec.parseStatusRequest(invalidIdentifier))
             .isInstanceOf(BulkClaimSchemaValidationException.class);
         byte[] wrongRoot = ("<BulkClaimStatusResponse xmlns=\"" + BulkClaimXmlCodec.NAMESPACE + "\"/>")
             .getBytes(StandardCharsets.UTF_8);

@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.prepare.mortgage;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimExtras;
 import uk.gov.hmcts.reform.pcs.bulkclaim.model.BulkClaimPreparationResult;
@@ -36,6 +35,7 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.mortgage.MortgagePreparerTestSupport.fixture;
 import static uk.gov.hmcts.reform.pcs.bulkclaim.prepare.mortgage.MortgagePreparerTestSupport.organisation;
@@ -51,9 +51,9 @@ class DefaultMortgageBulkClaimPreparerTest {
 
     @BeforeEach
     void setUp() {
-        eligibility = Mockito.mock(BulkPropertyEligibility.class);
-        resolver = Mockito.mock(BulkClaimantOrganisationResolver.class);
-        featureToggleService = Mockito.mock(FeatureToggleService.class);
+        eligibility = mock(BulkPropertyEligibility.class);
+        resolver = mock(BulkClaimantOrganisationResolver.class);
+        featureToggleService = mock(FeatureToggleService.class);
         properties = new BulkClaimProperties();
         when(resolver.isPbaAccountValid(any(), any())).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)).thenReturn(true);
@@ -132,6 +132,13 @@ class DefaultMortgageBulkClaimPreparerTest {
         assertThat(mortgage.startInterestRate()).isEqualByComparingTo("3.5");
         assertThat(mortgage.preArrearsInterestRate()).isEqualByComparingTo("4.25");
         assertThat(mortgage.claimStartInterestRate()).isEqualByComparingTo("5");
+    }
+
+    @Test
+    void shouldMapMortgagePartiesStepsAndAdditionalPayments() {
+        BulkClaimExtras.MortgageParticulars mortgage =
+            prepared("mortgage-england-valid.xml").extras().mortgageParticulars();
+
         assertThat(mortgage.interestedParty()).isEqualTo("Example Building Society");
         assertThat(mortgage.tenancyDate()).isEqualTo(LocalDate.of(2020, 1, 1));
         assertThat(mortgage.tenantNoticeServedDate()).isEqualTo(LocalDate.of(2026, 10, 20));

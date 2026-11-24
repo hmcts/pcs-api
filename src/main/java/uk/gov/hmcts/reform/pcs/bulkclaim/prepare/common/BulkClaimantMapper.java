@@ -121,7 +121,7 @@ public class BulkClaimantMapper {
         }
         NameType individual = claimant.getIndividualName();
         if (individual == null) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "Claimant name is required");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "Claimant name is required");
             return null;
         }
         return (StringUtils.defaultString(individual.getFirstName()) + " "
@@ -155,7 +155,7 @@ public class BulkClaimantMapper {
         } else if (organisationAddress != null) {
             builder.isCorrectClaimantContactAddress(VerticalYesNo.YES);
         } else {
-            errors.add(solicitorPath + "/ContactDetails", BulkErrorCollector.REQUIRED,
+            errors.add(solicitorPath + "/ContactDetails", BulkErrorCollector.REQUIRED_CODE,
                        "A correspondence address is required because the organisation has no address on record");
         }
 

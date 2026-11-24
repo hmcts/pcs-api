@@ -379,7 +379,7 @@ class BulkClaimSubmissionServiceTest {
     }
 
     @Test
-    void shouldProcessClaimsInParallelUpToTheConfiguredLimitAndKeepRequestOrder() throws Exception {
+    void shouldProcessClaimsInParallelUpToTheConfiguredLimitAndKeepRequestOrder() {
         when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
 
         AtomicInteger running = new AtomicInteger();
@@ -394,13 +394,12 @@ class BulkClaimSubmissionServiceTest {
                 twoRunning.countDown();
                 try {
                     twoRunning.await(5, TimeUnit.SECONDS);
-                    Thread.sleep(20);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
                     running.decrementAndGet();
                 }
-                return preparedResult(cui, "hash-" + cui);
+                return preparedResult();
             }));
         }
 
@@ -412,7 +411,7 @@ class BulkClaimSubmissionServiceTest {
     }
 
     @Test
-    void shouldReportClaimsStillRunningAtTheRequestDeadlineAsPendingAndFinishThemLater() throws Exception {
+    void shouldReportClaimsStillRunningAtTheRequestDeadlineAsPendingAndFinishThemLater() {
         properties.setRequestTimeout(Duration.ofMillis(300));
         when(ccdClient.createCase(any())).thenReturn(BulkClaimCcdResult.created(CASE_REFERENCE));
         CountDownLatch release = new CountDownLatch(1);
@@ -422,7 +421,7 @@ class BulkClaimSubmissionServiceTest {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            return preparedResult("CLAIM-SLOW", "hash-slow");
+            return preparedResult();
         });
 
         List<ClaimResponseType> responses = submit(false, prepared("CLAIM-FAST", "hash-fast"), slow);
@@ -439,7 +438,7 @@ class BulkClaimSubmissionServiceTest {
     }
 
     @Test
-    void shouldReportClaimsQueuedBehindTheParallelismLimitAsPendingAtTheDeadline() throws Exception {
+    void shouldReportClaimsQueuedBehindTheParallelismLimitAsPendingAtTheDeadline() {
         properties.setParallelism(1);
         properties.setRequestTimeout(Duration.ofMillis(300));
         underTest.shutdown();
@@ -452,7 +451,7 @@ class BulkClaimSubmissionServiceTest {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            return preparedResult("CLAIM-0", "hash-0");
+            return preparedResult();
         });
 
         List<ClaimResponseType> responses = submit(false, blocking, prepared("CLAIM-1", "hash-1"));
@@ -556,10 +555,10 @@ class BulkClaimSubmissionServiceTest {
     }
 
     private static ClaimInput prepared(String cui, String hash) {
-        return input(cui, hash, () -> preparedResult(cui, hash));
+        return input(cui, hash, () -> preparedResult());
     }
 
-    private static BulkClaimPreparationResult preparedResult(String cui, String hash) {
+    private static BulkClaimPreparationResult preparedResult() {
         return new BulkClaimPreparationResult.Prepared(new PreparedBulkClaim(
             PCSCase.builder().build(),
             new BulkClaimExtras(null, null, null, null, null, null, null, null, null, null, null, null, null),

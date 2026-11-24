@@ -305,18 +305,19 @@ class DefaultBulkClaimV2HandlerTest {
 
         assertThat(response.outcome()).isEqualTo(Outcome.OK);
         String xml = body(response);
-        assertThat(xml).contains("<BulkClaimStatusListResponse");
         assertThat(xml.split("<Claim>", -1)).hasSize(5);
-        assertThat(xml).containsSubsequence(
-            "<CustomerUniqueIdentifier>CLAIM-0003<", "<CustomerUniqueIdentifier>UNKNOWN<",
-            "<CustomerUniqueIdentifier>CLAIM-0001<", "<CustomerUniqueIdentifier>CLAIM-0003<");
-        assertThat(xml).containsPattern(
-            "<CustomerUniqueIdentifier>UNKNOWN</CustomerUniqueIdentifier>\\s*<ClaimStatus>"
+        assertThat(xml)
+            .contains("<BulkClaimStatusListResponse")
+                .containsSubsequence(
+                "<CustomerUniqueIdentifier>CLAIM-0003<", "<CustomerUniqueIdentifier>UNKNOWN<",
+            "<CustomerUniqueIdentifier>CLAIM-0001<", "<CustomerUniqueIdentifier>CLAIM-0003<")
+                .containsPattern(
+                "<CustomerUniqueIdentifier>UNKNOWN</CustomerUniqueIdentifier>\\s*<ClaimStatus>"
                 + "\\s*<StatusCode>2</StatusCode>(?s:.*?)<FailReasonCode>17</FailReasonCode>")
             .contains("<CaseState>CASE_ISSUED</CaseState>")
             .contains("<PaymentStatus>PAID</PaymentStatus>");
         verify(submissionRepository).findByOrganisationIdAndCustomerUniqueIdentifierIn(
-            eq(ORG), eq(Set.of("CLAIM-0003", "UNKNOWN", "CLAIM-0001")));
+            ORG, Set.of("CLAIM-0003", "UNKNOWN", "CLAIM-0001"));
         verify(caseStateReader).statesOf(Set.of(1781000000000001L));
     }
 

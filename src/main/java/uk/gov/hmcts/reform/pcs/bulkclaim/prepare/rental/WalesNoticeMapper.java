@@ -33,7 +33,7 @@ public class WalesNoticeMapper {
      */
     public String apply(WalesNoticeType notice, PCSCase target, String path, BulkErrorCollector errors) {
         if (notice == null) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "WalesNotice is required for a claim in Wales");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "WalesNotice is required for a claim in Wales");
             return null;
         }
 

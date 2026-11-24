@@ -134,7 +134,7 @@ public class MortgageParticularsMapper {
      */
     public void requirePaymentHistory(List<PaymentHistoryLine> lines, String path, BulkErrorCollector errors) {
         if (lines == null || lines.isEmpty()) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "At least one payment history line is required");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "At least one payment history line is required");
         }
     }
 

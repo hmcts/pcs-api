@@ -15,7 +15,7 @@ import java.util.List;
  */
 public final class BulkErrorCollector {
 
-    public static final String REQUIRED = "REQUIRED";
+    public static final String REQUIRED_CODE = "REQUIRED";
     public static final String TOO_LONG = "TOO_LONG";
     public static final String INVALID_VALUE = "INVALID_VALUE";
     public static final String NOT_ALLOWED = "NOT_ALLOWED";
@@ -74,7 +74,7 @@ public final class BulkErrorCollector {
     public boolean required(String relativePath, Object value, String label) {
         boolean missing = value == null || (value instanceof String text && text.isBlank());
         if (missing) {
-            add(relativePath, REQUIRED, label + " is required");
+            add(relativePath, REQUIRED_CODE, label + " is required");
         }
         return !missing;
     }

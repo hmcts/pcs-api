@@ -36,6 +36,11 @@ import java.util.Set;
 @Component
 public class WalesGroundRouter {
 
+    private static final char PATH_SEPARATOR = '/';
+    private static final String CODE = "Code";
+    private static final String REASON = "Reason";
+    private static final String GROUND_LABEL = "Ground ";
+
     private final GroundsRules groundsRules;
 
     public WalesGroundRouter(GroundsRules groundsRules) {
@@ -55,7 +60,7 @@ public class WalesGroundRouter {
                       BulkErrorCollector errors) {
 
         if (!grounds.getRentArrearsOrBreach().isEmpty()) {
-            errors.add(path + "/RentArrearsOrBreach", BulkErrorCollector.NOT_ALLOWED,
+            errors.add(path + PATH_SEPARATOR + "RentArrearsOrBreach", BulkErrorCollector.NOT_ALLOWED,
                        "RentArrearsOrBreach only applies to secure and flexible tenancies in England");
         }
 
@@ -88,10 +93,10 @@ public class WalesGroundRouter {
         Set<String> seen = new HashSet<>();
         for (int i = 0; i < grounds.getGround().size(); i++) {
             GroundType ground = grounds.getGround().get(i);
-            String groundPath = path + "/" + BulkErrorCollector.indexed("Ground", i);
+            String groundPath = path + PATH_SEPARATOR + BulkErrorCollector.indexed("Ground", i);
             if (!seen.add(ground.getCode())) {
-                errors.add(groundPath + "/Code", BulkErrorCollector.INVALID_VALUE,
-                           "Ground " + ground.getCode() + " is listed more than once");
+                errors.add(groundPath + PATH_SEPARATOR + CODE, BulkErrorCollector.INVALID_VALUE,
+                           GROUND_LABEL + ground.getCode() + " is listed more than once");
                 continue;
             }
             entries.add(new Entry(ground, groundPath));
@@ -100,14 +105,14 @@ public class WalesGroundRouter {
     }
 
     private void unknown(Entry entry, OccupationLicenceTypeWales contract, BulkErrorCollector errors) {
-        errors.add(entry.path() + "/Code", BulkErrorCollector.INVALID_VALUE,
-                   "Ground " + entry.code() + " is not valid for a " + contract + " in Wales");
+        errors.add(entry.path() + PATH_SEPARATOR + CODE, BulkErrorCollector.INVALID_VALUE,
+                   GROUND_LABEL + entry.code() + " is not valid for a " + contract + " in Wales");
     }
 
     /** The reason text for a ground that needs one. */
     private String reason(Entry entry, BulkErrorCollector errors) {
-        errors.requiredWithMaxLength(entry.path() + "/Reason", entry.ground().getReason(), BulkLimits.MEDIUM_TEXT,
-                                     "Reason for ground " + entry.code());
+        errors.requiredWithMaxLength(entry.path() + PATH_SEPARATOR + REASON, entry.ground().getReason(),
+                                     BulkLimits.MEDIUM_TEXT, "Reason for ground " + entry.code());
         return entry.ground().getReason();
     }
 
@@ -121,7 +126,7 @@ public class WalesGroundRouter {
 
     private void rejectEstateManagementGrounds(Entry entry, BulkErrorCollector errors) {
         if (!entry.ground().getEstateManagementGround().isEmpty()) {
-            errors.add(entry.path() + "/EstateManagementGround", BulkErrorCollector.NOT_ALLOWED,
+            errors.add(entry.path() + PATH_SEPARATOR + "EstateManagementGround", BulkErrorCollector.NOT_ALLOWED,
                        "Estate management grounds only apply to ground ESTATE_MANAGEMENT_GROUNDS_S160");
         }
     }
@@ -130,25 +135,27 @@ public class WalesGroundRouter {
     private Map<EstateManagementGroundsWales, String> estateManagementGrounds(Entry entry,
                                                                              BulkErrorCollector errors) {
         if (entry.ground().getReason() != null) {
-            errors.add(entry.path() + "/Reason", BulkErrorCollector.NOT_ALLOWED,
-                       "Ground " + entry.code() + " takes a reason on each EstateManagementGround, not on the ground");
+            errors.add(entry.path() + PATH_SEPARATOR + REASON, BulkErrorCollector.NOT_ALLOWED,
+                       GROUND_LABEL + entry.code() + " takes a reason on each "
+                           + "EstateManagementGround, not on the ground");
         }
         Map<EstateManagementGroundsWales, String> selected = new EnumMap<>(EstateManagementGroundsWales.class);
         List<EstateManagementGroundType> grounds = entry.ground().getEstateManagementGround();
         for (int i = 0; i < grounds.size(); i++) {
             EstateManagementGroundType estateGround = grounds.get(i);
-            String groundPath = entry.path() + "/" + BulkErrorCollector.indexed("EstateManagementGround", i);
+            String groundPath = entry.path() + PATH_SEPARATOR
+                + BulkErrorCollector.indexed("EstateManagementGround", i);
             EstateManagementGroundsWales code = parse(EstateManagementGroundsWales.class,
                                                       String.valueOf(estateGround.getCode().value()));
             if (code == null) {
-                errors.add(groundPath + "/Code", BulkErrorCollector.INVALID_VALUE,
+                errors.add(groundPath + PATH_SEPARATOR + CODE, BulkErrorCollector.INVALID_VALUE,
                            estateGround.getCode().value() + " is not an estate management ground");
                 continue;
             }
-            errors.requiredWithMaxLength(groundPath + "/Reason", estateGround.getReason(), BulkLimits.MEDIUM_TEXT,
-                                         "Reason for estate management ground " + code);
+            errors.requiredWithMaxLength(groundPath + PATH_SEPARATOR + REASON, estateGround.getReason(),
+                                         BulkLimits.MEDIUM_TEXT, "Reason for estate management ground " + code);
             if (selected.containsKey(code)) {
-                errors.add(groundPath + "/Code", BulkErrorCollector.INVALID_VALUE,
+                errors.add(groundPath + PATH_SEPARATOR + CODE, BulkErrorCollector.INVALID_VALUE,
                            "Estate management ground " + code + " is listed more than once");
             } else {
                 selected.put(code, estateGround.getReason());
@@ -197,7 +204,7 @@ public class WalesGroundRouter {
             .build();
         target.setGroundsForPossessionWales(possessionGrounds);
         target.setGroundsReasonsWales(reasons.build());
-        errors.addAll(path, BulkErrorCollector.REQUIRED, groundsRules.validateWalesGrounds(possessionGrounds));
+        errors.addAll(path, BulkErrorCollector.REQUIRED_CODE, groundsRules.validateWalesGrounds(possessionGrounds));
         return possessionGrounds;
     }
 
@@ -214,7 +221,9 @@ public class WalesGroundRouter {
             case LANDLORD_BREAK_CLAUSE_S199 -> reasons.landlordBreakClauseS199Reason(reason(entry, errors));
             case CONVERTED_FIXED_TERM_SCH12_25B2 ->
                 reasons.convertedFixedTermSch1225B2Reason(reason(entry, errors));
-            case SERIOUS_ARREARS_PERIODIC_S181, SERIOUS_ARREARS_FIXED_TERM_S187 -> { }
+            case SERIOUS_ARREARS_PERIODIC_S181, SERIOUS_ARREARS_FIXED_TERM_S187 -> {
+                // the journey collects no reason for the serious arrears grounds
+            }
         }
     }
 
@@ -271,14 +280,7 @@ public class WalesGroundRouter {
                 mandatory.add(mandatoryGround);
                 rejectEstateManagementGrounds(entry, errors);
                 String text = reason(entry, errors);
-                switch (mandatoryGround) {
-                    case FAILURE_TO_GIVE_UP_POSSESSION_S170 ->
-                        reasons.secureFailureToGiveUpPossessionSection170Reason(text);
-                    case LANDLORD_NOTICE_S186 -> reasons.secureLandlordNoticeSection186Reason(text);
-                    case FAILURE_TO_GIVE_UP_POSSESSION_S191 ->
-                        reasons.secureFailureToGiveUpPossessionSection191Reason(text);
-                    case LANDLORD_NOTICE_S199 -> reasons.secureLandlordNoticeSection199Reason(text);
-                }
+                secureMandatoryReason(mandatoryGround, text, reasons);
             } else {
                 unknown(entry, OccupationLicenceTypeWales.SECURE_CONTRACT, errors);
             }
@@ -291,8 +293,22 @@ public class WalesGroundRouter {
             .build();
         target.setSecureContractGroundsForPossessionWales(possessionGrounds);
         target.setGroundsReasonsWales(reasons.build());
-        errors.addAll(path, BulkErrorCollector.REQUIRED, groundsRules.validateSecureContractGrounds(possessionGrounds));
+        errors.addAll(path, BulkErrorCollector.REQUIRED_CODE,
+                      groundsRules.validateSecureContractGrounds(possessionGrounds));
         return possessionGrounds;
+    }
+
+    private void secureMandatoryReason(SecureContractMandatoryGroundsWales ground,
+                                       String text,
+                                       GroundsReasonsWales.GroundsReasonsWalesBuilder reasons) {
+        switch (ground) {
+            case FAILURE_TO_GIVE_UP_POSSESSION_S170 ->
+                reasons.secureFailureToGiveUpPossessionSection170Reason(text);
+            case LANDLORD_NOTICE_S186 -> reasons.secureLandlordNoticeSection186Reason(text);
+            case FAILURE_TO_GIVE_UP_POSSESSION_S191 ->
+                reasons.secureFailureToGiveUpPossessionSection191Reason(text);
+            case LANDLORD_NOTICE_S199 -> reasons.secureLandlordNoticeSection199Reason(text);
+        }
     }
 
     private Set<EstateManagementGroundsWales> secureEstateReasons(

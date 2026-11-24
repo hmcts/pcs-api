@@ -57,28 +57,7 @@ public class ClaimService {
 
             WalesDocuments walesDocuments = pcsCase.getRequiredDocumentsWales();
             if (walesDocuments != null) {
-                VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
-                claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
-                if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
-                    claimEntity.setNoEnergyPerformanceCertificateReason(
-                        walesDocuments.getNoEpcReason()
-                    );
-                }
-
-                VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
-                claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
-                if (hasGasSafetyReport == VerticalYesNo.NO) {
-                    claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasReportReason());
-                }
-
-                VerticalYesNo hasElectricalInstallationConditionReport =
-                    walesDocuments.getHasElectricalInstallationConditionReport();
-                claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
-                if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
-                    claimEntity.setNoElectricalInstallationConditionReason(
-                        walesDocuments.getNoEicrReason()
-                    );
-                }
+                applyWalesDocuments(claimEntity, walesDocuments);
             }
 
             Set<UploadedDocumentChecklistType> documentsYouveUploaded = pcsCase.getDocumentsYouveUploaded();
@@ -105,6 +84,30 @@ public class ClaimService {
         claimRepository.save(claimEntity);
     }
 
+    private static void applyWalesDocuments(ClaimEntity claimEntity, WalesDocuments walesDocuments) {
+        VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
+        claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
+        if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
+            claimEntity.setNoEnergyPerformanceCertificateReason(
+                walesDocuments.getNoEpcReason()
+            );
+        }
+
+        VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
+        claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
+        if (hasGasSafetyReport == VerticalYesNo.NO) {
+            claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasReportReason());
+        }
+
+        VerticalYesNo hasElectricalInstallationConditionReport =
+            walesDocuments.getHasElectricalInstallationConditionReport();
+        claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
+        if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
+            claimEntity.setNoElectricalInstallationConditionReason(
+                walesDocuments.getNoEicrReason()
+            );
+        }
+    }
 
     private ClaimEntity buildClaimEntity(PCSCase pcsCase) {
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();

@@ -91,7 +91,9 @@ class BulkClaimPaymentRetryServiceTest {
         when(paymentService.rescheduleBulkPbaPayment(any(), anyLong(), any()))
             .thenThrow(new IllegalStateException("db down"));
 
-        assertThatThrownBy(() -> underTest.retry(submission(BulkClaimPaymentStatus.FAILED), "PBA2", "REF2", "Org"))
+        BulkClaimSubmissionEntity failed = submission(BulkClaimPaymentStatus.FAILED);
+
+        assertThatThrownBy(() -> underTest.retry(failed, "PBA2", "REF2", "Org"))
             .isInstanceOf(IllegalStateException.class);
 
         verify(statusUpdater).onPbaPaymentFailed(ID, SERVICE_REQUEST, "Payment could not be rescheduled");

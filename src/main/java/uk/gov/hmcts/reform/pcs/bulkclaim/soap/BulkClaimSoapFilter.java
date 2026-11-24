@@ -17,6 +17,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
+import uk.gov.hmcts.reform.pcs.bulkclaim.security.BulkClaimApimS2sFilter;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
@@ -43,7 +45,7 @@ import javax.xml.parsers.SAXParserFactory;
 @RequiredArgsConstructor
 public class BulkClaimSoapFilter extends OncePerRequestFilter {
 
-    public static final String SERVICES_PATH = "/v2/bulk-claims/services";
+    public static final String SERVICES_PATH = BulkClaimApimS2sFilter.BULK_CLAIMS_PATH + "/services";
     public static final String ENDPOINT_PATH = SERVICES_PATH + "/BulkClaim";
     public static final String WSDL_PATH = ENDPOINT_PATH + ".wsdl";
     public static final String SCHEMA_PATH = SERVICES_PATH + "/schema/";
@@ -58,7 +60,7 @@ public class BulkClaimSoapFilter extends OncePerRequestFilter {
     private static final String SOAP_11_ENVELOPE_NAMESPACE = "http://schemas.xmlsoap.org/soap/envelope/";
     private static final String SOAP_12_ENVELOPE_NAMESPACE = "http://www.w3.org/2003/05/soap-envelope";
     private static final Pattern HOST_NAME = Pattern.compile("[A-Za-z0-9](?:[A-Za-z0-9.-]{0,252}[A-Za-z0-9])?");
-    private static final Pattern CONTEXT_PATH = Pattern.compile("(?:/[A-Za-z0-9._-]+)*");
+    private static final Pattern CONTEXT_PATH = Pattern.compile("[A-Za-z0-9/._-]*+");
     private static final String XML_CONTENT_TYPE = "text/xml;charset=UTF-8";
     private static final String FAULT = """
         <?xml version="1.0" encoding="UTF-8"?>\
@@ -86,11 +88,12 @@ public class BulkClaimSoapFilter extends OncePerRequestFilter {
             return;
         }
 
-        byte[] body = readBounded(request);
-        if (body == null) {
+        Optional<byte[]> bounded = readBounded(request);
+        if (bounded.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
             return;
         }
+        byte[] body = bounded.get();
         String rootNamespace = rootNamespaceOfSafeXml(body);
         if (rootNamespace == null) {
             fault(response, "Client", "The request is not a well-formed SOAP message");
@@ -157,15 +160,15 @@ public class BulkClaimSoapFilter extends OncePerRequestFilter {
             + contextPath + ENDPOINT_PATH);
     }
 
-    /** Reads the body, never holding more than the configured maximum; null when it is over the limit. */
-    private byte[] readBounded(HttpServletRequest request) throws IOException {
+    /** Reads the body, never holding more than the configured maximum; empty when it is over the limit. */
+    private Optional<byte[]> readBounded(HttpServletRequest request) throws IOException {
         long maxBytes = properties.getMaxRequestSize().toBytes();
         if (request.getContentLengthLong() > maxBytes) {
-            return null;
+            return Optional.empty();
         }
         try (InputStream in = request.getInputStream()) {
             byte[] body = in.readNBytes((int) Math.min(maxBytes + 1, Integer.MAX_VALUE - 8L));
-            return body.length > maxBytes ? null : body;
+            return body.length > maxBytes ? Optional.empty() : Optional.of(body);
         }
     }
 

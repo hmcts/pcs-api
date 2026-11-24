@@ -255,7 +255,8 @@ class PcsCaseServiceTest {
         AddressUK propertyAddress = mock(AddressUK.class);
         LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
         OrganisationDetailsResponse org = OrganisationDetailsResponse.builder().organisationIdentifier("ORG1").build();
-        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(mock(AddressEntity.class));
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(addressEntity);
 
         // When
         underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry, org);

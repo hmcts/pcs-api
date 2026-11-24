@@ -1794,7 +1794,8 @@ class PartyServiceTest {
             PartyEntity stub = new PartyEntity();
             stub.setClaimCreator(true);
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(stub));
-            when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
+            DefendantDetails defendant = mock(DefendantDetails.class);
+            when(pcsCase.getDefendant1()).thenReturn(defendant);
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
                 .claimantName("Claimant name").isClaimantNameCorrect(VerticalYesNo.YES).build());
             when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()

@@ -41,7 +41,7 @@ public class RentalNoticeMapper {
      */
     public String apply(NoticeType notice, PCSCase target, String path, BulkErrorCollector errors) {
         if (notice == null) {
-            errors.add(path, BulkErrorCollector.REQUIRED, "Notice is required for a claim in England");
+            errors.add(path, BulkErrorCollector.REQUIRED_CODE, "Notice is required for a claim in England");
             return null;
         }
 
@@ -68,7 +68,7 @@ public class RentalNoticeMapper {
             .unableToUploadReason(properties.getSystemReasonNoDocuments());
 
         if (notice.getServiceMethod() == null) {
-            errors.add(path + "/ServiceMethod", BulkErrorCollector.REQUIRED,
+            errors.add(path + "/ServiceMethod", BulkErrorCollector.REQUIRED_CODE,
                        "The method of service is required when the notice was served");
             return builder.build();
         }

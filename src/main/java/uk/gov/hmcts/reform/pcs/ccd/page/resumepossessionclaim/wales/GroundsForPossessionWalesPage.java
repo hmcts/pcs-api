@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -26,6 +27,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
 
     private final GroundsRules groundsRules;
 
+    @Autowired
     public GroundsForPossessionWalesPage() {
         this(new GroundsRules());
     }

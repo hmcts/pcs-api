@@ -35,6 +35,7 @@ public class BulkClaimApimS2sFilter extends OncePerRequestFilter {
 
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String FORBIDDEN = "Forbidden";
     private static final Duration SERVICE_NAME_CACHE_TTL = Duration.ofMinutes(5);
     private static final long SERVICE_NAME_CACHE_MAX_SIZE = 1000;
 
@@ -59,7 +60,7 @@ public class BulkClaimApimS2sFilter extends OncePerRequestFilter {
 
         if (token == null || token.isBlank()) {
             if (bulkPath) {
-                reject(response, HttpStatus.FORBIDDEN, "Forbidden");
+                reject(response, HttpStatus.FORBIDDEN, FORBIDDEN);
                 return;
             }
             filterChain.doFilter(request, response);
@@ -71,7 +72,7 @@ public class BulkClaimApimS2sFilter extends OncePerRequestFilter {
             serviceName = resolveServiceName(token);
         } catch (InvalidTokenException e) {
             log.warn("Rejecting request with unresolvable S2S token");
-            reject(response, HttpStatus.FORBIDDEN, "Forbidden");
+            reject(response, HttpStatus.FORBIDDEN, FORBIDDEN);
             return;
         } catch (RuntimeException e) {
             log.error("Unable to resolve S2S service name", e);
@@ -83,7 +84,7 @@ public class BulkClaimApimS2sFilter extends OncePerRequestFilter {
 
         if (bulkPath != apimCaller) {
             log.warn("Rejecting S2S caller '{}' for path '{}'", serviceName, request.getRequestURI());
-            reject(response, HttpStatus.FORBIDDEN, "Forbidden");
+            reject(response, HttpStatus.FORBIDDEN, FORBIDDEN);
             return;
         }
 

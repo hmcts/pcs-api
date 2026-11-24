@@ -35,6 +35,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createBulkPossessionClai
 public class BulkClaimCcdClient {
 
     static final String VALIDATION_CODE = "CCD_REJECTED";
+    private static final String CALLBACK_ERRORS = "callbackErrors";
 
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
@@ -107,8 +108,8 @@ public class BulkClaimCcdClient {
         }
         try {
             JsonNode root = objectMapper.readTree(body);
-            JsonNode errors = root.has("callbackErrors") ? root.get("callbackErrors")
-                : root.path("details").path("callbackErrors");
+            JsonNode errors = root.has(CALLBACK_ERRORS) ? root.get(CALLBACK_ERRORS)
+                : root.path("details").path(CALLBACK_ERRORS);
             List<String> result = new ArrayList<>();
             errors.forEach(error -> result.add(error.asText()));
             return result;
