@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsV2Client.BASE_PATH;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.BulkClaimsV2Client.ENDPOINT_PATH;
 
 @Slf4j
 @Issue("HDPI-10171")
@@ -67,13 +67,17 @@ class BulkClaimsV2Tests extends BaseApi {
                 + BulkClaimsV2Client.apimServiceName() + ": " + e.getMessage());
         }
 
-        int schemaStatus = client.schema("RentalClaim.xsd", organisationId).statusCode();
-        assumeTrue(schemaStatus != 404, "Bulk claims v2 is not enabled in this environment");
+        int wsdlStatus = client.wsdl(organisationId).statusCode();
+        assumeTrue(wsdlStatus != 404, "Bulk claims v2 is not enabled in this environment");
     }
 
-    @Title("Schema endpoint serves RentalClaim.xsd and returns 404 for an unknown file")
+    @Title("The WSDL and schema endpoints serve known files and return 404 for an unknown schema file")
     @Test
-    void schemaEndpointServesKnownFilesOnly() {
+    void wsdlAndSchemaEndpointsServeKnownFilesOnly() {
+        Response wsdl = client.wsdl(organisationId);
+        assertThat(wsdl.statusCode()).isEqualTo(200);
+        assertThat(wsdl.asString()).contains("BulkClaimSoapBinding", "processRentalClaim", "getClaimStatuses");
+
         Response schema = client.schema("RentalClaim.xsd", organisationId);
         assertThat(schema.statusCode()).isEqualTo(200);
         assertThat(schema.asString()).contains("RentalClaimSet");
@@ -103,8 +107,8 @@ class BulkClaimsV2Tests extends BaseApi {
         assertThat(invalidBody.getList("BulkClaimResponse.ClaimResponse.ValidationErrors.ValidationError"))
             .isNotEmpty();
 
-        assertThat(client.status(validCui, organisationId).statusCode()).isEqualTo(404);
-        assertThat(client.status(invalidCui, organisationId).statusCode()).isEqualTo(404);
+        assertThat(notFound(client.status(validCui, organisationId))).isTrue();
+        assertThat(notFound(client.status(invalidCui, organisationId))).isTrue();
     }
 
     @Title("A valid England social landlord rental claim creates a case, reports its status and is idempotent")
@@ -184,10 +188,9 @@ class BulkClaimsV2Tests extends BaseApi {
     void nonApimServiceCannotUseBulkClaimsApi() {
         Response response = client.request(client.nonApimToken())
             .header(BulkClaimsV2Client.ORGANISATION_HEADER, organisationId)
-            .contentType("application/xml")
-            .queryParam("validateOnly", true)
-            .body(rentalXml(BulkClaimsV2Client.uniqueCustomerIdentifier(), SOCIAL_LANDLORD))
-            .post(BASE_PATH + "/rental");
+            .contentType(BulkClaimsV2Client.SOAP_CONTENT_TYPE)
+            .body(validateOnlyRentalEnvelope())
+            .post(ENDPOINT_PATH);
 
         assertThat(response.statusCode()).isEqualTo(403);
     }
@@ -206,15 +209,14 @@ class BulkClaimsV2Tests extends BaseApi {
     @Test
     void missingOrganisationHeaderIsForbidden() {
         Response response = client.request(client.apimToken())
-            .contentType("application/xml")
-            .queryParam("validateOnly", true)
-            .body(rentalXml(BulkClaimsV2Client.uniqueCustomerIdentifier(), SOCIAL_LANDLORD))
-            .post(BASE_PATH + "/rental");
+            .contentType(BulkClaimsV2Client.SOAP_CONTENT_TYPE)
+            .body(validateOnlyRentalEnvelope())
+            .post(ENDPOINT_PATH);
 
         assertThat(response.statusCode()).isEqualTo(403);
     }
 
-    @Title("The mortgage endpoint is 404 when its flag is off, otherwise accepts a valid mortgage claim")
+    @Title("The mortgage operation is a SOAP fault when its flag is off, otherwise accepts a valid mortgage claim")
     @Test
     void mortgageEndpointHonoursItsFeatureFlag() {
         String cui = BulkClaimsV2Client.uniqueCustomerIdentifier();
@@ -225,7 +227,7 @@ class BulkClaimsV2Tests extends BaseApi {
 
         Response response = client.submit("mortgage", claimXml, organisationId, false);
 
-        if (response.statusCode() == 404) {
+        if (response.statusCode() == 500 && response.asString().contains("is not available")) {
             return;
         }
         assertThat(response.statusCode()).isEqualTo(200);
@@ -273,7 +275,17 @@ class BulkClaimsV2Tests extends BaseApi {
             + "</BulkClaimStatusRequest>";
     }
 
+    private String validateOnlyRentalEnvelope() {
+        return BulkClaimsV2Client.soapEnvelope("processRentalClaim", "rentalRequest",
+            rentalXml(BulkClaimsV2Client.uniqueCustomerIdentifier(), SOCIAL_LANDLORD), true);
+    }
+
+    private static boolean notFound(Response status) {
+        return status.statusCode() == 200
+            && xml(status).getInt("BulkClaimStatusResponse.ClaimStatus.FailReasonCode") == FAIL_REASON_CLAIM_NOT_FOUND;
+    }
+
     private static XmlPath xml(Response response) {
-        return XmlPath.from(response.asString());
+        return XmlPath.from(BulkClaimsV2Client.returnDocument(response));
     }
 }

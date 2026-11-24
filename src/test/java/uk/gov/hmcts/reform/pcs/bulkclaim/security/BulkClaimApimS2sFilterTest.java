@@ -41,7 +41,7 @@ class BulkClaimApimS2sFilterTest {
     @Test
     void shouldAllowApimOnBulkPathWithOrganisationHeader() throws Exception {
         when(validator.getServiceName(TOKEN)).thenReturn(APIM);
-        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/rental", TOKEN);
+        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/services/BulkClaim", TOKEN);
         request.addHeader("X-Organisation-Id", " ORG123 ");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -56,7 +56,7 @@ class BulkClaimApimS2sFilterTest {
         when(validator.getServiceName(TOKEN)).thenReturn(APIM);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(request("POST", "/v2/bulk-claims/rental", TOKEN), response, chain);
+        filter.doFilter(request("POST", "/v2/bulk-claims/services/BulkClaim", TOKEN), response, chain);
 
         assertThat(response.getStatus()).isEqualTo(403);
         assertThat(response.getContentAsString()).isEqualTo("Missing organisation");
@@ -66,7 +66,7 @@ class BulkClaimApimS2sFilterTest {
     @Test
     void shouldRejectApimOnBulkPathWithBlankOrganisationHeader() throws Exception {
         when(validator.getServiceName(TOKEN)).thenReturn(APIM);
-        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/rental", TOKEN);
+        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/services/BulkClaim", TOKEN);
         request.addHeader("X-Organisation-Id", "  ");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -103,7 +103,7 @@ class BulkClaimApimS2sFilterTest {
     @Test
     void shouldRejectOtherWhitelistedServiceOnBulkPath() throws Exception {
         when(validator.getServiceName(OTHER_TOKEN)).thenReturn("xui_webapp");
-        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/rental", OTHER_TOKEN);
+        MockHttpServletRequest request = request("POST", "/v2/bulk-claims/services/BulkClaim", OTHER_TOKEN);
         request.addHeader("X-Organisation-Id", "ORG123");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -141,7 +141,7 @@ class BulkClaimApimS2sFilterTest {
     void shouldRejectBulkPathWithoutServiceToken() throws Exception {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(request("POST", "/v2/bulk-claims/rental", null), response, chain);
+        filter.doFilter(request("POST", "/v2/bulk-claims/services/BulkClaim", null), response, chain);
 
         assertThat(response.getStatus()).isEqualTo(403);
         verify(chain, never()).doFilter(any(), any());
@@ -152,7 +152,7 @@ class BulkClaimApimS2sFilterTest {
         when(validator.getServiceName(TOKEN)).thenThrow(new InvalidTokenException("bad"));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(request("POST", "/v2/bulk-claims/rental", TOKEN), response, chain);
+        filter.doFilter(request("POST", "/v2/bulk-claims/services/BulkClaim", TOKEN), response, chain);
 
         assertThat(response.getStatus()).isEqualTo(403);
     }
@@ -162,7 +162,7 @@ class BulkClaimApimS2sFilterTest {
         when(validator.getServiceName(TOKEN)).thenReturn(APIM);
 
         for (int i = 0; i < 2; i++) {
-            MockHttpServletRequest request = request("POST", "/v2/bulk-claims/rental", TOKEN);
+            MockHttpServletRequest request = request("POST", "/v2/bulk-claims/services/BulkClaim", TOKEN);
             request.addHeader("X-Organisation-Id", "ORG123");
             filter.doFilter(request, new MockHttpServletResponse(), chain);
         }

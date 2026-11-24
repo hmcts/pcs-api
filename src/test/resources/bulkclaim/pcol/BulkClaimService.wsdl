@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim" xmlns:tns1="http://impl.service.bulkclaim.webservice.pcol.dca.gov.uk" xmlns:impl="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:intf="http://uk.gov.dca.pcol.webservice.bulkclaim.service/BulkClaim">
+  <wsdl:types>
+    <schema elementFormDefault="qualified" targetNamespace="http://impl.service.bulkclaim.webservice.pcol.dca.gov.uk" xmlns="http://www.w3.org/2001/XMLSchema">
+   <element name="processRentalClaim">
+    <complexType>
+     <sequence>
+      <element name="rentalRequest" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="processRentalClaimResponse">
+    <complexType>
+     <sequence>
+      <element name="processRentalClaimReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="processMortgageClaim">
+    <complexType>
+     <sequence>
+      <element name="mortgageRequest" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="processMortgageClaimResponse">
+    <complexType>
+     <sequence>
+      <element name="processMortgageClaimReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+  </schema>
+  </wsdl:types>
+  <wsdl:message name="processMortgageClaimRequest">
+    <wsdl:part name="parameters" element="tns1:processMortgageClaim">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processRentalClaimResponse">
+    <wsdl:part name="parameters" element="tns1:processRentalClaimResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processRentalClaimRequest">
+    <wsdl:part name="parameters" element="tns1:processRentalClaim">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processMortgageClaimResponse">
+    <wsdl:part name="parameters" element="tns1:processMortgageClaimResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="BulkClaimServiceImpl">
+    <wsdl:operation name="processRentalClaim">
+      <wsdl:input name="processRentalClaimRequest" message="impl:processRentalClaimRequest">
+    </wsdl:input>
+      <wsdl:output name="processRentalClaimResponse" message="impl:processRentalClaimResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processMortgageClaim">
+      <wsdl:input name="processMortgageClaimRequest" message="impl:processMortgageClaimRequest">
+    </wsdl:input>
+      <wsdl:output name="processMortgageClaimResponse" message="impl:processMortgageClaimResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BulkClaimSoapBinding" type="impl:BulkClaimServiceImpl">
+    <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="processRentalClaim">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="processRentalClaimRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processRentalClaimResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processMortgageClaim">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="processMortgageClaimRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processMortgageClaimResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="BulkClaimServiceImplService">
+    <wsdl:port name="BulkClaim" binding="impl:BulkClaimSoapBinding">
+      <wsdlsoap:address location="http://localhost:8080/pcol/services/BulkClaim"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

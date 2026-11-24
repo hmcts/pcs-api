@@ -2,10 +2,6 @@ package uk.gov.hmcts.reform.pcs.bulkclaim.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
@@ -17,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimantOrganisationResolver;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.MortgageBulkClaimPreparer;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.RentalBulkClaimPreparer;
 import uk.gov.hmcts.reform.pcs.bulkclaim.repository.BulkClaimSubmissionRepository;
+import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimResult.Outcome;
 import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimSubmissionService.ClaimInput;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimResponseBuilder;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimSchemaValidationException;
@@ -32,15 +29,12 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.PaymentStatusType;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.generated.RentalClaimSet;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,13 +43,13 @@ import java.util.stream.Collectors;
 /**
  * Handles bulk claim requests: XML in, PCOL-style XML out.
  *
- * <p>Response mapping:
+ * <p>Outcome mapping:
  * <ul>
- *   <li>schema errors: 400, overall SCHEMA_INVALID, with the errors on a single claim response that carries no
- *       customer unique identifier (path is the line and column, code {@value #SCHEMA_ERROR_CODE});</li>
- *   <li>organisation unusable: 403, overall ORGANISATION_NOT_USABLE;</li>
- *   <li>invalid set-level payment account: 200, overall PBA_NOT_VALID and no claims processed;</li>
- *   <li>otherwise 200 with a response per claim, overall success only when every claim succeeded.</li>
+ *   <li>schema errors: SCHEMA_INVALID, overall SCHEMA_INVALID, with the errors on a single claim response that
+ *       carries no customer unique identifier (path is the line and column, code {@value #SCHEMA_ERROR_CODE});</li>
+ *   <li>organisation unusable: ORGANISATION_NOT_USABLE, overall ORGANISATION_NOT_USABLE;</li>
+ *   <li>invalid set-level payment account: OK, overall PBA_NOT_VALID and no claims processed;</li>
+ *   <li>otherwise OK with a response per claim, overall success only when every claim succeeded.</li>
  * </ul>
  */
 @Slf4j
@@ -64,14 +58,8 @@ import java.util.stream.Collectors;
 public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
 
     static final String SCHEMA_ERROR_CODE = "SCHEMA_INVALID";
-    static final Set<String> SCHEMA_FILES = Set.of(
-        "Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd", "BulkClaimStatusResponse.xsd",
-        "BulkClaimStatusRequest.xsd", "BulkClaimStatusListResponse.xsd");
-
-    private static final String SCHEMA_DIR = "xsd/bulkclaim/v2/";
     private static final int MAX_SCHEMA_ERRORS = 100;
     private static final Pattern LOCATED_ERROR = Pattern.compile("^(\\d+):(\\d+) (.*)$", Pattern.DOTALL);
-    private static final MediaType XML = MediaType.APPLICATION_XML;
 
     private final BulkClaimXmlCodec codec;
     private final BulkClaimResponseBuilder responseBuilder;
@@ -84,7 +72,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
     private final MortgageBulkClaimPreparer mortgagePreparer;
 
     @Override
-    public ResponseEntity<byte[]> submitRental(byte[] xml, String organisationId, boolean validateOnly) {
+    public BulkClaimResult submitRental(byte[] xml, String organisationId, boolean validateOnly) {
         RentalClaimSet claimSet;
         try {
             claimSet = codec.parseRental(xml);
@@ -92,7 +80,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             return schemaInvalid(e);
         }
         if (claimSet.getRentalClaim().size() > properties.getMaxClaimsPerRequest()) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
+            return BulkClaimResult.tooManyClaims();
         }
 
         return process(organisationId, claimSet.getPaymentAccountNumber(), validateOnly,
@@ -105,7 +93,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
     }
 
     @Override
-    public ResponseEntity<byte[]> submitMortgage(byte[] xml, String organisationId, boolean validateOnly) {
+    public BulkClaimResult submitMortgage(byte[] xml, String organisationId, boolean validateOnly) {
         MortgageClaimSet claimSet;
         try {
             claimSet = codec.parseMortgage(xml);
@@ -113,7 +101,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             return schemaInvalid(e);
         }
         if (claimSet.getMortgageClaim().size() > properties.getMaxClaimsPerRequest()) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
+            return BulkClaimResult.tooManyClaims();
         }
 
         return process(organisationId, claimSet.getPaymentAccountNumber(), validateOnly,
@@ -126,15 +114,15 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
     }
 
     @Override
-    public ResponseEntity<byte[]> status(String organisationId, String customerUniqueIdentifier) {
+    public BulkClaimResult status(String organisationId, String customerUniqueIdentifier) {
         return submissionRepository
             .findByOrganisationIdAndCustomerUniqueIdentifier(organisationId, customerUniqueIdentifier)
-            .map(submission -> xml(codec.write(singleStatusOf(submission))))
-            .orElseGet(() -> ResponseEntity.notFound().build());
+            .map(submission -> ok(codec.write(singleStatusOf(submission))))
+            .orElseGet(() -> notFound(customerUniqueIdentifier));
     }
 
     @Override
-    public ResponseEntity<byte[]> statusBatch(byte[] xml, String organisationId) {
+    public BulkClaimResult statusBatch(byte[] xml, String organisationId) {
         BulkClaimStatusRequest request;
         try {
             request = codec.parseStatusRequest(xml);
@@ -143,7 +131,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         }
         List<String> identifiers = request.getCustomerUniqueIdentifier();
         if (identifiers.size() > properties.getMaxClaimsPerRequest()) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
+            return BulkClaimResult.tooManyClaims();
         }
 
         Map<String, BulkClaimSubmissionEntity> submissions = new HashMap<>();
@@ -161,23 +149,10 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
                 ? notFoundStatus(identifier)
                 : statusOf(submission, caseState(caseStates, submission)));
         }
-        return xml(codec.write(response));
+        return ok(codec.write(response));
     }
 
-    @Override
-    public ResponseEntity<byte[]> schema(String fileName) {
-        if (!SCHEMA_FILES.contains(fileName)) {
-            return ResponseEntity.notFound().build();
-        }
-        try (InputStream stream = new ClassPathResource(SCHEMA_DIR + fileName).getInputStream()) {
-            return xml(stream.readAllBytes());
-        } catch (IOException e) {
-            log.error("Unable to read bulk claim schema {}", fileName, e);
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    private ResponseEntity<byte[]> process(String organisationId,
+    private BulkClaimResult process(String organisationId,
                                            String setPbaAccountNumber,
                                            boolean validateOnly,
                                            Function<OrganisationDetailsResponse, List<ClaimInput>> claimInputs) {
@@ -186,12 +161,12 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             organisation = organisationResolver.resolve(organisationId);
         } catch (BulkClaimOrganisationException e) {
             log.info("Organisation {} cannot submit bulk claims: {}", organisationId, e.getReason());
-            return xml(HttpStatus.FORBIDDEN,
-                       codec.write(responseBuilder.overallFailure(BulkFailReason.ORGANISATION_NOT_USABLE, null)));
+            return BulkClaimResult.of(Outcome.ORGANISATION_NOT_USABLE,
+                codec.write(responseBuilder.overallFailure(BulkFailReason.ORGANISATION_NOT_USABLE, null)));
         }
 
         if (!organisationResolver.isPbaAccountValid(organisation, setPbaAccountNumber)) {
-            return xml(codec.write(responseBuilder.overallFailure(BulkFailReason.PBA_NOT_VALID, null)));
+            return ok(codec.write(responseBuilder.overallFailure(BulkFailReason.PBA_NOT_VALID, null)));
         }
 
         List<ClaimResponseType> responses = submissionService.submit(
@@ -203,10 +178,10 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         BulkClaimResponse response = allSucceeded
             ? responseBuilder.overallSuccess(responses)
             : responseBuilder.overallFailure(BulkFailReason.CLAIMS_FAILED, responses);
-        return xml(codec.write(response));
+        return ok(codec.write(response));
     }
 
-    private ResponseEntity<byte[]> schemaInvalid(BulkClaimSchemaValidationException e) {
+    private BulkClaimResult schemaInvalid(BulkClaimSchemaValidationException e) {
         List<BulkValidationError> errors = e.getErrors().stream()
             .limit(MAX_SCHEMA_ERRORS)
             .map(DefaultBulkClaimV2Handler::toValidationError)
@@ -214,7 +189,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         BulkClaimResponse response = responseBuilder.overallFailure(
             BulkFailReason.SCHEMA_INVALID,
             List.of(responseBuilder.claimFailure(null, BulkFailReason.SCHEMA_INVALID, errors)));
-        return xml(HttpStatus.BAD_REQUEST, codec.write(response));
+        return BulkClaimResult.of(Outcome.SCHEMA_INVALID, codec.write(response));
     }
 
     private static BulkValidationError toValidationError(String error) {
@@ -246,8 +221,16 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
             : Optional.ofNullable(caseStates.get(submission.getCaseReference()));
     }
 
+    private BulkClaimResult notFound(String customerUniqueIdentifier) {
+        BulkClaimStatusResponse status = populateNotFound(new BulkClaimStatusResponse(), customerUniqueIdentifier);
+        return BulkClaimResult.of(Outcome.CLAIM_NOT_FOUND, codec.write(status));
+    }
+
     private ClaimStatusType notFoundStatus(String customerUniqueIdentifier) {
-        ClaimStatusType status = new ClaimStatusType();
+        return populateNotFound(new ClaimStatusType(), customerUniqueIdentifier);
+    }
+
+    private <T extends ClaimStatusType> T populateNotFound(T status, String customerUniqueIdentifier) {
         status.setCustomerUniqueIdentifier(customerUniqueIdentifier);
         status.setClaimStatus(responseBuilder.status(BulkFailReason.CLAIM_NOT_FOUND));
         return status;
@@ -280,11 +263,7 @@ public class DefaultBulkClaimV2Handler implements BulkClaimV2Handler {
         };
     }
 
-    private static ResponseEntity<byte[]> xml(byte[] body) {
-        return xml(HttpStatus.OK, body);
-    }
-
-    private static ResponseEntity<byte[]> xml(HttpStatus status, byte[] body) {
-        return ResponseEntity.status(status).contentType(XML).body(body);
+    private static BulkClaimResult ok(byte[] body) {
+        return BulkClaimResult.of(Outcome.OK, body);
     }
 }

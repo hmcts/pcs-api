@@ -9,9 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.bulkclaim.config.BulkClaimProperties;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimKind;
 import uk.gov.hmcts.reform.pcs.bulkclaim.entity.BulkClaimPaymentStatus;
@@ -25,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.bulkclaim.org.BulkClaimantOrganisationResolver;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.MortgageBulkClaimPreparer;
 import uk.gov.hmcts.reform.pcs.bulkclaim.prepare.RentalBulkClaimPreparer;
 import uk.gov.hmcts.reform.pcs.bulkclaim.repository.BulkClaimSubmissionRepository;
+import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimResult.Outcome;
 import uk.gov.hmcts.reform.pcs.bulkclaim.service.BulkClaimSubmissionService.ClaimInput;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimResponseBuilder;
 import uk.gov.hmcts.reform.pcs.bulkclaim.xml.BulkClaimXmlCodec;
@@ -88,11 +86,10 @@ class DefaultBulkClaimV2HandlerTest {
         when(submissionService.submit(eq(ORG), eq(organisation), any(), eq(false)))
             .thenReturn(List.of(responseBuilder.claimSuccess("CLAIM-0001", "1781000000000001")));
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         assertThat(body(response))
             .contains("<BulkClaimResponse")
             .containsPattern("<BulkStatus>\\s*<StatusCode>1</StatusCode>")
@@ -114,10 +111,10 @@ class DefaultBulkClaimV2HandlerTest {
         when(submissionService.submit(any(), any(), any(), anyBoolean()))
             .thenReturn(List.of(responseBuilder.claimFailure("CLAIM-0001", BulkFailReason.VALIDATION_FAILED, null)));
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         assertThat(body(response))
             .containsPattern("<BulkStatus>\\s*<StatusCode>2</StatusCode>(?s:.*?)<FailReasonCode>4</FailReasonCode>");
     }
@@ -128,18 +125,18 @@ class DefaultBulkClaimV2HandlerTest {
         when(submissionService.submit(any(), any(), any(), eq(true)))
             .thenReturn(List.of(responseBuilder.claimSuccess("CLAIM-0001", null)));
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  true);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         assertThat(body(response)).doesNotContain("<CaseReference>");
     }
 
     @Test
-    void shouldReturnBadRequestWithSchemaErrorsOnAClaimResponseWithoutIdentifier() throws IOException {
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-invalid.xml"), ORG, false);
+    void shouldReportSchemaErrorsOnAClaimResponseWithoutIdentifier() throws IOException {
+        BulkClaimResult response = underTest.submitRental(sample("rental-invalid.xml"), ORG, false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.outcome()).isEqualTo(Outcome.SCHEMA_INVALID);
         assertThat(body(response))
             .containsPattern("<BulkStatus>\\s*<StatusCode>2</StatusCode>(?s:.*?)<FailReasonCode>3</FailReasonCode>")
             .contains("<ValidationErrors>")
@@ -150,25 +147,25 @@ class DefaultBulkClaimV2HandlerTest {
     }
 
     @Test
-    void shouldReturnPayloadTooLargeWhenTooManyClaims() throws IOException {
+    void shouldRefuseWhenTooManyClaims() throws IOException {
         properties.setMaxClaimsPerRequest(0);
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+        assertThat(response.outcome()).isEqualTo(Outcome.TOO_MANY_CLAIMS);
         verifyNoInteractions(organisationResolver, submissionService);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"NOT_FOUND", "NOT_ACTIVE", "PROFILE_NOT_USABLE", "NOT_A_SOLICITOR_ORGANISATION"})
-    void shouldReturnForbiddenWhenOrganisationIsNotUsable(String reason) throws IOException {
+    void shouldReportOrganisationNotUsable(String reason) throws IOException {
         when(organisationResolver.resolve(ORG)).thenThrow(new BulkClaimOrganisationException(Reason.valueOf(reason)));
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.outcome()).isEqualTo(Outcome.ORGANISATION_NOT_USABLE);
         assertThat(body(response)).containsPattern("<FailReasonCode>2</FailReasonCode>");
         verifyNoInteractions(submissionService);
     }
@@ -178,10 +175,10 @@ class DefaultBulkClaimV2HandlerTest {
         when(organisationResolver.resolve(ORG)).thenReturn(organisation);
         when(organisationResolver.isPbaAccountValid(organisation, SET_PBA)).thenReturn(false);
 
-        ResponseEntity<byte[]> response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
+        BulkClaimResult response = underTest.submitRental(sample("rental-england-assured-arrears.xml"), ORG,
                                                                  false);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         assertThat(body(response)).containsPattern("<FailReasonCode>1</FailReasonCode>");
         verifyNoInteractions(submissionService);
     }
@@ -230,9 +227,9 @@ class DefaultBulkClaimV2HandlerTest {
             .thenReturn(Optional.of(submission));
         when(caseStateReader.stateOf(1781000000000001L)).thenReturn(Optional.of("PENDING_CASE_ISSUED"));
 
-        ResponseEntity<byte[]> response = underTest.status(ORG, "CLAIM-0001");
+        BulkClaimResult response = underTest.status(ORG, "CLAIM-0001");
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         assertThat(body(response))
             .contains("<BulkClaimStatusResponse")
             .containsPattern("<ClaimStatus>\\s*<StatusCode>1</StatusCode>")
@@ -253,7 +250,7 @@ class DefaultBulkClaimV2HandlerTest {
         when(submissionRepository.findByOrganisationIdAndCustomerUniqueIdentifier(ORG, "CLAIM-0002"))
             .thenReturn(Optional.of(submission));
 
-        ResponseEntity<byte[]> response = underTest.status(ORG, "CLAIM-0002");
+        BulkClaimResult response = underTest.status(ORG, "CLAIM-0002");
 
         assertThat(body(response)).contains("<FailReasonCode>7</FailReasonCode>").doesNotContain("<CaseReference>");
         verifyNoInteractions(caseStateReader);
@@ -268,17 +265,23 @@ class DefaultBulkClaimV2HandlerTest {
         when(submissionRepository.findByOrganisationIdAndCustomerUniqueIdentifier(ORG, "CLAIM-0003"))
             .thenReturn(Optional.of(submission));
 
-        ResponseEntity<byte[]> response = underTest.status(ORG, "CLAIM-0003");
+        BulkClaimResult response = underTest.status(ORG, "CLAIM-0003");
 
         assertThat(body(response)).containsPattern("<ClaimStatus>\\s*<StatusCode>3</StatusCode>");
     }
 
     @Test
-    void shouldReturnNotFoundForUnknownClaim() {
+    void shouldReportUnknownClaimAsNotFoundStatus() {
         when(submissionRepository.findByOrganisationIdAndCustomerUniqueIdentifier(ORG, "NOPE"))
             .thenReturn(Optional.empty());
 
-        assertThat(underTest.status(ORG, "NOPE").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        BulkClaimResult response = underTest.status(ORG, "NOPE");
+
+        assertThat(response.outcome()).isEqualTo(Outcome.CLAIM_NOT_FOUND);
+        assertThat(body(response))
+            .contains("<BulkClaimStatusResponse")
+            .contains("<CustomerUniqueIdentifier>NOPE</CustomerUniqueIdentifier>")
+            .containsPattern("<StatusCode>2</StatusCode>(?s:.*?)<FailReasonCode>17</FailReasonCode>");
     }
 
     @Test
@@ -297,11 +300,10 @@ class DefaultBulkClaimV2HandlerTest {
             .thenReturn(List.of(pending, found));
         when(caseStateReader.statesOf(any())).thenReturn(Map.of(1781000000000001L, "CASE_ISSUED"));
 
-        ResponseEntity<byte[]> response = underTest.statusBatch(
+        BulkClaimResult response = underTest.statusBatch(
             statusRequest("CLAIM-0003", "UNKNOWN", "CLAIM-0001", "CLAIM-0003"), ORG);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
+        assertThat(response.outcome()).isEqualTo(Outcome.OK);
         String xml = body(response);
         assertThat(xml).contains("<BulkClaimStatusListResponse");
         assertThat(xml.split("<Claim>", -1)).hasSize(5);
@@ -331,43 +333,25 @@ class DefaultBulkClaimV2HandlerTest {
     }
 
     @Test
-    void shouldRejectStatusRequestOverTheConfiguredMaximumWithPayloadTooLarge() {
+    void shouldRefuseStatusRequestOverTheConfiguredMaximum() {
         properties.setMaxClaimsPerRequest(2);
 
-        ResponseEntity<byte[]> response = underTest.statusBatch(statusRequest("A-1", "A-2", "A-3"), ORG);
+        BulkClaimResult response = underTest.statusBatch(statusRequest("A-1", "A-2", "A-3"), ORG);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+        assertThat(response.outcome()).isEqualTo(Outcome.TOO_MANY_CLAIMS);
         verifyNoInteractions(submissionRepository, caseStateReader);
     }
 
     @Test
     void shouldReturnSchemaInvalidForMalformedStatusRequest() {
-        ResponseEntity<byte[]> response = underTest.statusBatch(
+        BulkClaimResult response = underTest.statusBatch(
             "<BulkClaimStatusRequest xmlns=\"http://hmcts.gov.uk/pcs/bulkclaim/v2\"/>"
                 .getBytes(StandardCharsets.UTF_8), ORG);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.outcome()).isEqualTo(Outcome.SCHEMA_INVALID);
         assertThat(body(response)).contains("<FailReasonCode>3</FailReasonCode>")
             .contains("<Code>SCHEMA_INVALID</Code>");
         verifyNoInteractions(submissionRepository, caseStateReader);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"Common.xsd", "RentalClaim.xsd", "MortgageClaim.xsd", "BulkClaimResponse.xsd",
-        "BulkClaimStatusResponse.xsd", "BulkClaimStatusRequest.xsd", "BulkClaimStatusListResponse.xsd"})
-    void shouldServeAllowedSchemaFiles(String fileName) {
-        ResponseEntity<byte[]> response = underTest.schema(fileName);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
-        assertThat(body(response)).contains("<xs:schema");
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"../../application.yaml", "..%2F..%2Fapplication.yaml", "/etc/passwd", "rentalclaim.xsd",
-        "RentalClaim.xsd/", "xsd/bulkclaim/v2/RentalClaim.xsd", "Other.xsd", ""})
-    void shouldNotServeFilesOutsideTheAllowList(String fileName) {
-        assertThat(underTest.schema(fileName).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private static byte[] statusRequest(String... identifiers) {
@@ -383,8 +367,8 @@ class DefaultBulkClaimV2HandlerTest {
         when(organisationResolver.isPbaAccountValid(organisation, SET_PBA)).thenReturn(true);
     }
 
-    private static String body(ResponseEntity<byte[]> response) {
-        return new String(response.getBody(), StandardCharsets.UTF_8);
+    private static String body(BulkClaimResult response) {
+        return new String(response.xml(), StandardCharsets.UTF_8);
     }
 
     private byte[] sample(String name) throws IOException {

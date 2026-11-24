@@ -60,9 +60,18 @@
             </when>
         </choose>
         <set-variable name="username" value="@(((string[])context.Variables["credentials"])[0])" />
-        <!-- Counts every attempt, so failed password guesses are throttled as well -->
+        <!-- The SOAP operation is the first element of the body: the WSDL declares no SOAPAction, so the operation id cannot tell the operations apart -->
+        <set-variable name="soapOperation" value="@{
+                try {
+                    var match = Regex.Match(context.Request.Body.As<string>(preserveContent: true), @"<(?:[\w.-]+:)?Body\b[^>]*>\s*<(?:[\w.-]+:)?([\w.-]+)");
+                    return match.Success ? match.Groups[1].Value : "";
+                } catch {
+                    return "";
+                }
+            }" />
+        <!-- Counts every attempt, so failed password guesses are throttled as well; anything not recognised as a status operation counts against submissions -->
         <choose>
-            <when condition="@(new [] { "get-claims", "post-claims-status", "get-schema" }.Contains(context.Operation.Id))">
+            <when condition="@(new [] { "getClaimStatus", "getClaimStatuses" }.Contains((string)context.Variables["soapOperation"]))">
                 <rate-limit-by-key calls="${status_rate_limit_calls}" renewal-period="${status_rate_limit_renewal_period}" counter-key="@((string)context.Variables["username"] + ":status")" />
             </when>
             <otherwise>
