@@ -27,14 +27,14 @@ class OrdersViewTest {
     @ValueSource(booleans = {false, true})
     void onlyRendersOrdersWhenMakeOrderIsEnabled(boolean enabled) {
         when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(enabled);
-        PCSCase pcsCase = PCSCase.builder().ordersMarkdown("Previously rendered orders").build();
+        PCSCase pcsCase = PCSCase.builder().orderListMarkdown("Previously rendered orders").build();
 
         new OrdersView(orderStepRepository, featureToggleService).setCaseFields(pcsCase, new PcsCaseEntity());
 
         if (enabled) {
-            assertThat(pcsCase.getOrdersMarkdown()).isEqualTo("There are no orders on this case.");
+            assertThat(pcsCase.getOrderListMarkdown()).isEqualTo("There are no orders on this case.");
         } else {
-            assertThat(pcsCase.getOrdersMarkdown()).isNull();
+            assertThat(pcsCase.getOrderListMarkdown()).isNull();
             verifyNoInteractions(orderStepRepository);
         }
     }
