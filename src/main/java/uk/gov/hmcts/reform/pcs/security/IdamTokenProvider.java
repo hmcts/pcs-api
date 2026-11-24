@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import cft.idam.legacy.auth.support.PasswordGrantAuthorizedClientProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
 /**
@@ -41,8 +41,8 @@ public class IdamTokenProvider {
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId(clientRegistrationId)
                 .principal(username)
-                .attribute(OAuth2ParameterNames.USERNAME, username)
-                .attribute(OAuth2ParameterNames.PASSWORD, password)
+                .attribute(PasswordGrantAuthorizedClientProvider.USERNAME, username)
+                .attribute(PasswordGrantAuthorizedClientProvider.PASSWORD, password)
                 .build();
 
             OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);

@@ -11,17 +11,18 @@ import au.com.dius.pact.core.model.annotations.Pact;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
@@ -32,11 +33,13 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
+@SuppressWarnings("removal")
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class})
-@EnableFeignClients(clients = LocationReferenceApi.class)
+    HttpMessageConvertersAutoConfiguration.class, Jackson2AutoConfiguration.class})
 @Import(LocationReferenceApi.class)
-@TestPropertySource(properties = {"location-reference.api-url=http://localhost:8089"})
+@EnableFeignClients(clients = LocationReferenceApi.class)
+@TestPropertySource(properties = {"location-reference.api-url=http://localhost:8089",
+    "spring.http.converters.preferred-json-mapper=jackson2"})
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "referenceData_location", port = "8089")
