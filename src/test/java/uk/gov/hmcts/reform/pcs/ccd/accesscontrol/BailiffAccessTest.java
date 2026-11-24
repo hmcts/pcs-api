@@ -20,16 +20,20 @@ class BailiffAccessTest {
     }
 
     @Test
-    void shouldGrantCreateReadUpdateToBailiffAdmin() {
+    void shouldGrantCreateReadUpdateToTheThreeBailiffPersonas() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        assertThat(grants.get(UserRole.BAILIFF_ADMIN)).isEqualTo(Permission.CRU);
+        for (UserRole role : Set.of(UserRole.BAILIFF, UserRole.BAILIFF_ADMIN, UserRole.BAILIFF_MANAGER)) {
+            assertThat(grants.get(role)).isEqualTo(Permission.CRU);
+        }
     }
 
     @Test
-    void shouldOnlyGrantAccessToBailiffAdmin() {
+    void shouldOnlyGrantAccessToBailiffRoles() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        assertThat(grants.keySet()).isEqualTo(Set.of(UserRole.BAILIFF_ADMIN));
+        assertThat(grants.keySet()).containsExactlyInAnyOrder(
+            UserRole.BAILIFF, UserRole.BAILIFF_ADMIN, UserRole.BAILIFF_MANAGER
+        );
     }
 }

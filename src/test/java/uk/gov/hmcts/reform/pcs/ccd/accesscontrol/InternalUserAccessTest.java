@@ -26,8 +26,8 @@ class InternalUserAccessTest {
 
         assertThat(grants.keySet())
             .containsAll(List.of(AccessGrants.INTERNAL_READ_ROLES))
-            .contains(UserRole.BAILIFF_ADMIN)
-            .hasSize(AccessGrants.INTERNAL_READ_ROLES.length + 1);
+            .contains(UserRole.BAILIFF, UserRole.BAILIFF_ADMIN, UserRole.BAILIFF_MANAGER)
+            .hasSize(AccessGrants.INTERNAL_READ_ROLES.length + 3);
         grants.keySet().forEach(role -> assertThat(grants.get(role)).isEqualTo(Set.of(Permission.R)));
     }
 
