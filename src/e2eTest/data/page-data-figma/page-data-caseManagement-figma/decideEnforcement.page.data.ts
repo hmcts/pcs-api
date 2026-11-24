@@ -6,6 +6,7 @@ export const decideEnforcement = {
   rejectHiddenOptions : [`Change in party circumstances`,`Applying to enforce out of time`,`Order not enforceable`,`Possession order set aside or suspended`,`Applying to enforce before the possession date`,`Case not transferred to high court`,`Another possession enforcement journey ongoing`,`Defendant(s) in breathing space`,`Other`],
   selectReasonHiddenLabel: `Select your reason for rejection`,
   explainOtherHiddenTextLabel: `Explain why you are rejecting the warrant or writ`,
+  explainChangeHiddenTextLabel: `Provide details about the change in party circumstances`,
   rejectHiddenNotes: 50,
   errorValidation: `YES`,
   errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown` },
@@ -20,6 +21,10 @@ export const decideEnforcement = {
     errorTextField: [
       { type: `moreThanMax`, input: 6805, errMessage: `In ‘Explain why you are rejecting the warrant or writ’, you have entered more than the maximum number of characters (6,800)` },
       { type: `empty`, input: `EMPTY`, errMessage: `Explain why you are rejecting the warrant or writ is required`},
+    ],
+    errorTextField1: [
+      { type: `moreThanMax`, input: 6805, errMessage: `In ‘Provide details about the change in party circumstances’, you have entered more than the maximum number of characters (6,800)` },
+      { type: `empty`, input: `EMPTY`, errMessage: `Provide details about the change in party circumstances is required`},
     ]
   },
   continueButton: `Continue`,
