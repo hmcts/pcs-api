@@ -144,15 +144,27 @@ public class ClaimFormPayloadBuilder {
         boolean hasNoticeType = claim.getNoticeOfPossession() != null
             && isPopulated(claim.getNoticeOfPossession().getNoticeType());
         payloadBuilder.showNoticeType(noticeServedYes && (isWales || hasNoticeType));
-        payloadBuilder.showPcscSection(isWales);
-        payloadBuilder.showRequiredDocumentsSection(isWales);
+        // The Wales-only sections show only when the claimant was asked them: a citizen claim for a property in
+        // Wales is not, and would otherwise print their headings above empty rows.
+        payloadBuilder.showPcscSection(isWales && pcscAnswered(claim.getAsbProhibitedConductEntity()));
+        payloadBuilder.showRequiredDocumentsSection(isWales && requiredDocumentsAnswered(claim));
         // The exempt-landlord question comes from the Housing (Wales) Act 2014, so it is Wales-only.
-        payloadBuilder.showExemptLandlordQuestion(isWales);
+        payloadBuilder.showExemptLandlordQuestion(isWales && claim.getIsExemptLandlord() != null);
         // Tenancy-copy rows are England-only (Wales never captures the answer) and show only when
         // the claimant answered, so an unanswered question hides the row instead of a blank value.
         TenancyLicenceEntity tenancyLicence = pcsCase.getTenancyLicence();
         boolean tenancyCopyAnswered = tenancyLicence != null && tenancyLicence.getHasCopyOfTenancyLicence() != null;
         payloadBuilder.showTenancyUploadedQuestion(isEngland && tenancyCopyAnswered);
+    }
+
+    private static boolean pcscAnswered(AsbProhibitedConductEntity asb) {
+        return asb != null && (asb.getClaimingStandardContract() != null || asb.getPeriodicContractAgreed() != null);
+    }
+
+    private static boolean requiredDocumentsAnswered(ClaimEntity claim) {
+        return claim.getEnergyPerformanceCertificateProvided() != null
+            || claim.getGasSafetyReportProvided() != null
+            || claim.getElectricalInstallationConditionProvided() != null;
     }
 
     private static boolean isWalesClaim(PcsCaseEntity pcsCase) {

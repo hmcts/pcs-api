@@ -52,7 +52,6 @@ public class CitizenPossessionClaimValidator {
     public static final String CLAIM_AGAINST_TRESPASSERS_NOT_ELIGIBLE = "CLAIM_AGAINST_TRESPASSERS_NOT_ELIGIBLE";
     public static final String WHO_IS_CLAIMING_NOT_ELIGIBLE = "WHO_IS_CLAIMING_NOT_ELIGIBLE";
     public static final String RENT_ARREARS_GROUND_NOT_ALLOWED = "RENT_ARREARS_GROUND_NOT_ALLOWED";
-    public static final String OTHER_GROUND_NOT_ALLOWED = "OTHER_GROUND_NOT_ALLOWED";
 
     private static final int NAME_MAX = 60;
     private static final int SHORT_TEXT_MAX = 250;
@@ -339,9 +338,6 @@ public class CitizenPossessionClaimValidator {
         if (otherGrounds != null) {
             if (otherGrounds.stream().anyMatch(Objects::isNull)) {
                 errors.add(required("grounds.otherGrounds"));
-            }
-            if (otherGrounds.stream().filter(Objects::nonNull).anyMatch(PrivateLandlordAssuredGround::isRentArrears)) {
-                errors.add(OTHER_GROUND_NOT_ALLOWED);
             }
         }
 

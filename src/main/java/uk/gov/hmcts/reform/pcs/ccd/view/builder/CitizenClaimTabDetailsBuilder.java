@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeServiceMethodTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
@@ -34,7 +35,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_FORMATTER
  * Adds to the tabs the citizen claim answers that the ExUI claim does not record: every method a notice
  * was served by, an England notice type or reason for not serving notice, the date of a notice served by a
  * method ExUI records a time for, the rent due day, the arrears on the date notice was served and how the
- * arrears are proved. Behind the private landlord make a claim flag, and England only.
+ * arrears are proved. Behind the private landlord make a claim flag. A claim for a property in Wales gets them
+ * only when a private landlord made it.
  */
 @Component
 @RequiredArgsConstructor
@@ -137,13 +139,20 @@ public class CitizenClaimTabDetailsBuilder {
     }
 
     /**
-     * Whether the citizen claim answers are added: the flag is on and the case is not in Wales, whose tabs
-     * are built by the Wales builders.
+     * Whether the citizen claim answers are added: the flag is on and, for a case in Wales, whose tabs are built
+     * by the Wales builders from what a legal representative records, the claim is a private landlord's.
      */
     public boolean applies(PcsCaseEntity pcsCaseEntity) {
         return featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)
             && pcsCaseEntity != null
-            && pcsCaseEntity.getLegislativeCountry() != LegislativeCountry.WALES;
+            && (pcsCaseEntity.getLegislativeCountry() != LegislativeCountry.WALES
+                || isPrivateLandlordClaim(pcsCaseEntity));
+    }
+
+    private static boolean isPrivateLandlordClaim(PcsCaseEntity pcsCaseEntity) {
+        return mainClaim(pcsCaseEntity)
+            .map(claim -> claim.getClaimantType() == ClaimantType.PRIVATE_LANDLORD)
+            .orElse(false);
     }
 
     private void addArrearsFigures(RentArrearsTabDetails rentArrearsTabDetails, PcsCaseEntity pcsCaseEntity,

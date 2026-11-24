@@ -420,13 +420,25 @@ class CitizenPossessionClaimValidatorTest {
     }
 
     @Test
-    void shouldRefuseRentArrearsGroundsInTheOtherGroundsList() {
+    void shouldAcceptRentArrearsGroundsInTheOtherGroundsList() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
                                                   PrivateLandlordAssuredGround.GROUND_11));
 
-        assertThat(validate(claim))
-            .containsExactly(CitizenPossessionClaimValidator.OTHER_GROUND_NOT_ALLOWED);
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldNeedTheArrearsWhenARentArrearsGroundIsOnlyInTheOtherGroundsList() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setHasRentArrearsGrounds(VerticalYesNo.NO);
+        claim.getGrounds().setRentArrearsGrounds(null);
+        claim.getGrounds().setOtherGrounds(Set.of(PrivateLandlordAssuredGround.GROUND_1A,
+                                                  PrivateLandlordAssuredGround.GROUND_14,
+                                                  PrivateLandlordAssuredGround.GROUND_10));
+        claim.getRentArrears().setCurrentArrears(null);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:rentArrears.currentArrears");
     }
 
     @Test

@@ -569,13 +569,33 @@ class ClaimFormPayloadBuilderTest {
         @ParameterizedTest
         @MethodSource("countryGatedSections")
         void countryOnlySectionsAreGatedByLegislativeCountry(LegislativeCountry country, boolean wales) {
-            ClaimFormPayload payload = builder.build(minimalCase(country));
+            PcsCaseEntity pcsCase = minimalCase(country);
+            answerWalesOnlyQuestions(pcsCase.getClaims().getFirst());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             // Wales-only sections.
             assertThat(payload.isShowPcscSection()).isEqualTo(wales);
             assertThat(payload.isShowRequiredDocumentsSection()).isEqualTo(wales);
             assertThat(payload.isShowExemptLandlordQuestion()).isEqualTo(wales);
             // (showTenancyUploadedQuestion is England-only AND answer-gated — covered separately.)
+        }
+
+        @Test
+        void walesOnlySectionsAreHiddenWhenTheClaimantWasNotAskedThem() {
+            ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
+
+            assertThat(payload.isShowPcscSection()).isFalse();
+            assertThat(payload.isShowRequiredDocumentsSection()).isFalse();
+            assertThat(payload.isShowExemptLandlordQuestion()).isFalse();
+        }
+
+        private static void answerWalesOnlyQuestions(ClaimEntity claim) {
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .claimingStandardContract(VerticalYesNo.NO)
+                .build());
+            claim.setEnergyPerformanceCertificateProvided(VerticalYesNo.YES);
+            claim.setIsExemptLandlord(VerticalYesNo.NO);
         }
 
         private static Stream<Arguments> countryGatedSections() {
@@ -1451,8 +1471,11 @@ class ClaimFormPayloadBuilderTest {
     class PcscSection {
 
         @Test
-        void walesShowsPcscSection() {
+        void walesShowsPcscSectionOnceAnswered() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.getClaims().getFirst().setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .claimingStandardContract(VerticalYesNo.NO)
+                .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
@@ -1521,8 +1544,12 @@ class ClaimFormPayloadBuilderTest {
     class RequiredDocumentsSection {
 
         @Test
-        void walesShowsRequiredDocumentsSection() {
-            ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
+        void walesShowsRequiredDocumentsSectionOnceAnswered() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.getClaims().getFirst().setGasSafetyReportProvided(VerticalYesNo.NO);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
             assertThat(payload.isShowRequiredDocumentsSection()).isTrue();
         }
 
