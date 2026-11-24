@@ -146,11 +146,11 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
         }
     }
 
-    /** Who last updated the facts, and when. */
+    /** Who last updated the facts, by name or "A judge", and when. */
     public record Recorded(String by, Instant on) {
     }
 
-    /** A judicial note, with the hearing it was made at if it was made at one. */
+    /** A judicial note, by its judge's name or "A judge", with the hearing it was made at if it was made at one. */
     public record JudicialNote(String by, Instant createdOn, LocalDateTime hearingDate, String note) {
     }
 

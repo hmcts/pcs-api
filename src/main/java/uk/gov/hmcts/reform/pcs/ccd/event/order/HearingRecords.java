@@ -88,7 +88,7 @@ class HearingRecords {
             pcsCase.getLegislativeCountry() == WALES,
             own.map(HearingFactsEntity::getVersion).orElse(null),
             startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
-            startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getUpdatedOn()))
+            startFrom.map(facts -> new Recorded(judgeName(facts.getUser()), facts.getUpdatedOn()))
                 .orElse(null),
             own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
             earlierNotes(pcsCase.getJudicialNotes(), recorded, hearing.getHearingDate())
@@ -157,11 +157,16 @@ class HearingRecords {
             .collect(Collectors.toMap(facts -> facts.getJudicialNote().getId(),
                 facts -> facts.getHearing().getHearingDate()));
         return notes.stream()
-            .map(note -> new JudicialNote(note.getUser() == null ? null : note.getUser().getName(),
+            .map(note -> new JudicialNote(judgeName(note.getUser()),
                 note.getCreatedOn(), hearingDates.get(note.getId()), note.getNote()))
             .filter(note -> madeAt(note).isBefore(before))
             .sorted(Comparator.comparing(HearingRecords::madeAt).reversed())
             .toList();
+    }
+
+    /** A judge by name, or "A judge" for one whose name is not known. */
+    private static String judgeName(UserNameEntity user) {
+        return user == null || user.getName() == null || user.getName().isBlank() ? "A judge" : user.getName();
     }
 
     private static LocalDateTime madeAt(JudicialNote note) {
