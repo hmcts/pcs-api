@@ -2002,9 +2002,8 @@ export class CreateCaseAction implements IAction {
   }
 
   private async noticeOfChangeSuccessful(page: Page, nocData: actionRecord) {
-    const actual = await page.locator('h1.govuk-panel__title').innerText();
-    expect(actual).toBe(
-      `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
+    await expect(page.locator('h1.govuk-panel__title')).toHaveText(
+      `Notice of change successful You're now representing a client on case ${nocData.caseRefNo}`
     );
   }
 
