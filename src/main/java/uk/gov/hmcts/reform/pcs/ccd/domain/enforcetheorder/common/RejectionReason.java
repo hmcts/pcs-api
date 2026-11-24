@@ -13,7 +13,7 @@ public enum RejectionReason implements HasLabel {
     ORDER_NOT_ENFORCEABLE("Order not enforceable"),
     ORDER_SET_ASIDE_OR_SUSPENDED("Possession order set aside or suspended"),
     APPLYING_BEFORE_POSSESSION_DATE("Applying to enforce before the possession date"),
-    CASE_NOT_TRANSFERRED_TO_HIGH_COURT("Case not transferred to high court"),
+    CASE_NOT_TRANSFERRED_TO_HIGH_COURT("Case not transferred to the High Court"),
     ANOTHER_ENFORCEMENT_ONGOING("Another possession enforcement journey ongoing"),
     DEFENDANTS_IN_BREATHING_SPACE("Defendant(s) in breathing space"),
     OTHER("Other");
