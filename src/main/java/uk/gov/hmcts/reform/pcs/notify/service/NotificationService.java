@@ -349,6 +349,16 @@ public class NotificationService {
         }
     }
 
+    public void sendWarrantOfPossessionSubmittedEmail(PartyEntity claimant) {
+
+        sendEmail(
+            partyRecipient(claimant),
+            EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED,
+            NotificationClaimType.ENFORCEMENT,
+            notificationPersonalisationFactory.forParty(claimant, claimant.getPcsCase())
+        );
+    }
+
     private static OrganisationEntity activeLegalRep(PartyEntity party) {
         return party.getClaimPartyOrganisationList().stream()
             .filter(link -> YesOrNo.YES.equals(link.getActive()))
