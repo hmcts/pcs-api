@@ -317,6 +317,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial notes")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASE_MANAGEMENT_R2))
             .field("judicialNotesMarkdownLabel")
             .field("judicialNotesMarkdown", NEVER_SHOW);
     }
