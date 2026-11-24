@@ -175,6 +175,7 @@ notify:
     notice-of-change-no-longer-representing: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING:b5223559-6419-4849-a609-aac606b17a86}
     notice-of-change-other-party-represented: ${NOTIFY_TEMPLATE_NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED:f7963e8e-c868-42fe-9367-0038552ca851}
     notice-of-hearing: ${NOTIFY_TEMPLATE_NOTICE_OF_HEARING:f2025c6f-0287-4d9d-a447-d7815d33f608}
+    warrant-of-possession-submitted: ${NOTIFY_TEMPLATE_WARRANT_OF_POSSESSION_SUBMITTED:c6954539-ba33-4c3c-8630-efdf18c56faf}
   legacy-templates:
     response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
     response-no-counterclaim-legal-rep: 0abc7358-20a7-4d96-b0ab-95c2e40879de
