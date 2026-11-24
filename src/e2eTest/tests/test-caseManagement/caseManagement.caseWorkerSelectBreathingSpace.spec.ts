@@ -21,7 +21,6 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
     defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
@@ -107,7 +106,7 @@ test.describe('Case management - Add E2E automation tests for Caseworker Breathi
     });
 
     await test.step('Then they are returned to the case dashboard', async () => {
-      await performValidation('mainHeader', enterBreathingSpace.cancelReturnHeader);
+      await performValidation('mainHeader', enterBreathingSpace.cancelReturnHiddenHeader);
     });
 
     await test.step('And reopening the event shows the details were not saved', async () => {

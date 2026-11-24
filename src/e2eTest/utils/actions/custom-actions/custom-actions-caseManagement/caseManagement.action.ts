@@ -230,7 +230,7 @@ private async clickPreviousAndValidateAnswersRetained() {
 
 private async cancelCheckYourAnswersAndValidate(data: { referenceNumber: string }) {
   await performAction('clickButton', enterBreathingSpacecheckYourAnswers.cancelLink);
-  await performValidation('mainHeader', enterBreathingSpace.cancelReturnHeader);
+  await performValidation('mainHeader', enterBreathingSpace.cancelReturnHiddenHeader);
   await performValidation('elementNotToBeVisible', { elementType: 'text', text: data.referenceNumber });
 }
 private async validateReferenceNumberLengthError() {
@@ -251,8 +251,8 @@ private async validateFutureStartDateError() {
         label2: enterBreathingSpace.monthTextLabel,
         label3: enterBreathingSpace.yearTextLabel,
         question: enterBreathingSpace.whenDidBreathingSpaceStartQuestion,
-        header: enterBreathingSpace.eventCouldNotBeCreatedHeader,
-        header1: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+        header: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
         button: enterBreathingSpace.continueButton,
     });
 }

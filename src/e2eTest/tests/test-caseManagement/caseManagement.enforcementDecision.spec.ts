@@ -55,7 +55,7 @@ test.describe('Case management - Case Worker Manage Enforcement @nightly', async
       tag: ['@CM', '@regression'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-8656` },
-        { type: 'ac', description: 'AC1 , AC2' },
+        { type: 'ac', description: 'AC1 , AC2, AC4 - AC9, AC11- AC16' },
       ],
     }, async () => {
 
@@ -91,7 +91,7 @@ test.describe('Case management - Case Worker Manage Enforcement @nightly', async
       tag: ['@CM', '@regression'],
       annotation: [
         { type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-8656` },
-        { type: 'ac', description: 'AC1 , AC2' },
+        { type: 'ac', description: 'AC10' },
       ],
     }, async () => {
 
