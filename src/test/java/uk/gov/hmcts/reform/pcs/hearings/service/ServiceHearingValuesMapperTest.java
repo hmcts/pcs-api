@@ -242,6 +242,37 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldUseOtherDescriptionAsNameForOtherFlag() {
+        CaseFlagEntity other = otherFlag(" Needs a quiet room ", "first floor");
+        givenCase(caseBuilder().caseFlags(flags(other, flag("Complex case", null))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments())
+            .isEqualTo("Case Flags: Needs a quiet room (Comments: first floor), Complex case");
+    }
+
+    @Test
+    void shouldKeepOtherAsNameWhenOtherFlagHasNoDescription() {
+        givenCase(caseBuilder().caseFlags(flags(otherFlag(" ", null))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments()).isEqualTo("Case Flags: Other");
+    }
+
+    @Test
+    void shouldIgnoreOtherDescriptionOnNonOtherFlag() {
+        CaseFlagEntity complex = flag("Complex case", null);
+        complex.setOtherDescription("Not used");
+        givenCase(caseBuilder().caseFlags(flags(complex)).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getListingComments()).isEqualTo("Case Flags: Complex case");
+    }
+
+    @Test
     void shouldTrimNamesAndCommentsButKeepWhitespaceInsideComment() {
         givenCase(caseBuilder().caseFlags(flags(
             flag("  Urgent case ", "  so   urgent \n"),
@@ -527,6 +558,18 @@ class ServiceHearingValuesMapperTest {
             .flagRefData(FlagRefDataEntity.builder().flagName(name).build())
             .flagComment(comment)
             .defaultStatus(status)
+            .build();
+    }
+
+    private static CaseFlagEntity otherFlag(String otherDescription, String comment) {
+        return CaseFlagEntity.builder()
+            .flagRefData(FlagRefDataEntity.builder()
+                             .flagName("Other")
+                             .flagCode(ServiceHearingValuesMapper.OTHER_FLAG_CODE)
+                             .build())
+            .otherDescription(otherDescription)
+            .flagComment(comment)
+            .defaultStatus("Active")
             .build();
     }
 }
