@@ -7,7 +7,7 @@ locals {
   bulk_claims_product            = "${var.product}-bulk-claims"
   bulk_claims_api                = "${var.product}-bulk-claims-api"
   bulk_claims_path               = "pcs-bulk-claims"
-  bulk_claims_wsdl               = "${path.module}/../src/main/resources/wsdl/bulkclaim/v2/BulkClaimService.wsdl"
+  bulk_claims_wsdl               = "${path.module}/apim-wsdl/BulkClaimService.wsdl"
   bulk_claims_wildcard_operation = "${var.product}-bulk-claims-wildcard"
 
   pcs_api_url = "http://pcs-api-${var.env}.service.core-compute-${var.env}.internal"

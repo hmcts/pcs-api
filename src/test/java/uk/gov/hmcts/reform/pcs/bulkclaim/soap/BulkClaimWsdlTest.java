@@ -6,6 +6,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,6 +28,18 @@ class BulkClaimWsdlTest {
 
     private final Document pcol = load(PCOL_WSDL);
     private final Document service = load(WSDL);
+
+    @Test
+    void shouldPublishTheServedWsdlThroughApim() throws Exception {
+        byte[] served;
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(WSDL)) {
+            served = stream.readAllBytes();
+        }
+
+        assertThat(Files.readAllBytes(Path.of("infrastructure/apim-wsdl/BulkClaimService.wsdl")))
+            .as("infrastructure/apim-wsdl/BulkClaimService.wsdl must be a copy of src/main/resources/" + WSDL)
+            .isEqualTo(served);
+    }
 
     @Test
     void shouldKeepPcolsNamespacesAndBindingStyle() {
