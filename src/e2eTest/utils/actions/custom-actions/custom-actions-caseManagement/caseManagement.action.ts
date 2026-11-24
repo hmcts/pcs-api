@@ -79,7 +79,7 @@ export class CaseManagementAction implements IAction {
       ['confirmAddParty', () => this.confirmAddParty(fieldName as actionRecord)],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
-      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
+      ['selectManageHearing', () => this.selectManageHearing(page, fieldName as actionRecord)],
       ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
@@ -567,7 +567,7 @@ private formatDisplayDate(entered: string): string {
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
-  private async selectManageHearing(manageHearingOption: actionRecord) {
+  private async selectManageHearing(page: Page, manageHearingOption: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -577,6 +577,12 @@ private formatDisplayDate(entered: string): string {
       question: manageHearingOption.question,
       option: manageHearingOption.option,
     });
+    if (manageHearingOption.option === manageHearing.editAHearingRadioOption
+      || manageHearingOption.option === manageHearing.cancelAHearingRadioOption) {
+      const hearingPicker = page.getByRole('combobox', { name: manageHearing.hearingSelectionLabel });
+      const seededHearing = hearingPicker.getByRole('option', { name: /^Application hearing — / });
+      await hearingPicker.selectOption(await seededHearing.evaluate((option: HTMLOptionElement) => option.value));
+    }
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
