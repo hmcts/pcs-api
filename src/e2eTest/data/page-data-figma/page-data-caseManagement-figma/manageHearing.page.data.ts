@@ -4,7 +4,6 @@ export const manageHearing= {
   addAHearingRadioOption: `Add a hearing`,
   editAHearingRadioOption: `Edit a hearing`,
   cancelAHearingRadioOption: `Cancel a hearing`,
-  hearingSelectionLabel: `Which hearing do you want to manage?`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,

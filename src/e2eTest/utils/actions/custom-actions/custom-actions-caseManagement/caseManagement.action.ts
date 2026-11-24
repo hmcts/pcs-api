@@ -579,7 +579,7 @@ private formatDisplayDate(entered: string): string {
     });
     if (manageHearingOption.option === manageHearing.editAHearingRadioOption
       || manageHearingOption.option === manageHearing.cancelAHearingRadioOption) {
-      const hearingPicker = page.getByRole('combobox', { name: manageHearing.hearingSelectionLabel });
+      const hearingPicker = page.getByRole('combobox', { name: 'Which hearing do you want to manage?' });
       const seededHearing = hearingPicker.getByRole('option', { name: /^Application hearing — / });
       await hearingPicker.selectOption(await seededHearing.evaluate((option: HTMLOptionElement) => option.value));
     }
