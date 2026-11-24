@@ -28,6 +28,9 @@ public class CitizenPossessionClaim implements HasDraftVersion {
 
     private VerticalYesNo additionalDefendants;
 
+    // The claimants claiming alongside the claimant; kept only when claimant.multipleClaimants is YES
+    private List<ListValue<CitizenClaimAdditionalClaimant>> additionalClaimants;
+
     // Draft only: the frontend's record of the claimant confirming there are no more defendants
     private VerticalYesNo defendantsConfirmed;
 

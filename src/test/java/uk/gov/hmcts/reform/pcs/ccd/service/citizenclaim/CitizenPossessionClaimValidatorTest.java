@@ -1,10 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
@@ -13,8 +15,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimWhoIsClaiming;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -81,12 +85,136 @@ class CitizenPossessionClaimValidatorTest {
     }
 
     @Test
-    void shouldRefuseMultipleClaimants() {
+    void shouldNeedAnAdditionalClaimantWhenThereAreOtherClaimants() {
         CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
         claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
 
+        assertThat(validate(claim)).containsExactly("REQUIRED:additionalClaimants");
+    }
+
+    @Test
+    void shouldAcceptACompleteAdditionalClaimant() {
+        CitizenPossessionClaim claim = claimWithAdditionalClaimant(additionalIndividual());
+
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldReportEveryMissingAdditionalClaimantAnswer() {
+        CitizenPossessionClaim claim = claimWithAdditionalClaimant(CitizenClaimAdditionalClaimant.builder().build());
+
+        assertThat(validate(claim)).containsExactly(
+            "REQUIRED:additionalClaimants[0].individualOrOrganisation",
+            "REQUIRED:additionalClaimants[0].address",
+            "REQUIRED:additionalClaimants[0].contactByPhone",
+            "REQUIRED:additionalClaimants[0].contactByText"
+        );
+    }
+
+    @Test
+    void shouldNeedTheNumbersAnAdditionalClaimantAgreedToBeContactedOn() {
+        CitizenClaimAdditionalClaimant additional = additionalIndividual();
+        additional.setContactByPhone(VerticalYesNo.YES);
+        additional.setContactByText(VerticalYesNo.YES);
+        CitizenPossessionClaim claim = claimWithAdditionalClaimant(additional);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:additionalClaimants[0].phoneNumber");
+
+        additional.setPhoneNumber("07700900111");
+        assertThat(validate(claim)).isEmpty();
+
+        additional.setContactByPhone(VerticalYesNo.NO);
+        assertThat(validate(claim)).containsExactly("REQUIRED:additionalClaimants[0].textMessageNumber");
+    }
+
+    @Test
+    void shouldCheckAdditionalClaimantNameLengths() {
+        CitizenClaimAdditionalClaimant additional = additionalIndividual();
+        additional.setFirstName("a".repeat(40));
+        additional.setLastName("b".repeat(40));
+
+        assertThat(validate(claimWithAdditionalClaimant(additional)))
+            .containsExactly("TOO_LONG:additionalClaimants[0].name");
+    }
+
+    @Test
+    void shouldIgnoreAdditionalClaimantsWhenThereAreNoOtherClaimants() {
+        CitizenPossessionClaim claim = claimWithAdditionalClaimant(CitizenClaimAdditionalClaimant.builder().build());
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.NO);
+
+        assertThat(validate(claim)).isEmpty();
+    }
+
+    @Test
+    void shouldAskTheExcludedTenancyGroundsInsteadOfTheAssuredOnes() {
+        CitizenPossessionClaim claim = excludedClaim();
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds.hasExcludedGrounds");
+    }
+
+    @Test
+    void shouldNeedAGroundAndAReasonOnAnExcludedTenancy() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+
         assertThat(validate(claim))
-            .containsExactly(CitizenPossessionClaimValidator.MULTIPLE_CLAIMANTS_NOT_ELIGIBLE);
+            .containsExactly("REQUIRED:grounds.excludedGrounds", "REQUIRED:grounds.excludedReason");
+    }
+
+    @Test
+    void shouldNeedDetailsOfAnOtherExcludedGround() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER));
+        claim.getGrounds().setExcludedReason("They are a lodger");
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:grounds.excludedOtherGroundDetails");
+    }
+
+    @Test
+    void shouldNeedTheArrearsForAnExcludedRentArrearsGround() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS));
+        claim.getGrounds().setExcludedReason("Unpaid rent");
+        claim.getRentArrears().setCurrentArrears(null);
+
+        assertThat(validate(claim)).containsExactly("REQUIRED:rentArrears.currentArrears");
+    }
+
+    @Test
+    void shouldAcceptAnExcludedTenancyWithNoGroundsAndDropTheArrears() {
+        CitizenPossessionClaim claim = excludedClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.NO);
+        claim.getGrounds().setExcludedReason("Lodger of the landlord");
+
+        assertThat(validate(claim)).isEmpty();
+        assertThat(applicableAnswers.of(claim).getRentArrears()).isNull();
+    }
+
+    private static CitizenClaimAdditionalClaimant additionalIndividual() {
+        return CitizenClaimAdditionalClaimant.builder()
+            .individualOrOrganisation(CitizenClaimantKind.INDIVIDUAL)
+            .firstName("Sam")
+            .lastName("Sharer")
+            .address(AddressUK.builder().addressLine1("3 Joint Road").postTown("Leeds").postCode("LS1 1AA").build())
+            .contactByPhone(VerticalYesNo.NO)
+            .contactByText(VerticalYesNo.NO)
+            .build();
+    }
+
+    private static CitizenPossessionClaim claimWithAdditionalClaimant(CitizenClaimAdditionalClaimant additional) {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
+        claim.setAdditionalClaimants(List.of(ListValue.<CitizenClaimAdditionalClaimant>builder()
+                                                 .id("1").value(additional).build()));
+        return claim;
+    }
+
+    private static CitizenPossessionClaim excludedClaim() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
+        return claim;
     }
 
     @Test

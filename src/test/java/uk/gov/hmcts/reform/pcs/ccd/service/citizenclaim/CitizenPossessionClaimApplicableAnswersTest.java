@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
@@ -14,8 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFixtures;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -54,6 +58,78 @@ class CitizenPossessionClaimApplicableAnswersTest {
         assertThat(tenancy.getOtherOccupationContractDetails()).isNull();
         assertThat(tenancy.getTenancyStartDate()).isEqualTo(claim.getTenancy().getTenancyStartDate());
         assertThat(tenancy.getTenancyAgreementDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldKeepAdditionalClaimantsOnlyWhenThereAreOtherClaimants() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
+        claim.setAdditionalClaimants(List.of(ListValue.<CitizenClaimAdditionalClaimant>builder().id("1").value(
+            CitizenClaimAdditionalClaimant.builder()
+                .individualOrOrganisation(CitizenClaimantKind.ORGANISATION)
+                .firstName("Left").lastName("Over").organisationName("Joint Lettings Ltd")
+                .contactByPhone(VerticalYesNo.NO).phoneNumber("07700900000")
+                .contactByText(VerticalYesNo.NO).textMessageNumber("07700900001")
+                .build()).build()));
+
+        CitizenClaimAdditionalClaimant kept = underTest.of(claim).getAdditionalClaimants().getFirst().getValue();
+
+        assertThat(kept.getOrganisationName()).isEqualTo("Joint Lettings Ltd");
+        assertThat(kept.getFirstName()).isNull();
+        assertThat(kept.getLastName()).isNull();
+        assertThat(kept.getPhoneNumber()).isNull();
+        assertThat(kept.getTextMessageNumber()).isNull();
+
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.NO);
+        assertThat(underTest.of(claim).getAdditionalClaimants()).isNull();
+    }
+
+    @Test
+    void shouldAskOnlyTheExcludedGroundsForAnExcludedTenancy() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL));
+        claim.getGrounds().setExcludedOtherGroundDetails("Left from Other");
+        claim.getGrounds().setExcludedReason("Noise");
+
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(applicable.getGrounds().getRentArrearsGrounds()).isNull();
+        assertThat(applicable.getGrounds().getOtherGrounds()).isNull();
+        assertThat(applicable.getGrounds().getGroundReasons()).isNull();
+        assertThat(applicable.getGrounds().getExcludedOtherGroundDetails()).isNull();
+        assertThat(applicable.getGrounds().getExcludedReason()).isEqualTo("Noise");
+        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(applicable)).isFalse();
+        assertThat(applicable.getRentArrears()).isNull();
+    }
+
+    @Test
+    void shouldKeepTheArrearsForAnExcludedRentArrearsGround() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getTenancy().setTenancyType(CitizenClaimTenancyType.EXCLUDED);
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS));
+
+        CitizenPossessionClaim applicable = underTest.of(claim);
+
+        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(applicable)).isTrue();
+        assertThat(applicable.getRentArrears()).isNotNull();
+    }
+
+    @Test
+    void shouldDropTheExcludedGroundsForOtherTenancyTypes() {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER));
+        claim.getGrounds().setExcludedReason("Stale");
+
+        CitizenClaimGrounds grounds = underTest.of(claim).getGrounds();
+
+        assertThat(grounds.getHasExcludedGrounds()).isNull();
+        assertThat(grounds.getExcludedGrounds()).isNull();
+        assertThat(grounds.getExcludedReason()).isNull();
+        assertThat(grounds.getRentArrearsGrounds()).isNotEmpty();
     }
 
     @Test

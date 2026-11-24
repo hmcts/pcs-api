@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
 import java.util.List;
@@ -35,5 +36,17 @@ public class CitizenClaimGrounds {
     private String otherGroundsDetails;
 
     private List<ListValue<CitizenClaimGroundReason>> groundReasons;
+
+    // Excluded tenancy only: replaces the assured grounds questions above
+    private VerticalYesNo hasExcludedGrounds;
+
+    @CCD(typeOverride = MultiSelectList, typeParameterOverride = "IntroductoryDemotedOrOtherGrounds")
+    private Set<IntroductoryDemotedOrOtherGrounds> excludedGrounds;
+
+    @CCD(typeOverride = TextArea)
+    private String excludedOtherGroundDetails;
+
+    @CCD(typeOverride = TextArea)
+    private String excludedReason;
 
 }

@@ -3,14 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +74,37 @@ class CitizenPossessionClaimJsonTest {
         PCSCase restored = objectMapper.readValue(stored, PCSCase.class);
 
         assertThat(restored.getCitizenPossessionClaim()).isEqualTo(pcsCase.getCitizenPossessionClaim());
+    }
+
+    @Test
+    void shouldRoundTripAdditionalClaimantsExcludedGroundsAndSupportThroughTheDraftStore() throws Exception {
+        CitizenPossessionClaim claim = CitizenPossessionClaimFixtures.completeClaim();
+        claim.getClaimant().setMultipleClaimants(VerticalYesNo.YES);
+        claim.setAdditionalClaimants(List.of(ListValue.<CitizenClaimAdditionalClaimant>builder()
+            .id("1")
+            .value(CitizenClaimAdditionalClaimant.builder()
+                       .individualOrOrganisation(CitizenClaimantKind.INDIVIDUAL)
+                       .firstName("Sam").lastName("Sharer")
+                       .contactByPhone(VerticalYesNo.NO).contactByText(VerticalYesNo.NO)
+                       .build())
+            .build()));
+        claim.getGrounds().setHasExcludedGrounds(VerticalYesNo.YES);
+        claim.getGrounds().setExcludedGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL));
+        claim.getGrounds().setExcludedReason("Noise");
+        claim.getOtherInformation().setEqualityQuestionsChoice(CitizenClaimEqualityChoice.CONTINUE);
+        claim.getOtherInformation().setPcqId("pcq-1");
+        claim.getOtherInformation().setSupportFlags(Flags.builder().partyName("Jane Landlord")
+            .roleOnCase("Claimant").details(List.of()).build());
+        PCSCase pcsCase = PCSCase.builder().citizenPossessionClaim(claim).build();
+
+        PCSCase restored = objectMapper.readValue(objectMapper.writeValueAsString(pcsCase), PCSCase.class);
+
+        assertThat(restored.getCitizenPossessionClaim()).isEqualTo(claim);
+        JsonNode json = objectMapper.valueToTree(pcsCase).get("citizenPossessionClaim");
+        assertThat(json.at("/additionalClaimants/0/value/individualOrOrganisation").asText())
+            .isEqualTo("INDIVIDUAL");
+        assertThat(json.at("/grounds/excludedGrounds/0").asText()).isEqualTo("ANTI_SOCIAL");
+        assertThat(json.at("/otherInformation/equalityQuestionsChoice").asText()).isEqualTo("CONTINUE");
     }
 
     @Test

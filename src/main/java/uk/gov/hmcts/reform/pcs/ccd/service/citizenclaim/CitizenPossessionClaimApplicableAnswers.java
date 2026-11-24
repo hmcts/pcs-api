@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -49,9 +51,10 @@ public class CitizenPossessionClaimApplicableAnswers {
         applicable.setConfirmedSections(null);
 
         reduceClaimant(applicable.getClaimant());
+        reduceAdditionalClaimants(applicable);
         reduceDefendants(applicable);
         reduceTenancy(applicable.getTenancy(), isWales(applicable));
-        reduceGrounds(applicable.getGrounds());
+        reduceGrounds(applicable.getGrounds(), isExcludedTenancy(applicable));
         if (!hasRentArrearsGround(applicable)) {
             applicable.setRentArrears(null);
         }
@@ -71,9 +74,53 @@ public class CitizenPossessionClaimApplicableAnswers {
             && claim.getEligibility().getLegislativeCountry() == LegislativeCountry.WALES;
     }
 
+    /**
+     * Whether a claim on an excluded tenancy in England, which asks its own grounds questions.
+     */
+    public static boolean isExcludedTenancy(CitizenPossessionClaim claim) {
+        return !isWales(claim)
+            && claim.getTenancy() != null
+            && claim.getTenancy().getTenancyType() == CitizenClaimTenancyType.EXCLUDED;
+    }
+
     public static boolean hasRentArrearsGround(CitizenPossessionClaim applicable) {
+        if (isExcludedTenancy(applicable)) {
+            CitizenClaimGrounds grounds = applicable.getGrounds();
+            return grounds != null
+                && grounds.getHasExcludedGrounds() == VerticalYesNo.YES
+                && grounds.getExcludedGrounds() != null
+                && grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
+        }
         return CitizenPossessionClaimValidator.allGrounds(applicable.getGrounds()).stream()
             .anyMatch(PrivateLandlordAssuredGround::isRentArrears);
+    }
+
+    private static void reduceAdditionalClaimants(CitizenPossessionClaim claim) {
+        if (claim.getClaimant() == null || claim.getClaimant().getMultipleClaimants() != VerticalYesNo.YES) {
+            claim.setAdditionalClaimants(null);
+            return;
+        }
+        if (claim.getAdditionalClaimants() == null) {
+            return;
+        }
+        claim.getAdditionalClaimants().forEach(item -> {
+            CitizenClaimAdditionalClaimant claimant = item != null ? item.getValue() : null;
+            if (claimant == null) {
+                return;
+            }
+            if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
+                claimant.setFirstName(null);
+                claimant.setLastName(null);
+            } else if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.INDIVIDUAL) {
+                claimant.setOrganisationName(null);
+            }
+            if (claimant.getContactByPhone() != VerticalYesNo.YES) {
+                claimant.setPhoneNumber(null);
+            }
+            if (claimant.getContactByText() != VerticalYesNo.YES) {
+                claimant.setTextMessageNumber(null);
+            }
+        });
     }
 
     private static void reduceClaimant(CitizenClaimClaimant claimant) {
@@ -99,11 +146,17 @@ public class CitizenPossessionClaimApplicableAnswers {
      * claimant agreed to be called on.
      */
     public static String effectiveTextNumber(CitizenClaimClaimant claimant) {
-        if (StringUtils.isNotBlank(claimant.getTextMessageNumber())) {
-            return claimant.getTextMessageNumber();
+        return effectiveTextNumber(claimant.getTextMessageNumber(), claimant.getContactByPhone(),
+                                   claimant.getPhoneNumber());
+    }
+
+    public static String effectiveTextNumber(String textMessageNumber, VerticalYesNo contactByPhone,
+                                             String phoneNumber) {
+        if (StringUtils.isNotBlank(textMessageNumber)) {
+            return textMessageNumber;
         }
-        if (claimant.getContactByPhone() == VerticalYesNo.YES && StringUtils.isNotBlank(claimant.getPhoneNumber())) {
-            return claimant.getPhoneNumber();
+        if (contactByPhone == VerticalYesNo.YES && StringUtils.isNotBlank(phoneNumber)) {
+            return phoneNumber;
         }
         return null;
     }
@@ -155,10 +208,15 @@ public class CitizenPossessionClaimApplicableAnswers {
         }
     }
 
-    private static void reduceGrounds(CitizenClaimGrounds grounds) {
+    private static void reduceGrounds(CitizenClaimGrounds grounds, boolean excludedTenancy) {
         if (grounds == null) {
             return;
         }
+        if (excludedTenancy) {
+            reduceExcludedGrounds(grounds);
+            return;
+        }
+        clearExcludedGrounds(grounds);
         if (grounds.getHasRentArrearsGrounds() == VerticalYesNo.NO) {
             grounds.setRentArrearsGrounds(null);
         }
@@ -176,6 +234,29 @@ public class CitizenPossessionClaimApplicableAnswers {
                                          .filter(item -> isAskedForAReason(item.getValue().getGround(), selected))
                                          .toList());
         }
+    }
+
+    private static void reduceExcludedGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasRentArrearsGrounds(null);
+        grounds.setRentArrearsGrounds(null);
+        grounds.setHasOtherGrounds(null);
+        grounds.setOtherGrounds(null);
+        grounds.setOtherGroundsDetails(null);
+        grounds.setGroundReasons(null);
+        if (grounds.getHasExcludedGrounds() != VerticalYesNo.YES) {
+            grounds.setExcludedGrounds(null);
+        }
+        if (grounds.getExcludedGrounds() == null
+            || !grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.OTHER)) {
+            grounds.setExcludedOtherGroundDetails(null);
+        }
+    }
+
+    private static void clearExcludedGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasExcludedGrounds(null);
+        grounds.setExcludedGrounds(null);
+        grounds.setExcludedOtherGroundDetails(null);
+        grounds.setExcludedReason(null);
     }
 
     private static boolean isAskedForAReason(PrivateLandlordAssuredGround ground,
