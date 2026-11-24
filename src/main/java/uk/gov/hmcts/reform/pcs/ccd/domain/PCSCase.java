@@ -460,7 +460,7 @@ public class PCSCase {
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
 
-    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
+    @CCD(searchable = false)
     private YesOrNo hasActiveBreathingSpace;
 
     @JsonUnwrapped
