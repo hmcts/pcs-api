@@ -35,11 +35,13 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(enterBreathingSpace.name(), this::submit)
-                .forState(State.CASE_ISSUED)
+                .forAllStates()
                 .name("Enter breathing space")
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .showCondition(ShowConditions.and(
-                    ShowConditions.featureFlagsEnabled(ENFORCEMENT), "hasActiveBreathingSpace=\"No\""))
+                    ShowConditions.featureFlagsEnabled(ENFORCEMENT),
+                    "hasActiveBreathingSpace=\"No\""
+                ))
                 .showSummary()
                 .endButtonLabel("Submit");
         breathingSpacePageConfigurer.configurePages(new PageBuilder(eventBuilder));

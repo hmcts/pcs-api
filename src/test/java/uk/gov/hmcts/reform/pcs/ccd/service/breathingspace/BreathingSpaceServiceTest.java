@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.breathingspace;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
@@ -15,8 +15,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepos
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +40,11 @@ class BreathingSpaceServiceTest {
     private static final LocalDate START_DATE = LocalDate.of(2026, 10, 1);
     private static final LocalDate EXPECTED_END_DATE = LocalDate.of(2026, 11, 30);
 
+    private static final Clock UK_CLOCK = Clock.fixed(
+        Instant.parse("2026-07-16T10:00:00Z"),
+        ZoneId.of("Europe/London")
+    );
+
     @Mock
     private PcsCaseService pcsCaseService;
 
@@ -49,8 +56,13 @@ class BreathingSpaceServiceTest {
     @Captor
     private ArgumentCaptor<BreathingSpaceEntity> breathingSpaceEntityCaptor;
 
-    @InjectMocks
     private BreathingSpaceService underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new BreathingSpaceService(
+            pcsCaseService, breathingSpaceRepository, enforcementOrderService, UK_CLOCK);
+    }
 
     @Test
     void shouldSaveBreathingSpaceAgainstPcsCase() {
@@ -91,83 +103,69 @@ class BreathingSpaceServiceTest {
     }
 
     @Test
-    void shouldRetrieveBreathingSpaceDetailsForCase() {
+    void shouldMapActiveBreathingSpaceToDetails() {
         // Given
-        long caseReference = 1234567890123456L;
-
         BreathingSpaceEntity entity = BreathingSpaceEntity.builder()
-            .referenceNumber("BS12345")
-            .startDate(LocalDate.of(2026, 11, 12))
+            .referenceNumber(REFERENCE_NUMBER)
+            .startDate(START_DATE)
             .type(BreathingSpaceType.STANDARD)
-            .expectedEndDate(LocalDate.of(2027, 1, 12))
+            .expectedEndDate(EXPECTED_END_DATE)
             .build();
-
-        when(breathingSpaceRepository.findByCaseReference(caseReference))
-            .thenReturn(List.of(entity));
+        when(breathingSpaceRepository
+                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+            .thenReturn(Optional.of(entity));
 
         // When
-        List<BreathingSpaceDetails> result =
-            underTest.getBreathingSpaces(caseReference);
+        Optional<BreathingSpaceDetails> result = underTest.getActiveBreathingSpace(CASE_REFERENCE);
 
         // Then
-        assertThat(result).hasSize(1);
-
-        assertThat(result.getFirst().getReferenceNumber())
-            .isEqualTo("BS12345");
-
-        assertThat(result.getFirst().getStartDate())
-            .isEqualTo(LocalDate.of(2026, 11, 12));
-
-        assertThat(result.getFirst().getType())
-            .isEqualTo(BreathingSpaceType.STANDARD);
-
-        assertThat(result.getFirst().getExpectedEndDate())
-            .isEqualTo(LocalDate.of(2027, 1, 12));
+        assertThat(result).contains(stub());
     }
 
-
     @Test
-    void shouldReturnEmptyWhenNoBreathingSpaceExists() {
+    void shouldReturnEmptyWhenNoActiveBreathingSpace() {
         // Given
-        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(List.of());
+        when(breathingSpaceRepository
+                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+            .thenReturn(Optional.empty());
 
         // When
-        Optional<BreathingSpaceDetails> result =
-            underTest.getLatestBreathingSpace(CASE_REFERENCE);
+        Optional<BreathingSpaceDetails> result = underTest.getActiveBreathingSpace(CASE_REFERENCE);
 
         // Then
         assertThat(result).isEmpty();
     }
 
-
     @Test
-    void shouldReturnLatestBreathingSpaceRecord() {
+    void shouldSetLiftedDateToTodayWhenLiftingBreathingSpace() {
         // Given
-        BreathingSpaceEntity newest = BreathingSpaceEntity.builder()
-            .referenceNumber("BS-NEW")
-            .startDate(LocalDate.of(2026, 11, 12))
-            .build();
-
-        BreathingSpaceEntity oldest = BreathingSpaceEntity.builder()
-            .referenceNumber("BS-OLD")
-            .startDate(LocalDate.of(2026, 10, 1))
-            .build();
-
-        // Repository returns newest first
-        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(List.of(newest, oldest));
+        BreathingSpaceEntity entity = BreathingSpaceEntity.builder().build();
+        when(breathingSpaceRepository
+                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+            .thenReturn(Optional.of(entity));
 
         // When
-        Optional<BreathingSpaceDetails> result =
-            underTest.getLatestBreathingSpace(CASE_REFERENCE);
+        underTest.liftBreathingSpace(CASE_REFERENCE);
 
         // Then
-        assertThat(result).isPresent();
-        assertThat(result.orElseThrow().getReferenceNumber())
-            .isEqualTo("BS-NEW");
+        verify(breathingSpaceRepository).save(breathingSpaceEntityCaptor.capture());
+        assertThat(breathingSpaceEntityCaptor.getValue().getLiftedDate()).isEqualTo(LocalDate.now(UK_CLOCK));
     }
 
+    @Test
+    void shouldThrowWhenNoActiveBreathingSpaceToLift() {
+        // Given
+        when(breathingSpaceRepository
+                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+            .thenReturn(Optional.empty());
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.liftBreathingSpace(CASE_REFERENCE))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(String.valueOf(CASE_REFERENCE));
+
+        verify(breathingSpaceRepository, never()).save(any());
+    }
 
     @Test
     void shouldNotSaveExpectedEndDateForMentalHealthMoratorium() {
