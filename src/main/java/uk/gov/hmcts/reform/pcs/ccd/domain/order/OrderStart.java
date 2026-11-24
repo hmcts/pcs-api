@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
+import uk.gov.hmcts.ccd.sdk.bankholidays.BankHoliday;
+import uk.gov.hmcts.ccd.sdk.bankholidays.BankHolidays;
+import uk.gov.hmcts.ccd.sdk.bankholidays.Division;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
@@ -20,8 +23,8 @@ import java.util.UUID;
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, the application the judge's task asks them to decide, if it asks them to decide one, and the
- * judge the order is made by, as it names them as made before them. The bank holidays are those of the coming year
- * in England and Wales, which a date the order gives to apply by moves off.
+ * judge the order is made by, as it names them as made before them. The bank holidays are England and Wales's as
+ * GOV.UK publishes them, which a date the order gives to apply by moves off.
  */
 public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, UUID taskGenAppId, String judge,
                          List<LocalDate> bankHolidays) {
@@ -32,8 +35,10 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
         return name == null || name.isBlank() ? "[judge’s name and title]" : "District Judge " + name;
     }
 
-    /** How far ahead the bank holidays go: a year, beyond any date an order gives to apply by. */
-    public static final int BANK_HOLIDAY_DAYS = 400;
+    /** England and Wales's bank holidays, as the frontend moves a date off them. */
+    public static List<LocalDate> bankHolidays(BankHolidays bankHolidays) {
+        return bankHolidays.holidays(Division.ENGLAND_AND_WALES).stream().map(BankHoliday::date).toList();
+    }
 
     /**
      * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent

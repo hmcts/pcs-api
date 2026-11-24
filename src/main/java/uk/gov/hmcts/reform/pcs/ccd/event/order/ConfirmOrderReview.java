@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
-import uk.gov.hmcts.reform.pcs.calendar.BankHolidays;
+import uk.gov.hmcts.ccd.sdk.bankholidays.BankHolidays;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -122,7 +122,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             OrderStart.Order.of(order, orderSteps.latest(order), null),
             orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), null,
             OrderStart.judge(order.getAuthorName()),
-            bankHolidays.upcoming(OrderStart.BANK_HOLIDAY_DAYS)));
+            OrderStart.bankHolidays(bankHolidays)));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {

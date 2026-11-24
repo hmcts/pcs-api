@@ -43,6 +43,7 @@ logging:
 testing-support:
   enabled: true
 
-# No network in tests: no bank holidays, so working days skip only weekends.
-bank-holidays:
-  url: ""
+# No network in tests: fetching bank holidays fails at once, leaving the SDK's copy of GOV.UK's.
+ccd:
+  bank-holidays:
+    url: http://localhost:1/bank-holidays.json""

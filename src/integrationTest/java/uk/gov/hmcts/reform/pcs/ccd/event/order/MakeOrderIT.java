@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,8 +91,8 @@ class MakeOrderIT extends OrderEventIT {
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
         // The order is made before the judge making it.
         assertThat(start.judge()).isEqualTo("District Judge First Judge");
-        // Tests fetch no calendar, so there are no bank holidays: working days skip only weekends.
-        assertThat(start.bankHolidays()).isEmpty();
+        // England and Wales's bank holidays, from the SDK's copy of GOV.UK's as tests fetch none.
+        assertThat(start.bankHolidays()).contains(LocalDate.of(2026, 12, 25)).doesNotContain(LocalDate.of(2026, 1, 2));
         assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
         assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
     }
