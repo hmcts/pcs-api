@@ -220,12 +220,13 @@ export class GenAppsAction implements IAction {
         : (confirmOrder.input as string);
     await performAction('inputText', confirmOrder.label, userInput);
     FieldsStore.update(confirmOrder.label as string, userInput);
-    const draftOrderEditor = page.getByRole('textbox', {
-      name: /^Detail the draft order (you|the defendant) would like the judge to consider$/,
-    });
-    await draftOrderEditor.fill(GEN_APP_DRAFT_ORDER_WORDING);
-    const draftOrderLabel = await page.locator('[id$="xui_genapp_DraftOrderWording_label"]').innerText();
-    FieldsStore.set(draftOrderLabel.trim(), GEN_APP_DRAFT_ORDER_WORDING);
+    if (typeof confirmOrder.draftOrderLabel === 'string') {
+      const editor = page.getByRole('textbox', { name: confirmOrder.draftOrderLabel, exact: true });
+      await editor.fill(GEN_APP_DRAFT_ORDER_WORDING);
+      FieldsStore.set(confirmOrder.draftOrderLabel, GEN_APP_DRAFT_ORDER_WORDING);
+    } else {
+      await expect(page.getByRole('textbox', { name: /^Detail the draft order / })).toBeHidden();
+    }
     await performAction('clickButton', whatOrderDoYouWantTheCourtToMakeAndWhy.continueButton);
   }
 
@@ -617,6 +618,7 @@ export class GenAppsAction implements IAction {
         await performAction('confirmOrderDoYouWant', {
           label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
           input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+          draftOrderLabel: whatOrderDoYouWantTheCourtToMakeAndWhy.draftOrderLabel,
         });
         await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
         break;
