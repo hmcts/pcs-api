@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASE_MANAGEMENT_R2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_GENAPP_SET_ASIDE;
@@ -38,7 +39,8 @@ class ShowConditionsTest {
         WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
         CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled",
         MAKE_ORDER, "featureFlags.makeOrderEnabled",
-        ENFORCEMENT, "featureFlags.enforcementEnabled"
+        ENFORCEMENT, "featureFlags.enforcementEnabled",
+        CASE_MANAGEMENT_R2, "featureFlags.caseManagementR2Enabled"
     );
 
     @Test
