@@ -16,6 +16,7 @@ public class FeatureFlags {
     private VerticalYesNo cuiRespondToClaimLrEnabled;
     private VerticalYesNo makeOrderEnabled;
     private VerticalYesNo enforcementEnabled;
+    private VerticalYesNo caseManagementR2Enabled;
     private VerticalYesNo defendantGeneralApplicationsR2Enabled;
 
 }

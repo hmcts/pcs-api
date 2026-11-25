@@ -26,6 +26,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASE_MANAGEMENT_R2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
@@ -49,6 +50,7 @@ class FeatureFlagViewTest {
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
         MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
         ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
+        CASE_MANAGEMENT_R2, FeatureFlags::getCaseManagementR2Enabled,
         DEFENDANT_GENERAL_APPLICATIONS_R_2, FeatureFlags::getDefendantGeneralApplicationsR2Enabled
     );
 
