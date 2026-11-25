@@ -403,6 +403,26 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
+        @DisplayName("returns active case flags and the amend link for ExUI")
+        void shouldReturnActiveCaseFlags() throws Exception {
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0002", "Complex case"), "Active", "needs time");
+            addCaseFlag(pcsCase, refData("CF0004", "Vulnerable user"), "Requested", null);
+            persist(pcsCase);
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.caseFlags.flagAmendURL")
+                    .value("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags"))
+                .andExpect(jsonPath("$.caseFlags.flags.length()").value(1))
+                .andExpect(jsonPath("$.caseFlags.flags[0].partyName").value("Case level flags"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagId").value("CF0002"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagDescription").value("Complex case"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagStatus").value("Active"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagComment").value("needs time"));
+        }
+
+        @Test
         @DisplayName("ignores fields it does not recognise in the request")
         void shouldIgnoreUnknownRequestFields() throws Exception {
             persist(newCase(CASE_REFERENCE, null));

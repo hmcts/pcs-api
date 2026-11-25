@@ -18,22 +18,26 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -60,6 +64,8 @@ public class ServiceHearingValuesMapper {
     private static final String COMMENT_OPEN = " (Comments: ";
     private static final String COMMENT_CLOSE = ")";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
+    static final String CASE_FLAGS_PATH = "/cases/case-details/%d#Case%%20flags";
+    static final String CASE_LEVEL_FLAGS_PARTY_NAME = "Case level flags";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
@@ -106,6 +112,7 @@ public class ServiceHearingValuesMapper {
         if (!parties.isEmpty()) {
             values.setParties(parties);
         }
+        values.setCaseFlags(caseFlags(pcsCase, parties));
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -183,11 +190,15 @@ public class ServiceHearingValuesMapper {
     }
     
     private List<PartyDetails> parties(PcsCaseEntity pcsCase) {
-        return pcsCase.getParties().stream()
-            .filter(Objects::nonNull)
-            .filter(party -> !party.isRemoved())
+        return activeParties(pcsCase)
             .map(this::partyDetails)
             .toList();
+    }
+
+    private static Stream<PartyEntity> activeParties(PcsCaseEntity pcsCase) {
+        return pcsCase.getParties().stream()
+            .filter(Objects::nonNull)
+            .filter(party -> !party.isRemoved());
     }
 
     // defendantFlags is the historical name on PartyEntity for a person's flags, including claimants
@@ -256,11 +267,72 @@ public class ServiceHearingValuesMapper {
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {
-        long activeParties = pcsCase.getParties().stream()
+        return Math.toIntExact(activeParties(pcsCase).count()) + DUTY_SOLICITOR_ATTENDEES;
+    }
+
+    private CaseFlags caseFlags(PcsCaseEntity pcsCase, List<PartyDetails> parties) {
+        Map<String, String> partyNames = new HashMap<>();
+        parties.forEach(party -> partyNames.put(party.getPartyID(), partyName(party)));
+
+        List<PartyFlags> flags = new ArrayList<>();
+        activeFlags(pcsCase.getCaseFlags())
+            .map(flag -> partyFlag(flag, null, CASE_LEVEL_FLAGS_PARTY_NAME))
+            .forEach(flags::add);
+        activeParties(pcsCase).forEach(party -> {
+            String partyId = party.getId().toString();
+            activeFlags(party.getDefendantFlags())
+                .map(flag -> partyFlag(flag, partyId, partyNames.get(partyId)))
+                .forEach(flags::add);
+        });
+
+        if (flags.isEmpty()) {
+            return null;
+        }
+        return CaseFlags.builder()
+            .flags(flags)
+            .flagAmendUrl(String.format(CASE_FLAGS_PATH, pcsCase.getCaseReference()))
+            .build();
+    }
+
+    private static Stream<? extends BaseCaseFlag> activeFlags(List<? extends BaseCaseFlag> flags) {
+        return flags.stream()
             .filter(Objects::nonNull)
-            .filter(party -> !party.isRemoved())
-            .count();
-        return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
+            .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
+            .filter(flag -> flag.getFlagRefData() != null);
+    }
+
+    private static PartyFlags partyFlag(BaseCaseFlag flag, String partyId, String partyName) {
+        return PartyFlags.builder()
+            .partyID(partyId)
+            .partyName(partyName)
+            .flagId(flag.getFlagRefData().getFlagCode())
+            .flagDescription(flagDescription(flag))
+            .flagStatus(flag.getDefaultStatus())
+            .flagComment(flag.getFlagComment())
+            .dateTimeCreated(flag.getDateTimeCreated())
+            .dateTimeModified(flag.getDateTimeModified())
+            .build();
+    }
+
+    // ExUI shows the description under an interpreter flag's name, so it carries the language
+    private static String flagDescription(BaseCaseFlag flag) {
+        String flagCode = flag.getFlagRefData().getFlagCode();
+        boolean interpreter = IndividualDetailsFlagMapper.SPOKEN_LANGUAGE_INTERPRETER.equals(flagCode)
+            || IndividualDetailsFlagMapper.SIGN_LANGUAGE_INTERPRETER.equals(flagCode);
+        if (interpreter && flag.getSubTypeValue() != null && !flag.getSubTypeValue().isBlank()) {
+            return flag.getSubTypeValue();
+        }
+        return FlagText.name(flag);
+    }
+
+    private static String partyName(PartyDetails party) {
+        IndividualDetails individual = party.getIndividualDetails();
+        if (individual == null) {
+            return party.getOrganisationDetails().getName();
+        }
+        return Stream.of(individual.getFirstName(), individual.getLastName())
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
     }
 
     private String listingComments(PcsCaseEntity pcsCase) {

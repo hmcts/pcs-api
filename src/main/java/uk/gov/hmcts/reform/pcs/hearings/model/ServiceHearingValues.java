@@ -44,6 +44,7 @@ public class ServiceHearingValues {
     private PanelRequirements panelRequirements;
     private boolean hearingIsLinkedFlag;
     private List<PartyDetails> parties;
+    private CaseFlags caseFlags;
     private List<ScreenNavigation> screenFlow;
 
 }
