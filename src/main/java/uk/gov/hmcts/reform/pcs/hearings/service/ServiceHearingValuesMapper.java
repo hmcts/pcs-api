@@ -114,8 +114,9 @@ public class ServiceHearingValuesMapper {
         List<PartyDetails> parties = parties(pcsCase);
         if (!parties.isEmpty()) {
             values.setParties(parties);
+            values.setCaseFlags(caseFlags(pcsCase, parties));
         }
-        values.setCaseFlags(caseFlags(pcsCase, parties));
+        
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;

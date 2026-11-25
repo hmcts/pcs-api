@@ -93,7 +93,6 @@ class ServiceHearingValuesMapperTest {
         defaults.setHearingType("AAA3-FPH");
         defaults.setHearingChannels(List.of("INTER"));
         defaults.setHearingPriorityStandard(STANDARD_PRIORITY);
-        defaults.setHearingPriorityUrgent(URGENT_PRIORITY);
         defaults.setNumberOfDaysStartOffset(27);
         defaults.setNumberOfDaysOffset(57);
 
