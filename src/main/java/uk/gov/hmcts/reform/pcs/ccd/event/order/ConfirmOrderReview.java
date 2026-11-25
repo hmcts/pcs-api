@@ -76,6 +76,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_CLAIM_OUTCOME = "Record what the order does";
     static final String INCOMPLETE_MONEY_JUDGMENT =
         "Record who each money judgment is between, its sums and how they are paid";
+    static final String RETURN_TO_JUDGE_TO_DECIDE = "Return the order to the judge with a query";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -165,10 +166,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (issue.claimOutcome() == null || !issue.claimOutcome().complete()) {
             throw ExternalRejection.because(NO_CLAIM_OUTCOME);
         }
-        // Which of the case's applications the order disposes of or lists, as issued; the database refuses a second
-        // order disposing of one.
-        issuing.applicationDecisions().stream()
-            .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
+        // Which of the case's applications the order disposes of or lists, as issued: each still the order's to decide.
+        orderTasks.requireDecidable(order.getPcsCase(), issuing.applicationDecisions(), RETURN_TO_JUDGE_TO_DECIDE);
+        issuing.applicationDecisions()
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
         order.setMadeOn(OrderStart.Order.madeOn(order, submitted));

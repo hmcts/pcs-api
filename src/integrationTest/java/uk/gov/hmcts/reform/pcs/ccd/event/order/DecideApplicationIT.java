@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -142,6 +141,8 @@ class DecideApplicationIT extends OrderEventIT {
                 tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
     }
 
+    private static final String DECIDED_ELSEWHERE = "Another order has decided application GA1. ";
+
     @Test
     @DisplayName("refuses issuing a second order deciding the application, and offers it no more once one decides "
         + "it, though listing it for a hearing leaves it to decide")
@@ -164,8 +165,8 @@ class DecideApplicationIT extends OrderEventIT {
         issue(freeform);
 
         Order dismissed = asCaseworkerReviewing(dismissedId).start().order();
-        assertThatThrownBy(() -> asCaseworkerReviewing(dismissedId).submit(issueRequest(dismissed)))
-            .hasStackTraceContaining("order_gen_app_decided_once_idx");
+        assertThat(asCaseworkerReviewing(dismissedId).submitExpectingRejection(issueRequest(dismissed)).errors())
+            .containsExactly(DECIDED_ELSEWHERE + ConfirmOrderReview.RETURN_TO_JUDGE_TO_DECIDE);
         assertThat(jdbcTemplate.queryForList("SELECT decision FROM order_gen_app WHERE gen_app_id = ?",
             String.class, genAppId)).containsExactlyInAnyOrder("LISTED", "DISPOSED");
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge)
@@ -189,8 +190,8 @@ class DecideApplicationIT extends OrderEventIT {
                 Map.of("app-" + genAppId + "-decision", "dismiss"), WORDING, "the order",
                 List.of(new ApplicationDecision(genAppId, GenAppDecision.DISPOSED))),
                 List.of(), HIGH_COURT, true, List.of(), true, NO_ORDER));
-        assertThatThrownBy(() -> asCaseworkerReviewing(undecided.id()).submit(changed))
-            .hasStackTraceContaining("order_gen_app_decided_once_idx");
+        assertThat(asCaseworkerReviewing(undecided.id()).submitExpectingRejection(changed).errors())
+            .containsExactly(DECIDED_ELSEWHERE + ConfirmOrderReview.RETURN_TO_JUDGE_TO_DECIDE);
     }
 
     @Test
@@ -308,6 +309,9 @@ class DecideApplicationIT extends OrderEventIT {
             Map.of("orderId", draftId.toString(), "genAppId", genAppId.toString())).start();
         assertThat(reopened.order().id()).isEqualTo(draftId);
         assertThat(reopened.taskGenAppId()).isNull();
+        // The judge can keep their draft, but not send court staff a decision they could not issue.
+        assertThat(asJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, reopened.order(), "freeform", null))
+            .errors()).containsExactly("Application GA1 is no longer open. " + MakeOrder.RELOAD_TO_DECIDE);
 
         Actor otherJudge = events.registerActor("Other", "Judge", "caseworker-pcs");
         assertThat(events.external(caseReference, MAKE_ORDER).as(otherJudge)

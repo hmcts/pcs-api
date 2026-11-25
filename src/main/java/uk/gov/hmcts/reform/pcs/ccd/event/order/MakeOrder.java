@@ -73,6 +73,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     static final String ALREADY_DECIDED =
         "Another order has decided this application";
     static final String NOT_OPEN = "The application is not open";
+    static final String RELOAD_TO_DECIDE = "Reload the page to decide the case's open applications";
 
     /** The states that leave an order its author's to change. */
     private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
@@ -195,6 +196,10 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge, request.hearing())
             : workingDraft(caseReference, judge, change);
+        // Sent for review, every decision must be one court staff can issue; a draft can wait.
+        if (request.action() == SUBMIT_FOR_REVIEW) {
+            orderTasks.requireDecidable(order.getPcsCase(), change.applicationDecisions(), RELOAD_TO_DECIDE);
+        }
         final List<GenAppEntity> decided = order.getPcsCase().getGenApps().stream()
             .filter(genApp -> change.applicationDecisions().stream()
                 .anyMatch(decision -> decision.genAppId().equals(genApp.getId())))
