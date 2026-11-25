@@ -8,10 +8,12 @@ import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
@@ -27,12 +29,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.toDomainParties;
 
-/** The case as the order journeys show it: its property, its main claim's parties and its open applications. */
+/**
+ * The case as the order journeys show it: its property, its main claim's parties, its open applications, the
+ * hearings an order can be made at and the court managing it.
+ */
 @Component
 @AllArgsConstructor
 class OrderCaseContext {
@@ -43,6 +49,7 @@ class OrderCaseContext {
     private final OrderTasks orderTasks;
     private final ObjectProvider<CaseBundles> bundles;
     private final UserRoleService roles;
+    private final CaseCourts caseCourts;
 
     /** The case for the order, which offers the applications no issued order has decided. */
     public OrderStart.CaseContext of(PcsCaseEntity pcsCase) {
@@ -60,8 +67,28 @@ class OrderCaseContext {
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList(),
-            caseBundle(pcsCase)
+            caseBundle(pcsCase),
+            pcsCase.getHearings().stream()
+                .filter(HearingRecords::canHaveOrder)
+                .sorted(Comparator.comparing(HearingEntity::getHearingDate))
+                .map(hearing -> new OrderStart.HearingOption(hearing.getId(), hearing.getHearingDate()))
+                .toList(),
+            court(pcsCase)
         );
+    }
+
+    /**
+     * The court managing the case, as an order names where the judge sits: its name and its venue's short name, or a
+     * placeholder for the judge to fill in.
+     */
+    private String court(PcsCaseEntity pcsCase) {
+        return caseCourts.of(pcsCase)
+            .map(venue -> Stream.of(venue.courtName(),
+                    Optional.ofNullable(venue.externalShortName()).orElse(venue.venueName()))
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(" ")))
+            .filter(StringUtils::isNotBlank)
+            .orElse("[court]");
     }
 
     /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */
@@ -80,12 +107,14 @@ class OrderCaseContext {
         return new OrderStart.Application(
             genApp.getId(),
             genApp.getType() == GenAppType.SUSPEND,
+            genApp.getType() == GenAppType.ADJOURN,
+            orderTasks.isListed(genApp),
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
             applicant(genApp, claim),
             // A paper application court staff entered is dated when the court received it, not when they entered it.
-            genApp.getApplicationReceivedDate() != null || genApp.getApplicationSubmittedDate() == null
+            genApp.getApplicationReceivedDate() != null
                 ? genApp.getApplicationReceivedDate() : genApp.getApplicationSubmittedDate().toLocalDate(),
             genApp.getWithin14Days(),
             genApp.getOtherPartiesAgreed(),
@@ -98,9 +127,6 @@ class OrderCaseContext {
 
     /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */
     private String applicant(GenAppEntity genApp, ClaimEntity claim) {
-        if (genApp.getParty() == null) {
-            return null;
-        }
         String name = partyService.getPartyName(genApp.getParty());
         return Optional.ofNullable(claim).stream()
             .flatMap(c -> c.getClaimParties().stream())

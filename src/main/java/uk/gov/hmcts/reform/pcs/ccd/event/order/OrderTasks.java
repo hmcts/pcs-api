@@ -2,17 +2,21 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ApplicationDecision;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -65,6 +69,30 @@ public class OrderTasks {
     /** Whether a judge can decide the application: it is open, and no issued order has decided it. */
     public boolean canDecide(GenAppEntity genApp) {
         return genApp.isOpen() && !orderRepository.isGenAppDecided(genApp.getId());
+    }
+
+    /**
+     * Refuses an order deciding an application that is not the case's, or that has closed or another order has decided
+     * since the page was opened, saying why and what the user does next, rather than leaving the database to refuse it.
+     */
+    public void requireDecidable(PcsCaseEntity pcsCase, List<ApplicationDecision> decisions, String nextStep) {
+        for (ApplicationDecision decided : decisions) {
+            GenAppEntity genApp = pcsCase.findGenApp(decided.genAppId())
+                .orElseThrow(() -> ExternalRejection.because("The application is not on this case"));
+            if (!genApp.isOpen()) {
+                throw ExternalRejection.because(
+                    "Application GA%d is no longer open. %s".formatted(genApp.getRank(), nextStep));
+            }
+            if (orderRepository.isGenAppDecided(genApp.getId())) {
+                throw ExternalRejection.because(
+                    "Another order has decided application GA%d. %s".formatted(genApp.getRank(), nextStep));
+            }
+        }
+    }
+
+    /** Whether an issued order has listed the application for a hearing, where it is still to be decided. */
+    public boolean isListed(GenAppEntity genApp) {
+        return orderRepository.isGenAppListed(genApp.getId());
     }
 
     /** The task link that starts the judge's order deciding the application. */
