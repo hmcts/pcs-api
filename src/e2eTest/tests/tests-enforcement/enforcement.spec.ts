@@ -148,6 +148,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         await performAction('selectApplicationType', {
           question: enforcementApplication.typeOfApplicationQuestion,
           option: enforcementApplication.warrantOfPossessionRadioOption,
+          nextPage: nameAndAddressForEviction.mainHeader
+        });
+      });
+
+      await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
+        await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
+        await performAction('selectNameAndAddressForEviction', {
+          question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+          option: nameAndAddressForEviction.yesRadioOption,
+          defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
           nextPage: defendantInBreathingSpace.mainHeader
         });
       });
@@ -163,17 +173,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await test.step(`Then the user provides the missed payment details`, async () => {
         await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
         await performAction('missedPayments', {
-          option: missedPayments.yesRadioOption, nextPage: nameAndAddressForEviction.mainHeader
-        });
-      });
-
-      await test.step(`Then the user selects the defendant name and address for eviction`, async () => {
-        await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
-        await performAction('selectNameAndAddressForEviction', {
-          question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-          option: nameAndAddressForEviction.yesRadioOption,
-          defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-          nextPage: confirmDefendantsDOB.mainHeader
+          option: missedPayments.yesRadioOption, nextPage: confirmDefendantsDOB.mainHeader
         });
       });
 

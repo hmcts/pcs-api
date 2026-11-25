@@ -41,6 +41,7 @@ import {
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 import Axios from "axios";
+import {checkYourAnswersEnforcement} from "@data/page-data-figma/page-data-enforcement-figma";
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -89,7 +90,8 @@ export class EnforcementAction implements IAction{
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
-
+      ['continueFromCYAPage', () => this.continueFromCYAPage(fieldName as actionRecord)],
+      ['selectPayClaimFee', () => this.selectPayClaimFee(fieldName as actionRecord, page)],
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
     ]);
@@ -497,6 +499,18 @@ export class EnforcementAction implements IAction{
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
     await performAction('reTryOnCallBackError', claimantDetails.continueButton, claimantDetails.nextPage as string);
+  }
+
+  private async continueFromCYAPage(cyaPageData: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('reTryOnCallBackError', checkYourAnswersEnforcement.submitApplication, cyaPageData.nextPage as string);
+  }
+
+  private async selectPayClaimFee(payClaimFeeDetails: actionRecord, page: Page) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'link', text: payClaimFeeDetails.link });
   }
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {

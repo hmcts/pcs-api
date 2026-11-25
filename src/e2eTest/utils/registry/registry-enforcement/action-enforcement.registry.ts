@@ -94,6 +94,8 @@ export class ActionEnforcementRegistry {
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['isDefendantInBreathingSpace', new EnforcementAction()],
+    ['isDefendantInBreathingSpace', new EnforcementAction()],
     ['continueFromCYAPage', new EnforcementAction()],
     ['selectPayClaimFee', new EnforcementAction()],
     ['resumeDraftApplication', new EnforcementAction()],
@@ -102,6 +104,7 @@ export class ActionEnforcementRegistry {
     ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
     ['cannotApplyForWarrantInfo', new EnforcementAction()],
     ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
+    ['missedPayments', new EnforcementAction()]
   ]);
 
   static getAction(actionName: string): IAction {
