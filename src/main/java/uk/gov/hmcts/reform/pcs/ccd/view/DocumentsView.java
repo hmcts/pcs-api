@@ -90,7 +90,7 @@ public class DocumentsView {
                 .toList());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, pcsCaseEntity, userRoles,
                                                                    organisationId, recipients))
             .map(this::toListValue)
             .collect(Collectors.toList());
@@ -109,7 +109,8 @@ public class DocumentsView {
             .build();
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId,
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, PcsCaseEntity pcsCaseEntity,
+                                            UserRoles userRoles, String organisationId,
                                             Map<UUID, List<PartyEntity>> recipients) {
         // Access code letters are only for bulk print, which finds them in systemDocuments.
         if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
@@ -117,7 +118,8 @@ public class DocumentsView {
         }
 
         if (enforcementDocumentVisibilityService.isEnforcementDocument(documentEntity.getType())) {
-            return enforcementDocumentVisibilityService.isVisibleToUser(userRoles.roles());
+            return enforcementDocumentVisibilityService.isVisibleToUser(userRoles.roles(), pcsCaseEntity,
+                                                                        organisationId);
         }
 
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();

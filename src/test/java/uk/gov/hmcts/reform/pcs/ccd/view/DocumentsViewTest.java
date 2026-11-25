@@ -153,12 +153,13 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
         when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
             .thenReturn(true);
-        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(false);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of(), pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(false);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         assertThat(pcsCase.getAllDocuments()).isEmpty();
-        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of(), pcsCaseEntity, ORGANISATION_ID);
     }
 
     @Test
@@ -167,12 +168,13 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(warrant));
         when(enforcementDocumentVisibilityService.isEnforcementDocument(DocumentType.WARRANT_OF_POSSESSION))
             .thenReturn(true);
-        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of())).thenReturn(true);
+        when(enforcementDocumentVisibilityService.isVisibleToUser(List.of(), pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(true);
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         assertThat(pcsCase.getAllDocuments()).hasSize(1);
-        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of());
+        verify(enforcementDocumentVisibilityService).isVisibleToUser(List.of(), pcsCaseEntity, ORGANISATION_ID);
     }
 
     private static DocumentEntity enforcementDocument(DocumentType type) {
