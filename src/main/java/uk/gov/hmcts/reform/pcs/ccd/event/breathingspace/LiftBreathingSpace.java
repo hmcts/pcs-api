@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.liftBreathingSpace;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.breathingSpace;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -39,9 +40,12 @@ public class LiftBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(liftBreathingSpace.name(), this::submit, this::start)
-                .forAllStates()
+                .forStates(breathingSpace())
                 .name("Lift breathing space")
-                .grant(Permission.CRUD, CASEWORKER_ROLES)
+                //.grant(Permission.CRUD, CASEWORKER_ROLES)
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .showCondition(ShowConditions.and(
                     ShowConditions.featureFlagsEnabled(ENFORCEMENT),
                     "hasActiveBreathingSpace=\"Yes\""

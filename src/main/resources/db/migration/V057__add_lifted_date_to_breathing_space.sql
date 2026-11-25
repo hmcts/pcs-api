@@ -1,1 +1,1 @@
-ALTER TABLE breathing_space ADD COLUMN lifted_date DATE;
+ALTER TABLE breathing_space ADD COLUMN lifted_date TIMESTAMP WITHOUT TIME ZONE;

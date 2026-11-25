@@ -12,9 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepos
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.time.Clock;
-import java.time.LocalDate;
 
 @Service
 @AllArgsConstructor
@@ -49,7 +49,7 @@ public class BreathingSpaceService {
                 "No active breathing space found for case reference: " + caseReference
             ));
 
-        activeBreathingSpace.setLiftedDate(LocalDate.now(ukClock));
+        activeBreathingSpace.setLiftedDate(Instant.now(ukClock));
         breathingSpaceRepository.save(activeBreathingSpace);
     }
 
