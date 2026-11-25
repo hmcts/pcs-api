@@ -21,7 +21,9 @@ public enum FeatureFlag {
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
-    ENFORCEMENT("enforcement-enabled", false);
+    ENFORCEMENT("enforcement-enabled", false),
+    HMC_INTEGRATION("hmc-integration-enabled", false),
+    CASE_MANAGEMENT_R2("case-management-r-2-enabled", false);
 
     private final String key;
     private final boolean defaultValue;
