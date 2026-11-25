@@ -331,8 +331,7 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
             Map<String,Object> pins = fetchAccessCodesResponse();
             if (pins != null && !pins.isEmpty()) {
                 partiesAccessCodes = pins;
-                validateAndReturnAccessCodeForUser(firstname, lastname);
-                return pins.keySet().iterator().next();
+                return validateAndReturnAccessCodeForUser(firstname, lastname);
             }
             return null;
         };
@@ -345,7 +344,7 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
                 .until(fetchPins, notNullValue());
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
-                "Access code not available for case: " + getCaseReference(), e
+                "Access code not available for case: " + getCaseReference() + " for user " + firstname + " " + lastname, e
             );
         }
         return this;
