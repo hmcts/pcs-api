@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -217,16 +216,12 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
-        final OrderStepEntity step;
-        try {
-            step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
-                .orderType(change.orderType())
-                .formData(change.formData())
-                .docweaveSnapshot(change.docweaveSnapshot()));
-        } catch (DataIntegrityViolationException e) {
-            // Two pages saving the judge's first draft at the same moment both pass the check above.
-            throw change.id() == null ? ExternalRejection.because(ALREADY_DRAFTING) : e;
-        }
+        // Two pages saving the judge's first draft at the same moment both pass the check above; the one draft index
+        // refuses the second, which fails as any other database error does.
+        final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
+            .orderType(change.orderType())
+            .formData(change.formData())
+            .docweaveSnapshot(change.docweaveSnapshot()));
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
