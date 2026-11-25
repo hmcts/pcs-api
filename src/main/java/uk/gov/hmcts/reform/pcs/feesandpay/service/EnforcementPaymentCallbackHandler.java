@@ -70,14 +70,12 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
             if (SelectEnforcementType.WARRANT.name().equals(enforcementType)) {
                 notificationService.sendWarrantOfPossessionSubmittedEmail(claimant);
             } else {
-                log.info("No email template for the for enforcement type {} on enforcement app {}",
+                log.info("No email template for enforcement type {} on enforcement app {}",
                          enforcementType, enforcementOrderEntity.getId());
             }
-
         } catch (PartyNotFoundException e) {
-
-            log.error("No claimant to send confirmation email to for enforcement app {}",
-                      enforcementOrderEntity.getId(), e);
+            log.error("No claimant to send confirmation email to for enforcement app {}. Reason: {}",
+                      enforcementOrderEntity.getId(), e.getMessage(), e);
         }
     }
 
