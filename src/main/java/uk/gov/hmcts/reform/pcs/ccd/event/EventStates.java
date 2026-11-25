@@ -101,6 +101,19 @@ public class EventStates {
         };
     }
 
+    public static State[] manageHearing() {
+        return new State[] {
+            State.CASE_ISSUED,
+            State.CASE_PROGRESSION,
+            State.BREATHING_SPACE,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME,
+            State.ALL_FINAL_ORDERS_ISSUED
+        };
+    }
+
     public static State[] resumePossessionClaim() {
         return new State[] {
             State.AWAITING_SUBMISSION_TO_HMCTS

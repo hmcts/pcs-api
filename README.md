@@ -168,7 +168,8 @@ az acr login -n hmctssandbox
 az acr login -n hmctsprod
 ```
 
-This will start a local Camunda instance, wa-workflow-api and wa-task-monitor.
+This will start a local Camunda instance and wa-workflow-api. The camunda-local instance
+will call the wa-workflow-api to initiate tasks shortly after the task is created in Camunda.
 
 The Camunda container only uses an in-memory H2 DB for simplicity so any changes are lost on restart.
 However it will automatically load any DMNs in /src/main/resources/dmn at startup so will reset to
@@ -180,27 +181,6 @@ cd /bin/wa
 ./local-import-dmn-diagrams.sh
 ```
 
-To trigger the task
-monitor to check for and configure any unconfigured Camunda tasks, make this request in your Rest
-client or with curl:
-
-```
-POST http://localhost:8077/monitor/tasks/jobs
-Headers:
-  ServiceAuthorization:Bearer {{s2s token for 'pcs_api'}}
-
-Payload:
-
-{
-    "job_details": {
-        "name": "INITIATION"
-    }
-}
-```
-
-Note that there seems to be a delay of a couple of seconds before a freshly submitted Camunda task
-is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
-up and configured as WA tasks.
 
 ### Running the tests
 
