@@ -69,7 +69,7 @@ public class BundleTabView {
         List<ListValue<MissingBundleDocument>> missing = current.map(BundleTabView::missingDocuments)
             .orElse(List.of());
         pcsCase.setBundleTab(BundleTab.builder()
-            .status(status(status, current.isPresent(), !missing.isEmpty()))
+            .status(status(status, current, !missing.isEmpty()))
             .documentId(current.map(CaseBundleVersionEntity::getDocumentId).orElse(null))
             .bundle(current.map(BundleTabView::document).orElse(null))
             .lastUpdated(current.map(version -> lastUpdated(version.getCreatedAt())).orElse(null))
@@ -79,8 +79,14 @@ public class BundleTabView {
             .build());
     }
 
-    private static String status(Optional<CaseDocStatus> status, boolean published, boolean missing) {
-        DocJobState state = status.map(CaseDocStatus::state).orElse(DocJobState.DONE);
+    private static String status(Optional<CaseDocStatus> status, Optional<CaseBundleVersionEntity> current,
+                                 boolean missing) {
+        boolean published = current.isPresent();
+        // A version made from the latest request is current, even while the toolkit re-runs it for documents that
+        // were only temporarily unavailable.
+        boolean latest = published && status.map(latestRequest -> current.get().getRevision()
+            >= latestRequest.revision()).orElse(true);
+        DocJobState state = latest ? DocJobState.DONE : status.map(CaseDocStatus::state).orElse(DocJobState.DONE);
         return switch (state) {
             case QUEUED, IN_PROGRESS -> published ? UPDATING : PREPARING;
             case FAILED -> published ? UPDATE_FAILED : CREATE_FAILED;

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 
@@ -48,6 +49,7 @@ public class CaseBundleDefinition implements CaseDocDefinition {
     private static final ZoneId UK = ZoneId.of("Europe/London");
 
     private final PcsCaseRepository cases;
+    private final DocumentRepository documents;
 
     @Override
     public String key() {
@@ -61,11 +63,18 @@ public class CaseBundleDefinition implements CaseDocDefinition {
 
     @Override
     public Optional<PdfRequest> build(long caseReference) {
-        return cases.findByCaseReference(caseReference).map(CaseBundleDefinition::build);
+        // The documents are queried rather than read from the case's list: an event can save or delete a document
+        // without touching a list it has already loaded.
+        return cases.findByCaseReference(caseReference)
+            .map(pcsCase -> build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId())));
     }
 
     static PdfRequest build(PcsCaseEntity pcsCase) {
-        Map<CaseFileCategory, List<DocumentEntity>> byFolder = pcsCase.getDocuments().stream()
+        return build(pcsCase, pcsCase.getDocuments());
+    }
+
+    static PdfRequest build(PcsCaseEntity pcsCase, List<DocumentEntity> documents) {
+        Map<CaseFileCategory, List<DocumentEntity>> byFolder = documents.stream()
             .filter(CaseBundleDefinition::isInBundle)
             .collect(Collectors.groupingBy(CaseBundleDefinition::folder));
 
