@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
@@ -15,15 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -55,9 +52,9 @@ public class CitizenPossessionClaimApplicableAnswers {
         reduceClaimant(applicable.getClaimant());
         reduceAdditionalClaimants(applicable);
         reduceDefendants(applicable);
-        reduceTenancy(applicable.getTenancy(), isWales(applicable));
-        reduceGrounds(applicable.getGrounds(), isWales(applicable), isExcludedTenancy(applicable));
-        if (!hasRentArrearsGround(applicable)) {
+        reduceTenancy(applicable.getTenancy(), applicable.isWales());
+        reduceGrounds(applicable.getGrounds(), applicable.isWales(), applicable.isExcludedTenancy());
+        if (!applicable.hasRentArrearsGround()) {
             applicable.setRentArrears(null);
         }
         reduceRentArrears(applicable.getRentArrears());
@@ -68,36 +65,6 @@ public class CitizenPossessionClaimApplicableAnswers {
         return applicable;
     }
 
-    /**
-     * Whether the claim is for a property in Wales, which asks about the occupation contract instead of the tenancy.
-     */
-    public static boolean isWales(CitizenPossessionClaim claim) {
-        return claim.getEligibility() != null
-            && claim.getEligibility().getLegislativeCountry() == LegislativeCountry.WALES;
-    }
-
-    /**
-     * Whether a claim on an excluded tenancy in England, which asks its own grounds questions.
-     */
-    public static boolean isExcludedTenancy(CitizenPossessionClaim claim) {
-        return !isWales(claim)
-            && claim.getTenancy() != null
-            && claim.getTenancy().getTenancyType() == CitizenClaimTenancyType.EXCLUDED;
-    }
-
-    public static boolean hasRentArrearsGround(CitizenPossessionClaim applicable) {
-        if (isExcludedTenancy(applicable)) {
-            CitizenClaimGrounds grounds = applicable.getGrounds();
-            return grounds != null
-                && grounds.getHasExcludedGrounds() == VerticalYesNo.YES
-                && grounds.getExcludedGrounds() != null
-                && grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-        }
-        return CitizenPossessionClaimValidator.allGrounds(applicable.getGrounds()).stream()
-            .anyMatch(PrivateLandlordAssuredGround::isRentArrears)
-            || CitizenPossessionClaimValidator.hasWalesRentArrearsGround(applicable.getGrounds());
-    }
-
     private static void reduceAdditionalClaimants(CitizenPossessionClaim claim) {
         if (claim.getClaimant() == null || claim.getClaimant().getMultipleClaimants() != VerticalYesNo.YES) {
             claim.setAdditionalClaimants(null);
@@ -106,27 +73,10 @@ public class CitizenPossessionClaimApplicableAnswers {
         if (claim.getAdditionalClaimants() == null) {
             return;
         }
-        claim.getAdditionalClaimants().forEach(item -> {
-            CitizenClaimAdditionalClaimant claimant = item != null ? item.getValue() : null;
-            if (claimant == null) {
-                return;
-            }
-            if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
-                claimant.setFirstName(null);
-                claimant.setLastName(null);
-            } else if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.INDIVIDUAL) {
-                claimant.setOrganisationName(null);
-            }
-            if (claimant.getContactByPhone() != VerticalYesNo.YES) {
-                claimant.setPhoneNumber(null);
-            }
-            if (claimant.getContactByText() != VerticalYesNo.YES) {
-                claimant.setTextMessageNumber(null);
-            }
-        });
+        claim.getAdditionalClaimants().forEach(item -> reduceClaimant(item != null ? item.getValue() : null));
     }
 
-    private static void reduceClaimant(CitizenClaimClaimant claimant) {
+    private static void reduceClaimant(CitizenClaimantDetails claimant) {
         if (claimant == null) {
             return;
         }
@@ -142,26 +92,6 @@ public class CitizenPossessionClaimApplicableAnswers {
         if (claimant.getContactByText() != VerticalYesNo.YES) {
             claimant.setTextMessageNumber(null);
         }
-    }
-
-    /**
-     * The number texts go to: the text-message number, or, when that is blank, the phone number the
-     * claimant agreed to be called on.
-     */
-    public static String effectiveTextNumber(CitizenClaimClaimant claimant) {
-        return effectiveTextNumber(claimant.getTextMessageNumber(), claimant.getContactByPhone(),
-                                   claimant.getPhoneNumber());
-    }
-
-    public static String effectiveTextNumber(String textMessageNumber, VerticalYesNo contactByPhone,
-                                             String phoneNumber) {
-        if (StringUtils.isNotBlank(textMessageNumber)) {
-            return textMessageNumber;
-        }
-        if (contactByPhone == VerticalYesNo.YES && StringUtils.isNotBlank(phoneNumber)) {
-            return phoneNumber;
-        }
-        return null;
     }
 
     private static void reduceDefendants(CitizenPossessionClaim claim) {
@@ -265,7 +195,7 @@ public class CitizenPossessionClaimApplicableAnswers {
         if (grounds.getHasOtherGrounds() == VerticalYesNo.NO) {
             grounds.setOtherGrounds(null);
         }
-        Set<PrivateLandlordAssuredGround> selected = CitizenPossessionClaimValidator.allGrounds(grounds);
+        Set<PrivateLandlordAssuredGround> selected = grounds.allGrounds();
         if (!selected.contains(PrivateLandlordAssuredGround.OTHER)) {
             grounds.setOtherGroundsDetails(null);
         }
@@ -313,11 +243,11 @@ public class CitizenPossessionClaimApplicableAnswers {
         }
         if (grounds.getWalesGroundReasons() != null) {
             // Rent arrears grounds are not asked for a reason
-            Set<String> asked = new HashSet<>(CitizenPossessionClaimValidator.walesGroundCodes(grounds));
+            Set<String> asked = new HashSet<>(grounds.walesGroundCodes());
             grounds.setWalesGroundReasons(grounds.getWalesGroundReasons().stream()
                                               .filter(item -> item != null && item.getValue() != null)
                                               .filter(item -> asked.contains(item.getValue().getGround()))
-                                              .filter(item -> !CitizenPossessionClaimValidator
+                                              .filter(item -> !CitizenClaimGrounds
                                                   .isWalesRentArrearsGround(item.getValue().getGround()))
                                               .toList());
         }

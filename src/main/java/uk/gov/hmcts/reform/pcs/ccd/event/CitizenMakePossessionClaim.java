@@ -26,17 +26,15 @@ import uk.gov.hmcts.reform.pcs.ccd.page.citizenmakepossessionclaim.CitizenMakePo
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenClaimPaymentUnavailableException;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimApplicableAnswers;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.ClaimCreatorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimSubmitService.SubmittedClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimValidator;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenMakePossessionClaim;
 
 /**
@@ -53,7 +51,6 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
     public static final String DRAFT_CHANGED = RespondToClaimCallbackError.DRAFT_CHANGED;
     public static final String PAYMENT_SERVICE_UNAVAILABLE = "PAYMENT_SERVICE_UNAVAILABLE";
 
-    private final FeatureToggleService featureToggleService;
     private final CitizenPossessionClaimCaseService citizenPossessionClaimCaseService;
     private final CitizenPossessionClaimValidator citizenPossessionClaimValidator;
     private final CitizenPossessionClaimApplicableAnswers citizenPossessionClaimApplicableAnswers;
@@ -78,13 +75,11 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> aboutToStart(CaseDetails<PCSCase, State> details) {
-        if (!featureEnabled()) {
-            return startError(SERVICE_NOT_AVAILABLE);
+        ClaimCreatorAccess access = citizenPossessionClaimCaseService.accessAsClaimCreator(details.getId());
+        if (access.isRefused()) {
+            return startError(access.error());
         }
-        PcsCaseEntity pcsCaseEntity = citizenPossessionClaimCaseService.loadCase(details.getId());
-        if (!citizenPossessionClaimCaseService.isCurrentUserClaimCreator(pcsCaseEntity)) {
-            return startError(CASE_ACCESS_DENIED);
-        }
+        PcsCaseEntity pcsCaseEntity = access.pcsCase();
 
         PCSCase caseData = details.getData();
         caseData.setCitizenPossessionClaim(citizenPossessionClaimCaseService.loadOrInitialiseDraft(pcsCaseEntity));
@@ -97,13 +92,11 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
 
-        if (!featureEnabled()) {
-            return refuse(List.of(SERVICE_NOT_AVAILABLE));
+        ClaimCreatorAccess access = citizenPossessionClaimCaseService.accessAsClaimCreator(caseReference);
+        if (access.isRefused()) {
+            return refuse(List.of(access.error()));
         }
-        PcsCaseEntity pcsCaseEntity = citizenPossessionClaimCaseService.loadCase(caseReference);
-        if (!citizenPossessionClaimCaseService.isCurrentUserClaimCreator(pcsCaseEntity)) {
-            return refuse(List.of(CASE_ACCESS_DENIED));
-        }
+        PcsCaseEntity pcsCaseEntity = access.pcsCase();
 
         Optional<CitizenPossessionClaim> draft = citizenPossessionClaimCaseService.loadDraft(caseReference);
         if (draft.isEmpty()) {
@@ -147,9 +140,7 @@ public class CitizenMakePossessionClaim implements CCDConfig<PCSCase, State, Use
             .orElse(null);
     }
 
-    private boolean featureEnabled() {
-        return featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM);
-    }
+
 
     private String confirmationBody(SubmittedClaim submitted) {
         CitizenPossessionClaimSubmitResponse response = CitizenPossessionClaimSubmitResponse.builder()

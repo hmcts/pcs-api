@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitizenClaimAdditionalClaimant {
+public class CitizenClaimAdditionalClaimant implements CitizenClaimantDetails {
 
     private CitizenClaimantKind individualOrOrganisation;
 

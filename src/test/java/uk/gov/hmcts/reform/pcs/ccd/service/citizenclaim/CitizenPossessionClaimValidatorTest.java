@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalCla
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -363,18 +362,6 @@ class CitizenPossessionClaimValidatorTest {
 
         assertThat(complete.getGrounds().getRentArrearsGrounds()).containsNull();
         assertThat(validate(complete)).containsExactly("REQUIRED:grounds.rentArrearsGrounds");
-    }
-
-    @Test
-    void shouldDropNullGroundsWhenCollectingThem() {
-        CitizenClaimGrounds grounds = CitizenClaimGrounds.builder()
-            .rentArrearsGrounds(setOf(null, PrivateLandlordAssuredGround.GROUND_8))
-            .otherGrounds(setOf(PrivateLandlordAssuredGround.GROUND_1, null))
-            .build();
-
-        assertThat(CitizenPossessionClaimValidator.allGrounds(grounds))
-            .containsExactly(PrivateLandlordAssuredGround.GROUND_8, PrivateLandlordAssuredGround.GROUND_1);
-        assertThat(CitizenPossessionClaimValidator.allGrounds(null)).isEmpty();
     }
 
     @Test

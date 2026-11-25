@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimantClaimSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.ClaimantClaimSummary;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimantCaseSummaryRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.ClaimantCaseSummaryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
 import java.util.List;

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.ClaimCreatorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -30,6 +31,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,6 +47,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenMakePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.LEGISLATIVE_COUNTRY_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.POSTCODE_NOT_ASSIGNED_TO_COURT;
@@ -71,6 +76,8 @@ class CitizenPossessionClaimCaseServiceTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> caseCaptor;
     @Captor
@@ -82,7 +89,7 @@ class CitizenPossessionClaimCaseServiceTest {
     void setUp() {
         underTest = new CitizenPossessionClaimCaseService(eligibilityService, pcsCaseRepository, pcsCaseService,
                                                           addressMapper, draftCaseDataService,
-                                                          securityContextService);
+                                                          securityContextService, featureToggleService);
     }
 
     @Test
@@ -208,6 +215,51 @@ class CitizenPossessionClaimCaseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn("someone-else");
         assertThat(underTest.isCurrentUserClaimCreator(caseEntity)).isFalse();
         verifyNoInteractions(pcsCaseService);
+    }
+
+    @Test
+    void shouldRefuseAccessWhenTheFeatureIsOffWithoutLoadingTheCase() {
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(false);
+
+        ClaimCreatorAccess access = underTest.accessAsClaimCreator(CASE_REFERENCE);
+
+        assertThat(access.isRefused()).isTrue();
+        assertThat(access.error()).isEqualTo(SERVICE_NOT_AVAILABLE);
+        verifyNoInteractions(pcsCaseService);
+    }
+
+    @Test
+    void shouldRefuseAccessToSomeoneOtherThanTheClaimCreator() {
+        PartyEntity creator = new PartyEntity();
+        creator.setClaimCreator(true);
+        creator.setIdamId(USER_ID);
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.addParty(creator);
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(securityContextService.getCurrentUserId()).thenReturn("someone-else");
+
+        ClaimCreatorAccess access = underTest.accessAsClaimCreator(CASE_REFERENCE);
+
+        assertThat(access.isRefused()).isTrue();
+        assertThat(access.error()).isEqualTo(CASE_ACCESS_DENIED);
+    }
+
+    @Test
+    void shouldGiveTheCaseToTheClaimCreator() {
+        PartyEntity creator = new PartyEntity();
+        creator.setClaimCreator(true);
+        creator.setIdamId(USER_ID);
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.addParty(creator);
+        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+
+        ClaimCreatorAccess access = underTest.accessAsClaimCreator(CASE_REFERENCE);
+
+        assertThat(access.isRefused()).isFalse();
+        assertThat(access.pcsCase()).isSameAs(caseEntity);
     }
 
     @Test

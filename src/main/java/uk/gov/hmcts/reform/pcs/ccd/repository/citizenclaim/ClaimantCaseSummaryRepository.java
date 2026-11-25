@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.repository;
+package uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimantClaimSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.ClaimantClaimSummary;
 
 import java.util.List;
 

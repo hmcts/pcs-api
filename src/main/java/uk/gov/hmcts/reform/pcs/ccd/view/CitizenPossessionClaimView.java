@@ -8,16 +8,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Gives the citizen who made a claim the claim fee's service request, so the pay step can be resumed.
@@ -28,21 +25,14 @@ import java.util.Optional;
 public class CitizenPossessionClaimView {
 
     private final FeatureToggleService featureToggleService;
-    private final SecurityContextService securityContextService;
+    private final CitizenPossessionClaimCaseService citizenPossessionClaimCaseService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)) {
             return;
         }
 
-        Optional<String> creatorIdamId = pcsCaseEntity.getParties().stream()
-            .filter(PartyEntity::isClaimCreator)
-            .map(PartyEntity::getIdamId)
-            .filter(Objects::nonNull)
-            .findFirst();
-
-        if (creatorIdamId.isEmpty() || pcsCaseEntity.getClaims().isEmpty()
-            || !creatorIdamId.get().equals(currentUserId())) {
+        if (pcsCaseEntity.getClaims().isEmpty() || !isCurrentUserClaimCreator(pcsCaseEntity)) {
             return;
         }
 
@@ -62,11 +52,11 @@ public class CitizenPossessionClaimView {
                     .build()));
     }
 
-    private String currentUserId() {
+    private boolean isCurrentUserClaimCreator(PcsCaseEntity pcsCaseEntity) {
         try {
-            return securityContextService.getCurrentUserId();
+            return citizenPossessionClaimCaseService.isCurrentUserClaimCreator(pcsCaseEntity);
         } catch (SecurityContextException e) {
-            return null;
+            return false;
         }
     }
 

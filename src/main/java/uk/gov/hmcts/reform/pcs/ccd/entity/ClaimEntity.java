@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -218,6 +219,12 @@ public class ClaimEntity {
     @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<FeePaymentEntity> feePayments = new ArrayList<>();
+
+    // ExUI turns private landlords away, so only the citizen journey makes a private landlord claim.
+    @JsonIgnore
+    public boolean isCitizenClaim() {
+        return claimantType == ClaimantType.PRIVATE_LANDLORD;
+    }
 
     public void addFeePayment(FeePaymentEntity feePayment) {
         feePayments.add(feePayment);

@@ -7,13 +7,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -2228,11 +2228,11 @@ class ClaimFormPayloadBuilderTest {
                 .unableToUploadReason("The tenant kept the only copy")
                 .build();
             notice.addServiceMethod(NoticeServiceMethodEntity.builder()
-                .method(NoticeServiceMethod.EMAIL).servedDate(LocalDate.of(2026, 8, 2))
-                .details("tom@example.com").displayOrder(2).build());
-            notice.addServiceMethod(NoticeServiceMethodEntity.builder()
                 .method(NoticeServiceMethod.FIRST_CLASS_POST).servedDate(LocalDate.of(2026, 8, 1))
                 .displayOrder(1).build());
+            notice.addServiceMethod(NoticeServiceMethodEntity.builder()
+                .method(NoticeServiceMethod.EMAIL).servedDate(LocalDate.of(2026, 8, 2))
+                .details("tom@example.com").displayOrder(2).build());
             claim.setNoticeOfPossession(notice);
             claim.setRentArrears(RentArrearsEntity.builder()
                 .totalRentArrears(new BigDecimal("5000.00"))

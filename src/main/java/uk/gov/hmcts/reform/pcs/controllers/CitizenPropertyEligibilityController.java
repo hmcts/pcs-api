@@ -36,7 +36,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossession
 @RestController
 @RequestMapping("/cases/citizen-claims")
 @RequiredArgsConstructor
-@Tag(name = "Citizen Claim List", description = "Retrieve claims associated with the authenticated citizen")
+@Tag(name = "Citizen Property Eligibility", description = "Check a property can be claimed on by a citizen")
 public class CitizenPropertyEligibilityController {
 
     private static final int POSTCODE_MAX = 14;

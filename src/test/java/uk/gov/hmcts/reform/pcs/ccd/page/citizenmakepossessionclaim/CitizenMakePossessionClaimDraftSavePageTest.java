@@ -17,9 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaimFix
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.ClaimCreatorAccess;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -31,7 +30,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
@@ -45,25 +43,24 @@ class CitizenMakePossessionClaimDraftSavePageTest extends BasePageTest {
         .addressLine1("1 Case Street").postTown("Bradford").postCode("BD10 0JB").build();
 
     @Mock
-    private FeatureToggleService featureToggleService;
-    @Mock
     private CitizenPossessionClaimCaseService caseService;
 
     private final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new CitizenMakePossessionClaimDraftSavePage(featureToggleService, caseService));
+        setPageUnderTest(new CitizenMakePossessionClaimDraftSavePage(caseService));
     }
 
     @Test
     void shouldRefuseToSaveWhenFlagIsOff() {
-        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(false);
+        when(caseService.accessAsClaimCreator(TEST_CASE_REFERENCE))
+            .thenReturn(ClaimCreatorAccess.refused(SERVICE_NOT_AVAILABLE));
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData());
 
         assertThat(response.getErrors()).containsExactly(SERVICE_NOT_AVAILABLE);
-        verifyNoInteractions(caseService);
+        verify(caseService, never()).saveDraft(anyLong(), any());
     }
 
     @Test
@@ -158,9 +155,10 @@ class CitizenMakePossessionClaimDraftSavePageTest extends BasePageTest {
     }
 
     private void givenTheCase(boolean currentUserIsCreator) {
-        when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
-        when(caseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(currentUserIsCreator);
+        when(caseService.accessAsClaimCreator(TEST_CASE_REFERENCE)).thenReturn(
+            currentUserIsCreator
+                ? new ClaimCreatorAccess(pcsCaseEntity, null)
+                : ClaimCreatorAccess.refused(CASE_ACCESS_DENIED));
         if (currentUserIsCreator) {
             lenient().when(caseService.caseAddress(pcsCaseEntity)).thenReturn(CASE_ADDRESS);
         }

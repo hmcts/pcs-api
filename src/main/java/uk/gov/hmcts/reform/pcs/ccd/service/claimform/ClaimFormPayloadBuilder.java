@@ -3,12 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeServiceMethodEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -104,7 +102,7 @@ public class ClaimFormPayloadBuilder {
         partyMapper.mapUnderlessees(partiesByRole(claim, PartyRole.UNDERLESSEE_OR_MORTGAGEE), payloadBuilder);
 
         mapGrounds(claim.getClaimGrounds(), payloadBuilder);
-        mapNotice(claim.getNoticeOfPossession(), isCitizenClaim(claim), payloadBuilder);
+        mapNotice(claim.getNoticeOfPossession(), claim.isCitizenClaim(), payloadBuilder);
         mapTenancyLicence(pcsCase.getTenancyLicence(), payloadBuilder);
         mapRentArrears(claim.getRentArrears(), payloadBuilder);
         mapAsbProhibitedConduct(claim.getAsbProhibitedConductEntity(), payloadBuilder);
@@ -139,9 +137,9 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.showGroundsYesNoQuestion(isEngland && isIntroDemotedOther);
         // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured), and the
         // Other ground of a citizen Wales claim, which legal-rep Wales claims have no equivalent of.
-        payloadBuilder.showDescriptionOfGrounds((isEngland || isCitizenClaim(claim)) && hasOtherGround);
+        payloadBuilder.showDescriptionOfGrounds((isEngland || claim.isCitizenClaim()) && hasOtherGround);
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround
-            && (!isCitizenClaim(claim) || claim.getAsbProhibitedConductEntity() != null));
+            && (!claim.isCitizenClaim() || claim.getAsbProhibitedConductEntity() != null));
         // ExUI England claims never record a notice type, so only citizen claims show it in England.
         boolean hasNoticeType = claim.getNoticeOfPossession() != null
             && isPopulated(claim.getNoticeOfPossession().getNoticeType());
@@ -317,10 +315,7 @@ public class ClaimFormPayloadBuilder {
         return grounds.stream().anyMatch(g -> code.equals(g.getCode()));
     }
 
-    // ExUI turns private landlords away, so only the citizen journey makes a private landlord claim.
-    private static boolean isCitizenClaim(ClaimEntity claim) {
-        return claim.getClaimantType() == ClaimantType.PRIVATE_LANDLORD;
-    }
+
 
     private static boolean isNoticeServedYes(NoticeOfPossessionEntity notice) {
         return notice != null && notice.getNoticeServed() == YesOrNo.YES;
@@ -480,7 +475,6 @@ public class ClaimFormPayloadBuilder {
         }
         return notice.getServiceMethods().stream()
             .filter(row -> row.getMethod() != null)
-            .sorted(Comparator.comparingInt(NoticeServiceMethodEntity::getDisplayOrder))
             .map(row -> ClaimFormNoticeMethodRow.builder()
                 .methodLabel(row.getMethod().getLabel())
                 .servedOn(formatLongDate(row.getServedDate()))

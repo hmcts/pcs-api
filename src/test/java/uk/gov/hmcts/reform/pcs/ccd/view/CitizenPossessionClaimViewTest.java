@@ -11,9 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -32,7 +32,7 @@ class CitizenPossessionClaimViewTest {
     @Mock
     private FeatureToggleService featureToggleService;
     @Mock
-    private SecurityContextService securityContextService;
+    private CitizenPossessionClaimCaseService caseService;
 
     private CitizenPossessionClaimView underTest;
     private PcsCaseEntity pcsCaseEntity;
@@ -40,7 +40,7 @@ class CitizenPossessionClaimViewTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CitizenPossessionClaimView(featureToggleService, securityContextService);
+        underTest = new CitizenPossessionClaimView(featureToggleService, caseService);
 
         pcsCaseEntity = new PcsCaseEntity();
         claimCreator = new PartyEntity();
@@ -62,7 +62,7 @@ class CitizenPossessionClaimViewTest {
     @Test
     void shouldGiveTheClaimingCitizenTheirServiceRequest() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
-        when(securityContextService.getCurrentUserId()).thenReturn(CITIZEN_ID);
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(true);
         PCSCase pcsCase = PCSCase.builder().build();
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -76,7 +76,7 @@ class CitizenPossessionClaimViewTest {
     @Test
     void shouldNotShowTheServiceRequestToAnyoneElse() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
-        when(securityContextService.getCurrentUserId()).thenReturn("someone-else");
+        when(caseService.isCurrentUserClaimCreator(pcsCaseEntity)).thenReturn(false);
         PCSCase pcsCase = PCSCase.builder().build();
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -93,11 +93,11 @@ class CitizenPossessionClaimViewTest {
         underTest.setCaseFields(pcsCase, caseEntity);
 
         assertThat(pcsCase.getCitizenPossessionClaim()).isNull();
-        verifyNoInteractions(caseEntity, securityContextService);
+        verifyNoInteractions(caseEntity, caseService);
     }
 
     @Test
-    void shouldNotLookUpTheUserForCasesNotMadeByACitizen() {
+    void shouldNotShowTheServiceRequestForCasesNotMadeByACitizen() {
         when(featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)).thenReturn(true);
         claimCreator.setIdamId(null);
         claimCreator.setOrganisationId("ORG1");
@@ -106,7 +106,6 @@ class CitizenPossessionClaimViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         assertThat(pcsCase.getCitizenPossessionClaim()).isNull();
-        verifyNoInteractions(securityContextService);
     }
 
 }

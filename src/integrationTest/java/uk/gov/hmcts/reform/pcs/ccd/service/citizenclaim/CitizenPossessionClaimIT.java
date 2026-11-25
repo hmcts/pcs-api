@@ -26,6 +26,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -39,7 +40,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimEligibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
@@ -69,6 +69,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.PackRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ResolvedRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.CitizenClaimSubmissionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.RentHistoryPeriodRepository;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -118,6 +119,8 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private CitizenPossessionClaimCaseService caseService;
+    @Autowired
+    private PcsCaseService pcsCaseService;
     @Autowired
     private CitizenPossessionClaimSubmitService submitService;
     @Autowired
@@ -217,7 +220,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
         MidEvent midEvent = configuredEvent().getFields().getPagesToMidEvent().values().iterator().next();
 
-        CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(caseService.loadCase(caseReference));
+        CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(pcsCaseService.loadCase(caseReference));
         CitizenPossessionClaim confirmed = completeClaimOrThrow();
         confirmed.setDraftVersion(started.getDraftVersion());
         confirmed.setConfirmedSections(Set.of(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY));
@@ -227,7 +230,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         assertThat(saved.getErrors()).isNullOrEmpty();
         assertThat(saved.getData().getCitizenPossessionClaim().getConfirmedSections())
             .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
-        CitizenPossessionClaim reloaded = caseService.loadOrInitialiseDraft(caseService.loadCase(caseReference));
+        CitizenPossessionClaim reloaded = caseService.loadOrInitialiseDraft(pcsCaseService.loadCase(caseReference));
         assertThat(reloaded.getConfirmedSections())
             .containsExactlyInAnyOrder(CitizenClaimSection.CLAIMANT, CitizenClaimSection.TENANCY);
         assertThat(draftJson(caseReference).at("/citizenPossessionClaim/confirmedSections"))
@@ -328,7 +331,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build();
 
         caseService.createCase(caseReference, PROPERTY_ADDRESS, eligibility, LegislativeCountry.ENGLAND);
-        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        PcsCaseEntity createdCase = pcsCaseService.loadCase(caseReference);
         assertThat(caseService.isCurrentUserClaimCreator(createdCase)).isTrue();
         CitizenPossessionClaim started = caseService.loadOrInitialiseDraft(createdCase);
         assertThat(started.getEligibility())
@@ -413,9 +416,9 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.ENGLAND);
         CitizenPossessionClaim answers = completeClaim();
-        submitService.submit(caseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
+        submitService.submit(pcsCaseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
 
-        PcsCaseEntity submittedCase = caseService.loadCase(caseReference);
+        PcsCaseEntity submittedCase = pcsCaseService.loadCase(caseReference);
         ClaimEntity submittedClaim = submittedCase.getClaims().getFirst();
         submittedClaim.setClaimFormDocument(packDocument(submittedCase, DocumentType.CLAIM, null));
         List<PartyEntity> defendants = submittedClaim.getClaimParties().stream()
@@ -480,7 +483,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .build()));
         answers.getRentArrears().setRentDueDay(15);
 
-        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        PcsCaseEntity createdCase = pcsCaseService.loadCase(caseReference);
         submitService.submit(createdCase, answers, applicableAnswers.of(answers));
         entityManager.flush();
         entityManager.clear();
@@ -542,7 +545,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
                        .build())
             .build()));
 
-        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        PcsCaseEntity createdCase = pcsCaseService.loadCase(caseReference);
         submitService.submit(createdCase, answers, applicableAnswers.of(answers));
         entityManager.flush();
         entityManager.clear();
@@ -573,7 +576,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
                 ? Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS) : null);
             answers.getGrounds().setExcludedReason("The occupier is a lodger");
 
-            PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+            PcsCaseEntity createdCase = pcsCaseService.loadCase(caseReference);
             submitService.submit(createdCase, answers, applicableAnswers.of(answers));
             entityManager.flush();
             entityManager.clear();
@@ -597,7 +600,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
         long caseReference = 1_700_000_000_000_000L + (System.nanoTime() % 1_000_000_000L);
         caseService.createCase(caseReference, PROPERTY_ADDRESS, CitizenClaimEligibility.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD).build(), LegislativeCountry.WALES);
-        PcsCaseEntity createdCase = caseService.loadCase(caseReference);
+        PcsCaseEntity createdCase = pcsCaseService.loadCase(caseReference);
         assertThat(caseService.loadOrInitialiseDraft(createdCase).getEligibility().getLegislativeCountry())
             .isEqualTo(LegislativeCountry.WALES);
 
@@ -690,7 +693,7 @@ class CitizenPossessionClaimIT extends AbstractPostgresContainerIT {
             .thenReturn(List.of(draftObjectMapper.readValue("{\"region_id\": \"4\"}", CourtVenue.class)));
 
         CitizenPossessionClaim answers = completeClaim();
-        submitService.submit(caseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
+        submitService.submit(pcsCaseService.loadCase(caseReference), answers, applicableAnswers.of(answers));
         entityManager.flush();
         entityManager.clear();
 

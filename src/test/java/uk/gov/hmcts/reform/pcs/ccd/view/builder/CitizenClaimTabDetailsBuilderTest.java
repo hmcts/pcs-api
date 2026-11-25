@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeServiceMethodTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
@@ -67,11 +67,11 @@ class CitizenClaimTabDetailsBuilderTest {
             .noticeDate(LocalDate.of(2026, 8, 1))
             .build();
         notice.addServiceMethod(NoticeServiceMethodEntity.builder()
-                                    .method(NoticeServiceMethod.EMAIL).servedDate(LocalDate.of(2026, 8, 3))
-                                    .details("tom@example.com").displayOrder(2).build());
-        notice.addServiceMethod(NoticeServiceMethodEntity.builder()
                                     .method(NoticeServiceMethod.FIRST_CLASS_POST)
                                     .servedDate(LocalDate.of(2026, 8, 1)).displayOrder(1).build());
+        notice.addServiceMethod(NoticeServiceMethodEntity.builder()
+                                    .method(NoticeServiceMethod.EMAIL).servedDate(LocalDate.of(2026, 8, 3))
+                                    .details("tom@example.com").displayOrder(2).build());
         claim.setNoticeOfPossession(notice);
         return notice;
     }

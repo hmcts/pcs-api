@@ -2,17 +2,16 @@ package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimAdditionalClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEntry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
@@ -103,7 +102,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         assertThat(applicable.getGrounds().getGroundReasons()).isNull();
         assertThat(applicable.getGrounds().getExcludedOtherGroundDetails()).isNull();
         assertThat(applicable.getGrounds().getExcludedReason()).isEqualTo("Noise");
-        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(applicable)).isFalse();
+        assertThat(applicable.hasRentArrearsGround()).isFalse();
         assertThat(applicable.getRentArrears()).isNull();
     }
 
@@ -116,7 +115,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
 
         CitizenPossessionClaim applicable = underTest.of(claim);
 
-        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(applicable)).isTrue();
+        assertThat(applicable.hasRentArrearsGround()).isTrue();
         assertThat(applicable.getRentArrears()).isNotNull();
     }
 
@@ -150,7 +149,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         assertThat(grounds.getOtherGrounds()).containsExactly(PrivateLandlordAssuredGround.OTHER);
         assertThat(grounds.getWalesDiscretionaryGrounds()).hasSize(2);
         assertThat(grounds.getWalesGroundReasons()).hasSize(2);
-        assertThat(CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(underTest.of(claim))).isTrue();
+        assertThat(underTest.of(claim).hasRentArrearsGround()).isTrue();
     }
 
     @Test
@@ -334,24 +333,7 @@ class CitizenPossessionClaimApplicableAnswersTest {
         CitizenPossessionClaim applicable = underTest.of(claim);
 
         assertThat(applicable.getClaimant().getPhoneNumber()).isNull();
-        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(applicable.getClaimant())).isNull();
-    }
-
-    @Test
-    void shouldTextThePhoneNumberOnlyWhenTheClaimantAgreedToCalls() {
-        CitizenClaimClaimant claimant = CitizenClaimClaimant.builder()
-            .contactByPhone(VerticalYesNo.YES)
-            .phoneNumber("07700900000")
-            .contactByText(VerticalYesNo.YES)
-            .build();
-        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isEqualTo("07700900000");
-
-        claimant.setTextMessageNumber("07700900111");
-        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isEqualTo("07700900111");
-
-        claimant.setTextMessageNumber(" ");
-        claimant.setContactByPhone(VerticalYesNo.NO);
-        assertThat(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(claimant)).isNull();
+        assertThat(applicable.getClaimant().effectiveTextNumber()).isNull();
     }
 
     @Test

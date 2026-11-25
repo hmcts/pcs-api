@@ -12,15 +12,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim.CitizenPossessionClaimCaseService.ClaimCreatorAccess;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.DRAFT_CHANGED;
 
 @Slf4j
@@ -31,7 +28,6 @@ public class CitizenMakePossessionClaimDraftSavePage implements CcdPageConfigura
     public static final String PAGE_ID = "citizenMakePossessionClaimDraftSavePage";
     public static final String SAVE_FAILED = "We couldn't save your claim. Please try again or contact support.";
 
-    private final FeatureToggleService featureToggleService;
     private final CitizenPossessionClaimCaseService citizenPossessionClaimCaseService;
 
     @Override
@@ -43,16 +39,13 @@ public class CitizenMakePossessionClaimDraftSavePage implements CcdPageConfigura
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        if (!featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)) {
-            return error(SERVICE_NOT_AVAILABLE);
-        }
-
         long caseReference = details.getId();
         try {
-            PcsCaseEntity pcsCaseEntity = citizenPossessionClaimCaseService.loadCase(caseReference);
-            if (!citizenPossessionClaimCaseService.isCurrentUserClaimCreator(pcsCaseEntity)) {
-                return error(CASE_ACCESS_DENIED);
+            ClaimCreatorAccess access = citizenPossessionClaimCaseService.accessAsClaimCreator(caseReference);
+            if (access.isRefused()) {
+                return error(access.error());
             }
+            PcsCaseEntity pcsCaseEntity = access.pcsCase();
 
             CitizenPossessionClaim claim = CitizenPossessionClaimCaseService.withCaseCountry(
                 Optional.ofNullable(details.getData().getCitizenPossessionClaim())

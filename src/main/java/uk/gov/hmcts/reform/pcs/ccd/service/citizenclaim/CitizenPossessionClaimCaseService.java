@@ -20,12 +20,16 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenCreatePossessionClaim.SERVICE_NOT_AVAILABLE;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CitizenMakePossessionClaim.CASE_ACCESS_DENIED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenMakePossessionClaim;
 
 @Slf4j
@@ -47,6 +51,22 @@ public class CitizenPossessionClaimCaseService {
     private final AddressMapper addressMapper;
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
+    private final FeatureToggleService featureToggleService;
+
+    /**
+     * The outcome of {@link #accessAsClaimCreator}: the case, or the error code that refuses the event.
+     */
+    public record ClaimCreatorAccess(PcsCaseEntity pcsCase, String error) {
+
+        public static ClaimCreatorAccess refused(String error) {
+            return new ClaimCreatorAccess(null, error);
+        }
+
+        public boolean isRefused() {
+            return error != null;
+        }
+    }
+
 
     /**
      * Checks the property is in England or Wales, from the country its postcode's court mapping gives. Whether
@@ -139,8 +159,19 @@ public class CitizenPossessionClaimCaseService {
             .build();
     }
 
-    public PcsCaseEntity loadCase(long caseReference) {
-        return pcsCaseService.loadCase(caseReference);
+    /**
+     * The case a citizen claim event acts on, or the error to refuse it with: the journey is switched off, or the
+     * current user did not create the claim.
+     */
+    public ClaimCreatorAccess accessAsClaimCreator(long caseReference) {
+        if (!featureToggleService.isEnabled(FeatureFlag.PRIVATE_LANDLORD_MAKE_A_CLAIM)) {
+            return ClaimCreatorAccess.refused(SERVICE_NOT_AVAILABLE);
+        }
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        if (!isCurrentUserClaimCreator(pcsCaseEntity)) {
+            return ClaimCreatorAccess.refused(CASE_ACCESS_DENIED);
+        }
+        return new ClaimCreatorAccess(pcsCaseEntity, null);
     }
 
     public boolean isCurrentUserClaimCreator(PcsCaseEntity pcsCaseEntity) {

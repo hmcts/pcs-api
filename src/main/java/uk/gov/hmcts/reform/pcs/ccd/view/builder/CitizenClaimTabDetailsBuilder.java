@@ -5,8 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentProofType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeServiceMethodTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -151,7 +149,7 @@ public class CitizenClaimTabDetailsBuilder {
 
     private static boolean isPrivateLandlordClaim(PcsCaseEntity pcsCaseEntity) {
         return mainClaim(pcsCaseEntity)
-            .map(claim -> claim.getClaimantType() == ClaimantType.PRIVATE_LANDLORD)
+            .map(ClaimEntity::isCitizenClaim)
             .orElse(false);
     }
 
@@ -182,7 +180,6 @@ public class CitizenClaimTabDetailsBuilder {
         }
         return notice.getServiceMethods().stream()
             .filter(method -> method.getMethod() != null)
-            .sorted(Comparator.comparingInt(NoticeServiceMethodEntity::getDisplayOrder))
             .toList();
     }
 

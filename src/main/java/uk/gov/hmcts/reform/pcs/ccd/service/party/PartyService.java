@@ -329,7 +329,7 @@ public class PartyService {
         return allUnderlesseeOrMortgagees;
     }
 
-    public PartyEntity createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
+    private PartyEntity createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
 
         PartyEntity underlesseeMortgageeEntity = new PartyEntity();
         underlesseeMortgageeEntity.setRemoved(false);

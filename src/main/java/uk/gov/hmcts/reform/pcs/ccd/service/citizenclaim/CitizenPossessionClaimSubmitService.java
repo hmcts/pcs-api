@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
@@ -39,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentPeriodEnt
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimSubmission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
 import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
@@ -241,22 +241,17 @@ public class CitizenPossessionClaimSubmitService {
     private static void applyRequiredDocuments(ClaimEntity.ClaimEntityBuilder builder, CitizenClaimTenancy tenancy) {
         builder
             .energyPerformanceCertificateProvided(tenancy.getHasEnergyPerformanceCertificate())
-            .noEnergyPerformanceCertificateReason(
-                tenancy.getHasEnergyPerformanceCertificate() == VerticalYesNo.NO
-                    ? tenancy.getNoEnergyPerformanceCertificateReason() : null)
+            .noEnergyPerformanceCertificateReason(tenancy.getNoEnergyPerformanceCertificateReason())
             .gasSafetyReportProvided(tenancy.getHasGasSafetyReport())
-            .noGasSafetyReportReason(
-                tenancy.getHasGasSafetyReport() == VerticalYesNo.NO ? tenancy.getNoGasSafetyReportReason() : null)
+            .noGasSafetyReportReason(tenancy.getNoGasSafetyReportReason())
             .electricalInstallationConditionProvided(tenancy.getHasElectricalInstallationConditionReport())
-            .noElectricalInstallationConditionReason(
-                tenancy.getHasElectricalInstallationConditionReport() == VerticalYesNo.NO
-                    ? tenancy.getNoElectricalInstallationConditionReason() : null);
+            .noElectricalInstallationConditionReason(tenancy.getNoElectricalInstallationConditionReason());
     }
 
     private static ClaimEntity buildClaimEntity(CitizenPossessionClaim claim, boolean wales) {
         CitizenClaimCircumstances circumstances = claim.getCircumstances();
         CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
-        boolean rentArrearsClaim = CitizenPossessionClaimApplicableAnswers.hasRentArrearsGround(claim);
+        boolean rentArrearsClaim = claim.hasRentArrearsGround();
 
         ClaimEntity.ClaimEntityBuilder builder = ClaimEntity.builder()
             .claimantType(ClaimantType.PRIVATE_LANDLORD)
@@ -281,8 +276,7 @@ public class CitizenPossessionClaimSubmitService {
         if (otherInformation != null) {
             builder
                 .additionalReasonsProvided(otherInformation.getHasOtherReasons())
-                .additionalReasons(otherInformation.getHasOtherReasons() == VerticalYesNo.YES
-                                       ? otherInformation.getOtherReasonsDetail() : null)
+                .additionalReasons(otherInformation.getOtherReasonsDetail())
                 .additionalDocsProvided(VerticalYesNo.from(hasItems(otherInformation.getOtherDocuments())))
                 .genAppExpected(otherInformation.getGeneralApplicationIntent())
                 .languageUsed(otherInformation.getLanguageUsed());
@@ -296,14 +290,14 @@ public class CitizenPossessionClaimSubmitService {
         if (wales) {
             return buildWalesClaimGrounds(grounds);
         }
-        if (CitizenPossessionClaimApplicableAnswers.isExcludedTenancy(claim)) {
+        if (claim.isExcludedTenancy()) {
             return buildExcludedClaimGrounds(grounds);
         }
         return buildAssuredClaimGrounds(grounds);
     }
 
     private static List<ClaimGroundEntity> buildWalesClaimGrounds(CitizenClaimGrounds grounds) {
-        Map<String, String> reasons = CitizenPossessionClaimValidator.walesGroundReasons(grounds);
+        Map<String, String> reasons = grounds.walesReasonsByGround();
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
         Set<DiscretionaryGroundWales> discretionary = Objects.requireNonNullElse(
@@ -314,7 +308,7 @@ public class CitizenPossessionClaimSubmitService {
                              .code(ground.name())
                              .reason(ground == DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
                                          ? null : reasons.get(ground.name()))
-                             .isRentArrears(ground == DiscretionaryGroundWales.RENT_ARREARS_S157)
+                             .isRentArrears(CitizenClaimGrounds.isWalesRentArrearsGround(ground.name()))
                              .build());
             if (ground == DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160) {
                 // The claim form shows estate management through a specific ground, so the one reason goes on that
@@ -334,8 +328,7 @@ public class CitizenPossessionClaimSubmitService {
                 .category(ClaimGroundCategory.WALES_STANDARD_OTHER_MANDATORY)
                 .code(ground.name())
                 .reason(reasons.get(ground.name()))
-                .isRentArrears(ground == MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
-                                   || ground == MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187)
+                .isRentArrears(CitizenClaimGrounds.isWalesRentArrearsGround(ground.name()))
                 .build()));
 
         if (grounds.getOtherGrounds() != null
@@ -351,10 +344,10 @@ public class CitizenPossessionClaimSubmitService {
     }
 
     private static List<ClaimGroundEntity> buildAssuredClaimGrounds(CitizenClaimGrounds grounds) {
-        Map<PrivateLandlordAssuredGround, String> reasons = CitizenPossessionClaimValidator.groundReasons(grounds);
-        String otherGroundsDetails = grounds != null ? blankToNull(grounds.getOtherGroundsDetails()) : null;
+        Map<PrivateLandlordAssuredGround, String> reasons = grounds.reasonsByGround();
+        String otherGroundsDetails = blankToNull(grounds.getOtherGroundsDetails());
 
-        return CitizenPossessionClaimValidator.allGrounds(grounds).stream()
+        return grounds.allGrounds().stream()
             .sorted(Comparator.comparingInt(PrivateLandlordAssuredGround::getRank))
             .map(ground -> ClaimGroundEntity.builder()
                 .category(ground.getCategory())
@@ -440,9 +433,7 @@ public class CitizenPossessionClaimSubmitService {
         entity.setNoticeType(noticeTypeDescription(notice));
         entity.setIsAbleToUploadDocument(
             notice.getNoticeAvailable() != null ? YesOrNo.from(notice.getNoticeAvailable().toBoolean()) : null);
-        if (notice.getNoticeAvailable() == VerticalYesNo.NO) {
-            entity.setUnableToUploadReason(notice.getNoticeUnavailableReason());
-        }
+        entity.setUnableToUploadReason(notice.getNoticeUnavailableReason());
 
         List<CitizenClaimNoticeMethod> methods = noticeMethodsInOrder(notice);
         if (methods.isEmpty()) {
@@ -506,7 +497,7 @@ public class CitizenPossessionClaimSubmitService {
         if (methods == null) {
             return List.of();
         }
-        return methods.stream().filter(Objects::nonNull).distinct().sorted().toList();
+        return methods.stream().filter(Objects::nonNull).sorted().toList();
     }
 
     private StatementOfTruthEntity buildStatementOfTruth(CitizenPossessionClaim claim) {
@@ -585,11 +576,7 @@ public class CitizenPossessionClaimSubmitService {
                 "No claimant party on case " + pcsCaseEntity.getCaseReference()));
 
         party.setRemoved(false);
-        applyClaimantDetails(party, new ClaimantDetails(
-            claimant.getIndividualOrOrganisation(), claimant.getFirstName(), claimant.getLastName(),
-            claimant.getOrganisationName(), claimant.getAddress(), claimant.getEmailAddress(),
-            claimant.getContactByPhone(), claimant.getPhoneNumber(), claimant.getContactByText(),
-            claimant.getTextMessageNumber()));
+        applyClaimantDetails(party, claimant);
 
         CitizenClaimOtherInformation otherInformation = claim.getOtherInformation();
         if (otherInformation != null && StringUtils.isNotBlank(otherInformation.getPcqId())) {
@@ -613,59 +600,48 @@ public class CitizenPossessionClaimSubmitService {
             .map(additional -> {
                 PartyEntity party = new PartyEntity();
                 party.setRemoved(false);
-                applyClaimantDetails(party, new ClaimantDetails(
-                    additional.getIndividualOrOrganisation(), additional.getFirstName(), additional.getLastName(),
-                    additional.getOrganisationName(), additional.getAddress(), additional.getEmailAddress(),
-                    additional.getContactByPhone(), additional.getPhoneNumber(), additional.getContactByText(),
-                    additional.getTextMessageNumber()));
+                applyClaimantDetails(party, additional);
                 return party;
             })
             .toList();
         return partyRepository.saveAll(parties);
     }
 
-    private record ClaimantDetails(CitizenClaimantKind kind, String firstName, String lastName,
-                                   String organisationName, AddressUK address, String emailAddress,
-                                   VerticalYesNo contactByPhone, String phoneNumber,
-                                   VerticalYesNo contactByText, String textMessageNumber) {
-
-        String displayName() {
-            if (kind == CitizenClaimantKind.ORGANISATION) {
-                return organisationName;
-            }
-            return Stream.of(firstName, lastName)
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.joining(" "));
+    private static String displayName(CitizenClaimantDetails claimant) {
+        if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
+            return claimant.getOrganisationName();
         }
+        return Stream.of(claimant.getFirstName(), claimant.getLastName())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(" "));
     }
 
-    private void applyClaimantDetails(PartyEntity party, ClaimantDetails details) {
+    private void applyClaimantDetails(PartyEntity party, CitizenClaimantDetails details) {
         party.setNameKnown(VerticalYesNo.YES);
         party.setNameOverridden(YesOrNo.NO);
         // Claimant name readers (case list, claimant tab, the defendant's journey) use orgName, as ExUI sets it
-        party.setOrgName(details.displayName());
-        if (details.kind() != CitizenClaimantKind.ORGANISATION) {
-            party.setFirstName(details.firstName());
-            party.setLastName(details.lastName());
+        party.setOrgName(displayName(details));
+        if (details.getIndividualOrOrganisation() != CitizenClaimantKind.ORGANISATION) {
+            party.setFirstName(details.getFirstName());
+            party.setLastName(details.getLastName());
         }
         party.setAddressKnown(VerticalYesNo.YES);
-        party.setAddress(partyService.mapAddress(details.address()));
-        party.setEmailAddress(blankToNull(details.emailAddress()));
+        party.setAddress(partyService.mapAddress(details.getAddress()));
+        party.setEmailAddress(blankToNull(details.getEmailAddress()));
 
-        boolean phoneProvided = details.contactByPhone() == VerticalYesNo.YES
-            && StringUtils.isNotBlank(details.phoneNumber());
+        boolean phoneProvided = details.getContactByPhone() == VerticalYesNo.YES
+            && StringUtils.isNotBlank(details.getPhoneNumber());
         party.setPhoneNumberProvided(VerticalYesNo.from(phoneProvided));
-        party.setPhoneNumber(phoneProvided ? details.phoneNumber() : null);
-        if (details.contactByText() == VerticalYesNo.YES) {
-            party.setTextMessageNumber(CitizenPossessionClaimApplicableAnswers.effectiveTextNumber(
-                details.textMessageNumber(), details.contactByPhone(), details.phoneNumber()));
+        party.setPhoneNumber(phoneProvided ? details.getPhoneNumber() : null);
+        if (details.getContactByText() == VerticalYesNo.YES) {
+            party.setTextMessageNumber(details.effectiveTextNumber());
         }
 
         ContactPreferencesEntity preferences = Optional.ofNullable(party.getContactPreferences())
             .orElseGet(ContactPreferencesEntity::new);
-        preferences.setContactByEmail(VerticalYesNo.from(StringUtils.isNotBlank(details.emailAddress())));
-        preferences.setContactByPhone(details.contactByPhone());
-        preferences.setContactByText(details.contactByText());
+        preferences.setContactByEmail(VerticalYesNo.from(StringUtils.isNotBlank(details.getEmailAddress())));
+        preferences.setContactByPhone(details.getContactByPhone());
+        preferences.setContactByText(details.getContactByText());
         preferences.setContactByPost(VerticalYesNo.YES);
         party.setContactPreferences(preferences);
     }
@@ -700,23 +676,19 @@ public class CitizenPossessionClaimSubmitService {
         if (wales) {
             OccupationLicenceTypeWales type = tenancy.getOccupationContractType();
             entity.setType(type.getCombinedLicenceType());
-            if (type == OccupationLicenceTypeWales.OTHER) {
-                entity.setOtherTypeDetails(tenancy.getOtherOccupationContractDetails());
-            }
+            entity.setOtherTypeDetails(tenancy.getOtherOccupationContractDetails());
         } else {
             CitizenClaimTenancyType type = tenancy.getTenancyType();
             entity.setType(type.getCombinedLicenceType());
-            if (type == CitizenClaimTenancyType.OTHER) {
+            if (type == CitizenClaimTenancyType.OTHER || type == CitizenClaimTenancyType.ASSURED) {
                 entity.setOtherTypeDetails(tenancy.getOtherTenancyTypeDetails());
-            } else if (type != CitizenClaimTenancyType.ASSURED) {
+            } else {
                 entity.setOtherTypeDetails(type.getLabel());
             }
         }
         entity.setStartDate(tenancy.getTenancyStartDate());
         entity.setHasCopyOfTenancyLicence(tenancy.getTenancyAgreementAvailable());
-        if (tenancy.getTenancyAgreementAvailable() == VerticalYesNo.NO) {
-            entity.setReasonsForNoTenancyLicence(tenancy.getNoTenancyAgreementReason());
-        }
+        entity.setReasonsForNoTenancyLicence(tenancy.getNoTenancyAgreementReason());
 
         CitizenClaimRentArrears rentArrears = claim.getRentArrears();
         if (rentArrears != null && rentArrears.getRentFrequency() != null) {

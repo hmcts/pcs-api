@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +9,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.HasDraftVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Set;
@@ -53,5 +57,35 @@ public class CitizenPossessionClaim implements HasDraftVersion {
 
     // Version of the stored draft these answers were read from; a save or submit that echoes it is bound to it.
     private Long draftVersion;
+
+    /**
+     * Whether the claim is for a property in Wales, which asks about the occupation contract instead of the tenancy.
+     */
+    @JsonIgnore
+    public boolean isWales() {
+        return eligibility != null && eligibility.getLegislativeCountry() == LegislativeCountry.WALES;
+    }
+
+    /**
+     * Whether a claim on an excluded tenancy in England, which asks its own grounds questions.
+     */
+    @JsonIgnore
+    public boolean isExcludedTenancy() {
+        return !isWales()
+            && tenancy != null
+            && tenancy.getTenancyType() == CitizenClaimTenancyType.EXCLUDED;
+    }
+
+    public boolean hasRentArrearsGround() {
+        if (isExcludedTenancy()) {
+            return grounds != null
+                && grounds.getHasExcludedGrounds() == VerticalYesNo.YES
+                && grounds.getExcludedGrounds() != null
+                && grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
+        }
+        return grounds != null
+            && (grounds.allGrounds().stream().anyMatch(PrivateLandlordAssuredGround::isRentArrears)
+                || grounds.hasWalesRentArrearsGround());
+    }
 
 }
