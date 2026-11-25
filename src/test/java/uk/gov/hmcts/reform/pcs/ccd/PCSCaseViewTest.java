@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -482,6 +483,31 @@ class PCSCaseViewTest {
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
+    void shouldReturnTheDocumentsInTheUsersDraftsSoTheDataStoreCanFindTheirDocumentUrl() {
+        // Given
+        when(draftCaseDataService.getOwnDraftDocumentUrls(CASE_REFERENCE))
+            .thenReturn(List.of("http://dm-store/documents/abc", "http://dm-store/documents/def"));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDraftUploads())
+            .extracting(ListValue::getValue)
+            .containsExactly(new DraftUpload("http://dm-store/documents/abc"),
+                             new DraftUpload("http://dm-store/documents/def"));
+    }
+
+    @Test
+    void shouldLeaveDraftUploadsNullWhenTheUserHasNoDraftDocuments() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDraftUploads()).isNull();
     }
 
     @Test
