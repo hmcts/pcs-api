@@ -60,17 +60,27 @@ class HearingRecords {
     private final UserNameService userNameService;
     private final Clock utcClock;
 
-    /** One of the case's hearings that has not been cancelled. */
+    /** Whether a judge can choose to make an order at the hearing: it has not been cancelled. */
+    static boolean canHaveOrder(HearingEntity hearing) {
+        return !Boolean.TRUE.equals(hearing.getCancelled());
+    }
+
+    /** One of the case's hearings that an order can be made at. */
     HearingEntity hearing(PcsCaseEntity pcsCase, int hearingId) {
         return hearingRepository.findById(hearingId)
             .filter(hearing -> hearing.getPcsCase() != null && hearing.getPcsCase().getId().equals(pcsCase.getId()))
-            .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+            .filter(HearingRecords::canHaveOrder)
             .orElseThrow(() -> ExternalRejection.because("The hearing is not one of this case's hearings"));
     }
 
-    /** The hearing as a judge starts an order for it, falling back to the claim's facts. */
-    OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing) {
+    /** Each of the hearings as a judge starts an order for it, falling back to the claim's facts. */
+    List<OrderStart.Hearing> start(PcsCaseEntity pcsCase, List<HearingEntity> hearings) {
         List<HearingFactsEntity> recorded = hearingFactsRepository.findByHearingPcsCaseId(pcsCase.getId());
+        return hearings.stream().map(hearing -> start(pcsCase, hearing, recorded)).toList();
+    }
+
+    private static OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing,
+                                            List<HearingFactsEntity> recorded) {
         Optional<HearingFactsEntity> own = recorded.stream()
             .filter(facts -> facts.getHearingId().equals(hearing.getId()))
             .findFirst();
@@ -83,7 +93,7 @@ class HearingRecords {
             pcsCase.getLegislativeCountry() == WALES,
             own.map(HearingFactsEntity::getVersion).orElse(null),
             startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
-            startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getUpdatedOn()))
+            startFrom.map(facts -> new Recorded(judgeName(facts.getUser()), facts.getUpdatedOn()))
                 .orElse(null),
             own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
             earlierNotes(pcsCase.getJudicialNotes(), recorded, hearing.getHearingDate())
@@ -152,11 +162,16 @@ class HearingRecords {
             .collect(Collectors.toMap(facts -> facts.getJudicialNote().getId(),
                 facts -> facts.getHearing().getHearingDate()));
         return notes.stream()
-            .map(note -> new JudicialNote(note.getUser() == null ? null : note.getUser().getName(),
+            .map(note -> new JudicialNote(judgeName(note.getUser()),
                 note.getCreatedOn(), hearingDates.get(note.getId()), note.getNote()))
             .filter(note -> madeAt(note).isBefore(before))
             .sorted(Comparator.comparing(HearingRecords::madeAt).reversed())
             .toList();
+    }
+
+    /** A judge by name, or "A judge" for one whose name is not known. */
+    private static String judgeName(UserNameEntity user) {
+        return user == null || user.getName() == null || user.getName().isBlank() ? "A judge" : user.getName();
     }
 
     private static LocalDateTime madeAt(JudicialNote note) {
