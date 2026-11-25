@@ -16,10 +16,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Builder
@@ -39,6 +41,13 @@ public class RentArrearsEntity {
     private ClaimEntity claim;
 
     private BigDecimal totalRentArrears;
+
+    private LocalDate totalRentArrearsDate;
+
+    private BigDecimal arrearsAtNoticeDate;
+
+    @Enumerated(EnumType.STRING)
+    private CitizenClaimRentProofType proofType;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

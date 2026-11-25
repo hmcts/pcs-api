@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -28,6 +29,7 @@ import java.util.UUID;
  * Send Letter letter and posts it. Recording the outcome is the caller's job.
  */
 @Service
+@Slf4j
 public class BulkPrintService {
 
     private static final int SINGLE_COPY = 1;
@@ -43,6 +45,7 @@ public class BulkPrintService {
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final FeatureToggleService featureToggleService;
     private final BlankClaimPackFormsProvider blankClaimPackFormsProvider;
+    private final HlpasLeafletProvider hlpasLeafletProvider;
 
     public BulkPrintService(CoversheetProvider coversheetProvider,
                             CoveringLetterProvider coveringLetterProvider,
@@ -52,7 +55,8 @@ public class BulkPrintService {
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter,
                             FeatureToggleService featureToggleService,
-                            BlankClaimPackFormsProvider blankClaimPackFormsProvider) {
+                            BlankClaimPackFormsProvider blankClaimPackFormsProvider,
+                            HlpasLeafletProvider hlpasLeafletProvider) {
         this.coversheetProvider = coversheetProvider;
         this.coveringLetterProvider = coveringLetterProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
@@ -62,10 +66,17 @@ public class BulkPrintService {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.featureToggleService = featureToggleService;
         this.blankClaimPackFormsProvider = blankClaimPackFormsProvider;
+        this.hlpasLeafletProvider = hlpasLeafletProvider;
     }
 
     public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
                          String recipientName, AddressUK address, List<DocumentEntity> documents) {
+        return sendPack(pcsCase, recipient, letterType, recipientName, address, documents, false);
+    }
+
+    public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
+                         String recipientName, AddressUK address, List<DocumentEntity> documents,
+                         boolean includeHlpasLeaflet) {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
@@ -77,6 +88,9 @@ public class BulkPrintService {
         }
         documents.forEach(document -> pdfs.add(letterDocumentFetcher.fetchBytes(document.getDocumentId())));
         addBlankForms(pdfs, letterType);
+        if (includeHlpasLeaflet) {
+            addHlpasLeaflet(pdfs, caseReference);
+        }
         Document mergedLetter = new Document(Base64.getEncoder().encodeToString(pdfMerger.merge(pdfs)), SINGLE_COPY);
 
         LetterV3 letter = new LetterV3(letterType.getCode(), List.of(mergedLetter),
@@ -84,7 +98,7 @@ public class BulkPrintService {
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
     }
 
-    // Blank forms always go last, however many documents come before them; each Welsh form follows its English one.
+    // Blank forms follow every document and precede only the HLPAS leaflet; each Welsh form follows its English one.
     private void addBlankForms(List<byte[]> pdfs, LetterType letterType) {
         if (letterType == LetterType.DEFENDANT_CLAIM_PACK) {
             pdfs.add(blankClaimPackFormsProvider.getBlankResponseForm());
@@ -95,6 +109,13 @@ public class BulkPrintService {
             pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimForm());
             pdfs.add(blankClaimPackFormsProvider.getBlankCounterclaimFormWelsh());
         }
+    }
+
+    private void addHlpasLeaflet(List<byte[]> pdfs, String caseReference) {
+        hlpasLeafletProvider.getLeaflet().ifPresentOrElse(
+            pdfs::add,
+            () -> log.warn("Claim pack for case {} posted without the HLPAS legal advice leaflet: none configured",
+                caseReference));
     }
 
     private void requirePostalAddress(AddressUK address, PartyEntity recipient) {

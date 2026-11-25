@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -14,16 +16,21 @@ import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
  * Selects claim-pack envelopes per recipient. The claim form goes to every defendant and, while release flag 1.4 is
- * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack.
+ * off, the claimant too. When release flag 1.4 is on, only defendants will receive the claim pack. A citizen
+ * claimant is never posted a claim pack; they follow the claim on their dashboard.
  * Defendants also get their own access code once it exists (on a Wales case, both the English and the Welsh
- * letter). Only documents not covered by a {@code PACK_SENT}
+ * letter). On a citizen claim the defendant's pack leads with the claim form, then the documents the claimant
+ * uploaded with the claim, then the access-code letter, and is posted with the HLPAS legal advice leaflet.
+ * Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
  */
 @Service
@@ -32,6 +39,10 @@ public class ClaimPackSelector {
 
     private static final String MDC_CASE_REFERENCE = "caseReference";
     private static final String MDC_PARTY_ID = "partyId";
+    private static final List<DocumentType> UPLOAD_ORDER = List.of(
+        DocumentType.TENANCY_AGREEMENT, DocumentType.OCCUPATION_LICENCE, DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
+        DocumentType.GAS_SAFETY_CERTIFICATE, DocumentType.EICR_REPORT, DocumentType.POSSESSION_NOTICE,
+        DocumentType.RENT_STATEMENT);
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
@@ -61,10 +72,12 @@ public class ClaimPackSelector {
         Set<String> sent =
             sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
         List<ClaimPackCandidate> candidates = new ArrayList<>();
-        if (!packSkipRules.shouldExcludeClaimant()) {
+        boolean citizenClaim = isCitizenClaim(pcsCase);
+        if (!citizenClaim && !packSkipRules.shouldExcludeClaimant()) {
             addClaimantCandidate(candidates, claim, claimForm, sent);
         }
-        addDefendantCandidates(candidates, pcsCase, claim, claimForm, sent);
+        List<DocumentEntity> uploads = citizenClaim ? claimantUploads(claim) : List.of();
+        addDefendantCandidates(candidates, pcsCase, claim, new DefendantPack(claimForm, uploads, citizenClaim), sent);
         return candidates;
     }
 
@@ -81,10 +94,10 @@ public class ClaimPackSelector {
     }
 
     private void addDefendantCandidates(List<ClaimPackCandidate> candidates, PcsCaseEntity pcsCase, ClaimEntity claim,
-                                        DocumentEntity claimForm, Set<String> sent) {
+                                        DefendantPack pack, Set<String> sent) {
         boolean wales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
-            ClaimPackCandidate candidate = defendantCandidate(pcsCase, defendant, claimForm, sent, wales);
+            ClaimPackCandidate candidate = defendantCandidate(pcsCase, defendant, pack, sent, wales);
             if (candidate != null) {
                 candidates.add(candidate);
             }
@@ -104,7 +117,7 @@ public class ClaimPackSelector {
     }
 
     private ClaimPackCandidate defendantCandidate(PcsCaseEntity pcsCase, PartyEntity defendant,
-                                                  DocumentEntity claimForm, Set<String> sent, boolean wales) {
+                                                  DefendantPack pack, Set<String> sent, boolean wales) {
         DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
         if (accessCode == null) {
             withCaseContext(pcsCase, defendant, () -> log.debug(
@@ -115,16 +128,21 @@ public class ClaimPackSelector {
         // Both letters are saved together, so a Wales defendant with no Welsh letter got their access code
         // before Welsh packs existed. It can never be made now, so they get the English pack.
         DocumentEntity welshAccessCode = wales ? accessCodeDocument(pcsCase, defendant, true) : null;
-        List<DocumentEntity> unsent = new ArrayList<>();
-        if (!sent.contains(key(defendant, accessCode))) {
-            unsent.add(accessCode);
+        List<DocumentEntity> ordered = new ArrayList<>();
+        if (pack.citizenClaim()) {
+            ordered.add(pack.claimForm());
+            ordered.addAll(pack.uploads());
         }
-        if (welshAccessCode != null && !sent.contains(key(defendant, welshAccessCode))) {
-            unsent.add(welshAccessCode);
+        ordered.add(accessCode);
+        if (welshAccessCode != null) {
+            ordered.add(welshAccessCode);
         }
-        if (!sent.contains(key(defendant, claimForm))) {
-            unsent.add(claimForm);
+        if (!pack.citizenClaim()) {
+            ordered.add(pack.claimForm());
         }
+        List<DocumentEntity> unsent = ordered.stream()
+            .filter(document -> !sent.contains(key(defendant, document)))
+            .toList();
         if (unsent.isEmpty()) {
             return null;
         }
@@ -133,7 +151,34 @@ public class ClaimPackSelector {
                 "No Welsh access-code letter, sending the English pack - case: {}, party: {}",
                 pcsCase.getCaseReference(), defendant.getId()));
         }
-        return new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null);
+        return new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null,
+            pack.citizenClaim());
+    }
+
+    // A citizen claim is created by the claimant's own IDAM account; a legal-rep claim by their organisation.
+    private static boolean isCitizenClaim(PcsCaseEntity pcsCase) {
+        return pcsCase.getParties().stream()
+            .filter(PartyEntity::isClaimCreator)
+            .anyMatch(creator -> StringUtils.isNotBlank(creator.getIdamId())
+                && StringUtils.isBlank(creator.getOrganisationId()));
+    }
+
+    // The claim's own documents are those submitted with it; documents uploaded after issue are case-level.
+    private static List<DocumentEntity> claimantUploads(ClaimEntity claim) {
+        return claim.getClaimDocuments().stream()
+            .map(ClaimDocumentEntity::getDocument)
+            .filter(Objects::nonNull)
+            .filter(document -> document.getDocumentId() != null)
+            .sorted(Comparator.comparingInt(ClaimPackSelector::uploadRank))
+            .toList();
+    }
+
+    private static int uploadRank(DocumentEntity document) {
+        int rank = UPLOAD_ORDER.indexOf(document.getType());
+        return rank < 0 ? UPLOAD_ORDER.size() : rank;
+    }
+
+    private record DefendantPack(DocumentEntity claimForm, List<DocumentEntity> uploads, boolean citizenClaim) {
     }
 
     private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant, boolean welsh) {

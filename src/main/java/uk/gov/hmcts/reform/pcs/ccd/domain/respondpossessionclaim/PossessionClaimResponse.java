@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.HasDraftVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PossessionClaimResponse {
+public class PossessionClaimResponse implements HasDraftVersion {
 
     /**
      * Claimant organisation names visible to defendants.

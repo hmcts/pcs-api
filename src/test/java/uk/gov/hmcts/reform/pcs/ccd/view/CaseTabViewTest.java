@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.LitigationFriendTabDetail
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.CitizenClaimTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.time.LocalDateTime;
@@ -54,6 +55,9 @@ class CaseTabViewTest {
 
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
+    private CitizenClaimTabDetailsBuilder citizenClaimTabDetailsBuilder;
 
     @InjectMocks
     private CaseTabView underTest;
@@ -1206,4 +1210,16 @@ class CaseTabViewTest {
             .value(value)
             .build();
     }
+
+    @Test
+    void shouldAddTheCitizenClaimAnswersToTheSummaryTab() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        SummaryTab summaryTab = SummaryTab.builder().build();
+        when(caseSummaryTabView.buildSummaryTab(pcsCase)).thenReturn(summaryTab);
+
+        underTest.setCaseTabFields(pcsCase, pcsCaseEntity);
+
+        verify(citizenClaimTabDetailsBuilder).addSummaryDetails(summaryTab, pcsCaseEntity);
+    }
+
 }

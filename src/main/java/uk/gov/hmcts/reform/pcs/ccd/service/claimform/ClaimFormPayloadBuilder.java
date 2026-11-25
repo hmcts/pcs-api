@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormNoticeMethodRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
@@ -100,7 +102,7 @@ public class ClaimFormPayloadBuilder {
         partyMapper.mapUnderlessees(partiesByRole(claim, PartyRole.UNDERLESSEE_OR_MORTGAGEE), payloadBuilder);
 
         mapGrounds(claim.getClaimGrounds(), payloadBuilder);
-        mapNotice(claim.getNoticeOfPossession(), payloadBuilder);
+        mapNotice(claim.getNoticeOfPossession(), claim.isCitizenClaim(), payloadBuilder);
         mapTenancyLicence(pcsCase.getTenancyLicence(), payloadBuilder);
         mapRentArrears(claim.getRentArrears(), payloadBuilder);
         mapAsbProhibitedConduct(claim.getAsbProhibitedConductEntity(), payloadBuilder);
@@ -133,19 +135,36 @@ public class ClaimFormPayloadBuilder {
         // England-only: Wales "Other" shares CombinedLicenceType.OTHER, but the grounds yes/no
         // question belongs to the England intro/demoted/other journey, not the Wales flow.
         payloadBuilder.showGroundsYesNoQuestion(isEngland && isIntroDemotedOther);
-        // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured).
-        payloadBuilder.showDescriptionOfGrounds(isEngland && hasOtherGround);
-        payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
-        payloadBuilder.showNoticeType(isWales && noticeServedYes);
-        payloadBuilder.showPcscSection(isWales);
-        payloadBuilder.showRequiredDocumentsSection(isWales);
+        // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured), and the
+        // Other ground of a citizen Wales claim, which legal-rep Wales claims have no equivalent of.
+        payloadBuilder.showDescriptionOfGrounds((isEngland || claim.isCitizenClaim()) && hasOtherGround);
+        payloadBuilder.showAsbSection(isWales && hasWalesAsbGround
+            && (!claim.isCitizenClaim() || claim.getAsbProhibitedConductEntity() != null));
+        // ExUI England claims never record a notice type, so only citizen claims show it in England.
+        boolean hasNoticeType = claim.getNoticeOfPossession() != null
+            && isPopulated(claim.getNoticeOfPossession().getNoticeType());
+        payloadBuilder.showNoticeType(noticeServedYes && (isWales || hasNoticeType));
+        // The Wales-only sections show only when the claimant was asked them: a citizen claim for a property in
+        // Wales is not, and would otherwise print their headings above empty rows.
+        payloadBuilder.showPcscSection(isWales && pcscAnswered(claim.getAsbProhibitedConductEntity()));
+        payloadBuilder.showRequiredDocumentsSection(isWales && requiredDocumentsAnswered(claim));
         // The exempt-landlord question comes from the Housing (Wales) Act 2014, so it is Wales-only.
-        payloadBuilder.showExemptLandlordQuestion(isWales);
+        payloadBuilder.showExemptLandlordQuestion(isWales && claim.getIsExemptLandlord() != null);
         // Tenancy-copy rows are England-only (Wales never captures the answer) and show only when
         // the claimant answered, so an unanswered question hides the row instead of a blank value.
         TenancyLicenceEntity tenancyLicence = pcsCase.getTenancyLicence();
         boolean tenancyCopyAnswered = tenancyLicence != null && tenancyLicence.getHasCopyOfTenancyLicence() != null;
         payloadBuilder.showTenancyUploadedQuestion(isEngland && tenancyCopyAnswered);
+    }
+
+    private static boolean pcscAnswered(AsbProhibitedConductEntity asb) {
+        return asb != null && (asb.getClaimingStandardContract() != null || asb.getPeriodicContractAgreed() != null);
+    }
+
+    private static boolean requiredDocumentsAnswered(ClaimEntity claim) {
+        return claim.getEnergyPerformanceCertificateProvided() != null
+            || claim.getGasSafetyReportProvided() != null
+            || claim.getElectricalInstallationConditionProvided() != null;
     }
 
     private static boolean isWalesClaim(PcsCaseEntity pcsCase) {
@@ -296,6 +315,8 @@ public class ClaimFormPayloadBuilder {
         return grounds.stream().anyMatch(g -> code.equals(g.getCode()));
     }
 
+
+
     private static boolean isNoticeServedYes(NoticeOfPossessionEntity notice) {
         return notice != null && notice.getNoticeServed() == YesOrNo.YES;
     }
@@ -325,6 +346,8 @@ public class ClaimFormPayloadBuilder {
 
         VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();
         payloadBuilder.preActionProtocolFollowedYesNo(toLabel(preActionFollowed));
+        // Citizen claims are not asked it.
+        payloadBuilder.showPreActionProtocolFollowed(preActionFollowed != null);
         String preActionReason = claim.getPreActionProtocolIncompleteExplanation();
         // Hide the "why not followed" row unless a reason exists (Wales doesn't capture one).
         payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionFollowed) && isPopulated(preActionReason));
@@ -407,7 +430,7 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.isNoOrAbsoluteOrOtherGrounds(hasAbsolute || hasOther);
     }
 
-    private void mapNotice(NoticeOfPossessionEntity notice,
+    private void mapNotice(NoticeOfPossessionEntity notice, boolean citizenClaim,
                             ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (notice == null) {
             return;
@@ -434,7 +457,42 @@ public class ClaimFormPayloadBuilder {
         }
 
         routeNoticeDetailByMethod(method, notice.getNoticeDetails(), payloadBuilder);
-        clearUnsourcedNoticeUploadFlags(payloadBuilder);
+
+        List<ClaimFormNoticeMethodRow> serviceMethods = noticeServiceMethodRows(notice);
+        payloadBuilder.noticeServiceMethods(serviceMethods.isEmpty() ? null : serviceMethods);
+        payloadBuilder.showNoticeServiceMethods(isYes(noticeServedEnum) && !serviceMethods.isEmpty());
+
+        if (citizenClaim) {
+            mapNoticeUpload(notice, noticeServedEnum, payloadBuilder);
+        } else {
+            clearNoticeUploadFlags(payloadBuilder);
+        }
+    }
+
+    private static List<ClaimFormNoticeMethodRow> noticeServiceMethodRows(NoticeOfPossessionEntity notice) {
+        if (notice.getServiceMethods() == null) {
+            return List.of();
+        }
+        return notice.getServiceMethods().stream()
+            .filter(row -> row.getMethod() != null)
+            .map(row -> ClaimFormNoticeMethodRow.builder()
+                .methodLabel(row.getMethod().getLabel())
+                .servedOn(formatLongDate(row.getServedDate()))
+                .hasServedOn(row.getServedDate() != null)
+                .details(row.getDetails())
+                .hasDetails(isPopulated(row.getDetails()))
+                .build())
+            .toList();
+    }
+
+    private void mapNoticeUpload(NoticeOfPossessionEntity notice, VerticalYesNo noticeServed,
+                                 ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
+        VerticalYesNo uploaded = yesOrNoToVertical(notice.getIsAbleToUploadDocument());
+        payloadBuilder.showNoticeUploadQuestion(isYes(noticeServed) && uploaded != null);
+        payloadBuilder.noticeUploadedYesNo(uploaded);
+        payloadBuilder.noticeUploadedYes(isYes(uploaded));
+        payloadBuilder.noticeUploadedNo(isNo(uploaded));
+        payloadBuilder.noticeNotUploadedReason(isNo(uploaded) ? notice.getUnableToUploadReason() : null);
     }
 
     private static LocalDate servedDate(NoticeOfPossessionEntity notice) {
@@ -476,10 +534,8 @@ public class ClaimFormPayloadBuilder {
         }
     }
 
-    // The "can you upload the notice?" answer has no data source yet, so hide the whole row instead
-    // of printing a label with a blank value. Set showNoticeUploadQuestion from the answer once an
-    // entity field exists.
-    private void clearUnsourcedNoticeUploadFlags(ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
+    // The ExUI claim form does not print the "can you upload the notice?" answer, though ExUI records it.
+    private void clearNoticeUploadFlags(ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         payloadBuilder.showNoticeUploadQuestion(false);
         payloadBuilder.noticeUploadedYes(false);
         payloadBuilder.noticeUploadedNo(false);
@@ -503,6 +559,9 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.tenancyNotUploadedReason(tenancy.getReasonsForNoTenancyLicence());
         payloadBuilder.rentAmount(formatGbp(tenancy.getRentAmount()));
         payloadBuilder.rentCalculatedDescription(formatRentFrequency(tenancy));
+        Integer rentDueDay = tenancy.getRentDueDay();
+        payloadBuilder.rentDueDay(rentDueDay != null ? rentDueDay.toString() : null);
+        payloadBuilder.showRentDueDay(rentDueDay != null);
     }
 
     // Wales-only required documents (EPC, gas safety, EICR). The section itself is gated on isWales
@@ -543,6 +602,14 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.hasPreviousStepsYesNo(toLabel(prevStepsEnum));
         payloadBuilder.showPreviousStepsFreeText(isYes(prevStepsEnum));
         payloadBuilder.previousStepsFreeText(rent.getRecoveryAttemptDetails());
+
+        payloadBuilder.arrearsAtNoticeDate(formatGbp(rent.getArrearsAtNoticeDate()));
+        payloadBuilder.showArrearsAtNoticeDate(rent.getArrearsAtNoticeDate() != null);
+        payloadBuilder.currentArrearsDate(formatLongDate(rent.getTotalRentArrearsDate()));
+        payloadBuilder.showCurrentArrearsDate(rent.getTotalRentArrearsDate() != null);
+        CitizenClaimRentProofType proofType = rent.getProofType();
+        payloadBuilder.rentProofTypeLabel(proofType != null ? proofType.getLabel() : null);
+        payloadBuilder.showRentProofType(proofType != null);
     }
 
     private void mapAsbProhibitedConduct(AsbProhibitedConductEntity asb,

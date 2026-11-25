@@ -89,6 +89,7 @@ class DraftCaseJsonMergerTest {
                             "allUnderlesseeOrMortgagees",
                             "allLitigationFriends",
                             "possessionClaimResponse",
+                            "citizenPossessionClaim.otherInformation.supportFlags",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "xuiGenAppRequest",
                             "documentAmendDetails",

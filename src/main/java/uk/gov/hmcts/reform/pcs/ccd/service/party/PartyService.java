@@ -283,7 +283,7 @@ public class PartyService {
         return allDefendants;
     }
 
-    private PartyEntity createDefendant(DefendantDetails defendantDetails) {
+    public PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
         defendantEntity.setRemoved(false);
 
@@ -350,7 +350,7 @@ public class PartyService {
         return underlesseeMortgageeEntity;
     }
 
-    private AddressEntity mapAddress(AddressUK address) {
+    public AddressEntity mapAddress(AddressUK address) {
         if (address == null) {
             return null;
         }

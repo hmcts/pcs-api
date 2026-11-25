@@ -60,6 +60,9 @@ public class TenancyLicenceEntity {
 
     private String otherRentFrequency;
 
+    @JdbcTypeCode(SqlTypes.SMALLINT)
+    private Integer rentDueDay;
+
     private BigDecimal rentPerDay;
 
     @Enumerated(EnumType.STRING)

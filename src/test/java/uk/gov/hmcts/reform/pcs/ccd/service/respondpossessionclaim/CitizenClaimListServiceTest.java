@@ -6,11 +6,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.ClaimantClaimSummary;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.citizenclaim.ClaimantCaseSummaryRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
 import java.util.List;
@@ -24,6 +26,9 @@ class CitizenClaimListServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
+
+    @Mock
+    private ClaimantCaseSummaryRepository claimantCaseSummaryRepository;
 
     @InjectMocks
     private CitizenClaimListService underTest;
@@ -124,5 +129,21 @@ class CitizenClaimListServiceTest {
 
         // Then
         assertThat(result.get(0).getPropertyPostcode()).isNull();
+    }
+
+    @Test
+    void shouldListClaimsMadeByTheCitizenFromTheRepositoryWithoutCallingCcd() {
+        // Given
+        ClaimantClaimSummary newest = ClaimantClaimSummary.builder()
+            .caseReference("2000000000000002").state("AWAITING_SUBMISSION_TO_HMCTS").build();
+        ClaimantClaimSummary oldest = ClaimantClaimSummary.builder()
+            .caseReference("1000000000000001").state("CASE_ISSUED").paymentStatus("PAID").build();
+        when(claimantCaseSummaryRepository.findCasesCreatedBy(IDAM_ID)).thenReturn(List.of(newest, oldest));
+
+        // When
+        List<ClaimantClaimSummary> result = underTest.getClaimsMadeBy(IDAM_ID);
+
+        // Then
+        assertThat(result).containsExactly(newest, oldest);
     }
 }

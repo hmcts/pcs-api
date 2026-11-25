@@ -1,0 +1,344 @@
+package uk.gov.hmcts.reform.pcs.ccd.service.citizenclaim;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CitizenClaimRentProofType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimDefendant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNotice;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimNoticeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimOtherInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimRentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimTenancyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenClaimantKind;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.CitizenPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PrivateLandlordAssuredGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * The citizen's yes/no and choice answers decide which of their other answers apply. Validation and
+ * the final-submit mapping both work on the claim this returns, so answers on a branch the citizen
+ * turned away from (or left behind by changing an answer) are neither checked nor written.
+ */
+@Component
+public class CitizenPossessionClaimApplicableAnswers {
+
+    private final ObjectMapper draftCaseDataObjectMapper;
+
+    public CitizenPossessionClaimApplicableAnswers(
+        @Qualifier("draftCaseDataObjectMapper") ObjectMapper draftCaseDataObjectMapper) {
+        this.draftCaseDataObjectMapper = draftCaseDataObjectMapper;
+    }
+
+    /**
+     * A deep copy of the claim holding only the answers that apply. The original is not changed.
+     */
+    public CitizenPossessionClaim of(CitizenPossessionClaim claim) {
+        CitizenPossessionClaim applicable = draftCaseDataObjectMapper.convertValue(claim, CitizenPossessionClaim.class);
+        applicable.setConfirmedSections(null);
+
+        reduceClaimant(applicable.getClaimant());
+        reduceAdditionalClaimants(applicable);
+        reduceDefendants(applicable);
+        reduceTenancy(applicable.getTenancy(), applicable.isWales());
+        reduceGrounds(applicable.getGrounds(), applicable.isWales(), applicable.isExcludedTenancy());
+        if (!applicable.hasRentArrearsGround()) {
+            applicable.setRentArrears(null);
+        }
+        reduceRentArrears(applicable.getRentArrears());
+        applicable.setNotice(reduceNotice(applicable.getNotice()));
+        reduceArrearsAtNoticeDate(applicable);
+        reduceOtherInformation(applicable.getOtherInformation());
+
+        return applicable;
+    }
+
+    private static void reduceAdditionalClaimants(CitizenPossessionClaim claim) {
+        if (claim.getClaimant() == null || claim.getClaimant().getMultipleClaimants() != VerticalYesNo.YES) {
+            claim.setAdditionalClaimants(null);
+            return;
+        }
+        if (claim.getAdditionalClaimants() == null) {
+            return;
+        }
+        claim.getAdditionalClaimants().forEach(item -> reduceClaimant(item != null ? item.getValue() : null));
+    }
+
+    private static void reduceClaimant(CitizenClaimantDetails claimant) {
+        if (claimant == null) {
+            return;
+        }
+        if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.ORGANISATION) {
+            claimant.setFirstName(null);
+            claimant.setLastName(null);
+        } else if (claimant.getIndividualOrOrganisation() == CitizenClaimantKind.INDIVIDUAL) {
+            claimant.setOrganisationName(null);
+        }
+        if (claimant.getContactByPhone() != VerticalYesNo.YES) {
+            claimant.setPhoneNumber(null);
+        }
+        if (claimant.getContactByText() != VerticalYesNo.YES) {
+            claimant.setTextMessageNumber(null);
+        }
+    }
+
+    private static void reduceDefendants(CitizenPossessionClaim claim) {
+        if (claim.getDefendants() == null) {
+            return;
+        }
+        if (claim.getAdditionalDefendants() != VerticalYesNo.YES && claim.getDefendants().size() > 1) {
+            claim.setDefendants(new ArrayList<>(claim.getDefendants().subList(0, 1)));
+        }
+        claim.getDefendants().forEach(item -> {
+            CitizenClaimDefendant defendant = item != null ? item.getValue() : null;
+            if (defendant == null) {
+                return;
+            }
+            if (defendant.getNameKnown() != VerticalYesNo.YES) {
+                defendant.setFirstName(null);
+                defendant.setLastName(null);
+            }
+            if (defendant.getAddressKnown() != VerticalYesNo.YES) {
+                defendant.setAddressSameAsProperty(null);
+                defendant.setAddress(null);
+            } else if (defendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
+                defendant.setAddress(null);
+            }
+        });
+    }
+
+    private static void reduceTenancy(CitizenClaimTenancy tenancy, boolean wales) {
+        if (tenancy == null) {
+            return;
+        }
+        if (wales) {
+            tenancy.setTenancyType(null);
+        } else {
+            tenancy.setOccupationContractType(null);
+        }
+        if (tenancy.getTenancyType() != CitizenClaimTenancyType.OTHER) {
+            tenancy.setOtherTenancyTypeDetails(null);
+        }
+        if (tenancy.getOccupationContractType() != OccupationLicenceTypeWales.OTHER) {
+            tenancy.setOtherOccupationContractDetails(null);
+        }
+        if (tenancy.getTenancyAgreementAvailable() == VerticalYesNo.NO) {
+            tenancy.setTenancyAgreementDocuments(null);
+        } else {
+            tenancy.setNoTenancyAgreementReason(null);
+        }
+        if (wales) {
+            reduceRequiredDocuments(tenancy);
+        } else {
+            tenancy.setHasEnergyPerformanceCertificate(null);
+            tenancy.setEnergyPerformanceDocuments(null);
+            tenancy.setNoEnergyPerformanceCertificateReason(null);
+            tenancy.setHasGasSafetyReport(null);
+            tenancy.setGasSafetyReportDocuments(null);
+            tenancy.setNoGasSafetyReportReason(null);
+            tenancy.setHasElectricalInstallationConditionReport(null);
+            tenancy.setElectricalInstallationDocuments(null);
+            tenancy.setNoElectricalInstallationConditionReason(null);
+        }
+    }
+
+    private static void reduceRequiredDocuments(CitizenClaimTenancy tenancy) {
+        if (tenancy.getHasEnergyPerformanceCertificate() == VerticalYesNo.NO) {
+            tenancy.setEnergyPerformanceDocuments(null);
+        } else {
+            tenancy.setNoEnergyPerformanceCertificateReason(null);
+        }
+        if (tenancy.getHasGasSafetyReport() == VerticalYesNo.NO) {
+            tenancy.setGasSafetyReportDocuments(null);
+        } else {
+            tenancy.setNoGasSafetyReportReason(null);
+        }
+        if (tenancy.getHasElectricalInstallationConditionReport() == VerticalYesNo.NO) {
+            tenancy.setElectricalInstallationDocuments(null);
+        } else {
+            tenancy.setNoElectricalInstallationConditionReason(null);
+        }
+    }
+
+    private static void reduceGrounds(CitizenClaimGrounds grounds, boolean wales, boolean excludedTenancy) {
+        if (grounds == null) {
+            return;
+        }
+        if (wales) {
+            clearExcludedGrounds(grounds);
+            reduceWalesGrounds(grounds);
+            return;
+        }
+        grounds.setWalesDiscretionaryGrounds(null);
+        grounds.setWalesMandatoryGrounds(null);
+        grounds.setWalesGroundReasons(null);
+        if (excludedTenancy) {
+            reduceExcludedGrounds(grounds);
+            return;
+        }
+        clearExcludedGrounds(grounds);
+        if (grounds.getHasRentArrearsGrounds() == VerticalYesNo.NO) {
+            grounds.setRentArrearsGrounds(null);
+        }
+        if (grounds.getHasOtherGrounds() == VerticalYesNo.NO) {
+            grounds.setOtherGrounds(null);
+        }
+        Set<PrivateLandlordAssuredGround> selected = grounds.allGrounds();
+        if (!selected.contains(PrivateLandlordAssuredGround.OTHER)) {
+            grounds.setOtherGroundsDetails(null);
+        }
+        if (grounds.getGroundReasons() != null) {
+            // Only grounds other than rent arrears and OTHER are asked for a reason
+            grounds.setGroundReasons(grounds.getGroundReasons().stream()
+                                         .filter(item -> item != null && item.getValue() != null)
+                                         .filter(item -> isAskedForAReason(item.getValue().getGround(), selected))
+                                         .toList());
+        }
+    }
+
+    private static void reduceExcludedGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasRentArrearsGrounds(null);
+        grounds.setRentArrearsGrounds(null);
+        grounds.setHasOtherGrounds(null);
+        grounds.setOtherGrounds(null);
+        grounds.setOtherGroundsDetails(null);
+        grounds.setGroundReasons(null);
+        if (grounds.getHasExcludedGrounds() != VerticalYesNo.YES) {
+            grounds.setExcludedGrounds(null);
+        }
+        if (grounds.getExcludedGrounds() == null
+            || !grounds.getExcludedGrounds().contains(IntroductoryDemotedOrOtherGrounds.OTHER)) {
+            grounds.setExcludedOtherGroundDetails(null);
+        }
+    }
+
+    private static void clearExcludedGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasExcludedGrounds(null);
+        grounds.setExcludedGrounds(null);
+        grounds.setExcludedOtherGroundDetails(null);
+        grounds.setExcludedReason(null);
+    }
+
+    private static void reduceWalesGrounds(CitizenClaimGrounds grounds) {
+        grounds.setHasOtherGrounds(null);
+        grounds.setRentArrearsGrounds(null);
+        grounds.setGroundReasons(null);
+        Set<PrivateLandlordAssuredGround> other = grounds.getOtherGrounds();
+        boolean hasOther = other != null && other.contains(PrivateLandlordAssuredGround.OTHER);
+        grounds.setOtherGrounds(hasOther ? EnumSet.of(PrivateLandlordAssuredGround.OTHER) : null);
+        if (!hasOther) {
+            grounds.setOtherGroundsDetails(null);
+        }
+        if (grounds.getWalesGroundReasons() != null) {
+            // Rent arrears grounds are not asked for a reason
+            Set<String> asked = new HashSet<>(grounds.walesGroundCodes());
+            grounds.setWalesGroundReasons(grounds.getWalesGroundReasons().stream()
+                                              .filter(item -> item != null && item.getValue() != null)
+                                              .filter(item -> asked.contains(item.getValue().getGround()))
+                                              .filter(item -> !CitizenClaimGrounds
+                                                  .isWalesRentArrearsGround(item.getValue().getGround()))
+                                              .toList());
+        }
+    }
+
+    private static boolean isAskedForAReason(PrivateLandlordAssuredGround ground,
+                                             Set<PrivateLandlordAssuredGround> selected) {
+        return ground != null
+            && selected.contains(ground)
+            && !ground.isRentArrears()
+            && ground != PrivateLandlordAssuredGround.OTHER;
+    }
+
+    private static void reduceRentArrears(CitizenClaimRentArrears rentArrears) {
+        if (rentArrears == null) {
+            return;
+        }
+        if (rentArrears.getRentFrequency() != RentPaymentFrequency.OTHER) {
+            rentArrears.setOtherFrequencyDetails(null);
+        }
+        CitizenClaimRentProofType proofType = rentArrears.getProofType();
+        // Asked only to lay out a created rent statement in months
+        if (rentArrears.getRentFrequency() != RentPaymentFrequency.MONTHLY
+            || proofType != CitizenClaimRentProofType.TABLE) {
+            rentArrears.setRentDueDay(null);
+        }
+        if (proofType != CitizenClaimRentProofType.UPLOAD_STATEMENT) {
+            rentArrears.setRentStatementDocuments(null);
+        }
+        if (proofType != CitizenClaimRentProofType.TABLE) {
+            rentArrears.setRentHistoryTable(null);
+        }
+    }
+
+    private static CitizenClaimNotice reduceNotice(CitizenClaimNotice notice) {
+        if (notice == null) {
+            return null;
+        }
+        if (notice.getNoticeServed() != VerticalYesNo.YES) {
+            return CitizenClaimNotice.builder()
+                .noticeServed(notice.getNoticeServed())
+                .noNoticeReason(notice.getNoNoticeReason())
+                .build();
+        }
+        notice.setNoNoticeReason(null);
+        if (notice.getNoticeType() != CitizenClaimNoticeType.OTHER) {
+            notice.setNoticeTypeOther(null);
+        }
+        Set<CitizenClaimNoticeMethod> methods =
+            notice.getNoticeMethods() != null ? notice.getNoticeMethods() : Set.of();
+        if (!methods.contains(CitizenClaimNoticeMethod.FIRST_CLASS_POST)) {
+            notice.setPostedDate(null);
+        }
+        if (!methods.contains(CitizenClaimNoticeMethod.PERMITTED_PLACE)) {
+            notice.setDeliveredDate(null);
+        }
+        if (!methods.contains(CitizenClaimNoticeMethod.PERSONALLY_HANDED)) {
+            notice.setHandedToName(null);
+            notice.setHandedDate(null);
+        }
+        if (!methods.contains(CitizenClaimNoticeMethod.EMAIL)) {
+            notice.setEmailedTo(null);
+            notice.setEmailedDate(null);
+        }
+        if (!methods.contains(CitizenClaimNoticeMethod.OTHER_ELECTRONIC)) {
+            notice.setOtherElectronicDetails(null);
+            notice.setOtherElectronicDate(null);
+        }
+        if (!methods.contains(CitizenClaimNoticeMethod.OTHER)) {
+            notice.setOtherMethodDetails(null);
+            notice.setOtherMethodDate(null);
+        }
+        if (notice.getNoticeAvailable() == VerticalYesNo.NO) {
+            notice.setNoticeDocuments(null);
+        } else {
+            notice.setNoticeUnavailableReason(null);
+        }
+        return notice;
+    }
+
+    private static void reduceArrearsAtNoticeDate(CitizenPossessionClaim claim) {
+        CitizenClaimNotice notice = claim.getNotice();
+        if (claim.getRentArrears() != null && (notice == null || notice.getNoticeServed() != VerticalYesNo.YES)) {
+            claim.getRentArrears().setArrearsAtNoticeDate(null);
+        }
+    }
+
+    private static void reduceOtherInformation(CitizenClaimOtherInformation otherInformation) {
+        if (otherInformation != null && otherInformation.getHasOtherReasons() != VerticalYesNo.YES) {
+            otherInformation.setOtherReasonsDetail(null);
+        }
+    }
+
+}

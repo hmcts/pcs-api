@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizenclaim.ClaimantClaimSummary;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CitizenClaimListService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -75,5 +76,28 @@ class CitizenClaimListControllerTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnTheClaimsMadeByTheCitizenUsingTheirToken() {
+        // Given
+        UserInfo userDetails = mock(UserInfo.class);
+        when(userDetails.getUid()).thenReturn(IDAM_ID.toUpperCase());
+        User user = mock(User.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
+
+        List<ClaimantClaimSummary> claims = List.of(
+            ClaimantClaimSummary.builder().caseReference("123").state("PENDING_CASE_ISSUED")
+                .paymentStatus("NOT_PAID").build()
+        );
+        when(citizenClaimListService.getClaimsMadeBy(IDAM_ID)).thenReturn(claims);
+
+        // When
+        ResponseEntity<List<ClaimantClaimSummary>> response = underTest.getClaimantClaims(AUTH_HEADER, S2S_TOKEN);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(claims);
     }
 }
