@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialNoteRoles.JUDICIAL_NOTES_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addJudicialNote;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASE_MANAGEMENT_R2;
 
 @Component
 @AllArgsConstructor
@@ -45,6 +47,7 @@ public class AddJudicialNote implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(addJudicialNote.name(), this::submit)
                 .forStates(EventStates.addJudicialNote())
                 .name("Add a judicial note")
+                .showCondition(ShowConditions.featureFlagsEnabled(CASE_MANAGEMENT_R2))
                 .grant(Permission.CRUD, JUDICIAL_NOTES_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
