@@ -124,11 +124,12 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(start.taskGenAppId()).isEqualTo(genAppId);
         assertThat(events.external(caseReference, MAKE_ORDER).as(judge).start().taskGenAppId()).isNull();
         assertThat(start.caseContext().applications())
-            .extracting(Application::reference, Application::enforcementSuspension, Application::submittedOn)
-            .containsExactly(tuple("GA1", false, LocalDate.of(2026, 10, 1)),
-                tuple("GA2", true, LocalDate.of(2026, 10, 9)),
+            .extracting(Application::reference, Application::enforcementSuspension, Application::adjournment,
+                Application::submittedOn)
+            .containsExactly(tuple("GA1", false, true, LocalDate.of(2026, 10, 1)),
+                tuple("GA2", true, false, LocalDate.of(2026, 10, 9)),
                 // Entered by court staff from paper, it is dated when the court received it.
-                tuple("GA3", false, LocalDate.of(2026, 10, 8)));
+                tuple("GA3", false, false, LocalDate.of(2026, 10, 8)));
         Application application = start.caseContext().applications().getFirst();
         assertThat(application.id()).isEqualTo(genAppId);
         assertThat(application.type()).isEqualTo("Adjourn the hearing");

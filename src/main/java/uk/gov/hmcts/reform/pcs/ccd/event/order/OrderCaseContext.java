@@ -101,6 +101,7 @@ class OrderCaseContext {
         return new OrderStart.Application(
             genApp.getId(),
             genApp.getType() == GenAppType.SUSPEND,
+            genApp.getType() == GenAppType.ADJOURN,
             orderTasks.isListed(genApp),
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
