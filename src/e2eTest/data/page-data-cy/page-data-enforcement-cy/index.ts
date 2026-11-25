@@ -25,7 +25,6 @@ export * from '@data/page-data-cy/page-data-enforcement-cy/propertyAccessDetails
 export * from '@data/page-data-cy/page-data-enforcement-cy/protestorGroupRisk.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/repaymentsWrit.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/repayments.page.data.cy';
-export * from '@data/page-data-cy/page-data-enforcement-cy/statementOfTruth.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/suspendedOrder.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/verbalOrWrittenThreatsRisk.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/violentAggressiveRisk.page.data.cy';
@@ -38,3 +37,5 @@ export * from '@data/page-data-cy/page-data-enforcement-cy/evictionDate.page.dat
 export * from '@data/page-data-cy/page-data-enforcement-cy/missedPayments.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/defendantInBreathingSpace.page.data.cy';
 export * from '@data/page-data-cy/page-data-enforcement-cy/cannotApplyForWarrantInfo.page.data.cy';
+export * from '@data/page-data-cy/page-data-enforcement-cy/enforceTheOrderstatementOfTruth.page.data.cy';
+export * from '@data/page-data-cy/page-data-enforcement-cy/enforceTheOrderstatementOfTruthWrit.page.data.cy';

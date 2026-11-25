@@ -18,4 +18,7 @@ public class AttachDocumentTaskData implements Serializable {
     private static final long serialVersionUID = 1L;
     private long caseReference;
     private UUID documentId;
+
+    /** CDAM's proof that the document is a fresh upload, when the id came from a user. Null skips the check. */
+    private String hashToken;
 }

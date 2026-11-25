@@ -20,10 +20,11 @@ import {
   defendantInBreathingSpace,
   enforcementApplication,
   languageUsed, missedPayments,
-  nameAndAddressForEviction,
-  statementOfTruth
+  nameAndAddressForEviction, statementOfTruth, statementOfTruthWrit,
 } from '@data/index.selector.enforcement';
 import {home} from "@data/page-data-cy";
+
+let sotWrit: ReturnType<typeof statementOfTruthWrit>;
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -68,6 +69,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   if (process.env.RUN_E2E_IN_WELSH === 'true') {
     await performAction('clickButton', home.cymraegLink);
   }
+  sotWrit = statementOfTruthWrit(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -81,7 +83,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth - ClaimantSOT @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -123,19 +125,20 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.englishRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWrit.mainHeader
       });
-      await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
+      await performAction('errorValidationSOTWritPage', sotWrit.errorValidation);
       await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iCertifyCheckboxDynamic,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        question: sotWrit.completedByParagraph,
+        option: sotWrit.claimantRadioOption,
+        option1: sotWrit.iCertifyCheckboxDynamic,
+        label: sotWrit.fullNameHiddenTextLabel,
+        input: sotWrit.fullNameHiddenTextInput,
+        label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+        input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
-        iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        iBelieveCheckBox: sotWrit.clarificationLabelThreeList,
+        continueButton: sotWrit.continueButton,
       });
     });
 
@@ -176,24 +179,25 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.welshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantLegalRepresentativeRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.nameOfFirmHiddenTextLabel,
+      input1: sotWrit.nameOfFirmHiddenTextInput,
+      label2: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWrit.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader,
-      claimantBelieveCheckBox: statementOfTruth.theClaimantBelievesHiddenCheckBox
+      claimantBelieveCheckBox: sotWrit.clarificationLabelThreeList,
+      continueButton: sotWrit.continueButton,
     });
   });
 
-  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth - ClaimantSOT @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -231,18 +235,19 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.englishAndWelshRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWrit.mainHeader
     });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iCertifyCheckboxDynamic,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      question: sotWrit.completedByParagraph,
+      option: sotWrit.claimantRadioOption,
+      option1: sotWrit.iCertifyCheckboxDynamic,
+      label: sotWrit.fullNameHiddenTextLabel,
+      input: sotWrit.fullNameHiddenTextInput,
+      label1: sotWrit.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader,
-      iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      iBelieveCheckBox: sotWrit.clarificationLabelThreeList,
+      continueButton: sotWrit.continueButton
     });
   });
 
