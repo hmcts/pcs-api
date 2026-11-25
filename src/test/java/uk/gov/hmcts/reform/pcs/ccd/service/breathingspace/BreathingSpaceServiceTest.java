@@ -149,7 +149,7 @@ class BreathingSpaceServiceTest {
 
         // Then
         verify(breathingSpaceRepository).save(breathingSpaceEntityCaptor.capture());
-        assertThat(breathingSpaceEntityCaptor.getValue().getLiftedDate()).isEqualTo(Instant.now(UK_CLOCK));
+        assertThat(breathingSpaceEntityCaptor.getValue().getLiftedAt()).isEqualTo(Instant.now(UK_CLOCK));
     }
 
     @Test

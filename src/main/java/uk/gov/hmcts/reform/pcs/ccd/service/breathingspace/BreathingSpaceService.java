@@ -49,7 +49,7 @@ public class BreathingSpaceService {
                 "No active breathing space found for case reference: " + caseReference
             ));
 
-        activeBreathingSpace.setLiftedDate(Instant.now(ukClock));
+        activeBreathingSpace.setLiftedAt(Instant.now(ukClock));
         breathingSpaceRepository.save(activeBreathingSpace);
     }
 
