@@ -950,7 +950,7 @@ export const submitCaseApiData = {
         valueCode: 'PROVIDER_OF_SOCIAL_HOUSING',
       },
       claimAgainstTrespassers: 'NO',
-      claimantContactEmail: 'pcs-solicitor1@test.com',
+      claimantContactEmail: 'claimant-contact@example.com',
       isCorrectClaimantContactEmail: 'YES',
       orgAddressFound: 'Yes',
       organisationAddress: {

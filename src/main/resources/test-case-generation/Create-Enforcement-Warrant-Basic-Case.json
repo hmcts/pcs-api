@@ -27,8 +27,8 @@
           "AddressLine2": "",
           "AddressLine3": ""
         },
-        "orgName": "pcs-solicitor1@test.com",
-        "emailAddress": "pcs-solicitor1@test.com",
+        "orgName": "claimant-contact@example.com",
+        "emailAddress": "claimant-contact@example.com",
         "phoneNumberProvided": "NO"
       }
     }
@@ -46,8 +46,8 @@
           "AddressLine2": "",
           "AddressLine3": ""
         },
-        "orgName": "pcs-solicitor1@test.com",
-        "emailAddress": "pcs-solicitor1@test.com",
+        "orgName": "claimant-contact@example.com",
+        "emailAddress": "claimant-contact@example.com",
         "phoneNumberProvided": "NO"
       }
     }
