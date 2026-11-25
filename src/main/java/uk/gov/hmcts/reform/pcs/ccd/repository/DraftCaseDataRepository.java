@@ -14,6 +14,13 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
+    /** The stored JSON of every draft on the case that the user, or their organisation, owns. */
+    @Query("select d.caseData from DraftCaseDataEntity d where d.caseReference = :caseReference "
+        + "and (d.idamUserId = :userId or d.organisationId = :organisationId)")
+    List<String> findCaseDataOwnedBy(@Param("caseReference") long caseReference,
+                                     @Param("userId") String userId,
+                                     @Param("organisationId") String organisationId);
+
     // PartyIdIsNull is load-bearing: LR drafts share case/event/org but carry a party;
     // without it a firm's defendant draft matches here (and two defendants -> non-unique).
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(

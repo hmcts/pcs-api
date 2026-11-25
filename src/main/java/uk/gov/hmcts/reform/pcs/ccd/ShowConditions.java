@@ -73,6 +73,7 @@ public class ShowConditions {
             case MAKE_ORDER -> "makeOrderEnabled";
             case ENFORCEMENT -> "enforcementEnabled";
             case DELETE_UNISSUED_CLAIM -> "deleteUnissuedClaimEnabled";
+            case CASE_MANAGEMENT_R2 -> "caseManagementR2Enabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };

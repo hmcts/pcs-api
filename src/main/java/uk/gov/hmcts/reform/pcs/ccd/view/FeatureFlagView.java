@@ -26,6 +26,7 @@ public class FeatureFlagView {
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
                                     .enforcementEnabled(getFlag(FeatureFlag.ENFORCEMENT))
                                     .deleteUnissuedClaimEnabled(getFlag(FeatureFlag.DELETE_UNISSUED_CLAIM))
+                                    .caseManagementR2Enabled(getFlag(FeatureFlag.CASE_MANAGEMENT_R2))
                                     .build());
     }
 

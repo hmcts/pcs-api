@@ -120,6 +120,40 @@ public class DraftCaseDataService {
                 .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId);
     }
 
+    /**
+     * Every document URL in the drafts on this case that the current user, or their organisation, owns. The data
+     * store looks for a document's document_url anywhere in the case data before CDAM serves it, so this looks
+     * through the stored drafts the same way.
+     */
+    public List<String> getOwnDraftDocumentUrls(long caseReference) {
+        String userId;
+        try {
+            userId = securityContextService.getCurrentUserId();
+        } catch (SecurityContextException e) {
+            log.warn("No current user, so no draft uploads returned for case {}", caseReference, e);
+            return List.of();
+        }
+        // IDAM ids are opaque: legacy accounts have numeric ones, so only a missing id means there is no owner.
+        if (userId == null || userId.isBlank()) {
+            return List.of();
+        }
+        return draftCaseDataRepository
+            .findCaseDataOwnedBy(caseReference, userId, organisationService.getOrganisationIdForCurrentUser())
+            .stream()
+            .flatMap(caseData -> documentUrls(caseData).stream())
+            .distinct()
+            .toList();
+    }
+
+    private List<String> documentUrls(String caseData) {
+        try {
+            return caseData == null ? List.of() : objectMapper.readTree(caseData).findValuesAsText("document_url");
+        } catch (JsonProcessingException e) {
+            log.error("Could not read the documents in a draft", e);
+            return List.of();
+        }
+    }
+
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         String userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();

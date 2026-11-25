@@ -91,7 +91,7 @@ public class PcsCaseService {
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
-
+    
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
