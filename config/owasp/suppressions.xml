@@ -34,6 +34,18 @@
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
   </suppress>
+  <suppress until="2026-12-25">
+    <notes><![CDATA[
+    HDPI-8691: false positive (CPE mismatch). CVE-2026-133981 is an infinite loop on
+    crafted compressed payloads in the Elasticsearch server node. PCS ships only the Java
+    client (elasticsearch-java / elasticsearch-rest5-client), not the server. NVD's
+    cpe:elastic:elasticsearch ranges match the client jars by product name.
+    https://discuss.elastic.co/t/391847
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/co\.elastic\.clients/(elasticsearch-java|elasticsearch-rest5-client)@.*$</packageUrl>
+    <cve>CVE-2026-133981</cve>
+  </suppress>
   <!--End of false positives section -->
 
 </suppressions>

@@ -34,7 +34,7 @@ public class IdamHealthConfiguration {
                 return Health.status(response.status()).build();
             } catch (Exception ex) {
                 log.error("IDAM health check failed", ex);
-                return Health.down(ex).build();
+                return Health.down().build();
             }
         };
     }
