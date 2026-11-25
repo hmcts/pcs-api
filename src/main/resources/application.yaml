@@ -496,4 +496,4 @@ service-hearing-values:
   hearing-type: AAA3-FPH
   hearing-channels:
     - INTER
-  hearing-priority-standard: Standard
+  hearing-priority: Standard
