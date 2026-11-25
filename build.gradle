@@ -736,6 +736,10 @@ cftlibTest {
   // Also use wiremock spun up by tests (9400) for doc generation so we can more easily stub dynamic PDF placeholders
   environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:9400/api/render'
 
+  // The judges' case bundle is rendered in the background through CDAM (CaseBundleTest)
+  environment 'CASE_BUNDLE_ENABLED', 'true'
+  environment 'CASE_BUNDLE_WORKER_ENABLED', 'true'
+
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
   // Covering letters in defence/gen-app packs are gated on release 1.4
