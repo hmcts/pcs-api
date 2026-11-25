@@ -169,6 +169,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("messagesMarkdownLabel")
             .field("messagesMarkdown", NEVER_SHOW);
 
+        builder.tab("orders", "Orders")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
+            .field("orderListMarkdownLabel")
+            .field("orderListMarkdown", NEVER_SHOW);
+
         buildJudicialNotesTab(builder);
 
         builder.tab("paymentHistory", "Payment History")
@@ -312,6 +317,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial notes")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASE_MANAGEMENT_R2))
             .field("judicialNotesMarkdownLabel")
             .field("judicialNotesMarkdown", NEVER_SHOW);
     }
