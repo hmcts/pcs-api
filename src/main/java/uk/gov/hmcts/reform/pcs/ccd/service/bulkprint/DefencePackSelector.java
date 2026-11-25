@@ -171,6 +171,7 @@ public class DefencePackSelector {
             && form.getCounterClaim() != null
             && form.getCounterClaim().getId() != null
             && upload.getType() == DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM
+            && SupportingEvidence.savedWithSubmission(upload, form)
             && upload.getCounterClaim() != null
             && form.getCounterClaim().getId().equals(upload.getCounterClaim().getId());
     }

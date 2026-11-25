@@ -613,6 +613,28 @@ class DefencePackSelectorTest {
     }
 
     @Test
+    @DisplayName("Leaves out uploads linked to the counterclaim after its form was generated")
+    void shouldLeaveOutUploadsLinkedToTheCounterclaimAfterTheFormWasGenerated() {
+        enableBulkPrint2();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(UUID.randomUUID()).party(defendant).build();
+        DocumentEntity counterClaimForm = counterClaimForm(counterClaimEntity);
+        counterClaimForm.setSubmittedDate(Instant.parse("2026-10-03T10:05:00Z"));
+        DocumentEntity journeyUpload = counterClaimUpload(counterClaimEntity, "2026-10-03T10:00:00Z");
+        DocumentEntity laterUpload = counterClaimUpload(counterClaimEntity, "2026-10-04T10:00:00Z");
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(sent(defendant, form)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(caseWith(
+            List.of(form, counterClaimForm, journeyUpload, laterUpload), claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(counterClaimForm, journeyUpload));
+    }
+
+    @Test
     @DisplayName("Leaves defence and counterclaim uploads out when bulk print 2 is off")
     void shouldLeaveUploadsOutWhenBulkPrint2IsOff() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);

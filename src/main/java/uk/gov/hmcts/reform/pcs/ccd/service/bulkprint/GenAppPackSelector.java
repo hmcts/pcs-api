@@ -32,8 +32,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * contact preferences include post (or are unset), except the applicant and any LR-represented defendant,
  * who are served digitally through their legal rep, and except claimants when the release 1.4 flag is
  * enabled. Without-notice GAs, non-defendant-applicant GAs and caseworker-entered GAs (those with an
- * application received date) produce no candidates. When bulk print 2 is on, the application's uploads
- * follow the generated form on that same send.
+ * application received date) produce no candidates. When bulk print 2 is on, the uploads from the application
+ * journey follow the generated form on that same send.
  */
 @Service
 public class GenAppPackSelector {
@@ -140,6 +140,7 @@ public class GenAppPackSelector {
         }
         return genApp.getDocuments().stream()
             .filter(upload -> form.getId() == null || !form.getId().equals(upload.getId()))
+            .filter(upload -> SupportingEvidence.savedWithSubmission(upload, form))
             .sorted(Comparator.comparing(DocumentEntity::getSubmittedDate,
                 Comparator.nullsLast(Comparator.naturalOrder())))
             .toList();

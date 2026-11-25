@@ -146,6 +146,24 @@ class GenAppPackSelectorTest {
     }
 
     @Test
+    @DisplayName("Leaves out uploads linked to the application after its form was generated")
+    void shouldLeaveOutUploadsLinkedAfterTheFormWasGenerated() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        withNoticePdf.setSubmittedDate(Instant.parse("2026-10-01T10:00:05Z"));
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
+        DocumentEntity journeyUpload = upload(Instant.parse("2026-10-01T10:00:00Z"));
+        DocumentEntity laterUpload = upload(Instant.parse("2026-10-02T09:00:00Z"));
+        genApp.setDocuments(List.of(journeyUpload, laterUpload));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(
+            caseWith(List.of(genApp), claimant, defendant, coDefendant));
+
+        assertThat(result).isNotEmpty().allSatisfy(candidate ->
+            assertThat(candidate.documents()).containsExactly(withNoticePdf, journeyUpload));
+    }
+
+    @Test
     @DisplayName("Does not send application uploads once the generated form has been sent")
     void shouldNotSendApplicationEvidenceAfterTheFormWasSent() {
         lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
