@@ -21,6 +21,8 @@ public enum FeatureFlag {
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
     ENFORCEMENT("enforcement-enabled", false),
+    HMC_INTEGRATION("hmc-integration-enabled", false),
+    CASE_MANAGEMENT_R2("case-management-r-2-enabled", false),
     PRIVATE_LANDLORD_MAKE_A_CLAIM("private-landlord-make-a-claim-enabled", false);
 
     private final String key;
