@@ -112,7 +112,7 @@ class BreathingSpaceServiceTest {
             .expectedEndDate(EXPECTED_END_DATE)
             .build();
         when(breathingSpaceRepository
-                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+                 .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(CASE_REFERENCE))
             .thenReturn(Optional.of(entity));
 
         // When
@@ -126,7 +126,7 @@ class BreathingSpaceServiceTest {
     void shouldReturnEmptyWhenNoActiveBreathingSpace() {
         // Given
         when(breathingSpaceRepository
-                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+                 .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(CASE_REFERENCE))
             .thenReturn(Optional.empty());
 
         // When
@@ -141,7 +141,7 @@ class BreathingSpaceServiceTest {
         // Given
         BreathingSpaceEntity entity = BreathingSpaceEntity.builder().build();
         when(breathingSpaceRepository
-                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+                 .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(CASE_REFERENCE))
             .thenReturn(Optional.of(entity));
 
         // When
@@ -156,7 +156,7 @@ class BreathingSpaceServiceTest {
     void shouldThrowWhenNoActiveBreathingSpaceToLift() {
         // Given
         when(breathingSpaceRepository
-                 .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(CASE_REFERENCE))
+                 .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(CASE_REFERENCE))
             .thenReturn(Optional.empty());
 
         // When / Then

@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface BreathingSpaceRepository extends JpaRepository<BreathingSpaceEntity, UUID> {
 
-    Optional<BreathingSpaceEntity> findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(
+    Optional<BreathingSpaceEntity> findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(
         long caseReference);
 }

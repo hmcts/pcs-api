@@ -55,7 +55,7 @@ public class BreathingSpaceService {
 
     private Optional<BreathingSpaceEntity> getActiveBreathingSpaceEntity(long caseReference) {
         return breathingSpaceRepository
-            .findFirstByPcsCaseCaseReferenceAndLiftedDateIsNullOrderByStartDateDesc(caseReference);
+            .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(caseReference);
     }
 
     private BreathingSpaceEntity createBreathingSpaceEntity(
