@@ -158,6 +158,24 @@ public class PCSCase {
     @CCD(label = "Welsh Placeholder VerticalYesNo 2", searchable = false)
     private VerticalYesNo welshPlaceholderVerticalYesNo2;
 
+    // Welsh dynamic list interpolation proof of concept: not for merge.
+    // ExUI fills in ${} placeholders in field labels but not in dynamic list option labels.
+    @CCD(
+        label = "TEST- Welsh Placeholder dynamic list question",
+        typeOverride = DynamicRadioList,
+        searchable = false
+    )
+    private DynamicStringList welshPocDynamicRadioList;
+
+    @CCD(label = "TEST- Welsh Placeholder GA rank", searchable = false)
+    private String welshPocGaRank;
+
+    @CCD(label = "TEST- Welsh Placeholder party rank", searchable = false)
+    private String welshPocPartyRank;
+
+    @CCD(label = "TEST- Welsh Placeholder submitted date", searchable = false)
+    private LocalDate welshPocSubmittedDate;
+
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 

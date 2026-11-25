@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.WelshDynamicListInterpolationPoc;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.WelshYesNoContextPoc;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
@@ -63,6 +64,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         new PageBuilder(eventBuilder)
             .add(new WelshYesNoContextPoc())
+            .add(new WelshDynamicListInterpolationPoc())
             .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
@@ -75,6 +77,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         applyCaseIssueFeeAmount(caseData);
+        WelshDynamicListInterpolationPoc.populate(caseData);
         return caseData;
     }
 
