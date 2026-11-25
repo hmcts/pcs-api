@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -44,7 +45,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
@@ -73,12 +73,22 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("Submit application");
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         enforcementPageConfigurer.configurePages(pageBuilder);
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+        excludeNeverShownFieldsFromSummary(eventBuilder.fields().build());
+    }
+
+    static void excludeNeverShownFieldsFromSummary(FieldCollection fieldCollection) {
+        fieldCollection.getFields().stream()
+                .filter(field -> NEVER_SHOW.equals(field.build().getShowCondition()))
+                .forEach(field -> field.showSummary(false));
+        fieldCollection.getComplexFields()
+                .forEach(complexField -> excludeNeverShownFieldsFromSummary(complexField.build()));
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

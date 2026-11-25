@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
 import java.time.Clock;
@@ -39,7 +39,7 @@ class StatementOfTruthMapperTest {
     @Test
     void shouldMapStatementOfTruthClaimant() {
         // Given
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        StatementOfTruthDetails statementOfTruth = new StatementOfTruthDetails();
         statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
         statementOfTruth.setFullNameParty("John Doe");
         statementOfTruth.setPositionParty("Owner");
@@ -58,7 +58,7 @@ class StatementOfTruthMapperTest {
     @Test
     void shouldMapStatementOfTruthLegalRepresentative() {
         // Given
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        StatementOfTruthDetails statementOfTruth = new StatementOfTruthDetails();
         statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
         statementOfTruth.setFullNameLegalRep("Jane Smith");
         statementOfTruth.setFirmNameLegalRep("Smith & Co");

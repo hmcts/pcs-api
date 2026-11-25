@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
@@ -23,10 +22,10 @@ public class StatementOfTruthService {
     private final StatementOfTruthRepository statementOfTruthRepository;
 
     @Transactional
-    public void processStatementOfTruth(StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement,
+    public void processStatementOfTruth(StatementOfTruthDetails statementOfTruthDetails,
                                         EnforcementOrderEntity enforcementOrderEntity) {
         StatementOfTruthEntity statementOfTruthEntity =
-                statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement);
+                statementOfTruthMapper.toEntity(statementOfTruthDetails);
         enforcementOrderEntity.setStatementOfTruth(statementOfTruthRepository.save(statementOfTruthEntity));
     }
 

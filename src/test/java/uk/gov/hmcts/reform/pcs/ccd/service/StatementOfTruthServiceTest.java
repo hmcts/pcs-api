@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
@@ -153,19 +152,17 @@ class StatementOfTruthServiceTest {
         @Test
         void shouldPersistStatementOfTruthForEnforcement() {
             // Given
-            StatementOfTruthDetailsEnforcement statementOfTruthDetailsEnforcement
-                    = new StatementOfTruthDetailsEnforcement();
             EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
             StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
             StatementOfTruthEntity savedStatementOfTruthEntity = mock(StatementOfTruthEntity.class);
 
-            when(statementOfTruthMapper.toEntity(statementOfTruthDetailsEnforcement))
+            when(statementOfTruthMapper.toEntity(statementOfTruthDetails))
                     .thenReturn(statementOfTruthEntity);
             when(statementOfTruthRepository.save(statementOfTruthEntity))
                     .thenReturn(savedStatementOfTruthEntity);
 
             // When
-            statementOfTruthService.processStatementOfTruth(statementOfTruthDetailsEnforcement, enforcementOrderEntity);
+            statementOfTruthService.processStatementOfTruth(statementOfTruthDetails, enforcementOrderEntity);
 
             // Then
             assertThat(enforcementOrderEntity.getStatementOfTruth()).isEqualTo(savedStatementOfTruthEntity);

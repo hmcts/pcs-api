@@ -7,7 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
@@ -48,6 +50,9 @@ class WarrantStrategyTest {
         enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrder = EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder().build())
+                .rawWarrantDetails(RawWarrantDetails.builder()
+                        .warrantStatementOfTruth(new StatementOfTruthDetails())
+                        .build())
                 .build();
         warrantEntity = new WarrantEntity();
 
@@ -71,7 +76,7 @@ class WarrantStrategyTest {
         verify(warrantDetailsMapper).toEntity(enforcementOrder, enforcementOrderEntity);
         verify(riskProfileService).processRisk(enforcementOrder, enforcementOrderEntity);
         verify(statementOfTruthService).processStatementOfTruth(
-                enforcementOrder.getWarrantDetails().getStatementOfTruth(), enforcementOrderEntity);
+                enforcementOrder.getRawWarrantDetails().getWarrantStatementOfTruth(), enforcementOrderEntity);
         verify(selectedDefendantsMapper).mapToEntities(enforcementOrderEntity);
         assertThat(enforcementOrderEntity.getSelectedDefendants()).containsExactlyElementsOf(selectedDefendantEntities);
     }

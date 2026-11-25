@@ -124,7 +124,14 @@
       }
     ]
   },
-  "warrantCompletedBy": "CLAIMANT",
+  "warrantStatementOfTruth": {
+    "completedBy": "CLAIMANT",
+    "fullNameParty": "Test name",
+    "positionParty": "Test position",
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ]
+  },
   "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",

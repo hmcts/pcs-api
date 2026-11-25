@@ -27,8 +27,8 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         processWarrant(enforcementOrder, enforcementOrderEntity);
         riskProfileService.processRisk(enforcementOrder, enforcementOrderEntity);
-        statementOfTruthService.processStatementOfTruth(enforcementOrder.getWarrantDetails().getStatementOfTruth(),
-                enforcementOrderEntity);
+        statementOfTruthService.processStatementOfTruth(
+                enforcementOrder.getRawWarrantDetails().getWarrantStatementOfTruth(), enforcementOrderEntity);
         processSelectedDefendants(enforcementOrderEntity);
     }
 
