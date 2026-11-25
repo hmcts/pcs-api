@@ -38,10 +38,7 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
                 .decentralisedEvent(enterBreathingSpace.name(), this::submit)
                 .forStates(breathingSpace())
                 .name("Enter breathing space")
-                //.grant(Permission.CRUD, CASEWORKER_ROLES)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .showCondition(ShowConditions.and(
                     ShowConditions.featureFlagsEnabled(ENFORCEMENT),
                     "hasActiveBreathingSpace=\"No\""

@@ -42,10 +42,7 @@ public class LiftBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(liftBreathingSpace.name(), this::submit, this::start)
                 .forStates(breathingSpace())
                 .name("Lift breathing space")
-                //.grant(Permission.CRUD, CASEWORKER_ROLES)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .showCondition(ShowConditions.and(
                     ShowConditions.featureFlagsEnabled(ENFORCEMENT),
                     "hasActiveBreathingSpace=\"Yes\""
