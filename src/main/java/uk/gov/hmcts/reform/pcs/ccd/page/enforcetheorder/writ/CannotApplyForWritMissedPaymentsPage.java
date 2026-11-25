@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 public class CannotApplyForWritMissedPaymentsPage implements CcdPageConfiguration {
 
@@ -34,8 +35,10 @@ public class CannotApplyForWritMissedPaymentsPage implements CcdPageConfiguratio
             .page("cannotApplyForWritMissedPayments", this::midEvent)
             .pageLabel("You need permission from a judge to apply for the writ of possession")
             .showCondition(
-                ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
-                                   "writDefendantMissedPayments=\"NO\"")
+                ShowConditions.and(
+                    ShowConditionsEnforcementType.WRIT_FLOW,
+                    "writDefendantMissedPayments=\"NO\"",
+                    ShowConditions.featureFlagsEnabled(FeatureFlag.ENFORCEMENT))
             )
             .label("cannotApplyForWritMissedPayments-line-separator", "---")
             .label("cannotApplyForWritMissedPayments-text", MARKDOWN_TEXT);

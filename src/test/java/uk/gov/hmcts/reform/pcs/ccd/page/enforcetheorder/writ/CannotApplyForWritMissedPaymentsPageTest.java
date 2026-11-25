@@ -48,12 +48,13 @@ class CannotApplyForWritMissedPaymentsPageTest extends BasePageTest {
     }
 
     @Test
-    @DisplayName("Should only show page on the writ flow and missed payment selection is No")
+    @DisplayName("Should only show page on the writ flow, missed payment selection is No and enforcement flag is ON")
     void shouldOnlyShowPageForWritWhenNoMissedPayments() {
         assertThat(event.getFields().getPageShowConditions())
             .containsEntry(
                 "cannotApplyForWritMissedPayments",
                 "chooseEnforcementType=\"WRIT\" AND writDefendantMissedPayments=\"NO\""
+                    + " AND featureFlags.enforcementEnabled=\"YES\""
             );
     }
 }
