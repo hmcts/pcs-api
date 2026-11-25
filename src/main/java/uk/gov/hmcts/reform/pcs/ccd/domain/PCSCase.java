@@ -1221,4 +1221,8 @@ public class PCSCase {
         typeOverride = FieldType.TTL
     )
     private TTL ttl;
+
+    @CCD(label = "Are you sure you want to permanently delete this case? You will no longer be able to view "
+            + "the details in the future.")
+    private YesOrNo deleteDraftClaim;
 }

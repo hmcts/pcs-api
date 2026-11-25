@@ -128,7 +128,7 @@ public enum State {
 
     @CCD(
             label = "Draft discarded",
-            access = {SystemUserAccess.class}
+            access = {SystemUserAccess.class, ClaimantAccess.class}
     )
     PendingDisposal,
 
