@@ -23,7 +23,7 @@ import {
   statementOfTruth,
   suspendedOrder,
   violentAggressiveRisk,
-  vulnerableAdultsChildren
+  vulnerableAdultsChildren,permissionForWritInfo
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
@@ -54,6 +54,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationIsDefendantInBreathingSpacePage', () => this.errorValidationIsDefendantInBreathingSpacePage(errorFlag as string)],
       ['errorValidationMissedPaymentsPage', () => this.errorValidationMissedPaymentsPage(errorFlag as string)],
       ['errorValidationCannotApplyForWarrantPage', () => this.errorValidationCannotApplyForWarrantPage(errorFlag as string)],
+      ['errorValidationPermissionRequiredPage', () => this.errorValidationPermissionRequiredPage(errorFlag as string)],
+      
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -122,6 +124,7 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+  
 
   private async errorValidationMissedPaymentsPage(validationReq: string) {
     if (validationReq === 'YES') {
@@ -135,6 +138,18 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+private async errorValidationPermissionRequiredPage(pageData: any) {
+  if (pageData.errorValidation === 'YES') {
+    await performAction('inputErrorValidation', {
+      validationType: pageData.errorValidationType.six,
+      inputArray: pageData.errorValidationField.errorPageLevel,
+      header: pageData.eventCouldNotBeCreatedHeader,
+      button: pageData.continueButton,
+    });
+  }
+}
+
+
 
   private async errorValidationEnterDefendantsDOBPage(validationReq: string) {
     if (validationReq === 'YES') {

@@ -103,6 +103,9 @@ export class ActionEnforcementRegistry {
     ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
     ['cannotApplyForWarrantInfo', new EnforcementAction()],
     ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
+    ['validatePermissionRequiredPage', new EnforcementAction()],
+    ['errorValidationPermissionRequiredPage', new ErrorValidationAction()],
+    
   ]);
 
   static getAction(actionName: string): IAction {
