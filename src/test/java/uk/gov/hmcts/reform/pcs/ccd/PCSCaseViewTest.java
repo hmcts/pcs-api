@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -96,6 +97,8 @@ class PCSCaseViewTest {
     private ClaimView claimView;
     @Mock
     private DocumentsView documentsView;
+    @Mock
+    private BundleTabView bundleTabView;
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
@@ -172,7 +175,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
-                                    caseTitleService, claimView, documentsView, tenancyLicenceView,
+                                    caseTitleService, claimView, documentsView, bundleTabView, tenancyLicenceView,
                                     claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,

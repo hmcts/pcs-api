@@ -99,7 +99,7 @@ public class GenAppVisibilityService {
         return isGenAppVisibleToUser(genAppEntity, userId, organisationId, currentUserRoles);
     }
 
-    /** Case file view and the system user's documents both follow this rule. */
+    /** Case file view, the case bundle and the system user's documents all follow this rule. */
     public static boolean isGenAppDocumentVisibleToInternalUsers(GenAppEntity genAppEntity) {
         return genAppEntity.getWithoutNotice() == VerticalYesNo.YES
             || genAppEntity.getState() == GenAppState.GEN_APP_ISSUED;

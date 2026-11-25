@@ -448,6 +448,22 @@ ccd:
       username: pcs-system-event
       first-name: PCS
       last-name: System
+  doc-toolkit:
+    jobs:
+      # Keeps the judges' case bundle up to date: after every case event the bundle's definition
+      # is built, and a render is queued when it changed.
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+      worker:
+        # Every pod queues bundle jobs; this decides whether it also renders them. Only the
+        # pcs-bundle-worker release (cnp-flux-config) turns it on, so PDF rendering does not
+        # compete with request threads for heap and CPU on the API pods.
+        enabled: ${CASE_BUNDLE_WORKER_ENABLED:false}
+        max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
+    docmosis:
+      # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
+      # no endpoint configured, such a document gets a page in the bundle saying it is not included.
+      convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
+      access-key: ${DOCMOSIS_ACCESS_KEY:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}

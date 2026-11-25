@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
@@ -12,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -37,6 +40,8 @@ class OrderCaseContext {
     private final AddressMapper addressMapper;
     private final PartyService partyService;
     private final OrderTasks orderTasks;
+    private final CaseBundles bundles;
+    private final UserRoleService roles;
     private final CaseCourts caseCourts;
 
     /** The case for the order, which offers the applications no issued order has decided. */
@@ -54,6 +59,7 @@ class OrderCaseContext {
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList(),
+            caseBundle(pcsCase),
             pcsCase.getHearings().stream()
                 .filter(HearingRecords::canHaveOrder)
                 .sorted(Comparator.comparing(HearingEntity::getHearingDate))
@@ -75,6 +81,17 @@ class OrderCaseContext {
                 .collect(Collectors.joining(" ")))
             .filter(StringUtils::isNotBlank)
             .orElse("[court]");
+    }
+
+    /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */
+    private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
+        if (!bundles.enabled() || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+            return null;
+        }
+        return bundles.current(pcsCase)
+            .map(bundle -> new OrderStart.CaseBundle(bundle.getDocumentId(), bundle.getFileName(),
+                                                     bundle.getCreatedAt()))
+            .orElse(null);
     }
 
     private OrderStart.Application application(GenAppEntity genApp, ClaimEntity claim) {
