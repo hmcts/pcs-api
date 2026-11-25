@@ -88,9 +88,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
         if (isXuiJourney(createGenAppRequest)) {
-            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
+            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails,
+                                   applicantParty);
         } else {
-            return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
+            return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails,
+                                   applicantParty);
         }
     }
 
@@ -98,14 +100,15 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   long caseReference,
                                                   GenAppRequest genAppRequest,
                                                   GenAppEntity genAppEntity,
-                                                  FeeDetails feeDetails) {
+                                                  FeeDetails feeDetails,
+                                                  PartyEntity applicantParty) {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
             genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
         } else {
-            schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
+            schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails, applicantParty);
         }
 
         return confirmationScreenFactory
@@ -116,7 +119,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   long caseReference,
                                                   GenAppEntity genAppEntity,
                                                   GenAppState initialState,
-                                                  FeeDetails feeDetails) {
+                                                  FeeDetails feeDetails,
+                                                  PartyEntity applicantParty) {
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
@@ -133,7 +137,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         } else {
 
-            String serviceRequestReference = createPaymentServiceRequest(genAppEntity, caseReference, feeDetails);
+            String serviceRequestReference = createPaymentServiceRequest(genAppEntity, caseReference, feeDetails,
+                                                                         applicantParty);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)
@@ -147,8 +152,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
     }
 
-    private void schedulePaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails) {
-        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails);
+    private void schedulePaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails,
+                                               PartyEntity applicantParty) {
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails, applicantParty);
 
         schedulerClient.scheduleIfNotExists(
             FEES_AND_PAY_TASK_DESCRIPTOR
@@ -158,8 +164,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         );
     }
 
-    private String createPaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails) {
-        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails);
+    private String createPaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails,
+                                               PartyEntity applicantParty) {
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails, applicantParty);
 
         PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
         return paymentServiceResponse.getServiceRequestReference();
@@ -167,17 +174,18 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private FeesAndPayTaskData createFeesAndPayTaskData(GenAppEntity genAppEntity,
                                                         long caseReference,
-                                                        FeeDetails feeDetails) {
+                                                        FeeDetails feeDetails,
+                                                        PartyEntity responsibleParty) {
 
-        String currentUserId = securityContextService.getCurrentUserId();
-        PartyEntity party = partyService.getPartyEntityByIdamId(currentUserId,caseReference);
+//        String currentUserId = securityContextService.getCurrentUserId();
+//        PartyEntity party = partyService.getPartyEntityByIdamId(currentUserId,caseReference);
 
 
         return FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsiblePartyName(partyService.getPartyName(party))
+            .responsiblePartyName(partyService.getPartyName(responsibleParty))
             .paymentCallbackHandlerType(GEN_APP_ISSUE)
             .relatedEntityId(genAppEntity.getId())
             .build();
