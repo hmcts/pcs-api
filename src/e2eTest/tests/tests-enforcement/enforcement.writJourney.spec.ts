@@ -2,6 +2,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
+import { confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 import {
   yourHCEO,
   theNICEWillChoose,
@@ -14,7 +15,6 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  caseSummary,
   changeNameAddress,
   confirmHCEOfficer,
   defendantInBreathingSpace,
@@ -23,6 +23,8 @@ import {
   nameAndAddressForEviction,
   statementOfTruth
 } from '@data/index.selector.enforcement';
+import { caseSummary } from '@data/page-data-figma/page-data-enforcement-figma';
+import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
 import {home} from "@data/page-data-cy";
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -87,6 +89,14 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        journey: enforcementApplication.writOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
+      });
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.writOfPossessionRadioOption,
@@ -244,6 +254,36 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       nextPage: checkYourAnswers.mainHeader,
       iBelieveCheckBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
     });
+    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+    await performAction('payEnforcementFee', {
+      headerName: confirm.mainHeader,
+      applicationType: enforcementApplication.writOfPossessionRadioOption,
+      feePayText: confirm.pay82ApplicationFeeParagraph,
+      payLink: confirm.payYourApplicationFeeLink,
+      serviceTab: caseSummary.serviceRequestTab
+    });
+    await performAction('selectPaymentByCard', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      payByOption: serviceRequest.payByCardRadioOption,
+      continueButton: serviceRequest.continueButton
+    });
+    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
+    await performAction('enterPaymentDetails', {
+      cardInput: enterPaymentDetails.cardNoInputText,
+      monthInput: enterPaymentDetails.monthTextInput,
+      yearInput: enterPaymentDetails.yearTextInput,
+      nameInput: enterPaymentDetails.nameOnCardTextInput,
+      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
+      address1Input: enterPaymentDetails.addressLine1TextInput,
+      address2Input: enterPaymentDetails.addressLine2TextInput,
+      townInput: enterPaymentDetails.TownOrCityTextInput,
+      countryInput: enterPaymentDetails.countryTextInput,
+      postCodeInput: enterPaymentDetails.postcodeTextInput,
+      emailInput: enterPaymentDetails.emailTextInput
+    });
+    await performValidation('mainHeader', confirmYourPayment.mainHeader);
+    await performAction('clickButton', confirmYourPayment.confirmButton);
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
   test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
