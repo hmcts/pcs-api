@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -62,13 +63,21 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
         }
 
         String enforcementType = enforcementOrderEntity.getEnforcementOrder().getChooseEnforcementType().getValueCode();
-        PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(enforcementOrderEntity.getPcsCase());
 
-        if (SelectEnforcementType.WARRANT.name().equals(enforcementType)) {
-            notificationService.sendWarrantOfPossessionSubmittedEmail(claimant);
-        } else {
-            log.info("No submitted email for enforcement type {} on enforcement app {}",
-                     enforcementType, enforcementOrderEntity.getId());
+        try {
+            PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(enforcementOrderEntity.getPcsCase());
+
+            if (SelectEnforcementType.WARRANT.name().equals(enforcementType)) {
+                notificationService.sendWarrantOfPossessionSubmittedEmail(claimant);
+            } else {
+                log.info("No email template for the for enforcement type {} on enforcement app {}",
+                         enforcementType, enforcementOrderEntity.getId());
+            }
+
+        } catch (PartyNotFoundException e) {
+
+            log.error("No claimant to send confirmation email to for enforcement app {}",
+                      enforcementOrderEntity.getId(), e);
         }
     }
 
