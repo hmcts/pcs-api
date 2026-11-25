@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
@@ -403,11 +404,13 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("returns active case flags and the amend link for ExUI")
-        void shouldReturnActiveCaseFlags() throws Exception {
+        @DisplayName("returns only active party flags, not case-level flags, in caseFlags")
+        void shouldReturnActivePartyFlags() throws Exception {
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
-            addCaseFlag(pcsCase, refData("CF0002", "Complex case"), "Active", "needs time");
-            addCaseFlag(pcsCase, refData("CF0004", "Vulnerable user"), "Requested", null);
+            addCaseFlag(pcsCase, refData("CF0002", "Complex case"), "Active", null);
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            addPartyFlag(defendant, refData("RA0026", "Support worker or carer with me"), "Active", "brings a carer");
+            addPartyFlag(defendant, refData("PF0002", "Vulnerable user"), "Requested", null);
             persist(pcsCase);
 
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
@@ -415,11 +418,13 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.caseFlags.flagAmendURL")
                     .value("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags"))
                 .andExpect(jsonPath("$.caseFlags.flags.length()").value(1))
-                .andExpect(jsonPath("$.caseFlags.flags[0].partyName").value("Case level flags"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagId").value("CF0002"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagDescription").value("Complex case"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].partyID").isNotEmpty())
+                .andExpect(jsonPath("$.caseFlags.flags[0].partyName").value("John Doe"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagId").value("RA0026"))
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagDescription")
+                    .value("Support worker or carer with me"))
                 .andExpect(jsonPath("$.caseFlags.flags[0].flagStatus").value("Active"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagComment").value("needs time"));
+                .andExpect(jsonPath("$.caseFlags.flags[0].flagComment").value("brings a carer"));
         }
 
         @Test
@@ -687,6 +692,18 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
         pcsCase.getCaseFlags().add(flag);
+    }
+
+    private static void addPartyFlag(PartyEntity party, FlagRefDataEntity refData,
+                                     String status, String comment) {
+        CasePartyFlagEntity flag = new CasePartyFlagEntity();
+        flag.setFlagRefData(refData);
+        flag.setDefaultStatus(status);
+        flag.setFlagComment(comment);
+        flag.setPaths(":Party");
+        flag.setVisibility("Internal");
+        flag.setParty(party);
+        party.getDefendantFlags().add(flag);
     }
 
     /** Adds an application made by the case's first party; type, rank, case and party are the NOT NULL columns. */

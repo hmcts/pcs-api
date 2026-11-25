@@ -66,7 +66,6 @@ public class ServiceHearingValuesMapper {
     private static final String COMMENT_CLOSE = ")";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
     static final String CASE_FLAGS_PATH = "/cases/case-details/%d#Case%%20flags";
-    static final String CASE_LEVEL_FLAGS_PARTY_NAME = "Case level flags";
     private static final String HEARING_PRIORITY_URGENT = "Urgent";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
 
@@ -285,16 +284,13 @@ public class ServiceHearingValuesMapper {
         Map<String, String> partyNames = new HashMap<>();
         parties.forEach(party -> partyNames.put(party.getPartyID(), partyName(party)));
 
-        List<PartyFlags> flags = new ArrayList<>();
-        activeFlags(pcsCase.getCaseFlags())
-            .map(flag -> partyFlag(flag, null, CASE_LEVEL_FLAGS_PARTY_NAME))
-            .forEach(flags::add);
-        activeParties(pcsCase).forEach(party -> {
-            String partyId = party.getId().toString();
-            activeFlags(party.getDefendantFlags())
-                .map(flag -> partyFlag(flag, partyId, partyNames.get(partyId)))
-                .forEach(flags::add);
-        });
+        List<PartyFlags> flags = activeParties(pcsCase)
+            .flatMap(party -> {
+                String partyId = party.getId().toString();
+                return activeFlags(party.getDefendantFlags())
+                    .map(flag -> partyFlag(flag, partyId, partyNames.get(partyId)));
+            })
+            .toList();
 
         if (flags.isEmpty()) {
             return null;

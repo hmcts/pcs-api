@@ -510,18 +510,18 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
-    void shouldMapActiveCaseLevelAndPartyFlags() {
+    void shouldMapActivePartyFlags() {
         LocalDateTime created = LocalDateTime.of(2026, 11, 1, 9, 30);
-        CaseFlagEntity caseFlag = flagWithCode("CF0002", "Active");
-        caseFlag.setFlagComment("Complex case");
-        caseFlag.setDateTimeCreated(created);
+        CasePartyFlagEntity partyFlag = partyFlag("RA0026", "Support worker or carer with me", "Active");
+        partyFlag.setFlagComment("Brings a carer");
+        partyFlag.setDateTimeCreated(created);
         PartyEntity defendant = PartyEntity.builder()
             .id(UUID.randomUUID())
             .firstName("John")
             .lastName("Doe")
-            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker or carer with me", "Active"))))
+            .defendantFlags(new ArrayList<>(List.of(partyFlag)))
             .build();
-        givenCase(caseBuilder().caseFlags(flags(caseFlag)).parties(new HashSet<>(Set.of(defendant))).build());
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -529,32 +529,36 @@ class ServiceHearingValuesMapperTest {
         assertThat(caseFlags.getFlagAmendUrl()).isEqualTo("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags");
         assertThat(caseFlags.getFlags()).containsExactly(
             PartyFlags.builder()
-                .partyName("Case level flags")
-                .flagId("CF0002")
-                .flagDescription("Flag CF0002")
-                .flagStatus("Active")
-                .flagComment("Complex case")
-                .dateTimeCreated(created)
-                .build(),
-            PartyFlags.builder()
                 .partyID(defendant.getId().toString())
                 .partyName("John Doe")
                 .flagId("RA0026")
                 .flagDescription("Support worker or carer with me")
                 .flagStatus("Active")
+                .flagComment("Brings a carer")
+                .dateTimeCreated(created)
                 .build());
     }
 
     @Test
-    void shouldOmitCaseFlagsWhenNoFlagIsActive() {
+    void shouldNotMapCaseLevelFlagsIntoCaseFlags() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        givenCase(caseBuilder()
+                      .caseFlags(flags(flagWithCode("CF0002", "Active")))
+                      .parties(new HashSet<>(Set.of(defendant)))
+                      .build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags()).isNull();
+    }
+
+    @Test
+    void shouldOmitCaseFlagsWhenNoPartyFlagIsActive() {
         PartyEntity defendant = PartyEntity.builder()
             .id(UUID.randomUUID())
             .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Inactive"))))
             .build();
-        givenCase(caseBuilder()
-                      .caseFlags(flags(flagWithCode("CF0002", "Requested")))
-                      .parties(new HashSet<>(Set.of(defendant)))
-                      .build());
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
@@ -594,12 +598,18 @@ class ServiceHearingValuesMapperTest {
 
     @Test
     void shouldUseOtherDescriptionForOtherFlag() {
-        givenCase(caseBuilder().caseFlags(flags(otherFlag("Hostile neighbour", null))).build());
+        CasePartyFlagEntity other = partyFlag(ServiceHearingValuesMapper.OTHER_FLAG_CODE, "Other", "Active");
+        other.setOtherDescription("Needs frequent breaks");
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(other)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getCaseFlags().getFlags()).singleElement()
-            .satisfies(flag -> assertThat(flag.getFlagDescription()).isEqualTo("Hostile neighbour"));
+            .satisfies(flag -> assertThat(flag.getFlagDescription()).isEqualTo("Needs frequent breaks"));
     }
 
     @Test
