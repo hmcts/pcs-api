@@ -92,17 +92,12 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Party> defendants,
                               boolean openCounterclaim,
                               List<Application> applications,
-                              CaseBundle caseBundle,
                               List<HearingOption> hearings,
                               String court) {
     }
 
     /** One of the case's hearings, as a judge chooses which one an order is made at. */
     public record HearingOption(int id, LocalDateTime date) {
-    }
-
-    /** The case's bundle, every document on it in one PDF, for a judge once one has been made. */
-    public record CaseBundle(UUID id, String fileName, Instant updatedAt) {
     }
 
     /**

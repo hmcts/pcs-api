@@ -36,8 +36,8 @@ public class DocumentsView {
     private final OrderRepository orderRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
-        // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print and
-        // bundling download documents as PCS's IDAM system account, so it sees what they send: access code letters
+        // CDAM only serves a document attached to a case to a user who can see it in the case. Bulk print
+        // downloads documents as PCS's IDAM system account, so it sees what it sends: access code letters
         // and what an internal user sees in case file view. It cannot read allDocuments, so that is not built.
         if (securityContextService.isIdamSystemUser()) {
             pcsCase.setSystemDocuments(pcsCaseEntity.getDocuments().stream()
@@ -50,7 +50,7 @@ public class DocumentsView {
         }
     }
 
-    /** What an internal user sees in case file view. The case bundle holds the same documents. */
+    /** What an internal user sees in case file view. */
     public static boolean isVisibleToInternalReaders(DocumentEntity document) {
         if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;

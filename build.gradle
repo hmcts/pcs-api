@@ -450,7 +450,6 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
-  implementation 'com.github.hmcts:document-bundling'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
   implementation 'com.github.hmcts:bank-holidays'
 
