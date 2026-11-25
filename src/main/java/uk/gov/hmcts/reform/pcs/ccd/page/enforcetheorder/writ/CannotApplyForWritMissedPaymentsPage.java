@@ -40,6 +40,7 @@ public class CannotApplyForWritMissedPaymentsPage implements CcdPageConfiguratio
                     "writDefendantMissedPayments=\"NO\"",
                     ShowConditions.featureFlagsEnabled(FeatureFlag.ENFORCEMENT))
             )
+            .readonly(PCSCase::getFeatureFlags, ShowConditions.NEVER_SHOW, true)
             .label("cannotApplyForWritMissedPayments-line-separator", "---")
             .label("cannotApplyForWritMissedPayments-text", MARKDOWN_TEXT);
     }
