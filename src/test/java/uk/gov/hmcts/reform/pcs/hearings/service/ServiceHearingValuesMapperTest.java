@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -90,7 +91,6 @@ class ServiceHearingValuesMapperTest {
         defaults.setHearingType("AAA3-FPH");
         defaults.setHearingChannels(List.of("INTER"));
         defaults.setHearingPriorityStandard(STANDARD_PRIORITY);
-        defaults.setHearingPriorityUrgent(URGENT_PRIORITY);
         defaults.setNumberOfDaysStartOffset(27);
         defaults.setNumberOfDaysOffset(57);
 
@@ -504,6 +504,24 @@ class ServiceHearingValuesMapperTest {
             assertThat(party.getPartyType()).isEqualTo("IND");
             assertThat(party.getIndividualDetails()).isNotNull();
             assertThat(party.getOrganisationDetails()).isNull();
+        });
+    }
+
+    @Test
+    void shouldUsePersonsUnknownWhenNameIsNotKnown() {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .nameKnown(VerticalYesNo.NO)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getParties()).singleElement().satisfies(party -> {
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Persons unknown");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("Persons unknown");
         });
     }
 

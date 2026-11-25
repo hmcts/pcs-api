@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
@@ -60,6 +61,8 @@ public class ServiceHearingValuesMapper {
     private static final String COMMENT_OPEN = " (Comments: ";
     private static final String COMMENT_CLOSE = ")";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
+    private static final String HEARING_PRIORITY_URGENT = "Urgent";
+    private static final String PERSONS_UNKNOWN = "Persons unknown";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
@@ -95,7 +98,7 @@ public class ServiceHearingValuesMapper {
         values.setCaseSlaStartDate(getClaimIssuedDate(pcsCase));
         values.setHearingWindow(hearingWindow(pcsCase));
         if (isUrgentHearing(pcsCase)) {
-            values.setHearingPriorityType(defaults.getHearingPriorityUrgent());
+            values.setHearingPriorityType(HEARING_PRIORITY_URGENT);
         }
         values.setNumberOfPhysicalAttendees(numberOfPhysicalAttendees(pcsCase));
         values.setListingComments(listingComments(pcsCase));
@@ -208,9 +211,16 @@ public class ServiceHearingValuesMapper {
 
         IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
         details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
-        boolean underlesseeOrMortgagee = isUnderlesseeOrMortgagee(party);
-        details.setFirstName(underlesseeOrMortgagee ? party.getOrgName() : party.getFirstName());
-        details.setLastName(underlesseeOrMortgagee ? UNDERLESSEE_OR_MORTGAGEE_LAST_NAME : party.getLastName());
+        if (isUnderlesseeOrMortgagee(party)) {
+            details.setFirstName(party.getOrgName());
+            details.setLastName(UNDERLESSEE_OR_MORTGAGEE_LAST_NAME);
+        } else if (party.getNameKnown() == VerticalYesNo.NO) {
+            details.setFirstName(PERSONS_UNKNOWN);
+            details.setLastName(PERSONS_UNKNOWN);
+        } else {
+            details.setFirstName(party.getFirstName());
+            details.setLastName(party.getLastName());
+        }
         details.setHearingChannelEmail(contactList(party.getEmailAddress()));
         details.setHearingChannelPhone(contactList(party.getPhoneNumber()));
         return PartyDetails.builder()
