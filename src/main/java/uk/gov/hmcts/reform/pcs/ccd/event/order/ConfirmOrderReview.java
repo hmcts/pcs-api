@@ -57,7 +57,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
@@ -119,7 +118,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
-            OrderStart.Order.of(order, orderSteps.latest(order), null),
+            OrderStart.Order.submitted(order, orderSteps.latest(order)),
             orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), List.of(), null,
             OrderStart.judge(order.getAuthorName()),
             OrderStart.bankHolidays(bankHolidays)));
@@ -172,10 +171,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
-        // Made at its hearing, or else when its judge sent it for review, however long court staff take to issue it.
-        order.setMadeOn(order.getHearing() != null && order.getHearing().getHearingDate() != null
-            ? order.getHearing().getHearingDate().toLocalDate()
-            : submitted.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
+        order.setMadeOn(OrderStart.Order.madeOn(order, submitted));
         // What it decides about the case's claim; an order making no order on it records nothing.
         ClaimEntity claim = order.getPcsCase().getMainClaim();
         if (claim != null && issue.claimOutcome().kind() != ClaimOutcome.Kind.NO_ORDER) {

@@ -200,6 +200,23 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
+    @DisplayName("dates an order made without a hearing the day its judge sent it, however much later it is reviewed")
+    void datesTheOrderTheDayItWasSent() {
+        Order sent = judgeSubmitsOrder("the judge's order");
+        jdbcTemplate.update("UPDATE order_steps SET created_at = '2026-09-21T12:00:00Z' WHERE id = ?", sent.version());
+        assertThat(asJudge.start().order().madeOn()).isNull();
+
+        Order reviewed = asCaseworker.start().order();
+        assertThat(reviewed.madeOn()).isEqualTo(LocalDate.of(2026, 9, 21));
+
+        var issued = new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), WORDING, "wording");
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, reviewed.id(), reviewed.version(),
+            "staff-review", null, new Issue(issued, List.of(), HIGH_COURT, true, List.of(), true, OTHER)));
+        assertThat(jdbcTemplate.queryForObject("SELECT made_on FROM orders WHERE id = ?", LocalDate.class, sent.id()))
+            .isEqualTo(reviewed.madeOn());
+    }
+
+    @Test
     @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");

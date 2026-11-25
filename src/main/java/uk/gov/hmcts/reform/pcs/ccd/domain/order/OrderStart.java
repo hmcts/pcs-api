@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+
 /**
  * What the frontend is sent when an order event starts: the order, the case it is made on, the hearing it is
  * made for, if any, the case's other hearings a judge can choose to make it at instead, each as they would start an
@@ -44,7 +46,8 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
 
     /**
      * No id, and no state, means the judge has no draft on the case yet. The version is the latest step's id, sent
-     * back with a change to the order.
+     * back with a change to the order. Made on is the day an order sent for review is made, which it names: absent
+     * while the judge is still making it.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
@@ -53,14 +56,28 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                         OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
-                        String queryFromCaseworker) {
+                        String queryFromCaseworker,
+                        LocalDate madeOn) {
 
-        public static final Order NONE = new Order(null, 0, null, null, Map.of(), null, null);
+        public static final Order NONE = new Order(null, 0, null, null, Map.of(), null, null, null);
 
         /** An order as its latest step left it, with the query it was returned with if it was. */
         public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
             return new Order(order.getId(), latest.getId(), order.getState(), latest.getOrderType(),
-                latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
+                latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker, null);
+        }
+
+        /** An order sent for review as its judge sent it, which is made on the day it names. */
+        public static Order submitted(OrderEntity order, OrderStepEntity submitted) {
+            return new Order(order.getId(), submitted.getId(), order.getState(), submitted.getOrderType(),
+                submitted.getFormData(), submitted.getDocweaveSnapshot(), null, madeOn(order, submitted));
+        }
+
+        /** Made at its hearing, or else when its judge sent it for review, however long court staff take to issue. */
+        public static LocalDate madeOn(OrderEntity order, OrderStepEntity submitted) {
+            return order.getHearing() != null && order.getHearing().getHearingDate() != null
+                ? order.getHearing().getHearingDate().toLocalDate()
+                : submitted.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate();
         }
     }
 
