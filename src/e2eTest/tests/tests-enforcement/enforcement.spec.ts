@@ -3,9 +3,6 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { home } from '@data/page-data-cy';
-import {
-  checkYourAnswers
-} from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -362,7 +359,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
           question: sotWarrant.completedByParagraph,
           option: sotWarrant.claimantRadioOption,
-          option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+          option1: sotWarrant.clarificationLabelThreeList,
           label: sotWarrant.fullNameHiddenTextLabel,
           input: sotWarrant.fullNameHiddenTextInput,
           label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
@@ -494,7 +491,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
       question: sotWarrant.completedByParagraph,
       option: sotWarrant.claimantLegalRepresentativeRadioOption,
-      option1: sotWarrant.signThisStatementHiddenCheckbox,
+      option1: sotWarrant.clarificationLabelThreeList,
       label: sotWarrant.fullNameHiddenTextLabel,
       input: sotWarrant.fullNameHiddenTextInput,
       label1: sotWarrant.nameOfFirmHiddenTextLabel,
@@ -624,7 +621,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
       question: sotWarrant.completedByParagraph,
       option: sotWarrant.claimantRadioOption,
-      option1: sotWarrant.iBelieveTheFactsHiddenCheckbox,
+      option1: sotWarrant.clarificationLabelThreeList,
       label: sotWarrant.fullNameHiddenTextLabel,
       input: sotWarrant.fullNameHiddenTextInput,
       label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
@@ -799,7 +796,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
         question: sotWarrant.completedByParagraph,
         option: sotWarrant.claimantLegalRepresentativeRadioOption,
-        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        option1: sotWarrant.clarificationLabelThreeList,
         label: sotWarrant.fullNameHiddenTextLabel,
         input: sotWarrant.fullNameHiddenTextInput,
         label1: sotWarrant.nameOfFirmHiddenTextLabel,
@@ -924,7 +921,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
         question: sotWarrant.completedByParagraph,
         option: sotWarrant.claimantLegalRepresentativeRadioOption,
-        option1: sotWarrant.signThisStatementHiddenCheckbox,
+        option1: sotWarrant.clarificationLabelThreeList,
         label: sotWarrant.fullNameHiddenTextLabel,
         input: sotWarrant.fullNameHiddenTextInput,
         label1: sotWarrant.nameOfFirmHiddenTextLabel,

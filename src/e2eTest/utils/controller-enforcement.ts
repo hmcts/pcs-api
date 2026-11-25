@@ -5,7 +5,6 @@ import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
-import { axe_Exclusions } from '@config/axe_exclusions.config';
 import { CYA_CAPTURE_ACTIONS, CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cya-actions-constants';
 import {ActionEnforcementRegistry} from "@utils/registry/registry-enforcement";
 import { axe_Exclusions } from '@config/axe_exclusions.config';
