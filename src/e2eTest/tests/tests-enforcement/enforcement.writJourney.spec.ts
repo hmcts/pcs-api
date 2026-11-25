@@ -181,7 +181,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           label2: sotWrit.nameOfFirmHiddenTextLabel,
           input2: sotWrit.nameOfFirmHiddenTextInput,
           nextPage: sotWrit.mainHeader,
-          iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+          iBelieveCheckBox: sotWrit.clarificationLabelThreeList,
           continueButton: sotWrit.continueButton
         });
       });
@@ -251,7 +251,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       label2: sotWrit.positionOrOfficeHeldHiddenTextLabel,
       input2: sotWrit.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswersEnforcement.mainHeader,
-      claimantBelieveCheckBox: sotWrit.theClaimantBelievesHiddenCheckBox,
+      claimantBelieveCheckBox: sotWrit.clarificationLabelThreeList,
       continueButton: sotWrit.continueButton,
     });
   });
@@ -307,7 +307,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       label2: sotWrit.nameOfFirmHiddenTextLabel,
       input2: sotWrit.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswersEnforcement.mainHeader,
-      iBelieveCheckBox: sotWrit.iBelieveTheFactsHiddenCheckbox,
+      iBelieveCheckBox: sotWrit.clarificationLabelThreeList,
       continueButton: sotWrit.continueButton,
     });
   });
