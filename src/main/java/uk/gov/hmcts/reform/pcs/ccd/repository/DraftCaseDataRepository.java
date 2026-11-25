@@ -67,6 +67,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         WHERE d.caseReference = :caseReference
         AND d.eventId = :eventId
         """)
-    int deleteAllByCaseReferenceAndEventId(@Param("caseReference") long caseReference,
-                                           @Param("eventId") EventId eventId);
+    int deleteByCaseReferenceAndEventId(@Param("caseReference") long caseReference,
+                                        @Param("eventId") EventId eventId);
 }
