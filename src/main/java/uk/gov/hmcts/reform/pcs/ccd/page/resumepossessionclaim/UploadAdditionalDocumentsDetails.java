@@ -63,7 +63,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    """
             )
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
-            .list(PCSCase::getAdditionalDocuments)
+            // CCD only allows retainHiddenValue on a collection's sub-field if the collection has a showCondition
+            .list(PCSCase::getAdditionalDocuments, "wantToUploadDocuments=\"YES\"")
                 .readonly(AdditionalDocument::getDocumentType, NEVER_SHOW, true)
                 .mandatory(AdditionalDocument::getDocumentTypeEngland,
                     or(ENGLAND, "documentTypeEngland=\"*\""))
