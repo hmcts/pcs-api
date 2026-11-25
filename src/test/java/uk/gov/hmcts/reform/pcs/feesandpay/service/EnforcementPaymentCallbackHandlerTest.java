@@ -152,6 +152,43 @@ class EnforcementPaymentCallbackHandlerTest {
         verifyNoInteractions(notificationService);
     }
 
+    @Test
+    @DisplayName("All conditions are met and notification email is sent while enforcement flag is on")
+    void whenWritIsPaid_thenSendWritOfPossessionSubmittedEmail() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        EnforcementOrderEntity enforcementOrderEntity =
+            enforcementOrder(enforcementApplicationId, EnforcementState.PENDING_CASE_ISSUED);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        enforcementOrderEntity.setPcsCase(pcsCaseEntity);
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrderOfType(SelectEnforcementType.WRIT));
+        PartyEntity claimant = new PartyEntity();
+
+        when(enforcementOrderRepository.findById(enforcementApplicationId))
+            .thenReturn(Optional.of(enforcementOrderEntity));
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
+        when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimant);
+
+        underTest.handle(paymentStatusCallback, feePayment(enforcementApplicationId, PaymentStatus.PAID));
+
+        verify(notificationService).sendWritOfPossessionSubmittedEmail(claimant);
+    }
+
+    @Test
+    @DisplayName("All conditions are met and notification email is NOT sent while enforcement flag is off")
+    void whenWritIsPaidAndEnforcementFlagIsOff_thenNoEmailIsSent() {
+        UUID enforcementApplicationId = UUID.randomUUID();
+        EnforcementOrderEntity enforcementOrderEntity =
+            enforcementOrder(enforcementApplicationId, EnforcementState.PENDING_CASE_ISSUED);
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrderOfType(SelectEnforcementType.WRIT));
+
+        when(enforcementOrderRepository.findById(enforcementApplicationId))
+            .thenReturn(Optional.of(enforcementOrderEntity));
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
+
+        underTest.handle(paymentStatusCallback, feePayment(enforcementApplicationId, PaymentStatus.PAID));
+
+        verifyNoInteractions(notificationService);
+    }
 
     private static FeePaymentEntity feePayment(UUID relatedEntityId, PaymentStatus paymentStatus) {
         return FeePaymentEntity.builder()
