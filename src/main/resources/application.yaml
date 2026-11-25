@@ -497,4 +497,3 @@ service-hearing-values:
   hearing-channels:
     - INTER
   hearing-priority-standard: Standard
-  hearing-priority-urgent: Urgent

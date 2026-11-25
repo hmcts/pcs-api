@@ -50,7 +50,6 @@ public class ServiceHearingValuesConfiguration {
     private String hearingType;
     private List<String> hearingChannels;
     private String hearingPriorityStandard;
-    private String hearingPriorityUrgent;
 
     public ServiceHearingValues getDefaultValues() {
         List<PartyDetails> parties = List.of(
