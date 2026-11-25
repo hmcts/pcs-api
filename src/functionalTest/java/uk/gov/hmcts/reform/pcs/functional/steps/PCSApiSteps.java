@@ -344,7 +344,8 @@ public class PCSApiSteps extends ApiSteps<PCSApiSteps> {
                 .until(fetchPins, notNullValue());
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
-                "Access code not available for case: " + getCaseReference() + " for user " + firstname + " " + lastname, e
+                "Access code not available for case: " + getCaseReference() + 
+                " for user " + firstname + " " + lastname, e
             );
         }
         return this;
