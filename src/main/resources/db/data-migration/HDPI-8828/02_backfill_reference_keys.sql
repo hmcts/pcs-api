@@ -74,21 +74,6 @@ SELECT 'hearing.hearing_type_key',
        (SELECT count(*) FROM updated);
 
 WITH updated AS (
-  UPDATE public.hearing h
-  SET case_management_cancellation_reason_key = w.ref_key
-  FROM mrd_migration_work w
-  WHERE w.target = 'hearing.case_management_cancellation_reason_key'
-    AND w.status = 'UPDATE'
-    AND w.row_id = h.id::text
-    AND h.case_management_cancellation_reason_key IS NULL
-  RETURNING 1
-)
-INSERT INTO mrd_migration_result
-SELECT 'hearing.case_management_cancellation_reason_key',
-       (SELECT count(*) FROM mrd_migration_work WHERE target = 'hearing.case_management_cancellation_reason_key' AND status = 'UPDATE'),
-       (SELECT count(*) FROM updated);
-
-WITH updated AS (
   UPDATE public.claim c
   SET claim_type_key = w.ref_key
   FROM mrd_migration_work w

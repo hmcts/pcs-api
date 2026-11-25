@@ -66,7 +66,6 @@ SELECT 'claim_party.claimant_type_key' AS key_column, count(claimant_type_key) A
 UNION ALL SELECT 'claim_party.entity_role_code_key', count(entity_role_code_key), count(*) FROM public.claim_party
 UNION ALL SELECT 'tenancy_licence.tenancy_type_key', count(tenancy_type_key), count(*) FROM public.tenancy_licence
 UNION ALL SELECT 'hearing.hearing_type_key', count(hearing_type_key), count(*) FROM public.hearing
-UNION ALL SELECT 'hearing.case_management_cancellation_reason_key', count(case_management_cancellation_reason_key), count(*) FROM public.hearing
 UNION ALL SELECT 'claim_ground.grounds_type_key', count(grounds_type_key), count(*) FROM public.claim_ground
 UNION ALL SELECT 'claim_ground.grounds_subtype_key', count(grounds_subtype_key), count(*) FROM public.claim_ground
 UNION ALL SELECT 'claim.claim_type_key', count(claim_type_key), count(*) FROM public.claim
@@ -80,7 +79,7 @@ SELECT 'tenancy_licence', count(*), md5(coalesce(string_agg(j::text, '' ORDER BY
 FROM (SELECT to_jsonb(t) - 'tenancy_type_key' AS j FROM public.tenancy_licence t) x
 UNION ALL
 SELECT 'hearing', count(*), md5(coalesce(string_agg(j::text, '' ORDER BY j::text), ''))
-FROM (SELECT to_jsonb(t) - 'hearing_type_key' - 'case_management_cancellation_reason_key' AS j FROM public.hearing t) x
+FROM (SELECT to_jsonb(t) - 'hearing_type_key' AS j FROM public.hearing t) x
 UNION ALL
 SELECT 'claim_ground', count(*), md5(coalesce(string_agg(j::text, '' ORDER BY j::text), ''))
 FROM (SELECT to_jsonb(t) - 'grounds_type_key' - 'grounds_subtype_key' AS j FROM public.claim_ground t) x
@@ -92,5 +91,5 @@ ORDER BY table_name;
 SELECT event_object_table AS table_name, trigger_name, event_manipulation, action_timing
 FROM information_schema.triggers
 WHERE event_object_schema = 'public'
-  AND event_object_table IN ('claim_party', 'tenancy_licence', 'hearing', 'claim_ground')
+  AND event_object_table IN ('claim', 'claim_party', 'tenancy_licence', 'hearing', 'claim_ground')
 ORDER BY event_object_table, trigger_name;
