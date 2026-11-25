@@ -74,7 +74,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"No\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
-        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
+        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(
+            eventBuilder, enforceTheOrder, () -> !enforcementFlagGuard.isOff());
         enforcementPageConfigurer.configurePages(pageBuilder);
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);

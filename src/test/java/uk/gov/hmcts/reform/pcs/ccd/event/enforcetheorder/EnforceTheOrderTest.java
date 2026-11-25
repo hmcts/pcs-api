@@ -52,6 +52,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -103,7 +104,7 @@ class EnforceTheOrderTest extends BaseEventTest {
     void setUp() {
         mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
         mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(true);
-        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
+        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder), any()))
                 .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
     }
@@ -441,5 +442,13 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         assertThat(thrown).isInstanceOf(CaseAccessException.class);
         verifyNoInteractions(addressFormatter, defendantService, feeApplier, enforcementOrderService);
+    }
+
+    @Test
+    void shouldGuardMidEventsWithEnforcementFlag() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+
+        verify(savingPageBuilderFactory)
+            .create(any(), eq(EventId.enforceTheOrder), argThat(enabled -> !enabled.getAsBoolean()));
     }
 }

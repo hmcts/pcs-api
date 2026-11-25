@@ -51,7 +51,8 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
                         .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"Yes\""))
                         .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                         .showSummary();
-        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
+        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(
+            eventBuilder, enforceTheOrder, () -> !enforcementFlagGuard.isOff());
         enforcementPageConfigurer.configurePages(pageBuilder);
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);

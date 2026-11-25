@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.verify;
@@ -69,7 +70,7 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
-        when(savingPageBuilderFactory.create(any(EventBuilder.class), eq(enforceTheOrder)))
+        when(savingPageBuilderFactory.create(any(EventBuilder.class), eq(enforceTheOrder), any()))
             .thenReturn(savingPageBuilder);
         setEventUnderTest(resumeDraftEnforcementOrder);
     }
@@ -158,5 +159,13 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
 
         assertThat(thrown).isInstanceOf(CaseAccessException.class);
         verifyNoInteractions(enforcementSubmitEvent, enforcementOrderService);
+    }
+
+    @Test
+    void shouldGuardMidEventsWithEnforcementFlag() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+
+        verify(savingPageBuilderFactory)
+            .create(any(), eq(enforceTheOrder), argThat(enabled -> !enabled.getAsBoolean()));
     }
 }
