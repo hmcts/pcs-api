@@ -37,12 +37,20 @@ class BundleTabTest {
             .missingDocuments(List.of(ListValue.<MissingBundleDocument>builder().id("1")
                                           .value(new MissingBundleDocument("Witness.pdf", "Evidence", 3, "Gone"))
                                           .build()))
+            .previousVersions(List.of(ListValue.<BundleVersion>builder().id("2")
+                                          .value(new BundleVersion(
+                                              Document.builder().url("old").binaryUrl("old/binary")
+                                                  .filename("bundle.pdf").categoryId("bundles").build(),
+                                              "28 October 2026 at 4:00pm", 10))
+                                          .build()))
             .build();
 
         String json = objectMapper.writeValueAsString(PCSCase.builder().bundleTab(bundleTab).build());
 
         assertThat(objectMapper.readTree(json).get("bundleTab_Bundle").get("document_url").asText())
             .isEqualTo("url");
+        assertThat(objectMapper.readTree(json).get("bundleTab_PreviousVersions").get(0).get("value").get("bundle")
+                       .get("document_url").asText()).isEqualTo("old");
         assertThat(objectMapper.readValue(json, PCSCase.class).getBundleTab()).isEqualTo(bundleTab);
     }
 }
