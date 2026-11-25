@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.bankholidays.BankHolidays;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -56,7 +57,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
@@ -76,6 +76,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_CLAIM_OUTCOME = "Record what the order does";
     static final String INCOMPLETE_MONEY_JUDGMENT =
         "Record who each money judgment is between, its sums and how they are paid";
+    static final String RETURN_TO_JUDGE_TO_DECIDE = "Return the order to the judge with a query";
     static final String TASKS_OUTSTANDING =
         "You must complete all outstanding tasks before issuing this order and serving it on the parties";
 
@@ -90,6 +91,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final MessageService messageService;
     private final OrderDocumentService orderDocumentService;
     private final FeatureToggleService featureToggleService;
+    private final BankHolidays bankHolidays;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -117,8 +119,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
-            OrderStart.Order.of(order, orderSteps.latest(order), null),
-            orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), null));
+            OrderStart.Order.submitted(order, orderSteps.latest(order)),
+            orderCaseContext.of(order.getPcsCase()), OrderStart.Hearing.ofOrder(order), List.of(), null,
+            OrderStart.judge(order.getAuthorName()),
+            OrderStart.bankHolidays(bankHolidays)));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
@@ -162,16 +166,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (issue.claimOutcome() == null || !issue.claimOutcome().complete()) {
             throw ExternalRejection.because(NO_CLAIM_OUTCOME);
         }
-        // What the order decides about each of the case's applications, as issued; the database refuses a second order
-        // granting, dismissing or striking out one.
-        issuing.applicationDecisions().stream()
-            .filter(decided -> order.getPcsCase().findGenApp(decided.genAppId()).isPresent())
+        // Which of the case's applications the order disposes of or lists, as issued: each still the order's to decide.
+        orderTasks.requireDecidable(order.getPcsCase(), issuing.applicationDecisions(), RETURN_TO_JUDGE_TO_DECIDE);
+        issuing.applicationDecisions()
             .forEach(decided -> order.getGenAppDecisions().put(decided.genAppId(), decided.decision()));
         order.setSeal(issue.seal());
-        // Made at its hearing, or else when its judge sent it for review, however long court staff take to issue it.
-        order.setMadeOn(order.getHearing() != null && order.getHearing().getHearingDate() != null
-            ? order.getHearing().getHearingDate().toLocalDate()
-            : submitted.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
+        order.setMadeOn(OrderStart.Order.madeOn(order, submitted));
         // What it decides about the case's claim; an order making no order on it records nothing.
         ClaimEntity claim = order.getPcsCase().getMainClaim();
         if (claim != null && issue.claimOutcome().kind() != ClaimOutcome.Kind.NO_ORDER) {
