@@ -59,7 +59,7 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
 
         // When
         List<BreathingSpaceEntity> results =
-            breathingSpaceRepository.findByCaseReference(CASE_REFERENCE);
+            breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(CASE_REFERENCE);
 
         // Then
         assertThat(results)

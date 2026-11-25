@@ -42,7 +42,7 @@ public class BreathingSpaceService {
     }
 
     public List<BreathingSpaceDetails> getBreathingSpaces(long caseReference) {
-        return breathingSpaceRepository.findByCaseReference(caseReference)
+        return breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(caseReference)
             .stream()
             .map(entity -> BreathingSpaceDetails.builder()
                 .referenceNumber(entity.getReferenceNumber())

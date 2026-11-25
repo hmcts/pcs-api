@@ -102,7 +102,7 @@ class BreathingSpaceServiceTest {
             .expectedEndDate(LocalDate.of(2027, 1, 12))
             .build();
 
-        when(breathingSpaceRepository.findByCaseReference(caseReference))
+        when(breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(caseReference))
             .thenReturn(List.of(entity));
 
         // When
@@ -129,7 +129,7 @@ class BreathingSpaceServiceTest {
     @Test
     void shouldReturnEmptyWhenNoBreathingSpaceExists() {
         // Given
-        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
+        when(breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(CASE_REFERENCE))
             .thenReturn(List.of());
 
         // When
@@ -155,7 +155,7 @@ class BreathingSpaceServiceTest {
             .build();
 
         // Repository returns newest first
-        when(breathingSpaceRepository.findByCaseReference(CASE_REFERENCE))
+        when(breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(CASE_REFERENCE))
             .thenReturn(List.of(newest, oldest));
 
         // When
