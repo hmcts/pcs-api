@@ -34,10 +34,9 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth,
-  confirmHCEOfficer, defendantInBreathingSpace, missedPayments, cannotApplyForWritInfo,
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
   cannotApplyForWarrantInfo
-} from '@data/page-data-figma/page-data-enforcement-figma';
+} from '@data/index.selector.enforcement';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 import Axios from "axios";
@@ -89,7 +88,7 @@ export class EnforcementAction implements IAction{
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
-      
+
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
     ]);
@@ -160,10 +159,10 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
+    if (applicationType.option === enforcementApplication.writOfPossessionRadioOption && applicationType.option1 !== enforcementApplication.noRadioOptionHidden) {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
+    } else if (applicationType.option === enforcementApplication.warrantOfPossessionRadioOption || applicationType.option === enforcementApplication.warrantOfRestitutionRadioOptionDynamic) {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
@@ -271,14 +270,15 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
+      // HDPI-9502, Defendant name and address are not showing up on Welsh page
+      // await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
 
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
     );
-
-    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
+    // HDPI-9502, Defendant name and address are not showing up on Welsh page
+    // await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
@@ -484,37 +484,37 @@ export class EnforcementAction implements IAction{
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
+    if (claimantDetails.option === 'Claimant') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantDetails.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantDetails.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantDetails.continueButton, claimantDetails.nextPage as string);
   }
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
     await performAction('check', claimantSOT.option1);
     await performAction('clickRadioButton', { option:claimantSOT.option } );
-    if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
+    if (claimantSOT.option === 'Claimant') {
       await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('check', claimantSOT.iBelieveCheckBox);
     }
-    if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantSOT.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('inputText', claimantSOT.label, claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
       await performAction('check', claimantSOT.claimantBelieveCheckBox);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantSOT.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantSOT.continueButton, claimantSOT.nextPage as string);
   }
 
   private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
@@ -638,7 +638,7 @@ export class EnforcementAction implements IAction{
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
-              
+
             case 'pageLevel':
               await expect(async () => {
               await performAction('clickButton', validationArr.button);

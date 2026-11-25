@@ -76,6 +76,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    postgresql:
+      transactional-lock: false # Concurrent index builds need session-level migration locks.
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -319,6 +321,8 @@ bulk-print:
   blank-forms:
     defence-form: classpath:forms/ONC-002R-defence-form.pdf
     counterclaim-form: classpath:forms/ONC-003-counterclaim.pdf
+    defence-form-welsh: classpath:forms/ONC-002RW-defence-form-welsh.pdf
+    counterclaim-form-welsh: classpath:forms/ONC-003-counterclaim-welsh.pdf
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
@@ -473,3 +477,18 @@ manage_case:
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
+
+service-hearing-values:
+  hmcts-service-id: AAA3
+  case-additional-security-flag: false
+  case-restricted-flag: false
+  auto-list-flag: false
+  hearing-in-welsh-flag: false
+  private-hearing-required-flag: false
+  hearing-is-linked-flag: false
+  location-type: court
+  role-types:
+      - "24"
+      - "45"
+  preferred-hearing-channel: INTER
+  number-of-days-offset: 57

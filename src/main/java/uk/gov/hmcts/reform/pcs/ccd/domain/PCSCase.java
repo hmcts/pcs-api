@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -33,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
@@ -55,6 +55,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageAction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.message.MessageRecipient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
@@ -409,9 +412,16 @@ public class PCSCase {
     )
     private String summaryLegalRepresentativeMarkdownLabel;
 
-    @CCD(ignore = true)
-    @JsonIgnore
-    private String ordersMarkdown;
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String orderListMarkdown;
+
+    @CCD(
+        label = "${orderListMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private String orderListMarkdownLabel;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -690,6 +700,13 @@ public class PCSCase {
     @CCD(access = SystemDocumentAccess.class)
     private List<ListValue<Document>> systemDocuments;
 
+    /**
+     * The files in the drafts the user, or their organisation, owns on this case. CDAM serves an attached document
+     * only to a user who can see it in the case, so the case view returns them. Not shown in any tab.
+     */
+    @CCD(access = DraftUploadAccess.class)
+    private List<ListValue<DraftUpload>> draftUploads;
+
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -741,6 +758,89 @@ public class PCSCase {
         typeOverride = DynamicRadioList
     )
     private DynamicList partyRadioList;
+
+    @CCD(label = "Do you want to send or reply to a message?",
+        searchable = false,
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "MessageAction"
+    )
+    private MessageAction messageAction;
+
+    @CCD(label = "What does the message relate to?",
+        hint = "Select all that apply",
+        searchable = false,
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "MessageCategory"
+    )
+    private Set<MessageCategory> messageCategories;
+
+    @CCD(label = "Which application?", searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList messageGenAppList;
+
+    /** Whether the case has an open application for a message to name, which the event asks for only if it has. */
+    @CCD(searchable = false)
+    private YesOrNo messageHasOpenGenApps;
+
+    @CCD(label = "Who is the message for?",
+        searchable = false,
+        typeOverride = FixedList,
+        typeParameterOverride = "MessageRecipient"
+    )
+    private MessageRecipient messageRecipient;
+
+    @CCD(label = "Subject", hint = "You can enter up to 60 characters", searchable = false)
+    private String messageSubject;
+
+    @CCD(label = "Is the message urgent?", searchable = false)
+    private VerticalYesNo messageUrgent;
+
+    @CCD(label = "Message", hint = "You can enter up to 750 characters", searchable = false,
+        typeOverride = TextArea)
+    private String messageBody;
+
+    @CCD(label = "Which message are you replying to?", searchable = false)
+    private DynamicList messageReplyList;
+
+    @CCD(searchable = false)
+    private String messageSummaryMarkdown;
+
+    /** The message the task the event was started from is for, which the event holds the user to. */
+    @CCD(searchable = false)
+    private String messageTaskMessageId;
+
+    @CCD(label = "Message history", searchable = false, typeOverride = TextArea)
+    private String messageHistory;
+
+    @CCD(label = "Do you need to reply?", searchable = false)
+    private VerticalYesNo messageNeedReply;
+
+    @CCD(label = "Who is the reply for?",
+        searchable = false,
+        typeOverride = FixedList,
+        typeParameterOverride = "MessageRecipient"
+    )
+    private MessageRecipient messageReplyRecipient;
+
+    @CCD(label = "Is the reply urgent?", searchable = false)
+    private VerticalYesNo messageReplyUrgent;
+
+    @CCD(label = "Reply", hint = "You can enter up to 750 characters", searchable = false, typeOverride = TextArea)
+    private String messageReply;
+
+    @CCD(label = "Note for closing the message", hint = "You can enter up to 250 characters",
+        searchable = false, typeOverride = TextArea)
+    private String messageClosureNote;
+
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String messagesMarkdown;
+
+    @CCD(
+        label = "${messagesMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {InternalTabAccess.class}
+    )
+    private String messagesMarkdownLabel;
 
     @CCD(
         label = "Search Criteria",
@@ -1015,6 +1115,9 @@ public class PCSCase {
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo hasUnsubmittedDefendantResponses;
 
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather

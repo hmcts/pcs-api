@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.validation.BindingResult;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+
 
 import java.util.List;
 import java.util.Set;
@@ -233,6 +235,25 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo("Access code already used");
+    }
+
+    @Test
+    void shouldHandleHttpMessageNotReadableException() {
+        // Given
+        HttpMessageNotReadableException exception = mock(HttpMessageNotReadableException.class);
+        HttpHeaders headers = new HttpHeaders();
+        HttpStatusCode status = HttpStatus.BAD_REQUEST;
+        WebRequest request = mock(WebRequest.class);
+
+        // When
+        ResponseEntity<Object> responseEntity = underTest.handleHttpMessageNotReadable(
+            exception, headers, status, request);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isInstanceOf(RestExceptionHandler.Error.class);
+        RestExceptionHandler.Error error = (RestExceptionHandler.Error) responseEntity.getBody();
+        assertThat(error.message()).isEqualTo("Invalid data");
     }
 
     @Test
