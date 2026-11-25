@@ -23,6 +23,24 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DELETE_UNISSUED_CLAIM;
 @Slf4j
 public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
 
+    static final String DELETE_CASE_WARNING = """
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">Warning</span>
+            If you delete this case, you will not be able to view any case details
+          </strong>
+        </div>
+        """;
+
+    // Kept free of per-case values so ExUI can match it against the Welsh dictionary
+    static final String CONFIRMATION_MARKUP = """
+        ---
+        <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+        <span class="govuk-panel__title govuk-!-font-size-36">Case deleted</span>
+        </div>
+        """;
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
@@ -37,6 +55,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
                 .endButtonLabel("Continue"))
                 .page("deleteThisCase")
                 .pageLabel("Delete this case")
+                .label("deleteDraftClaim-warning", DELETE_CASE_WARNING)
                 .label("deleteDraftClaim-separator", "---")
                 .mandatory(PCSCase::getDeleteDraftClaim);
     }
@@ -48,10 +67,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
 
         return SubmitResponse.<State>builder()
                 .state(State.PendingDisposal)
-                .confirmationBody("""
-                # Case deleted
-                Case number: %s
-                """.formatted(eventPayload.caseReference()))
+                .confirmationBody(CONFIRMATION_MARKUP)
                 .build();
     }
 }
