@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.health.contributor.Status;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -76,6 +77,13 @@ class IdamHealthConfigurationTest {
     @Test
     void shouldReportDownWhenIdamIsUnreachable() {
         assertThat(idamStatus("http://localhost:1")).isEqualTo(Status.DOWN);
+    }
+
+    @Test
+    void shouldNotExposeErrorDetailsWhenIdamIsUnreachable() {
+        Health health = new IdamHealthConfiguration().idamHealthIndicator("http://localhost:1").health();
+
+        assertThat(health.getDetails()).isEmpty();
     }
 
     private Status idamStatus(String baseUrl) {
