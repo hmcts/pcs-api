@@ -177,10 +177,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                         FeeDetails feeDetails,
                                                         PartyEntity responsibleParty) {
 
-//        String currentUserId = securityContextService.getCurrentUserId();
-//        PartyEntity party = partyService.getPartyEntityByIdamId(currentUserId,caseReference);
-
-
         return FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
