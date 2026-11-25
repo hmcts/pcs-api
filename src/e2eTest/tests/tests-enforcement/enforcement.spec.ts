@@ -39,16 +39,15 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  cannotApplyForWarrantInfo,
-  payTheClaimFeeConfirm,
-  checkYourAnswersEnforcement,
-} from '@data/page-data-figma/page-data-enforcement-figma';
-import {
-  statementOfTruth, defendantInBreathingSpace, missedPayments
+  defendantInBreathingSpace, missedPayments, statementOfTruth
 } from '@data/index.selector.enforcement';
 
-let payClaimFeeWarrant: ReturnType<typeof payTheClaimFeeConfirm>;
+import {payTheClaimFeeConfirm, checkYourAnswersEnforcement
+} from '@data/page-data-figma/page-data-enforcement-figma';
+
 let sotWarrant: ReturnType<typeof statementOfTruth>;
+
+let payClaimFeeWarrant: ReturnType<typeof payTheClaimFeeConfirm>;
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -108,7 +107,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession]', async () => {
-  test('Warrant - As a Claimant I complete "Warrant of Possession Application" with Eviction Details, Defendant Information, Vulnerable People, Property Access, Financial Details, Suspended Order and Statement of Truth',
+  test('Warrant - As a Claimant I complete "Warrant of Possession Application" with Eviction Details, Defendant Information, Vulnerable People, Property Access, Financial Details, Suspended Order and ClaimantSOT',
     {
       tag: ['@enforcement', '@regression'],
       annotation: [
@@ -339,6 +338,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
+
       await test.step(`And selects the language used`, async () => {
         await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
         await performAction('selectLanguageUsed', {
@@ -354,6 +354,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption,
         nextPage: sotWarrant.mainHeader
       });
+
       await test.step(`Then enter the details on the SOT page, verify the CYA page`, async () => {
         await performAction('errorValidationSOT1Page', sotWarrant.errorValidation);
         await performAction('validateAmountToRePayTable', {headerName: sotWarrant.mainHeader});
@@ -511,7 +512,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] - ClaimantSOT @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -643,11 +644,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 
   // It will be enabled as part of HDPI-9502
   test.skip('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes] @enforcement', {
-      annotation: {
-        type: 'issue',
-        description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
-      },
+    annotation: {
+      type: 'issue',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
     },
+  },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

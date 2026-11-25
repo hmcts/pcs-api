@@ -7,8 +7,12 @@ import {
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import {
+  createCaseApiData,
+  paymentApiData,
+  submitCaseApiData
+} from '@data/api-data';
+import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import { caseSummary, home } from '@data/page-data';
 import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
@@ -30,8 +34,6 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-} from '@data/page-data-figma/page-data-enforcement-figma';
-import{
   statementOfTruth,
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
   cannotApplyForWarrantInfo
@@ -243,7 +245,7 @@ export class EnforcementAction implements IAction{
       };
     }
     defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
 
   }
@@ -483,7 +485,7 @@ export class EnforcementAction implements IAction{
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option ==='Claimant') {
+    if (claimantDetails.option === 'Claimant') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
@@ -537,7 +539,7 @@ export class EnforcementAction implements IAction{
 
   private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
-    await test.step(`PrePopulated data validation`, async () => {
+     await test.step(`PrePopulated data validation`, async () => {
       const page = prePopulatedData?.testPage ?? 'Unknown';
       const count = Array.isArray(prePopulatedData?.inputData)
         ? prePopulatedData.inputData.length

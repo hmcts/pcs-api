@@ -26,7 +26,6 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/propertyAccessD
 export * from '@data/page-data-figma/page-data-enforcement-figma/protestorGroupRisk.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/repaymentsWrit.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/repayments.page.data';
-export * from '@data/page-data-figma/page-data-enforcement-figma/statementOfTruth.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/suspendedOrder.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/verbalOrWrittenThreatsRisk.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/violentAggressiveRisk.page.data';
@@ -39,5 +38,7 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/evictionDate.pa
 export * from '@data/page-data-figma/page-data-enforcement-figma/missedPayments.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBreathingSpace.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/enforceTheOrderstatementOfTruth.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/enforceTheOrderstatementOfTruthWrit.page.data';
 export * from 'data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data';
 export * from 'data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';
