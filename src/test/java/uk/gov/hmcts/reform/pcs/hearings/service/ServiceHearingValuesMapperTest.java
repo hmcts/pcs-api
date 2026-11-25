@@ -19,12 +19,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.EntityRoleCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.EntityRoleCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -80,6 +82,8 @@ class ServiceHearingValuesMapperTest {
     private CaseNameFormatter caseNameFormatter;
     @Mock
     private IndividualDetailsFlagMapper individualDetailsFlagMapper;
+    @Mock
+    private EntityRoleCodeRepository entityRoleCodeRepository;
 
     private ServiceHearingValuesMapper underTest;
 
@@ -98,8 +102,8 @@ class ServiceHearingValuesMapperTest {
 
         underTest = new ServiceHearingValuesMapper(
             defaults, pcsCaseService, pcsCaseRepository, caseNameFormatter, 
-            individualDetailsFlagMapper, MANAGE_CASE_URL);
-        lenient().when(individualDetailsFlagMapper.map(any())).thenReturn(new IndividualDetails());
+            individualDetailsFlagMapper, entityRoleCodeRepository, MANAGE_CASE_URL);
+        lenient().when(individualDetailsFlagMapper.map(any())).thenAnswer(invocation -> new IndividualDetails());
     }
 
     @Test
@@ -540,6 +544,67 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldAddRoleNameToPartyNameOfFlags() {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .entityRoleCodeKey("CLAIMANT-ROLE")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+        when(entityRoleCodeRepository.findAllById(List.of("CLAIMANT-ROLE")))
+            .thenReturn(List.of(EntityRoleCodeEntity.builder().key("CLAIMANT-ROLE").valueEn("Claimant").build()));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington - Claimant"));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    void shouldUseJustPartyNameWhenRoleHasNoEnglishName(String valueEn) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .entityRoleCodeKey("CLAIMANT-ROLE")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+        when(entityRoleCodeRepository.findAllById(List.of("CLAIMANT-ROLE")))
+            .thenReturn(List.of(EntityRoleCodeEntity.builder().key("CLAIMANT-ROLE").valueEn(valueEn).build()));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington"));
+    }
+
+    @Test
+    void shouldNotLookUpRoleNamesWhenNoPartyHasRoleOrFlags() {
+        PartyEntity flaggedWithoutRole = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        PartyEntity roleWithoutFlags = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .entityRoleCodeKey("DEFENDANT-ROLE")
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(flaggedWithoutRole, roleWithoutFlags))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington"));
+        verifyNoInteractions(entityRoleCodeRepository);
+    }
+
+    @Test
     void shouldNotMapCaseLevelFlagsIntoCaseFlags() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         givenCase(caseBuilder()
@@ -552,11 +617,28 @@ class ServiceHearingValuesMapperTest {
         assertThat(values.getCaseFlags()).isNull();
     }
 
-    @Test
-    void shouldOmitCaseFlagsWhenNoPartyFlagIsActive() {
+    @ParameterizedTest
+    @ValueSource(strings = {"Active", "Requested"})
+    void shouldIncludeActiveAndRequestedPartyFlags(String status) {
         PartyEntity defendant = PartyEntity.builder()
             .id(UUID.randomUUID())
-            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Inactive"))))
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", status))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getFlagStatus()).isEqualTo(status));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"Inactive", "Not approved"})
+    void shouldOmitCaseFlagsWhenNoPartyFlagIsActiveOrRequested(String status) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", status))))
             .build();
         givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
 

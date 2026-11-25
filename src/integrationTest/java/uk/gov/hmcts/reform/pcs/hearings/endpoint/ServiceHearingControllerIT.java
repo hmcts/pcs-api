@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -404,27 +405,30 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("returns only active party flags, not case-level flags, in caseFlags")
-        void shouldReturnActivePartyFlags() throws Exception {
+        @DisplayName("returns active and requested party flags, not case-level flags, in caseFlags")
+        void shouldReturnActiveAndRequestedPartyFlags() throws Exception {
+            givenEntityRoleCode("TEST-DEFENDANT-ROLE", "Defendant");
             PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
             addCaseFlag(pcsCase, refData("CF0002", "Complex case"), "Active", null);
             PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            defendant.setEntityRoleCodeKey("TEST-DEFENDANT-ROLE");
             addPartyFlag(defendant, refData("RA0026", "Support worker or carer with me"), "Active", "brings a carer");
             addPartyFlag(defendant, refData("PF0002", "Vulnerable user"), "Requested", null);
+            addPartyFlag(defendant, refData("PF0004", "Unaccompanied minor"), "Inactive", null);
             persist(pcsCase);
 
+            String carerFlag = "$.caseFlags.flags[?(@.flagId == 'RA0026')]";
             postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.caseFlags.flagAmendURL")
                     .value("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags"))
-                .andExpect(jsonPath("$.caseFlags.flags.length()").value(1))
-                .andExpect(jsonPath("$.caseFlags.flags[0].partyID").isNotEmpty())
-                .andExpect(jsonPath("$.caseFlags.flags[0].partyName").value("John Doe"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagId").value("RA0026"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagDescription")
-                    .value("Support worker or carer with me"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagStatus").value("Active"))
-                .andExpect(jsonPath("$.caseFlags.flags[0].flagComment").value("brings a carer"));
+                .andExpect(jsonPath("$.caseFlags.flags[*].flagId", containsInAnyOrder("RA0026", "PF0002")))
+                .andExpect(jsonPath("$.caseFlags.flags[?(@.flagId == 'PF0002')].flagStatus", contains("Requested")))
+                .andExpect(jsonPath(carerFlag + ".partyID", hasSize(1)))
+                .andExpect(jsonPath(carerFlag + ".partyName", contains("John Doe - Defendant")))
+                .andExpect(jsonPath(carerFlag + ".flagDescription", contains("Support worker or carer with me")))
+                .andExpect(jsonPath(carerFlag + ".flagStatus", contains("Active")))
+                .andExpect(jsonPath(carerFlag + ".flagComment", contains("brings a carer")));
         }
 
         @Test
@@ -669,8 +673,14 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
 
     // entity_role_code has no seed data, and party.entity_role_code_key references it
     private void givenEntityRoleCode(String key) {
-        entityManager.createNativeQuery("INSERT INTO entity_role_code (key, active) VALUES (:key, 'YES')")
+        givenEntityRoleCode(key, null);
+    }
+
+    private void givenEntityRoleCode(String key, String valueEn) {
+        entityManager.createNativeQuery(
+                "INSERT INTO entity_role_code (key, value_en, active) VALUES (:key, :valueEn, 'YES')")
             .setParameter("key", key)
+            .setParameter("valueEn", valueEn)
             .executeUpdate();
     }
 
