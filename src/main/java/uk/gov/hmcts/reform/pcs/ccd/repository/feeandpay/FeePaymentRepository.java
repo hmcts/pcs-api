@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,5 +28,12 @@ public interface FeePaymentRepository extends JpaRepository<FeePaymentEntity, In
     @Query("select f from FeePaymentEntity f where f.serviceRequestReference = :serviceRequestReference")
     Optional<FeePaymentEntity> findByServiceRequestReferenceForUpdate(
         @Param("serviceRequestReference") String serviceRequestReference);
+
+    @Query("select f.claim.pcsCase.caseReference from FeePaymentEntity f "
+        + "where f.serviceRequestReference = :serviceRequestReference")
+    Optional<Long> findCaseReference(@Param("serviceRequestReference") String serviceRequestReference);
+
+    boolean existsByServiceRequestReferenceAndPaymentStatusAndExternalReference(
+        String serviceRequestReference, PaymentStatus paymentStatus, String externalReference);
 
 }
