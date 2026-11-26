@@ -32,11 +32,11 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @AllArgsConstructor
 public class ScheduleEvictionService {
 
-    public static final String NOT_AVAILABLE = "Scheduling evictions is not available";
-    public static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
-    public static final String WARRANT_NO_LONGER_AWAITING_SCHEDULING = "This warrant is no longer awaiting scheduling";
-    public static final String DATE_REQUIRED = "Enter the date and time of the eviction";
-    public static final String DISPENSE_WITH_SERVICE_REQUIRED =
+    private static final String NOT_AVAILABLE = "Scheduling evictions is not available";
+    private static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
+    private static final String WARRANT_NO_LONGER_AWAITING_SCHEDULING = "This warrant is no longer awaiting scheduling";
+    private static final String DATE_REQUIRED = "Enter the date and time of the eviction";
+    private static final String DISPENSE_WITH_SERVICE_REQUIRED =
         "Select whether the court has given permission to dispense with service";
 
     private final PcsCaseService pcsCaseService;

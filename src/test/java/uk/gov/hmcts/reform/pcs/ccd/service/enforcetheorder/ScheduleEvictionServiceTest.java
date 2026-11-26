@@ -50,6 +50,12 @@ class ScheduleEvictionServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final LocalDateTime EVICTION_DATE = LocalDateTime.of(2027, 6, 25, 10, 0);
     private static final UUID APPLICATION_ID = UUID.randomUUID();
+    private static final String NOT_AVAILABLE = "Scheduling evictions is not available";
+    private static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
+    private static final String WARRANT_NO_LONGER_AWAITING_SCHEDULING = "This warrant is no longer awaiting scheduling";
+    private static final String DATE_REQUIRED = "Enter the date and time of the eviction";
+    private static final String DISPENSE_WITH_SERVICE_REQUIRED =
+        "Select whether the court has given permission to dispense with service";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -77,7 +83,7 @@ class ScheduleEvictionServiceTest {
     void shouldRejectStartWhenEvictionSchedulingIsOff() {
         when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(false);
 
-        assertRejected(() -> underTest.getStartDetails(CASE_REFERENCE), ScheduleEvictionService.NOT_AVAILABLE);
+        assertRejected(() -> underTest.getStartDetails(CASE_REFERENCE), NOT_AVAILABLE);
         verifyNoInteractions(pcsCaseService);
     }
 
@@ -87,7 +93,7 @@ class ScheduleEvictionServiceTest {
         ScheduleEvictionRequest request = new ScheduleEvictionRequest(APPLICATION_ID, VerticalYesNo.NO, EVICTION_DATE);
 
         assertRejected(() -> underTest.scheduleEviction(CASE_REFERENCE, request),
-                       ScheduleEvictionService.NOT_AVAILABLE);
+                       NOT_AVAILABLE);
         verifyNoInteractions(pcsCaseService, scheduleEvictionRepository);
     }
 
@@ -96,7 +102,7 @@ class ScheduleEvictionServiceTest {
         givenCaseWithWarrant(EnforcementState.PENDING_CASE_ISSUED);
 
         assertRejected(() -> underTest.getStartDetails(CASE_REFERENCE),
-                       ScheduleEvictionService.NO_WARRANT_AWAITING_SCHEDULING);
+                       NO_WARRANT_AWAITING_SCHEDULING);
     }
 
     @Test
@@ -148,7 +154,7 @@ class ScheduleEvictionServiceTest {
         ScheduleEvictionRequest request = new ScheduleEvictionRequest(APPLICATION_ID, VerticalYesNo.NO, EVICTION_DATE);
 
         assertRejected(() -> underTest.scheduleEviction(CASE_REFERENCE, request),
-                       ScheduleEvictionService.NO_WARRANT_AWAITING_SCHEDULING);
+                       NO_WARRANT_AWAITING_SCHEDULING);
         verifyNoInteractions(scheduleEvictionRepository);
     }
 
@@ -158,7 +164,7 @@ class ScheduleEvictionServiceTest {
 
         assertRejected(() -> underTest.scheduleEviction(
                            CASE_REFERENCE, new ScheduleEvictionRequest(APPLICATION_ID, VerticalYesNo.NO, null)),
-                       ScheduleEvictionService.DATE_REQUIRED);
+                       DATE_REQUIRED);
         verifyNoInteractions(scheduleEvictionRepository);
     }
 
@@ -168,7 +174,7 @@ class ScheduleEvictionServiceTest {
 
         assertRejected(() -> underTest.scheduleEviction(
                            CASE_REFERENCE, new ScheduleEvictionRequest(APPLICATION_ID, null, EVICTION_DATE)),
-                       ScheduleEvictionService.DISPENSE_WITH_SERVICE_REQUIRED);
+                       DISPENSE_WITH_SERVICE_REQUIRED);
         verifyNoInteractions(scheduleEvictionRepository);
     }
 
@@ -179,7 +185,7 @@ class ScheduleEvictionServiceTest {
         assertRejected(() -> underTest.scheduleEviction(
                            CASE_REFERENCE, new ScheduleEvictionRequest(UUID.randomUUID(), VerticalYesNo.NO,
                                                                        EVICTION_DATE)),
-                       ScheduleEvictionService.WARRANT_NO_LONGER_AWAITING_SCHEDULING);
+                       WARRANT_NO_LONGER_AWAITING_SCHEDULING);
         verifyNoInteractions(scheduleEvictionRepository);
         assertThat(pcsCase.getEnforcementOrders().iterator().next().getState())
             .isEqualTo(EnforcementState.AWAITING_SCHEDULING);

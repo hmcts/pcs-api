@@ -5,7 +5,7 @@ CREATE TABLE public.scheduled_eviction (
     scheduled_eviction_date                         TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at                                      TIMESTAMP WITH TIME ZONE NOT NULL,
     last_modified_at                                TIMESTAMP WITH TIME ZONE NOT NULL,
-    enf_warrant_id                                  integer NOT NULL,
+    enf_warrant_id                                  INTEGER NOT NULL,
 
     CONSTRAINT scheduled_eviction_pk PRIMARY KEY (id),
     CONSTRAINT scheduled_eviction_enf_warrant_fk

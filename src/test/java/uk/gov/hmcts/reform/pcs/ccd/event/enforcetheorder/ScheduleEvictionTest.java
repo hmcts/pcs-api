@@ -37,6 +37,8 @@ import static org.mockito.Mockito.when;
 class ScheduleEvictionTest extends BaseEventTest {
 
     private static final ExternalUser USER = new ExternalUser("user-id", List.of("caseworker-pcs"), null);
+    private static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
+    private static final String DATE_REQUIRED = "Enter the date and time of the eviction";
     private static final ScheduleEvictionRequest REQUEST = new ScheduleEvictionRequest(
         UUID.randomUUID(), VerticalYesNo.YES, LocalDateTime.of(2027, 6, 25, 10, 0));
 
@@ -87,9 +89,9 @@ class ScheduleEvictionTest extends BaseEventTest {
     @Test
     void shouldRejectStartWhenServiceRejects() {
         when(scheduleEvictionService.getStartDetails(TEST_CASE_REFERENCE))
-            .thenThrow(ExternalRejection.because(ScheduleEvictionService.NO_WARRANT_AWAITING_SCHEDULING));
+            .thenThrow(ExternalRejection.because(NO_WARRANT_AWAITING_SCHEDULING));
 
-        assertThat(startRejection()).containsExactly(ScheduleEvictionService.NO_WARRANT_AWAITING_SCHEDULING);
+        assertThat(startRejection()).containsExactly(NO_WARRANT_AWAITING_SCHEDULING);
     }
 
     @Test
@@ -103,10 +105,10 @@ class ScheduleEvictionTest extends BaseEventTest {
 
     @Test
     void shouldRejectSubmitWhenServiceRejects() {
-        doThrow(ExternalRejection.because(ScheduleEvictionService.DATE_REQUIRED))
+        doThrow(ExternalRejection.because(DATE_REQUIRED))
             .when(scheduleEvictionService).scheduleEviction(TEST_CASE_REFERENCE, REQUEST);
 
-        assertThat(submit(REQUEST).getErrors()).containsExactly(ScheduleEvictionService.DATE_REQUIRED);
+        assertThat(submit(REQUEST).getErrors()).containsExactly(DATE_REQUIRED);
     }
 
     private EventPayload<PCSCase, State> payload() {

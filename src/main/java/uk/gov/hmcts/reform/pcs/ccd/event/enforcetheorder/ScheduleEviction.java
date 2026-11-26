@@ -34,7 +34,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     public static final ExternalEventId<ScheduleEvictionStart, ScheduleEvictionRequest> SCHEDULE_EVICTION =
         ExternalEventId.of("ext:scheduleEviction", ScheduleEvictionStart.class, ScheduleEvictionRequest.class);
 
-    static final String CAN_SCHEDULE_EVICTION = "enfShowConditions.scheduleEviction=\"Yes\"";
+    private static final String CAN_SCHEDULE_EVICTION = "enfShowConditions.scheduleEviction=\"Yes\"";
 
     private final ScheduleEvictionService scheduleEvictionService;
 
