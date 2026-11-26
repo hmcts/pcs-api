@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
 import uk.gov.hmcts.ccd.sdk.ResolvedCCDConfig;
@@ -25,11 +26,14 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 /** The existing manage-hearing page selects any hearing; persistence changes only that hearing. */
 @PcsCcdEventTest
@@ -48,6 +52,9 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
 
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
+
     private CcdEventTestSupport.Actor staff;
 
     private long reference;
@@ -64,6 +71,55 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         cancelled = cases.hearing(reference, LocalDateTime.of(2030, 3, 4, 10, 0), true);
         staff = events.registerActor("Hearing", "Administrator", "caseworker-pcs");
         form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
+    }
+
+    @Test
+    void flagOffEditsAndCancelsTheNextHearingWithoutAPicker() {
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
+        assertThat(form.getHearingSelection()).isNull();
+        form.setManageHearingOption(ManageHearingOption.EDIT);
+        assertThat(continuePage().getErrors()).isNullOrEmpty();
+        assertThat(form.getHearing().getHearingId()).isEqualTo(earlier);
+        form.getHearing().setNotes("Next hearing edited");
+        events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
+        assertThat(stored(earlier).getNotes()).isEqualTo("Next hearing edited");
+
+        form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
+        form.setManageHearingOption(ManageHearingOption.CANCEL);
+        assertThat(continuePage().getErrors()).isNullOrEmpty();
+        assertThat(form.getHearing().getHearingSummaryMarkdown()).contains("2 January 2030");
+        form.getHearing().setCancellationReason("No longer required");
+        events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
+        assertThat(stored(earlier).getCancelled()).isTrue();
+        assertThat(stored(later).getCancelled()).isFalse();
+    }
+
+    @Test
+    void disablingTheFlagBeforeSubmitRejectsALaterHearingWithoutChangingEitherHearing() {
+        select(later, ManageHearingOption.EDIT);
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        for (ManageHearingOption option : new ManageHearingOption[] {
+            ManageHearingOption.EDIT, ManageHearingOption.CANCEL}) {
+            form.setManageHearingOption(option);
+            assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
+                .containsExactly("Only the next hearing can be managed. Reopen Manage hearing to continue.");
+        }
+        assertThat(events.history(reference)).isEmpty();
+    }
+
+    @Test
+    void cancellationOpenedWithThePreviousDefinitionCanOnlyCancelTheNextHearing() {
+        form.setManageHearingOption(ManageHearingOption.CANCEL);
+        form.setHearingSelection(null);
+        form.setHearing(Hearing.builder().hearingId(later).cancellationReason("No longer required").build());
+        assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
+            .containsExactly("Only the next hearing can be managed. Reopen Manage hearing to continue.");
+
+        form.getHearing().setHearingId(earlier);
+        events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
+        assertThat(stored(earlier).getCancelled()).isTrue();
+        assertThat(stored(later).getCancelled()).isFalse();
     }
 
     @Test

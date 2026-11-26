@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 
 @Component
 @AllArgsConstructor
@@ -37,8 +38,9 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .showCondition("showManageHearingPage=\"YES\"")
             .label("manageHearingSeparator", "---")
             .mandatory(PCSCase::getManageHearingOption)
-            .mandatory(PCSCase::getHearingSelection,
-                       "manageHearingOption=\"EDIT\" OR manageHearingOption=\"CANCEL\"", true)
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
+            .mandatory(PCSCase::getHearingSelection, ShowConditions.and(ShowConditions.featureFlagsEnabled(MAKE_ORDER),
+                "(manageHearingOption=\"EDIT\" OR manageHearingOption=\"CANCEL\")"), true)
             .readonly(PCSCase::getHearingSummaryLocation, NEVER_SHOW, true)
             .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
@@ -77,12 +79,10 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             hearingService.clearHearingForm(caseData);
             caseData.setSelectedHearingId(null);
         } else {
-            String selectedId = caseData.getHearingSelection() == null
-                ? null : caseData.getHearingSelection().getValueCode();
             try {
-                var selected = hearingService.requireEditableHearing(details.getId(), selectedId);
+                var selected = hearingService.resolveHearingSelection(details.getId(), caseData);
                 String previousId = caseData.getSelectedHearingId();
-                caseData.setSelectedHearingId(selectedId);
+                caseData.setSelectedHearingId(selected.getId().toString());
                 hearingService.initialiseEditableHearing(details.getId(), caseData, previousId);
                 caseData.getHearing().setHearingSummaryMarkdown(
                     hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingSummaryLocation()));

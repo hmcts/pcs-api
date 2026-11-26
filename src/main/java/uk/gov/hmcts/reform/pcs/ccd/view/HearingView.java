@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingListingStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
@@ -36,9 +35,7 @@ public class HearingView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<HearingEntity> hearings = pcsCaseEntity.getHearings();
         setHearingFields(pcsCase, hearings);
-        boolean showHearingTab = pcsCase.getFeatureFlags() != null
-            && pcsCase.getFeatureFlags().getMakeOrderEnabled() == VerticalYesNo.YES;
-        pcsCase.setHearingListMarkdown(showHearingTab ? renderHearingList(hearings) : null);
+        pcsCase.setHearingListMarkdown(pcsCase.makeOrderEnabled() ? renderHearingList(hearings) : null);
     }
 
     private String renderHearingList(List<HearingEntity> hearings) {
