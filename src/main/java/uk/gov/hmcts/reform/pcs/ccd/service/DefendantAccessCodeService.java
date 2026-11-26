@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
@@ -57,6 +60,8 @@ public class DefendantAccessCodeService {
     private final DocumentIdExtractor documentIdExtractor;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
     private final TestAccessCodeRecorder testAccessCodeRecorder;
+    private final SystemEventExecutor systemEventExecutor;
+    private final TransactionTemplate transactionTemplate;
 
     @Transactional(readOnly = true)
     public List<UUID> findDefendantPartyIdsNeedingAccessCode(long caseReference) {
@@ -71,16 +76,29 @@ public class DefendantAccessCodeService {
             .toList();
     }
 
-    @Transactional
     public void generateForDefendant(long caseReference, UUID defendantPartyId,
                                      boolean firstAttempt, boolean finalAttempt) {
+        Runnable save = transactionTemplate.execute(
+            status -> renderLetters(caseReference, defendantPartyId, firstAttempt, finalAttempt));
+        if (save == null) {
+            return;
+        }
+        systemEventExecutor.execute(caseReference, UUID.randomUUID(), context -> {
+            save.run();
+            return SystemEventResult.withoutStateTransition("accessCodeLetterGenerated",
+                "Access code letter generated");
+        });
+    }
+
+    private Runnable renderLetters(long caseReference, UUID defendantPartyId,
+                                   boolean firstAttempt, boolean finalAttempt) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         // Idempotent: a re-fired payment or a scheduler retry must not mint a second code for a party
         // that already has one. The UNIQUE(case_id, party_id) constraint is the final backstop.
         if (partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(pcsCaseEntity.getId(), defendantPartyId)) {
             log.info("Access code already exists for party {} on case {} - skipping", defendantPartyId, caseReference);
-            return;
+            return null;
         }
 
         ClaimEntity mainClaim = getMainClaim(pcsCaseEntity);
@@ -102,7 +120,12 @@ public class DefendantAccessCodeService {
         // Render every letter before saving anything, so a failure leaves no document or code behind.
         String englishUrl = render(attempt, mainClaim, plaintextAccessCode, ENGLISH, letterContext);
         String welshUrl = walesCase ? render(attempt, mainClaim, plaintextAccessCode, WELSH, letterContext) : null;
+        return () -> saveLetters(attempt, plaintextAccessCode, englishUrl, welshUrl);
+    }
 
+    private void saveLetters(Attempt attempt, String plaintextAccessCode, String englishUrl, String welshUrl) {
+        PcsCaseEntity pcsCaseEntity = attempt.pcsCase();
+        PartyEntity defendant = attempt.defendant();
         try {
             saveLetter(pcsCaseEntity, defendant, englishUrl, ENGLISH);
             if (welshUrl != null) {

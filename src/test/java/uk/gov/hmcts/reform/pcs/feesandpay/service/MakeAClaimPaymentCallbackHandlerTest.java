@@ -13,9 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.event.ClaimIssuePayment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
@@ -45,7 +45,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
 
     @Mock
-    private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
+    private ClaimIssuePayment claimIssuePayment;
     @Mock
     private PartyService partyService;
     @Mock
@@ -73,14 +73,14 @@ class MakeAClaimPaymentCallbackHandlerTest {
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        underTest.handle(callback, feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity, "PENDING_CASE_ISSUED");
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+            verify(claimIssuePayment).issue(taskData.getCaseReference(), "PENDING_CASE_ISSUED");
         } else {
-            verifyNoInteractions(ccdPaymentStateUpdateService);
+            verifyNoInteractions(claimIssuePayment);
         }
     }
 
@@ -96,9 +96,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // When / Then
         assertThatExceptionOfType(PaymentCallbackException.class)
-            .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+            .isThrownBy(() -> underTest.handle(callback, feePaymentEntity, "PENDING_CASE_ISSUED"))
             .withMessageContaining("Unable to process");
-        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimIssuePayment);
     }
 
     @Test
@@ -118,11 +118,11 @@ class MakeAClaimPaymentCallbackHandlerTest {
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
+        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity, "PENDING_CASE_ISSUED"));
 
         // Then
         assertThat(throwable).isEqualTo(expectedException);
-        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimIssuePayment);
     }
 
     private FeesAndPayTaskData buildTaskData() {

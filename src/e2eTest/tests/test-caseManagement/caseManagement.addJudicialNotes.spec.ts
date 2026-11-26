@@ -76,6 +76,7 @@ test.use({ storageState: undefined })
             await performAction('addJudicialNotes', {
               label: addJudicialNotes.notesAboutThisCaseTextLabel,
               noteTextInput: judicialNoteText,
+              submitPayload: submitCaseApiData.submitCasePayload(),
               nextPage: checkYourAnswersJudicialNotes.mainHeader
             });
             await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
@@ -91,7 +92,8 @@ test.use({ storageState: undefined })
             await performAction('validateJudgeNotesTab', {
               table: 'Note 1',
               userInput: judicialNoteText,
-              createdOn: currentTime
+              createdOn: currentTime,
+              submitPayload: submitCaseApiData.submitCasePayload(),
             });
           });
         });
@@ -119,6 +121,7 @@ test.use({ storageState: undefined })
             await performAction('addJudicialNotes', {
               label: addJudicialNotes.notesAboutThisCaseTextLabel,
               noteTextInput: judicialNote1Text,
+              submitPayload: submitCaseApiData.submitCasePayload(),
               nextPage: checkYourAnswersJudicialNotes.mainHeader
             });
             await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
@@ -140,6 +143,7 @@ test.use({ storageState: undefined })
             await performAction('addJudicialNotes', {
               label: addJudicialNotes.notesAboutThisCaseTextLabel,
               noteTextInput: judicialNote2Text,
+              submitPayload: submitCaseApiData.submitCasePayload(),
               nextPage: checkYourAnswersJudicialNotes.mainHeader
             });
             await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
@@ -156,13 +160,15 @@ test.use({ storageState: undefined })
               table: 'Note 2',
               userInput: judicialNote2Text,
               createdOn: currentTime2,
-              index: 0
+              index: 0,
+              submitPayload: submitCaseApiData.submitCasePayload(),
             });
             await performAction('validateJudgeNotesTab', {
               table: 'Note 1',
               userInput: judicialNote1Text,
               createdOn: currentTime1,
-              index: 1
+              index: 1,
+              submitPayload: submitCaseApiData.submitCasePayload(),
             });
           });
         });

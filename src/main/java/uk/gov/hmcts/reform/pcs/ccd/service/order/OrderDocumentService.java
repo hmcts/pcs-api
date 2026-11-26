@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -60,7 +59,7 @@ public class OrderDocumentService {
     private final SystemEventExecutor systemEventExecutor;
     private final DocAssemblyService docAssemblyService;
     private final DocumentImportService documentImportService;
-    private final LocationReferenceService locationReferenceService;
+    private final CaseCourts caseCourts;
     private final PartyService partyService;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
@@ -102,7 +101,7 @@ public class OrderDocumentService {
     public OrderDocumentPayload payload(OrderEntity order, OrderStepEntity issued) {
         PcsCaseEntity pcsCase = order.getPcsCase();
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
-        Optional<CourtVenue> court = court(pcsCase);
+        Optional<CourtVenue> court = caseCourts.of(pcsCase);
         String courtName = court.map(CourtVenue::courtName).orElse(null);
         return OrderDocumentPayload.builder()
             .caseNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
@@ -134,19 +133,5 @@ public class OrderDocumentService {
             .toList();
         return IntStream.range(0, names.size())
             .mapToObj(i -> new OrderParty(names.get(i), names.size() == 1 ? label : label + " " + (i + 1)));
-    }
-
-    /** The court managing the case, from location reference data; the order names none without it. */
-    private Optional<CourtVenue> court(PcsCaseEntity pcsCase) {
-        if (pcsCase.getCaseManagementLocation() == null) {
-            return Optional.empty();
-        }
-        try {
-            return locationReferenceService.getCourtVenues(List.of(pcsCase.getCaseManagementLocation()))
-                .stream().findFirst();
-        } catch (Exception e) {
-            log.warn("No court venue for case {}", pcsCase.getCaseReference(), e);
-            return Optional.empty();
-        }
     }
 }
