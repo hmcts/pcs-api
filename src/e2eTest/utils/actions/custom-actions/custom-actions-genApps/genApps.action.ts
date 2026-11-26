@@ -222,8 +222,10 @@ export class GenAppsAction implements IAction {
     FieldsStore.update(confirmOrder.label as string, userInput);
     if (typeof confirmOrder.draftOrderLabel === 'string') {
       const editor = page.getByRole('textbox', { name: confirmOrder.draftOrderLabel, exact: true });
-      await editor.fill(GEN_APP_DRAFT_ORDER_WORDING);
-      FieldsStore.set(confirmOrder.draftOrderLabel, GEN_APP_DRAFT_ORDER_WORDING);
+      if (await editor.isVisible()) {
+        await editor.fill(GEN_APP_DRAFT_ORDER_WORDING);
+        FieldsStore.set(confirmOrder.draftOrderLabel, GEN_APP_DRAFT_ORDER_WORDING);
+      }
     } else {
       await expect(page.getByRole('textbox', { name: /^Detail the draft order / })).toBeHidden();
     }

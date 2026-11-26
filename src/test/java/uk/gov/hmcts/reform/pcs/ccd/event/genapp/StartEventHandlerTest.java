@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -18,10 +17,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
@@ -49,6 +50,8 @@ class StartEventHandlerTest {
     private FeeApplier feeApplier;
     @Mock
     private DraftOrderWordingAccess draftOrderWordingAccess;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
@@ -57,21 +60,31 @@ class StartEventHandlerTest {
     @BeforeEach
     void setUp() {
         underTest = new StartEventHandler(organisationService, legalRepresentativeService,
-                                          feeApplier, draftOrderWordingAccess);
+                                          feeApplier, draftOrderWordingAccess, featureToggleService);
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldSetDraftWordingVisibilityFromAuthenticatedEligibility(boolean allowed) {
-        when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(allowed);
+    @MethodSource("draftOrderWordingVisibilityScenarios")
+    void shouldSetDraftWordingVisibility(boolean enabled, boolean solicitor, VerticalYesNo expectedVisibility) {
+        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(enabled);
+        if (enabled) {
+            when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(solicitor);
+        }
         when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
             .thenReturn(DynamicList.builder().listItems(List.of()).build());
         PCSCase caseData = PCSCase.builder().xuiGenAppRequest(XuiGenAppRequest.builder().build()).build();
 
         underTest.start(eventPayload(caseData));
 
-        assertThat(caseData.getXuiGenAppRequest().getDraftOrderWordingAllowed())
-            .isEqualTo(VerticalYesNo.from(allowed));
+        assertThat(caseData.getXuiGenAppRequest().getDraftOrderWordingAllowed()).isEqualTo(expectedVisibility);
+    }
+
+    private static Stream<Arguments> draftOrderWordingVisibilityScenarios() {
+        return Stream.of(
+            arguments(false, true, VerticalYesNo.NO),
+            arguments(true, false, VerticalYesNo.NO),
+            arguments(true, true, VerticalYesNo.YES)
+        );
     }
 
     @Test

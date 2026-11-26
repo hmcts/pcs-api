@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -35,10 +35,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -48,6 +48,8 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -111,6 +113,8 @@ class SubmitEventHandlerTest {
 
     @Mock
     private DraftOrderWordingAccess draftOrderWordingAccess;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private SubmitEventHandler underTest;
 
@@ -123,12 +127,13 @@ class SubmitEventHandlerTest {
                                            organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
                                            genAppWaTaskService, objectMapper, organisationService,
-                                           draftOrderWordingAccess
+                                           draftOrderWordingAccess, featureToggleService
         );
     }
 
     @Test
     void shouldRejectDraftWordingFromAnUnsupportedActorEvenWhenClientSetsTheEligibilityFlag() {
+        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
         XuiGenAppRequest request = XuiGenAppRequest.builder()
             .applicationType(GenAppType.SOMETHING_ELSE)
             .draftOrderWording("<p>The hearing is adjourned.</p>")
@@ -144,8 +149,9 @@ class SubmitEventHandlerTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {" ", "\t\n"})
+    @ValueSource(strings = {" ", "\t\n", "<p><br></p>", "<p>&nbsp;</p>"})
     void shouldRequireDraftWordingFromAnEligibleSolicitor(String wording) {
+        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
         when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
         XuiGenAppRequest request = XuiGenAppRequest.builder()
             .applicationType(GenAppType.SOMETHING_ELSE)
@@ -177,13 +183,14 @@ class SubmitEventHandlerTest {
             UUID claimantPartyId = UUID.randomUUID();
             PartyEntity claimantParty = mock(PartyEntity.class);
 
+            when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
+            when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
+
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
                 .applicantPartyId(claimantPartyId.toString())
                 .draftOrderWording("<ol><li>The hearing is adjourned.</li></ol>")
                 .build();
-
-            when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
 
             when(partyService.getPartyEntityById(claimantPartyId, TEST_CASE_REFERENCE))
                 .thenReturn(claimantParty);
@@ -201,18 +208,22 @@ class SubmitEventHandlerTest {
             underTest.submit(eventPayload(caseData));
 
             // Then
+            assertThat(genAppRequest.getDraftOrderWording()).isEqualTo("<ol><li>The hearing is adjourned.</li></ol>");
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, claimantParty, PENDING_GEN_APP_ISSUED);
         }
 
-        @Test
-        void shouldCreateGenAppWithCaseDataAndRepresentedParty() {
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = "<p>Draft wording entered before the flag was switched off.</p>")
+        void shouldSubmitWithoutDraftWordingWhenTheFlagIsOff(String wording) {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
+                .draftOrderWording(wording)
                 .build();
 
             when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
@@ -235,6 +246,8 @@ class SubmitEventHandlerTest {
             // Then
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, representedParty, PENDING_GEN_APP_ISSUED);
+            assertThat(genAppRequest.getDraftOrderWording()).isNull();
+            verifyNoInteractions(draftOrderWordingAccess);
         }
 
         @ParameterizedTest
