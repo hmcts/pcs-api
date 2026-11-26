@@ -14,11 +14,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -35,8 +33,6 @@ import java.util.UUID;
 @Table(name = "case_notification")
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode(of = "id")
 public class CaseNotification {
 
     @Id
@@ -77,7 +73,7 @@ public class CaseNotification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id")
-    private ClaimEntity claimId;
+    private ClaimEntity claim;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "claim_type", nullable = false)

@@ -26,6 +26,9 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 
+    List<DraftCaseDataEntity> findByCaseReferenceAndEventId(
+            long caseReference, EventId eventId);
+
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 
