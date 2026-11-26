@@ -6,10 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -47,9 +45,9 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     private final ClaimWaTaskService claimWaTaskService;
 
     @Override
-    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(claimIssuePayment.name(), this::submit)
+            .event(claimIssuePayment.name())
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
@@ -71,15 +69,6 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.R, UserRole.WLU_ADMIN)
             .grant(Permission.R, UserRole.WLU_TEAM_LEADER)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
-    }
-
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        long caseReference = eventPayload.caseReference();
-        if (caseData.getDateIssued() == null) {
-            issueClaim(caseReference);
-        }
-        return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
     public SystemEventResult issue(long caseReference, String currentState) {

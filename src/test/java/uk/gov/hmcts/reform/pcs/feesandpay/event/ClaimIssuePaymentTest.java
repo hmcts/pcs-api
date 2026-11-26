@@ -13,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -78,6 +76,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(paymentEvent);
+        lenient().when(pcsCaseService.retrieveClaimEntity(TEST_CASE_REFERENCE)).thenReturn(new ClaimEntity());
         // Default: no defendants need a code (tests that schedule override this).
         lenient().when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(anyLong()))
             .thenReturn(List.of());
@@ -85,22 +84,15 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     }
 
     @Test
-    void shouldTransitionToCaseIssued() {
-        SubmitResponse<State> response = callSubmitHandler(PCSCase.builder().build());
-
-        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
-    }
-
-    @Test
-    void shouldSetCaseIssuedDateOnSubmitWhenDateIssuedNotSet() {
-        callSubmitHandler(PCSCase.builder().build());
-
-        verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
+    void shouldConfigurePaymentConfirmationWithoutCcdCallbacks() {
+        assertThat(configuredEvent.getStartHandler()).isNull();
+        assertThat(configuredEvent.getSubmitHandler()).isNull();
+        assertConfiguredAsNeverShow();
     }
 
     @Test
     void shouldScheduleClaimIssuedNotificationWhenDateIssuedNotSet() {
-        callSubmitHandler(PCSCase.builder().build());
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         List<SchedulableInstance<?>> scheduled =
             getScheduledTasks(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR);
@@ -117,7 +109,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(TEST_CASE_REFERENCE))
             .thenReturn(List.of(defendantOne, defendantTwo));
 
-        callSubmitHandler(PCSCase.builder().build());
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         List<SchedulableInstance<?>> accessCodeTasks = getScheduledTasks(ACCESS_CODE_TASK_DESCRIPTOR);
         assertThat(accessCodeTasks).hasSize(2);
@@ -145,7 +137,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(TEST_CASE_REFERENCE))
             .thenReturn(List.of());
 
-        callSubmitHandler(PCSCase.builder().build());
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
         List<SchedulableInstance<?>> scheduled =
@@ -160,7 +152,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     void shouldSkipClaimIssuedNotificationWhenNoClaimFeePaymentFound() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseWithoutFeePayments());
 
-        callSubmitHandler(PCSCase.builder().build());
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
         verify(schedulerClient, never()).scheduleIfNotExists(any());
@@ -168,18 +160,18 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @Test
     void shouldCreateWaTasks() {
-        callSubmitHandler(PCSCase.builder().build());
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         verify(claimWaTaskService).createTasksForIssuedClaim(TEST_CASE_REFERENCE);
     }
 
     @Test
-    void shouldDoNothingOnSubmitWhenDateIssuedAlreadySet() {
-        PCSCase pcsCase = PCSCase.builder()
-            .dateIssued(LocalDateTime.of(2026, 1, 1, 9, 0, 0))
-            .build();
+    void shouldSkipIssueTasksWhenClaimAlreadyIssued() {
+        ClaimEntity claim = new ClaimEntity();
+        claim.setClaimIssuedDate(LocalDateTime.of(2026, 1, 1, 9, 0));
+        when(pcsCaseService.retrieveClaimEntity(TEST_CASE_REFERENCE)).thenReturn(claim);
 
-        callSubmitHandler(pcsCase);
+        paymentEvent.issue(TEST_CASE_REFERENCE, State.CASE_ISSUED.name());
 
         verify(pcsCaseService, never()).setCaseIssuedDate(TEST_CASE_REFERENCE);
         verify(pcsCaseService, never()).loadCase(anyLong());
@@ -200,23 +192,12 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     }
 
     @Test
-    void shouldSetCaseIssuedStateOnSubmit() {
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        SubmitResponse<State> response = callSubmitHandler(pcsCase);
-
-        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
-        verify(claimFormScheduler).scheduleClaimFormGeneration(anyLong());
-    }
-
-    @Test
     void shouldIssueClaimAsSystemEventWhenPendingCaseIssued() {
-        when(pcsCaseService.retrieveClaimEntity(TEST_CASE_REFERENCE)).thenReturn(new ClaimEntity());
-
         SystemEventResult result = paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
 
         assertThat(result).isEqualTo(SystemEventResult.withStateTransition(
             "claimIssuePayment", "Payment Confirmation", State.CASE_ISSUED));
+        verify(claimFormScheduler).scheduleClaimFormGeneration(TEST_CASE_REFERENCE);
         verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
     }
 
