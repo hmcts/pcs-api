@@ -16,9 +16,9 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import uk.gov.hmcts.ccd.sdk.conversion.ConversionException;
-import uk.gov.hmcts.ccd.sdk.conversion.DocumentConverter;
-import uk.gov.hmcts.ccd.sdk.conversion.docmosis.DocmosisRenderService;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocToolkit;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocToolkitException;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.docmosis.DocmosisRenderService;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -52,7 +52,7 @@ class BulkPrintLetterAssemblerTest {
     @DisplayName("Keeps the coversheet as rendered and makes every document print-ready in one even-page PDF")
     void shouldBuildOnePrintReadyLetterBehindTheCoversheet() throws IOException {
         byte[] coversheet = pdfSaying("Jane Doe, 1 High Street, London W1 1AA");
-        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(converterWithDocmosis());
+        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(toolkitWithDocmosis());
 
         byte[] letter = underTest.assemble("CPC-01-IN0 1234-5678-9012-3456", coversheet, List.of(
             new BulkPrintLetterAssembler.LetterDocument("photo.png", "image/png", png()),
@@ -83,7 +83,7 @@ class BulkPrintLetterAssemblerTest {
     @Test
     @DisplayName("Pads each document to an even page count so each starts on a new sheet")
     void shouldPadEachDocumentToAnEvenPageCount() throws IOException {
-        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(converterWithDocmosis());
+        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(toolkitWithDocmosis());
 
         byte[] letter = underTest.assemble("DEF-01-IN0 1234-5678-9012-3456", pdfSaying("Coversheet"), List.of(
             new BulkPrintLetterAssembler.LetterDocument("defence.pdf", "application/pdf", pdfSaying("Defence")),
@@ -99,7 +99,7 @@ class BulkPrintLetterAssemblerTest {
     @DisplayName("Fails the pack with the conversion reason when a document cannot be converted")
     void shouldThrowMergeExceptionWhenADocumentCannotBeConverted() throws IOException {
         BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(
-            DocumentConverter.builder().tempDirectory(tempDir).build());
+            DocToolkit.builder().tempDirectory(tempDir).build());
         byte[] coversheet = pdfSaying("Coversheet");
         List<BulkPrintLetterAssembler.LetterDocument> documents = List.of(
             new BulkPrintLetterAssembler.LetterDocument("statement.docx", DOCX, "docx".getBytes()));
@@ -107,13 +107,13 @@ class BulkPrintLetterAssemblerTest {
         assertThatThrownBy(() -> underTest.assemble("GEN-00-IN0 1234-5678-9012-3456", coversheet, documents))
             .isInstanceOf(BulkPrintMergeException.class)
             .hasMessageContaining("statement.docx")
-            .hasCauseInstanceOf(ConversionException.class);
+            .hasCauseInstanceOf(DocToolkitException.class);
     }
 
     @Test
     @DisplayName("Converts a document stored without a file name, as the defendant access code letter is")
     void shouldConvertADocumentWithNoFileName() throws IOException {
-        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(converterWithDocmosis());
+        BulkPrintLetterAssembler underTest = new BulkPrintLetterAssembler(toolkitWithDocmosis());
 
         byte[] letter = underTest.assemble("CPD-01-IN1 1234-5678-9012-3456", pdfSaying("Coversheet"), List.of(
             new BulkPrintLetterAssembler.LetterDocument(null, "application/pdf", pdfSaying("Your access code")),
@@ -148,7 +148,7 @@ class BulkPrintLetterAssemblerTest {
             .hasToString("LetterDocument[fileName=null, contentType=null, 0 bytes]");
     }
 
-    private DocumentConverter converterWithDocmosis() {
+    private DocToolkit toolkitWithDocmosis() {
         DocmosisRenderService docmosis = (source, fileName, mediaType) -> {
             docmosisCalls.add(fileName + " " + mediaType);
             try {
@@ -158,7 +158,7 @@ class BulkPrintLetterAssemblerTest {
                 throw new IllegalStateException(e);
             }
         };
-        return DocumentConverter.builder().docmosis(docmosis).tempDirectory(tempDir).build();
+        return DocToolkit.builder().docmosis(docmosis).tempDirectory(tempDir).build();
     }
 
     private static String textOf(PDDocument document, int page) throws IOException {

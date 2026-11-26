@@ -1,27 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.conversion.ConversionException;
-import uk.gov.hmcts.ccd.sdk.conversion.ConversionSource;
-import uk.gov.hmcts.ccd.sdk.conversion.ConvertedPdf;
-import uk.gov.hmcts.ccd.sdk.conversion.DocumentConverter;
-import uk.gov.hmcts.ccd.sdk.conversion.PrintOptions;
-import uk.gov.hmcts.ccd.sdk.conversion.PrintPart;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocSource;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocToolkit;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocToolkitException;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfPart;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfRequest;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfResult;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.PrintOptions;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Builds the single PDF a pack is posted as: the coversheet exactly as rendered, then each document converted to
@@ -38,9 +30,6 @@ import java.util.stream.Stream;
 @Service
 public class BulkPrintLetterAssembler {
 
-    private static final FileAttribute<Set<PosixFilePermission>> OWNER_ONLY =
-        PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-
     /**
      * Above the SDK's 20 MiB default: every page is rasterised, so a pack of several documents can pass 20 MiB
      * even when the uploads are small. Send Letter has no request size limit of its own.
@@ -54,39 +43,31 @@ public class BulkPrintLetterAssembler {
      */
     static final int LETTER_DPI = 200;
 
-    private final DocumentConverter documentConverter;
+    private final DocToolkit docToolkit;
     private final PrintOptions printOptions = PrintOptions.bulkPrint().toBuilder()
         .maxOutputBytes(MAX_LETTER_BYTES)
         .resolutionDpi(LETTER_DPI)
         .build();
 
-    public BulkPrintLetterAssembler(DocumentConverter documentConverter) {
-        this.documentConverter = documentConverter;
+    public BulkPrintLetterAssembler(DocToolkit docToolkit) {
+        this.docToolkit = docToolkit;
     }
 
     public byte[] assemble(String title, byte[] coversheet, List<LetterDocument> documents) {
-        Path directory = null;
-        try {
-            // Owner-only: the directory holds case documents, and the temp root is shared.
-            directory = Files.createTempDirectory("pcs-bulk-print-", OWNER_ONLY);
-            List<PrintPart> parts = new ArrayList<>();
-            parts.add(PrintPart.asIs(Files.write(directory.resolve("coversheet.pdf"), coversheet), "coversheet"));
-            for (int i = 0; i < documents.size(); i++) {
-                LetterDocument document = documents.get(i);
-                Path file = Files.write(directory.resolve("document-" + i), document.content());
-                parts.add(PrintPart.convert(
-                    ConversionSource.of(file, nameOf(document, i), document.contentType())));
-            }
-            try (ConvertedPdf letter = documentConverter.toPrintReadyLetter(title, parts, printOptions)) {
-                return Files.readAllBytes(letter.file());
-            }
-        } catch (ConversionException e) {
+        PdfRequest.Builder request = PdfRequest.builder(title)
+            .document(PdfPart.builder(DocSource.bytes(coversheet, "coversheet.pdf")).unchanged().build())
+            .print(printOptions);
+        for (int i = 0; i < documents.size(); i++) {
+            LetterDocument document = documents.get(i);
+            request.document(DocSource.bytes(document.content(), nameOf(document, i), document.contentType()));
+        }
+        try (PdfResult letter = docToolkit.render(request.build())) {
+            return Files.readAllBytes(letter.file());
+        } catch (DocToolkitException e) {
             throw new BulkPrintMergeException(
                 "Failed to convert bulk-print letter " + title + ": " + e.getMessage(), e);
         } catch (IOException e) {
             throw new BulkPrintMergeException("Failed to assemble bulk-print letter " + title, e);
-        } finally {
-            deleteQuietly(directory);
         }
     }
 
@@ -124,23 +105,6 @@ public class BulkPrintLetterAssembler {
         public String toString() {
             return "LetterDocument[fileName=" + fileName + ", contentType=" + contentType + ", "
                 + (content == null ? 0 : content.length) + " bytes]";
-        }
-    }
-
-    private static void deleteQuietly(Path directory) {
-        if (directory == null) {
-            return;
-        }
-        try (Stream<Path> files = Files.walk(directory)) {
-            files.sorted(Comparator.reverseOrder()).forEach(path -> {
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
-        } catch (IOException | UncheckedIOException e) {
-            // Best effort: the temporary directory is cleared with the pod's temp space.
         }
     }
 }
