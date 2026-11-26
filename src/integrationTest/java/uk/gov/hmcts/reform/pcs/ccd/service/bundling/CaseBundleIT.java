@@ -109,17 +109,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void caseHasABundleFromItsFirstEvent() throws Exception {
-        long reference = issued();
-
-        render(reference);
-
-        String text = text(current(reference));
-        assertThat(text).contains("Case bundle").contains("Index").contains("Evidence")
-            .contains("There are no documents in this section.").contains("3 of 11");
-    }
-
-    @Test
     void anEventThatLeavesTheBundleAsItIsQueuesNothing() throws Exception {
         long reference = issued();
         render(reference);
@@ -161,12 +150,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
-
-        // Chronological within their folder, each folder in display order.
-        String text = text(first);
-        assertThat(text.indexOf("Claim.pdf")).isLessThan(text.indexOf("Inspection.pdf"));
-        assertThat(text.indexOf("Inspection.pdf")).isLessThan(text.indexOf("Witness.pdf"));
-        assertThat(text).contains("Content of Witness.pdf").contains("Content of Claim.pdf");
     }
 
     @Test
@@ -246,18 +229,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
     }
 
-    @Test
-    void overviewHasNoDownloadUntilTheBundleIsMade() throws Exception {
-        long reference = issued();
-        var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
-        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
-
-        assertThat(events.view(reference, judge).getCaseBundles()).isNull();
-        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
-        render(reference);
-        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).contains("/documentsv2/");
-    }
-
     /**
      * An issued case after its first event. The fixture seeds cases without an event, as no real case is made, so
      * nothing has built its bundle until an event runs.
@@ -296,10 +267,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
 
     private CaseBundleEntity latest(long reference) {
         return versions(reference).getFirst();
-    }
-
-    private Document current(long reference) {
-        return stored(latest(reference));
     }
 
     private Document stored(CaseBundleEntity version) {

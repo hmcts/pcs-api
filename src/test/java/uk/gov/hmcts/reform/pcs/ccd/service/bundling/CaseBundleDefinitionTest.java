@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocSource;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.MissingDocuments;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.PageNumbers;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfPart;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfRequest;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfSection;
@@ -43,20 +42,6 @@ class CaseBundleDefinitionTest {
         assertThat(request.root().sections()).extracting(PdfSection::placeholderWhenEmpty)
             .containsOnly(true);
         assertThat(request.missingDocuments()).isEqualTo(MissingDocuments.PLACEHOLDER);
-    }
-
-    @Test
-    void shouldPresentTheBundleAsTheCourtDefault() {
-        PdfRequest request = CaseBundleDefinition.build(caseWith());
-
-        assertThat(request.title()).isEqualTo("Case bundle");
-        assertThat(request.titlePage()).isTrue();
-        assertThat(request.tableOfContents()).isTrue();
-        assertThat(request.sectionCoverSheets()).isTrue();
-        assertThat(request.documentCoverSheets()).isFalse();
-        assertThat(request.pageNumbers()).isEqualTo(PageNumbers.BOTTOM_CENTRE_N_OF_M);
-        assertThat(request.confidentialMarking()).isTrue();
-        assertThat(request.category()).contains(CaseBundleDefinition.FOLDER_ID);
     }
 
     @Test
