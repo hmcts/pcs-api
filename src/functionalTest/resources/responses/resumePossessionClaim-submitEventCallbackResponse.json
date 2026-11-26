@@ -19,7 +19,7 @@
         },
         {
           "value": {
-            "emailAddress": "claimant-contact@example.com",
+            "emailAddress": "pcs-solicitor1@test.com",
             "phoneNumberProvided": "NO"
           }
         }
@@ -28,7 +28,7 @@
         {
           "id": "[[IGNORE_VALUE]]",
           "value": {
-            "emailAddress": "claimant-contact@example.com",
+            "emailAddress": "pcs-solicitor1@test.com",
             "phoneNumberProvided": "NO"
           }
         }
