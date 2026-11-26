@@ -449,6 +449,10 @@ ccd:
       first-name: PCS
       last-name: System
   doc-toolkit:
+    # The bundle's documents are fetched from CDAM, and the bundle stored there, as the system user.
+    system-user:
+      username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+      password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
     jobs:
       # Keeps the judges' case bundle up to date: after every case event the bundle's definition
       # is built, and a render is queued when it changed.

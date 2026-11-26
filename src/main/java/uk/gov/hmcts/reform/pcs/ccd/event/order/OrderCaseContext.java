@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -14,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -40,7 +40,7 @@ class OrderCaseContext {
     private final AddressMapper addressMapper;
     private final PartyService partyService;
     private final OrderTasks orderTasks;
-    private final CaseBundles bundles;
+    private final CaseBundleRepository bundles;
     private final UserRoleService roles;
     private final CaseCourts caseCourts;
 
@@ -85,10 +85,10 @@ class OrderCaseContext {
 
     /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */
     private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
-        if (!bundles.enabled() || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+        if (!JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
             return null;
         }
-        return bundles.current(pcsCase)
+        return bundles.findFirstByCaseIdOrderByCaseRevisionDesc(pcsCase.getId())
             .map(bundle -> new OrderStart.CaseBundle(bundle.getDocumentId(), bundle.getFileName(),
                                                      bundle.getCreatedAt()))
             .orElse(null);

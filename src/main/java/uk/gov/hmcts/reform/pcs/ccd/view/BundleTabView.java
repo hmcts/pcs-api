@@ -11,9 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundles;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -36,21 +36,18 @@ public class BundleTabView {
     private static final DateTimeFormatter LAST_UPDATED =
         DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mma", Locale.UK).withZone(ZoneId.of("Europe/London"));
 
-    private final CaseBundles bundles;
+    private final CaseBundleRepository bundles;
     private final UserRoleService roles;
     private final FeatureToggleService features;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
-        if (!bundles.enabled()) {
-            return;
-        }
         // The judge roles are all organisational, so no case-level lookup is needed.
         var user = roles.getCurrentUserOrganisationalRoles();
         if (!JudicialReadAccess.isJudge(user.roles())
             || !features.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, user.userId())) {
             return;
         }
-        List<CaseBundleEntity> versions = bundles.versions(entity);
+        List<CaseBundleEntity> versions = bundles.findByCaseIdOrderByCaseRevisionDesc(entity.getId());
         if (versions.isEmpty()) {
             return;
         }
