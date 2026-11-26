@@ -16,11 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.scheduleeviction.ScheduleEvictionRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.scheduleeviction.ScheduleEvictionStart;
+import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.ScheduledEvictionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.ScheduledEvictionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
@@ -32,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -54,6 +55,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     static final String CAN_SCHEDULE_EVICTION = "enfShowConditions.scheduleEviction=\"Yes\"";
     static final String NOT_AVAILABLE = "Scheduling evictions is not available";
     static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
+    static final String WARRANT_NO_LONGER_AWAITING_SCHEDULING = "This warrant is no longer awaiting scheduling";
     static final String DATE_REQUIRED = "Enter the date and time of the eviction";
     static final String DISPENSE_WITH_SERVICE_REQUIRED =
         "Select whether the court has given permission to dispense with service";
@@ -66,6 +68,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     private final AddressFormatter addressFormatter;
     private final RecipientAddressResolver recipientAddressResolver;
     private final FeatureToggleService featureToggleService;
+    private final EnforcementOrderMediator enforcementOrderMediator;
 
     public ScheduleEviction(PcsCaseService pcsCaseService,
                             ScheduledEvictionRepository scheduledEvictionRepository,
@@ -74,7 +77,8 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
                             AddressMapper addressMapper,
                             AddressFormatter addressFormatter,
                             RecipientAddressResolver recipientAddressResolver,
-                            FeatureToggleService featureToggleService) {
+                            FeatureToggleService featureToggleService,
+                            EnforcementOrderMediator enforcementOrderMediator) {
         this.pcsCaseService = pcsCaseService;
         this.scheduledEvictionRepository = scheduledEvictionRepository;
         this.caseReferenceFormatter = caseReferenceFormatter;
@@ -83,13 +87,14 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
         this.addressFormatter = addressFormatter;
         this.recipientAddressResolver = recipientAddressResolver;
         this.featureToggleService = featureToggleService;
+        this.enforcementOrderMediator = enforcementOrderMediator;
     }
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .externalEvent(SCHEDULE_EVICTION, this::submit)
-            .forState(State.CASE_ISSUED)
+            .forStates(EventStates.scheduleEviction())
             .name("Schedule eviction")
             .showCondition(ShowConditions.and(
                 ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
@@ -124,7 +129,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(submit.caseReference());
         EnforcementOrderEntity warrantApplication = warrantAwaitingScheduling(pcsCase);
         if (!warrantApplication.getId().equals(request.enforcementApplicationId())) {
-            throw ExternalRejection.because(NO_WARRANT_AWAITING_SCHEDULING);
+            throw ExternalRejection.because(WARRANT_NO_LONGER_AWAITING_SCHEDULING);
         }
         LocalDateTime evictionDate = validEvictionDate(request.scheduledEvictionDate());
         if (request.courtGivenPermissionToDispenseWithService() == null) {
@@ -142,14 +147,12 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /**
-     * The warrant awaiting scheduling on the case. A change is coming to limit a case to one active warrant at a
-     * time, until then a case can have more than one, so this uses the latest.
+     * The active enforcement application on the case, when it is a warrant awaiting scheduling.
      */
     private EnforcementOrderEntity warrantAwaitingScheduling(PcsCaseEntity pcsCase) {
-        return pcsCase.getEnforcementOrders().stream()
+        return enforcementOrderMediator.getEnforcementOrder(pcsCase)
             .filter(application -> application.getState() == AWAITING_SCHEDULING)
             .filter(application -> application.getWarrantDetails() != null)
-            .max(Comparator.comparing(application -> application.getWarrantDetails().getCreated()))
             .orElseThrow(() -> ExternalRejection.because(NO_WARRANT_AWAITING_SCHEDULING));
     }
 

@@ -98,15 +98,14 @@ class EnforcementEventShowConditionsViewTest {
     }
 
     @Test
-    void shouldNotAllowScheduleEvictionForAnApplicationWithoutAWarrant() {
+    void shouldNotAllowScheduleEvictionWhenActiveEnforcementOrderHasNoWarrant() {
         // Given
-        PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         EnforcementOrderEntity application = EnforcementOrderEntity.builder()
             .state(EnforcementState.AWAITING_SCHEDULING)
             .build();
-        pcsCaseEntity.getEnforcementOrders().add(application);
         when(enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)).thenReturn(Optional.of(application));
+        PCSCase pcsCase = PCSCase.builder().build();
 
         // When
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);

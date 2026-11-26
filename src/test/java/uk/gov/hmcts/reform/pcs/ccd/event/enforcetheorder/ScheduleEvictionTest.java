@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.scheduleeviction.ScheduleEvictionRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.scheduleeviction.ScheduleEvictionStart;
+import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.ScheduledEvictionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
@@ -44,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,6 +78,8 @@ class ScheduleEvictionTest extends BaseEventTest {
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private EnforcementOrderMediator enforcementOrderMediator;
 
     @InjectMocks
     private ScheduleEviction underTest;
@@ -90,6 +95,11 @@ class ScheduleEvictionTest extends BaseEventTest {
             ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
             "enfShowConditions.scheduleEviction=\"Yes\""
         ));
+    }
+
+    @Test
+    void shouldBeAvailableInScheduleEvictionStates() {
+        assertConfiguredForStates(EventStates.scheduleEviction());
     }
 
     @Test
@@ -188,14 +198,14 @@ class ScheduleEvictionTest extends BaseEventTest {
         givenCaseWithWarrantAwaitingScheduling();
 
         assertThat(submitRejection(new ScheduleEvictionRequest(UUID.randomUUID(), VerticalYesNo.NO, EVICTION_DATE)))
-            .containsExactly(ScheduleEviction.NO_WARRANT_AWAITING_SCHEDULING);
+            .containsExactly(ScheduleEviction.WARRANT_NO_LONGER_AWAITING_SCHEDULING);
         verifyNoInteractions(scheduledEvictionRepository);
     }
 
     private void givenCaseWithWarrantAwaitingScheduling() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
-        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
-            .thenReturn(caseWithWarrant(EnforcementState.AWAITING_SCHEDULING));
+        PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
     }
 
     private PcsCaseEntity caseWithWarrant(EnforcementState state) {
@@ -219,6 +229,7 @@ class ScheduleEvictionTest extends BaseEventTest {
                                           .created(Instant.now())
                                           .build());
         pcsCase.getEnforcementOrders().add(application);
+        when(enforcementOrderMediator.getEnforcementOrder(pcsCase)).thenReturn(Optional.of(application));
         return pcsCase;
     }
 
