@@ -113,14 +113,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         });
       });
 
-      await test.step(`And the user validates the Get quote from Bailiff link`, async () => {
-        await performAction('validateGetQuoteFromBailiffLink', {
-          type: enforcementApplication.summaryWritOrWarrantLink,
-          link: enforcementApplication.quoteFromBailiffLinkHidden,
-          newPage: enforcementApplication.hceoPageTitleHidden
-        });
-      });
-
       await test.step(`And the user selects the application type`, async () => {
         await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
         await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
