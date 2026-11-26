@@ -22,7 +22,8 @@ public enum FeatureFlag {
     MAKE_ORDER("make-order-enabled", false),
     ENFORCEMENT("enforcement-enabled", false),
     HMC_INTEGRATION("hmc-integration-enabled", false),
-    CASE_MANAGEMENT_R2("case-management-r-2-enabled", false);
+    CASE_MANAGEMENT_R2("case-management-r-2-enabled", false),
+    BAILIFF_MANAGEMENT_ENABLED("bailiff-management-enabled", false);
 
     private final String key;
     private final boolean defaultValue;
