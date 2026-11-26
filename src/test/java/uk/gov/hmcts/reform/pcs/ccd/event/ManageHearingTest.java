@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -139,6 +140,7 @@ public class ManageHearingTest extends BaseEventTest {
             // Given
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
+                .featureFlags(FeatureFlags.builder().makeOrderEnabled(VerticalYesNo.YES).build())
                 .hearing(new Hearing())
                 .build();
 

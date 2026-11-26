@@ -88,9 +88,17 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setPartyMultiSelectionList(hearingService.buildPartyList(pcsCaseEntity));
         setHearingLocation(eventPayload, pcsCase);
 
-        pcsCase.setHearingSelection(hearingService.buildHearingSelection(pcsCaseEntity));
         pcsCase.setSelectedHearingId(null);
-        if (pcsCase.getHearingSelection().getListItems().isEmpty()) {
+        boolean hasHearing;
+        if (pcsCase.makeOrderEnabled()) {
+            var selection = hearingService.buildHearingSelection(pcsCaseEntity);
+            pcsCase.setHearingSelection(selection);
+            hasHearing = !selection.getListItems().isEmpty();
+        } else {
+            pcsCase.setHearingSelection(null);
+            hasHearing = hearingService.findEditableHearing(pcsCaseEntity).isPresent();
+        }
+        if (!hasHearing) {
             hearingService.clearHearingForm(pcsCase);
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);

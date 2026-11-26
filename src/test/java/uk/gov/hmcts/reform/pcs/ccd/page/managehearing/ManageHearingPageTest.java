@@ -48,12 +48,24 @@ class ManageHearingPageTest extends BasePageTest {
             .toList();
 
         assertThat(fields)
-            .filteredOn(field -> List.of("selectedHearingId", "hearingSummaryLocation").contains(field.getId()))
-            .hasSize(2)
+            .filteredOn(field -> List.of("selectedHearingId", "hearingSummaryLocation", "featureFlags")
+                .contains(field.getId()))
+            .hasSize(3)
             .allSatisfy(field -> {
                 assertThat(field.getShowCondition()).isEqualTo(NEVER_SHOW);
                 assertThat(field.getContext()).isEqualTo(DisplayContext.ReadOnly);
                 assertThat(field.isRetainHiddenValue()).isTrue();
+            });
+    }
+
+    @Test
+    void shouldRequirePickerOnlyForFlaggedEditAndCancel() {
+        assertThat(event.getFields().getFields()).map(Field.FieldBuilder::build)
+            .filteredOn(field -> "hearingSelection".equals(field.getId()))
+            .singleElement().satisfies(field -> {
+                assertThat(field.getContext()).isEqualTo(DisplayContext.Mandatory);
+                assertThat(field.getShowCondition()).isEqualTo("featureFlags.makeOrderEnabled=\"YES\" AND "
+                    + "(manageHearingOption=\"EDIT\" OR manageHearingOption=\"CANCEL\")");
             });
     }
 
@@ -113,7 +125,7 @@ class ManageHearingPageTest extends BasePageTest {
     void shouldLoadTheSelectedHearingForEditing() {
         PCSCase caseData = selected(ManageHearingOption.EDIT);
         HearingEntity hearing = HearingEntity.builder().id(2).build();
-        when(hearingService.requireEditableHearing(TEST_CASE_REFERENCE, "2")).thenReturn(hearing);
+        when(hearingService.resolveHearingSelection(TEST_CASE_REFERENCE, caseData)).thenReturn(hearing);
         doAnswer(invocation -> {
             caseData.setHearing(Hearing.builder().hearingId(2).build());
             return null;
@@ -131,7 +143,7 @@ class ManageHearingPageTest extends BasePageTest {
     void shouldLoadTheSelectedHearingForCancellation() {
         PCSCase caseData = selected(ManageHearingOption.CANCEL);
         HearingEntity hearing = HearingEntity.builder().id(2).build();
-        when(hearingService.requireEditableHearing(TEST_CASE_REFERENCE, "2")).thenReturn(hearing);
+        when(hearingService.resolveHearingSelection(TEST_CASE_REFERENCE, caseData)).thenReturn(hearing);
         doAnswer(invocation -> {
             caseData.setHearing(Hearing.builder().hearingId(2).build());
             return null;
@@ -147,7 +159,7 @@ class ManageHearingPageTest extends BasePageTest {
     @Test
     void shouldAskForAnAvailableHearingWhenSelectionIsInvalid() {
         PCSCase caseData = selected(ManageHearingOption.EDIT);
-        when(hearingService.requireEditableHearing(TEST_CASE_REFERENCE, "2"))
+        when(hearingService.resolveHearingSelection(TEST_CASE_REFERENCE, caseData))
             .thenThrow(new HearingNotFoundException("Select an available hearing on this case"));
 
         assertThat(callMidEventHandler(caseData).getErrors())

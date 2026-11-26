@@ -1,11 +1,11 @@
 type BreathingSpaceDate = { day: string; month: string; year: string };
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
-import test, { expect, Page } from '@playwright/test';
+import test, { errors, expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import {formatDateTimeNonBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -554,8 +554,16 @@ private formatDisplayDate(entered: string): string {
     if (manageHearingOption.option === manageHearing.editAHearingRadioOption
       || manageHearingOption.option === manageHearing.cancelAHearingRadioOption) {
       const hearingPicker = page.getByRole('combobox', { name: 'Which hearing do you want to manage?' });
-      const seededHearing = hearingPicker.getByRole('option', { name: /^Application hearing — / });
-      await hearingPicker.selectOption(await seededHearing.evaluate((option: HTMLOptionElement) => option.value));
+      // The flag-off journey has no picker. Allow the flag-on field time to render after the radio changes.
+      const pickerVisible = await hearingPicker.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
+        .then(() => true, error => {
+          if (error instanceof errors.TimeoutError) return false;
+          throw error;
+        });
+      if (pickerVisible) {
+        const seededHearing = hearingPicker.getByRole('option', { name: /^Application hearing — / });
+        await hearingPicker.selectOption(await seededHearing.evaluate((option: HTMLOptionElement) => option.value));
+      }
     }
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }

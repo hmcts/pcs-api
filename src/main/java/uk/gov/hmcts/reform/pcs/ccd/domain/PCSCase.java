@@ -1249,4 +1249,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
 
+    public boolean makeOrderEnabled() {
+        return featureFlags != null && featureFlags.getMakeOrderEnabled() == VerticalYesNo.YES;
+    }
 }
