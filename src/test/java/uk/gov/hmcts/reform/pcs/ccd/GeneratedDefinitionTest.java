@@ -166,6 +166,40 @@ class GeneratedDefinitionTest {
     }
 
     @Test
+    void bailiffPersonasHaveRegisteredAmMappingsAndCaseTypePermissions() {
+        List<JsonNode> mappings = rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json"));
+        List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json"));
+        for (String role : List.of("bailiff", "bailiff-admin", "bailiff-manager")) {
+            assertThat(mappings).filteredOn(row -> role.equals(row.path("RoleName").asText()))
+                .singleElement().satisfies(row -> {
+                    assertThat(row.path("AccessProfiles").asText()).isEqualTo(role);
+                    assertThat(row.path("Disabled").asText()).isEqualTo("N");
+                });
+            assertThat(permissions).filteredOn(row -> role.equals(row.path("UserRole").asText()))
+                .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("CRU"));
+        }
+        // Team Leader is the Manager persona, not a fourth AM role.
+        assertThat(mappings).noneMatch(row -> "bailiff-team-leader".equals(row.path("RoleName").asText()));
+    }
+
+    @Test
+    void basicEnforcementRoleHasOnlyTheExistingGlobalSearchAccessProfile() {
+        assertThat(rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json")))
+            .filteredOn(row -> "hmcts-enforcement".equals(row.path("RoleName").asText()))
+            .singleElement().satisfies(row -> assertThat(row.path("AccessProfiles").asText()).isEqualTo("GS_profile"));
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json")))
+            .filteredOn(row -> "GS_profile".equals(row.path("UserRole").asText()))
+            .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
+    }
+
+    @Test
+    void bailiffRoleRegistrationDoesNotAssignAnyEvents() {
+        Set<String> roles = Set.of("bailiff", "bailiff-admin", "bailiff-manager", "hmcts-enforcement");
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseEvent")))
+            .noneMatch(row -> roles.contains(row.path("UserRole").asText()));
+    }
+
+    @Test
     void declaredFieldAccessIsNotWidenedByRoleLessTabs() {
         assertThat(readers.get("dashboardData")).containsExactlyInAnyOrderElementsOf(DEFENDANT_PROFILES);
         assertThat(readers.get("caseFileView")).containsExactlyInAnyOrderElementsOf(DOCUMENT_PROFILES);
