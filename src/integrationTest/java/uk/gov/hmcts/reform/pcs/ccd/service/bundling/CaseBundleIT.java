@@ -320,8 +320,8 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private void render(long reference) {
         await().atMost(Duration.ofSeconds(60)).pollInterval(Duration.ofMillis(50)).until(() -> {
             worker.worker().poll();
-            return jdbc.queryForObject("select count(*) from bundling.doc_job where case_reference = ?"
-                + " and state in ('QUEUED', 'IN_PROGRESS')", Integer.class, reference) == 0;
+            return jdbc.queryForObject("select count(*) from bundling.doc_job where case_reference = ?",
+                Integer.class, reference) == 0;
         });
     }
 
