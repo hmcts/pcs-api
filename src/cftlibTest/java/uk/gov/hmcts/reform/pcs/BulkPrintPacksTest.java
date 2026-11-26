@@ -333,7 +333,6 @@ class BulkPrintPacksTest extends CftlibTest {
         }
     }
 
-    /** Pack documents are rasterised; full print-ready checks live in TestBulkPrintTest. */
     /**
      * A pack of one-page parts: the coversheet, then converted documents. Each part is followed by a blank page, so
      * every part starts on a new sheet when printed duplex.

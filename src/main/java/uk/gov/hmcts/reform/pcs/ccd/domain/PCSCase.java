@@ -694,13 +694,6 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(
-        label = "Documents to post",
-        hint = "Test support only. Each file is converted to the bulk print standard and posted to the claimant "
-            + "in one letter."
-    )
-    private List<ListValue<Document>> testBulkPrintDocuments;
-
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
