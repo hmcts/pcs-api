@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,21 +36,23 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureFlagViewTest {
 
-    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.of(
-        CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled,
-        RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
-        RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
-        RELEASE_1B, FeatureFlags::getRelease1bEnabled,
-        RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
-        WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
-        CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
-        MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
-        ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
-        CASE_MANAGEMENT_R2, FeatureFlags::getCaseManagementR2Enabled
+    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.ofEntries(
+        entry(CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled),
+        entry(RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled),
+        entry(RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled),
+        entry(RELEASE_1B, FeatureFlags::getRelease1bEnabled),
+        entry(RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled),
+        entry(WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled),
+        entry(CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled),
+        entry(MAKE_ORDER, FeatureFlags::getMakeOrderEnabled),
+        entry(ENFORCEMENT, FeatureFlags::getEnforcementEnabled),
+        entry(CASE_MANAGEMENT_R2, FeatureFlags::getCaseManagementR2Enabled),
+        entry(DEFENDANT_GENERAL_APPLICATIONS_R_2, FeatureFlags::getDefendantGeneralApplicationsR2Enabled)
     );
 
     @Mock

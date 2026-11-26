@@ -26,6 +26,8 @@ public class FeatureFlagView {
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
                                     .enforcementEnabled(getFlag(FeatureFlag.ENFORCEMENT))
                                     .caseManagementR2Enabled(getFlag(FeatureFlag.CASE_MANAGEMENT_R2))
+                                    .defendantGeneralApplicationsR2Enabled(getFlag(
+                                        FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2))
                                     .build());
     }
 

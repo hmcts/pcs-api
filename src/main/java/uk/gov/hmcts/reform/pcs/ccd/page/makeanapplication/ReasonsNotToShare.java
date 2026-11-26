@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -50,7 +51,10 @@ public class ReasonsNotToShare implements CcdPageConfiguration {
         pageBuilder
             .page("reasonsNotToShare")
             .pageLabel("Are there any reasons that this application should not be shared with other parties?")
-            .showCondition(fieldEquals("xui_genapp_OtherPartiesAgreed", VerticalYesNo.NO))
+            .showCondition(
+                ShowConditions.and(fieldEquals("xui_genapp_ShowNoticeScreens", VerticalYesNo.YES),
+                                   fieldEquals("xui_genapp_OtherPartiesAgreed", VerticalYesNo.NO))
+                )
             .label("reasonsNotToShare-lineSeparator", "---")
             .label("reasonsNotToShare-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)

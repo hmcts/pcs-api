@@ -8,9 +8,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsDisabled;
+
 
 @Slf4j
 @AllArgsConstructor
@@ -44,27 +49,42 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .page("chooseAnApplication", this::midEvent)
             .pageLabel("Choose an application")
             .label("chooseAnApplication-lineSeparator", "---")
-            .label("chooseAnApplication-info", INFO_MARKDOWN)
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
+            .label("chooseAnApplication-info", INFO_MARKDOWN, featureFlagsDisabled(
+                FeatureFlag.DEFENDANT_GENERAL_APPLICATIONS_R_2))
             .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true)
             .readonly(PCSCase::getCurrentRepresentedPartyName, NEVER_SHOW, true)
             .complex(PCSCase::getXuiGenAppRequest)
+            .mandatory(XuiGenAppRequest::getApplicationTypeOptionList)
+            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getSuspendFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getShowHwfScreens, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getShowNoticeScreens, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
-            .mandatory(XuiGenAppRequest::getDefendantGenAppType)
             .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-
+    public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                 CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
-        xuiGenAppRequest.setApplicationType(xuiGenAppRequest.getDefendantGenAppType().toGenAppType());
+
+        String selectedApplicationType = xuiGenAppRequest.getApplicationTypeOptionList().getValue().getCode();
+        xuiGenAppRequest.setApplicationType(GenAppType.valueOf(selectedApplicationType));
+
+        GenAppType genAppType = xuiGenAppRequest.getApplicationType();
+
+        if (genAppType != GenAppType.SUSPEND) {
+            xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.YES);
+        } else {
+            xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.NO);
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
+
 }
