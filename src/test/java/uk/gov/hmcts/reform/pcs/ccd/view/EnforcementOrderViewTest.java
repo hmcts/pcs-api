@@ -11,10 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,38 +68,6 @@ class EnforcementOrderViewTest {
         // Then
         verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         assertThat(pcsCase.getEnforcementOrder()).isNull();
-    }
-
-    @Test
-    void shouldSetMakeAnApplicationUrlWhenCaseIssued() {
-        // Given
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(false);
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertThat(pcsCase.getEnforcementOrder().getMakeAnApplicationUrl())
-            .isEqualTo("/cases/case-details/1234/trigger/claimantMakeAnApplication");
-    }
-
-    @Test
-    void shouldSetMakeAnApplicationUrlOnDraftEnforcementOrder() {
-        // Given
-        EnforcementOrder draftEnforcementOrder = EnforcementOrder.builder().build();
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
-            .thenReturn(Optional.of(PCSCase.builder().enforcementOrder(draftEnforcementOrder).build()));
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        underTest.setCaseFields(pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertThat(pcsCase.getEnforcementOrder()).isSameAs(draftEnforcementOrder);
-        assertThat(draftEnforcementOrder.getMakeAnApplicationUrl())
-            .isEqualTo("/cases/case-details/1234/trigger/claimantMakeAnApplication");
     }
 
     private static Stream<Arguments> enforcementDraftScenarios() {

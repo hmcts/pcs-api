@@ -70,10 +70,6 @@ public class EnforcementOrder {
     @External
     private String writFeeAmount;
 
-    @CCD(searchable = false)
-    @External
-    private String makeAnApplicationUrl;
-
     private String warrantOfRestitutionInfoText;
 
     @CCD(label = "Are you sure you want to permanently delete this draft application? "
