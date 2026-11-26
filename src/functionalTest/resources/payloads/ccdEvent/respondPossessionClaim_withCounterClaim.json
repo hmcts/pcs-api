@@ -1,0 +1,84 @@
+{
+  "possessionClaimResponse": {
+    "draftVersion": "0",
+    "defendantResponses": {
+      "dateOfBirth": "2000-02-01",
+      "counterClaim": {
+        "claimType": "PAYMENT_OR_COMPENSATION",
+        "claimAmount": "10000",
+        "counterClaimFor": "Test What is your counterclaim for",
+        "needHelpWithFees": "NO",
+        "isClaimAmountKnown": "YES",
+        "counterClaimAgainst": [
+          {
+            "id": "9a20b4f1-0786-4ce9-b381-bd4bd5a3c5e3",
+            "value": {
+              "address": {
+                "Country": "United Kingdom",
+                "PostCode": "SW1H 9AJ",
+                "PostTown": "London",
+                "AddressLine1": "Ministry Of Justice",
+                "AddressLine2": "Seventh Floor 102 Petty France"
+              },
+              "orgName": "Possession Claims Solicitor Org"
+            }
+          }
+        ],
+        "counterClaimReasons": "test What are your reasons for making the counterclaim"
+      },
+      "disputeClaim": "NO",
+      "hasSolicitor": "NO",
+      "contactByPost": "NO",
+      "contactByEmail": "YES",
+      "contactByPhone": "NO",
+      "freeLegalAdvice": "NO",
+      "makeCounterClaim": "YES",
+      "paymentAgreement": {
+        "anyPaymentsMade": "NO",
+        "repaymentPlanAgreed": "NO",
+        "repayArrearsInstalments": "NO"
+      },
+      "completedSections": [
+        "START_NOW_AND_DETAILS",
+        "PERSONAL_DETAILS",
+        "DISPUTE_AND_TENANCY",
+        "PAYMENTS",
+        "SITUATION_AND_CIRCUMSTANCES",
+        "INCOME_AND_EXPENDITURE",
+        "UPLOAD_FILES"
+      ],
+      "defendantDocuments": [],
+      "otherConsiderations": "NO",
+      "householdCircumstances": {
+        "otherTenants": "NO",
+        "otherDependants": "NO",
+        "dependantChildren": "NO",
+        "exceptionalHardship": "NO",
+        "alternativeAccommodation": "NO",
+        "shareIncomeExpenseDetails": "NO",
+        "shareAdditionalCircumstances": "NO"
+      },
+      "tenancyTypeConfirmation": "YES",
+      "possessionNoticeReceived": "NO",
+      "defendantNameConfirmation": "YES",
+      "propertyAddressConfirmation": "YES",
+      "tenancyStartDateConfirmation": "YES",
+      "counterClaimWantToUploadFiles": "NO",
+      "rentArrearsAmountConfirmation": "YES"
+    },
+    "defendantContactDetails": {
+      "party": {
+        "address": {
+          "County": "",
+          "Country": "United Kingdom",
+          "PostCode": "W3 7RX",
+          "PostTown": "London",
+          "AddressLine1": "3 Second Avenue",
+          "AddressLine2": "",
+          "AddressLine3": ""
+        },
+        "emailAddress": "test@test.com"
+      }
+    }
+  }
+}

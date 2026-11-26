@@ -11,10 +11,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.PCSApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
+import uk.gov.hmcts.reform.pcs.functional.testutils.TestUsers;
 import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 
 import java.util.Map;
@@ -25,7 +25,7 @@ import java.util.Map;
 class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
 
     @Steps
-    ApiSteps apiSteps;
+    PCSApiSteps apiSteps;
 
     private static final Long caseId = RandomNumberUtil.generateRandomNumber(16);
     private static final String caseType = CaseType.getCaseType();
@@ -41,7 +41,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.solicitorUser);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "createPossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
@@ -61,7 +61,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.solicitorUser);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "createPossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
@@ -82,7 +82,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.solicitorUser);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "resumePossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
@@ -102,7 +102,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsValidIdamToken(TestUsers.UserType.solicitorUser);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "resumePossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
