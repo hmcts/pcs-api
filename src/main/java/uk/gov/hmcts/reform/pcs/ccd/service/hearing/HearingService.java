@@ -74,7 +74,8 @@ public class HearingService {
 
     public HearingEntity updateHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        HearingEntity hearingEntity = requireAvailableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId());
+        HearingEntity hearingEntity = requireAvailableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId(),
+            pcsCase.makeOrderEnabled());
 
         populateHearingEntity(hearingEntity, pcsCase);
         // Edits before the notice is generated keep the same notice number and later edits get the next number
@@ -104,16 +105,17 @@ public class HearingService {
             // A cancellation opened with the previous definition carries only the hearing's ID.
             hearingId = pcsCase.getHearing().getHearingId().toString();
         }
-        HearingEntity hearingEntity = requireAvailableHearing(entity, hearingId);
+        HearingEntity hearingEntity = requireAvailableHearing(entity, hearingId, pcsCase.makeOrderEnabled());
         hearingEntity.setCancelled(true);
         hearingEntity.setCancellationReason(pcsCase.getHearing().getCancellationReason());
     }
 
     public DynamicStringList buildHearingSelection(PcsCaseEntity pcsCaseEntity) {
         var formatter = DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mma", Locale.UK);
+        LocalDateTime now = LocalDateTime.now(ukClock);
         var options = pcsCaseEntity.getHearings().stream()
-            .filter(hearing -> hearing != null && hearing.getId() != null && hearing.getHearingDate() != null)
-            .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+            .filter(hearing -> hearing != null && hearing.getId() != null)
+            .filter(hearing -> isLiveFutureHearing(hearing, now))
             .sorted(Comparator.comparing(HearingEntity::getHearingDate).thenComparing(HearingEntity::getId))
             .map(hearing -> DynamicStringListElement.builder()
                 .code(hearing.getId().toString())
@@ -133,17 +135,26 @@ public class HearingService {
             return findEditableHearing(pcsCase).orElseThrow(HearingService::unavailableHearing);
         }
         String selectedId = form.getHearingSelection() == null ? null : form.getHearingSelection().getValueCode();
-        return requireAvailableHearing(pcsCase, selectedId);
+        return requireAvailableHearing(pcsCase, selectedId, true);
     }
 
-    // The flag only decides which hearings staff are offered; a submission may change any live hearing on the case.
-    private HearingEntity requireAvailableHearing(PcsCaseEntity pcsCaseEntity, String hearingId) {
+    // Staff who pick a hearing may only change one that has not happened yet. With the flag off staff are shown the
+    // next hearing, which can be the latest past hearing, so only a cancelled or another case's hearing is refused.
+    private HearingEntity requireAvailableHearing(PcsCaseEntity pcsCaseEntity, String hearingId, boolean futureOnly) {
+        LocalDateTime now = LocalDateTime.now(ukClock);
         return pcsCaseEntity.getHearings().stream()
             .filter(hearing -> hearing != null && hearing.getId() != null)
-            .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
             .filter(hearing -> hearing.getId().toString().equals(hearingId))
+            .filter(hearing -> futureOnly ? isLiveFutureHearing(hearing, now)
+                : !Boolean.TRUE.equals(hearing.getCancelled()))
             .findFirst()
             .orElseThrow(HearingService::unavailableHearing);
+    }
+
+    private static boolean isLiveFutureHearing(HearingEntity hearing, LocalDateTime now) {
+        return !Boolean.TRUE.equals(hearing.getCancelled())
+            && hearing.getHearingDate() != null
+            && !hearing.getHearingDate().isBefore(now);
     }
 
     private static HearingNotFoundException unavailableHearing() {

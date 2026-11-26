@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
@@ -234,6 +235,40 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         }
         assertThat(events.history(reference)).isEmpty();
         assertThat(stored(earlier).getCancelled()).isFalse();
+    }
+
+    @Test
+    void pastHearingsAreNotOfferedAndCannotBeEditedOrCancelled() {
+        int past = cases.hearing(reference, LocalDateTime.of(2020, 5, 6, 10, 0), false);
+        form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
+        assertThat(form.getHearingSelection().getListItems()).extracting(DynamicStringListElement::getCode)
+            .containsExactly(String.valueOf(earlier), String.valueOf(later));
+
+        form.getHearingSelection().setValue(DynamicStringListElement.builder().code(String.valueOf(past)).build());
+        form.setManageHearingOption(ManageHearingOption.EDIT);
+        assertThat(continuePage().getErrors()).containsExactly("Select an available hearing on this case");
+
+        form.setHearing(Hearing.builder().notes("Changed").cancellationReason("No longer required").build());
+        form.setSelectedHearingId(String.valueOf(past));
+        for (ManageHearingOption option : new ManageHearingOption[] {
+            ManageHearingOption.EDIT, ManageHearingOption.CANCEL}) {
+            form.setManageHearingOption(option);
+            assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
+                .containsExactly("Select an available hearing on this case");
+        }
+        assertThat(events.history(reference)).isEmpty();
+        assertThat(stored(past).getCancelled()).isFalse();
+    }
+
+    @Test
+    void caseWithOnlyPastHearingsGoesStraightToAddingAHearing() {
+        long pastOnly = cases.issue();
+        cases.hearing(pastOnly, LocalDateTime.of(2020, 5, 6, 10, 0), false);
+        PCSCase started = events.start(pastOnly, "manageHearing").as(staff).startExpectingSuccess().caseData();
+
+        assertThat(started.getHearingSelection().getListItems()).isEmpty();
+        assertThat(started.getShowManageHearingPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(started.getManageHearingOption()).isEqualTo(ManageHearingOption.ADD);
     }
 
     @Test

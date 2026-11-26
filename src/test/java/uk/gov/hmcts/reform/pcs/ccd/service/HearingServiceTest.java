@@ -1277,4 +1277,21 @@ public class HearingServiceTest {
         // Then
         assertThat(editedHearing.getNoticeNumber()).isEqualTo(1);
     }
+
+    @Test
+    void shouldOfferOnlyFutureHearingsThatAreNotCancelled() {
+        HearingEntity past = HearingEntity.builder().id(1).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 8, 1, 9, 59)).build();
+        HearingEntity startingNow = HearingEntity.builder().id(2).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 8, 1, 10, 0)).build();
+        HearingEntity cancelledFuture = HearingEntity.builder().id(3).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 9, 1, 10, 0)).cancelled(true).build();
+        HearingEntity undated = HearingEntity.builder().id(4).type(HearingType.POSSESSION).build();
+
+        var selection = hearingService.buildHearingSelection(PcsCaseEntity.builder()
+            .hearings(List.of(past, startingNow, cancelledFuture, undated)).build());
+
+        assertThat(selection.getListItems()).extracting(DynamicStringListElement::getCode).containsExactly("2");
+        assertThat(selection.getValueCode()).isEqualTo("2");
+    }
 }
