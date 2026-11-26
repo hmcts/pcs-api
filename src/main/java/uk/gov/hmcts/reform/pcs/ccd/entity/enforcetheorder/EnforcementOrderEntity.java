@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,13 +19,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +39,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "enf_case")
+@Table(name = "enf_application")
 @Getter
 @Setter
 @Builder
@@ -45,55 +51,67 @@ public class EnforcementOrderEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", nullable = false, length = 30)
+    private EnforcementState state;
+
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "claim_id", nullable = false)
+    @JoinColumn(name = "pcs_case_id", nullable = false)
     @JsonBackReference
-    private ClaimEntity claim;
+    private PcsCaseEntity pcsCase;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "enforcement_order")
     private EnforcementOrder enforcementOrder;
 
-    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private RiskProfileEntity riskProfileDetails;
 
-    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private WarrantEntity warrantDetails;
 
-    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private WritEntity writDetails;
 
     @Column(name = "bailiff_date")
     private LocalDateTime bailiffDate;
 
-    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "last_modified_at", nullable = false)
+    private Instant lastModifiedAt;
+
+    @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "sot_id", nullable = false)
+    @JoinColumn(name = "sot_id")
     @JsonBackReference
     private StatementOfTruthEntity statementOfTruth;
 
-    @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "enfApplication", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
     private List<SelectedDefendantEntity> selectedDefendants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "enfApplication", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
     public void addDocuments(List<DocumentEntity> documents) {
         for (DocumentEntity document : documents) {
-            document.setEnfCase(this);
+            document.setEnfApplication(this);
             this.documents.add(document);
         }
     }
 
     public void addSelectedDefendants(List<SelectedDefendantEntity> selectedDefendants) {
         for (SelectedDefendantEntity selectedDefendant : selectedDefendants) {
-            selectedDefendant.setEnfCase(this);
+            selectedDefendant.setEnfApplication(this);
             this.selectedDefendants.add(selectedDefendant);
         }
     }

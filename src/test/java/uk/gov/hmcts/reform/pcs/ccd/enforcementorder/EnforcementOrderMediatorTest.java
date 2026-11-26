@@ -15,7 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -31,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +43,7 @@ import static org.mockito.Mockito.when;
 class EnforcementOrderMediatorTest {
 
     @Mock
-    private EnforcementOrderRepository enforcementOrderRepository;
+    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private EnforcementOrderMediator underTest;
@@ -49,6 +52,7 @@ class EnforcementOrderMediatorTest {
 
     @BeforeEach
     void beforeEach() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(true);
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
@@ -61,9 +65,7 @@ class EnforcementOrderMediatorTest {
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
-
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(List.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
@@ -72,7 +74,6 @@ class EnforcementOrderMediatorTest {
         assertEquals(YesOrNo.YES, pcsCase.getShowConfirmEvictionJourney());
         assertNotNull(pcsCase.getConfirmEvictionSummaryMarkup());
         assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains("Confirm the eviction date"));
-        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
     @Test
@@ -80,9 +81,7 @@ class EnforcementOrderMediatorTest {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(null);
-
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(List.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
@@ -91,7 +90,6 @@ class EnforcementOrderMediatorTest {
         assertEquals(YesOrNo.NO, pcsCase.getShowConfirmEvictionJourney());
         assertNotNull(pcsCase.getConfirmEvictionSummaryMarkup());
         assertTrue(pcsCase.getConfirmEvictionSummaryMarkup().contains("You cannot enforce the order at the moment"));
-        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
     @Test
@@ -101,8 +99,7 @@ class EnforcementOrderMediatorTest {
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
-
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
@@ -120,9 +117,7 @@ class EnforcementOrderMediatorTest {
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
-
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(List.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
@@ -141,7 +136,22 @@ class EnforcementOrderMediatorTest {
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
-        verify(enforcementOrderRepository, never()).findByClaimId(any());
+    }
+
+    @Test
+    void shouldNotLoadEnforcementDataWhenFeatureIsDisabled() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)).thenReturn(false);
+
+        // When
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity, never()).getClaims();
+        verify(pcsCaseEntity, never()).getEnforcementOrders();
+        assertNull(pcsCase.getShowConfirmEvictionJourney());
+        assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
     }
 
     @Test
@@ -155,7 +165,6 @@ class EnforcementOrderMediatorTest {
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
-        verify(enforcementOrderRepository, never()).findByClaimId(any());
     }
 
     @Test
@@ -169,7 +178,6 @@ class EnforcementOrderMediatorTest {
 
         // Then
         assertTrue(result.isEmpty());
-        verify(enforcementOrderRepository, never()).findByClaimId(any());
     }
 
     @Test
@@ -183,7 +191,6 @@ class EnforcementOrderMediatorTest {
 
         // Then
         assertTrue(result.isEmpty());
-        verify(enforcementOrderRepository, never()).findByClaimId(any());
     }
 
     @Test
@@ -191,9 +198,7 @@ class EnforcementOrderMediatorTest {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(LocalDateTime.now());
-
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(List.of(enforcementOrderEntity));
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
 
         // When
         var result = underTest.getEnforcementOrder(pcsCaseEntity);
@@ -201,7 +206,6 @@ class EnforcementOrderMediatorTest {
         // Then
         assertTrue(result.isPresent());
         assertEquals(enforcementOrderEntity, result.get());
-        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
     @Test
@@ -209,14 +213,11 @@ class EnforcementOrderMediatorTest {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
 
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
-
         // When
         var result = underTest.getEnforcementOrder(pcsCaseEntity);
 
         // Then
         assertTrue(result.isEmpty());
-        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
     @Test
@@ -224,15 +225,12 @@ class EnforcementOrderMediatorTest {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
 
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
-
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
-        verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
     }
 
     @ParameterizedTest(name = "{0}")

@@ -37,7 +37,7 @@ public class WritOfRestitutionStrategyTest {
         verify(writOfRestitutionRepository).save(captor.capture());
         WritOfRestitutionEntity saved = captor.getValue();
         assertThat(saved).isNotNull();
-        assertThat(saved.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
+        assertThat(saved.getEnfApplication()).isSameAs(enforcementOrderEntity);
     }
 
 }
