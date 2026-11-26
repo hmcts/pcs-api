@@ -10,6 +10,4 @@ public interface CaseBundleVersionRepository extends JpaRepository<CaseBundleVer
 
     /** A case's bundle versions, latest first. */
     List<CaseBundleVersionEntity> findByCaseIdOrderByRevisionDescCreatedAtDesc(UUID caseId);
-
-    boolean existsByDocumentId(UUID documentId);
 }
