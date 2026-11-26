@@ -140,6 +140,22 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
           option: nameAndAddressForEviction.yesRadioOption,
           defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+          nextPage: defendantInBreathingSpace.mainHeader
+        });
+      });
+
+      await test.step(`The user provides breathing space information`, async () => {
+        await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
+        await performAction('isDefendantInBreathingSpace', {
+          option: defendantInBreathingSpace.noRadioOption,
+          nextPage: missedPayments.mainHeader
+        });
+      });
+
+      await test.step(`The user provides missed payment details`, async () => {
+        await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
+        await performAction('missedPayments', {
+          option: missedPayments.yesRadioOption,
           nextPage: confirmHCEOfficer.mainHeader
         });
       });
@@ -180,7 +196,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
           input1: sotWrit.positionOrOfficeHeldHiddenTextInput,
           label2: sotWrit.nameOfFirmHiddenTextLabel,
           input2: sotWrit.nameOfFirmHiddenTextInput,
-          nextPage: sotWrit.mainHeader,
+          nextPage: checkYourAnswersEnforcement.mainHeader,
           iBelieveCheckBox: sotWrit.clarificationLabelThreeList,
           continueButton: sotWrit.continueButton
         });
