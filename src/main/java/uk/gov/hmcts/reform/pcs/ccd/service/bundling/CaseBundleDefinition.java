@@ -3,14 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.CaseDocDefinition;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocSource;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.MissingDocuments;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PageNumbers;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfPart;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfRequest;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PdfSection;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -27,19 +25,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * The judges' case bundle. PCS says what the bundle is; the SDK's doc toolkit rebuilds it after every case event and
- * renders it when it changed. One section per case file category in display order, each document chronological
+ * The judges' case bundle. PCS says what the bundle is; {@link CaseBundleHook} submits it after every case event and
+ * the SDK's doc toolkit renders it when it changed. One section per case file category in display order, each document chronological
  * within its folder, and a placeholder page for an empty folder so a reader can see it was empty rather than left
  * out. An application's documents follow the rest of their folder, under a cover sheet giving its reference.
  * Presentation is the court default (title page, contents page, folder cover sheets, "N of M" page numbers).
  */
 @Component
 @RequiredArgsConstructor
-public class CaseBundleDefinition implements CaseDocDefinition {
+public class CaseBundleDefinition {
 
     public static final String NAME = "case-bundle";
     /** Case file view folder for generated bundles; not a CaseFileCategory, as those drive the upload journeys. */
@@ -51,17 +48,7 @@ public class CaseBundleDefinition implements CaseDocDefinition {
     private final PcsCaseRepository cases;
     private final DocumentRepository documents;
 
-    @Override
-    public String key() {
-        return NAME;
-    }
-
-    @Override
-    public Set<String> caseTypes() {
-        return Set.of(CaseType.getCaseType());
-    }
-
-    @Override
+    /** The case's bundle as it stands, or empty if PCS has no such case. */
     public Optional<PdfRequest> build(long caseReference) {
         // The documents are queried rather than read from the case's list: an event can save or delete a document
         // without touching a list it has already loaded.

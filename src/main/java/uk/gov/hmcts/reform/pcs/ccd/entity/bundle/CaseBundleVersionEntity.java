@@ -36,10 +36,6 @@ public class CaseBundleVersionEntity {
     @Column(nullable = false)
     private UUID caseId;
 
-    /** The case revision the bundle was built at. */
-    @Column(nullable = false)
-    private long revision;
-
     @Column(nullable = false)
     private UUID documentId;
 

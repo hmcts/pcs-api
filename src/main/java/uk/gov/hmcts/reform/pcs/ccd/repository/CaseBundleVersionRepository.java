@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface CaseBundleVersionRepository extends JpaRepository<CaseBundleVersionEntity, UUID> {
 
     /** A case's bundle versions, latest first. */
-    List<CaseBundleVersionEntity> findByCaseIdOrderByRevisionDescCreatedAtDesc(UUID caseId);
+    List<CaseBundleVersionEntity> findByCaseIdOrderByCreatedAtDesc(UUID caseId);
 }

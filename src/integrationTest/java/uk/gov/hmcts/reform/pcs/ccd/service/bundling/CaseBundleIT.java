@@ -17,13 +17,11 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.CaseDocStatus;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobState;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobs;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.spring.DocJobsAutoConfiguration;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -81,7 +79,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private CaseBundleVersionRepository versions;
     @Autowired
-    private DocJobs jobs;
+    private JdbcTemplate jdbc;
     @Autowired
     private DocJobsAutoConfiguration.DocJobWorkerLifecycle worker;
     @Autowired
@@ -116,8 +114,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     void caseHasABundleFromItsFirstEvent() throws Exception {
         long reference = issued();
 
-        assertThat(jobs.status(CaseBundleDefinition.NAME, reference)).hasValueSatisfying(status ->
-            assertThat(status.state()).isEqualTo(DocJobState.QUEUED));
         render(reference);
 
         String text = text(current(reference));
@@ -129,30 +125,28 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     void anEventThatFailsQueuesNothing() throws Exception {
         long reference = issued();
         render(reference);
-        long revision = status(reference).revision();
 
         assertThatThrownBy(() -> event(reference, pcsCase -> {
             pcsCase.addDocuments(List.of(document("Rolled back.pdf", CaseFileCategory.EVIDENCE,
                 LocalDate.of(2026, 1, 1))));
             throw new IllegalStateException("the event fails");
         })).hasMessageContaining("the event fails");
+        render(reference);
 
-        assertThat(status(reference).revision()).isEqualTo(revision);
-        assertThat(status(reference).state()).isEqualTo(DocJobState.DONE);
+        assertThat(versions(reference)).hasSize(1);
     }
 
     @Test
     void anEventThatLeavesTheBundleAsItIsQueuesNothing() throws Exception {
         long reference = issued();
         render(reference);
-        long revision = status(reference).revision();
 
         // A change the bundle does not read.
         event(reference, pcsCase -> pcsCase.setPreActionProtocolCompleted(
             !Boolean.TRUE.equals(pcsCase.getPreActionProtocolCompleted())));
+        render(reference);
 
-        assertThat(status(reference).revision()).isEqualTo(revision);
-        assertThat(status(reference).state()).isEqualTo(DocJobState.DONE);
+        assertThat(versions(reference)).hasSize(1);
     }
 
     @Test
@@ -166,7 +160,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         CaseBundleVersionEntity first = latest(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
-        assertThat(judge.getBundleTab().getStatus()).isEqualTo("The bundle is up to date.");
+        assertThat(judge.getBundleTab().getStatus()).isEqualTo("This is the latest bundle for the case.");
         assertThat(judge.getBundleTab().getPages()).isEqualTo(first.getPageCount());
         assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.getUrl());
         assertThat(judge.getBundleTab().getBundle().getCategoryId()).isEqualTo(CaseBundleDefinition.FOLDER_ID);
@@ -198,8 +192,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
 
         event(reference, pcsCase -> documents.findById(sourceId).orElseThrow().setFileName("Amended witness.pdf"));
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
-        assertThat(view(reference, "judge").getBundleTab().getStatus())
-            .startsWith("An updated bundle is being prepared.");
         render(reference);
         assertThat(text(latest(reference))).contains("Amended witness.pdf");
 
@@ -246,7 +238,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         render(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         BundleTab tab = view(reference, "judge").getBundleTab();
-        assertThat(tab.getStatus()).startsWith("The bundle is up to date, but some documents could not be included.");
+        assertThat(tab.getStatus()).contains("Some documents could not be included");
         assertThat(tab.getMissingDocuments()).singleElement().satisfies(missingDocument -> {
             assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
             assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
@@ -296,7 +288,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
 
-        assertThat(events.view(reference, judge).getBundleTab().getStatus()).isEqualTo("The bundle is being prepared.");
+        assertThat(events.view(reference, judge).getBundleTab()).isIn(null, new BundleTab());
         assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
         render(reference);
         assertThat(events.view(reference, judge).getCaseTitleMarkdown()).contains("/documentsv2/");
@@ -319,19 +311,17 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         });
     }
 
+    /** Runs the worker until the case's bundle has nothing left to render. */
     private void render(long reference) {
         await().atMost(Duration.ofSeconds(60)).pollInterval(Duration.ofMillis(50)).until(() -> {
             worker.worker().poll();
-            return status(reference).state() == DocJobState.DONE;
+            return jdbc.queryForObject("select count(*) from bundling.doc_job where case_reference = ?"
+                + " and state in ('QUEUED', 'IN_PROGRESS')", Integer.class, reference) == 0;
         });
     }
 
-    private CaseDocStatus status(long reference) {
-        return jobs.status(CaseBundleDefinition.NAME, reference).orElseThrow();
-    }
-
     private List<CaseBundleVersionEntity> versions(long reference) {
-        return versions.findByCaseIdOrderByRevisionDescCreatedAtDesc(
+        return versions.findByCaseIdOrderByCreatedAtDesc(
             pcsCases.findByCaseReference(reference).orElseThrow().getId());
     }
 

@@ -4,8 +4,6 @@
 CREATE TABLE case_bundle_versions (
     id                UUID PRIMARY KEY,
     case_id           UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
-    -- The case revision the bundle was built at; versions are ordered by it.
-    revision          BIGINT NOT NULL,
     document_id       UUID NOT NULL UNIQUE,
     url               TEXT NOT NULL,
     binary_url        TEXT NOT NULL,
@@ -16,4 +14,4 @@ CREATE TABLE case_bundle_versions (
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX case_bundle_versions_latest_idx ON case_bundle_versions (case_id, revision DESC, created_at DESC);
+CREATE INDEX case_bundle_versions_latest_idx ON case_bundle_versions (case_id, created_at DESC);

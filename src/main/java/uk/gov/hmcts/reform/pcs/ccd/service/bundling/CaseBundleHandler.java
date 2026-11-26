@@ -15,7 +15,7 @@ import java.util.UUID;
 
 /**
  * Keeps each version of a case's bundle the doc toolkit renders. It runs in one transaction with the toolkit's own
- * bookkeeping, and only for a render that is still current.
+ * bookkeeping, and only for a render that is still current, so versions arrive in order.
  */
 @Component
 @RequiredArgsConstructor
@@ -30,7 +30,6 @@ public class CaseBundleHandler implements DocJobHandler {
         UUID caseId = cases.findByCaseReference(job.caseReference()).orElseThrow().getId();
         versions.save(CaseBundleVersionEntity.builder()
             .caseId(caseId)
-            .revision(job.revision())
             .documentId(UUID.fromString(url.substring(url.lastIndexOf('/') + 1)))
             .url(url)
             .binaryUrl(uploaded.document().getBinaryUrl())

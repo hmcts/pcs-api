@@ -8,9 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.CaseDocStatus;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobState;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobs;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -26,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleVersionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
@@ -57,8 +53,6 @@ class CaseBundleTest extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
     @Autowired
-    private DocJobs jobs;
-    @Autowired
     private PcsCaseRepository cases;
     @Autowired
     private CaseBundleVersionRepository versions;
@@ -71,7 +65,7 @@ class CaseBundleTest extends CftlibTest {
     }
 
     @Test
-    void aClaimMadeThroughCcdGetsAStitchedBundleStoredThroughCdam() throws Exception {
+    void claimMadeThroughCcdGetsAStitchedBundleStoredThroughCdam() throws Exception {
         CaseDetails created = ccdClient.createCase(PCSCase.builder()
             .propertyAddress(AddressUK.builder().addressLine1("1 Bundle Street").postTown("London")
                                  .postCode("NW1 6XE").build())
@@ -99,15 +93,11 @@ class CaseBundleTest extends CftlibTest {
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
             .build(), solicitorToken);
 
-        // Each event rebuilt the bundle; the worker renders the latest and PCS keeps it.
-        await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1)).until(() -> {
-            CaseDocStatus status = jobs.status(CaseBundleDefinition.NAME, reference).orElse(null);
-            return status != null && status.state() == DocJobState.DONE && !versions(reference).isEmpty();
-        });
+        // Each event submitted the bundle; the worker renders it and PCS keeps each version.
+        await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1))
+            .until(() -> !versions(reference).isEmpty());
         CaseBundleVersionEntity bundle = versions(reference).getFirst();
         assertThat(bundle.getFileName()).isEqualTo(reference + "-case-bundle.pdf");
-        assertThat(bundle.getRevision())
-            .isEqualTo(jobs.status(CaseBundleDefinition.NAME, reference).orElseThrow().revision());
 
         // The stitched PDF is in dm-store, as CDAM stored it.
         HttpResponse<byte[]> download = HttpClient.newHttpClient().send(
@@ -124,7 +114,7 @@ class CaseBundleTest extends CftlibTest {
 
     private List<CaseBundleVersionEntity> versions(long reference) {
         return cases.findByCaseReference(reference)
-            .map(pcsCase -> versions.findByCaseIdOrderByRevisionDescCreatedAtDesc(pcsCase.getId()))
+            .map(pcsCase -> versions.findByCaseIdOrderByCreatedAtDesc(pcsCase.getId()))
             .orElse(List.of());
     }
 }
