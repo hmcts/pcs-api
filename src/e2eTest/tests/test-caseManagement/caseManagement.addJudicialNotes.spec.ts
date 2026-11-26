@@ -83,7 +83,7 @@ test.use({ storageState: undefined })
           });
 
           await test.step(`And the user confirms that the judicial note has been added successfully`, async () => {
-            await performAction('confirmAddJudicialNotes');
+            await performAction('confirmAddJudicialNotes', { submitPayload:submitCaseApiData.submitCasePayload()});
             await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
           });
 
@@ -128,7 +128,7 @@ test.use({ storageState: undefined })
           });
 
           await test.step(`And the user confirms the  judicial note1 has been added successfully`, async () => {
-            await performAction('confirmAddJudicialNotes');
+            await performAction('confirmAddJudicialNotes',{ submitPayload:submitCaseApiData.submitCasePayload()});
             await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
           });
 
@@ -150,7 +150,7 @@ test.use({ storageState: undefined })
           });
 
           await test.step(`And the user confirms the judicial2 note has been added successfully`, async () => {
-            await performAction('confirmAddJudicialNotes');
+            await performAction('confirmAddJudicialNotes',{ submitPayload:submitCaseApiData.submitCasePayload()});
             await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
           });          
 

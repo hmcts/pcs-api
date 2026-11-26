@@ -18,16 +18,6 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
-
-  for (const defendant of defendantUserDetails) {
-    await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-        defendant.id,
-        defendant.name
-      ),
-    });
-  };
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -54,7 +44,7 @@ test.describe('Case management - Case Worker change case state @nightly', async 
       nextPage: checkYourAnswersChangeState.mainHeader
     });
     await performAction('clickButton', checkYourAnswersChangeState.submitButton);
-    await performAction('confirmCaseStateChange');
+    await performAction('confirmCaseStateChange', { submitPayload : submitCaseApiData.submitCasePayloadCaseFileView()});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Change case state');
   });
 });
