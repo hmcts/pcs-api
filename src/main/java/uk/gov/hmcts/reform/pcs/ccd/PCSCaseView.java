@@ -258,6 +258,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+        pcsCase.setWelshPocCaseTitleAddress(caseTitleService.buildWelshPocCaseTitleAddress(pcsCase));
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

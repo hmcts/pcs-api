@@ -24,7 +24,9 @@ public enum State {
     @CCD(
         label = "Awaiting Submission to HMCTS",
         access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class, WAAccess.class},
-        hint = "${caseTitleMarkdown}"
+        // Welsh case title proof of concept: not for merge. The words are in the template and only the values are
+        // placeholders, so ExUI can translate the template. Other states keep ${caseTitleMarkdown}.
+        hint = "TEST- Case number: ${[CASE_REFERENCE]} - Property address: ${welshPocCaseTitleAddress}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
 

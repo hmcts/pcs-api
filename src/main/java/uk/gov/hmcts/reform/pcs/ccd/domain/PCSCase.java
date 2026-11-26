@@ -340,6 +340,10 @@ public class PCSCase {
 
     private String caseTitleMarkdown;
 
+    // Welsh case title proof of concept: not for merge. Holds only the short property address, so the words of the
+    // AWAITING_SUBMISSION_TO_HMCTS title can sit in the state's title template, where ExUI can translate them.
+    private String welshPocCaseTitleAddress;
+
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 

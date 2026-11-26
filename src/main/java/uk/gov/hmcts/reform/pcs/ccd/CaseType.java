@@ -142,6 +142,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getCaseTitleMarkdown)
+            .field(PCSCase::getWelshPocCaseTitleAddress)
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);

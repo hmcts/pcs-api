@@ -21,6 +21,8 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private String caseTitleMarkdown;
     @JsonIgnore
+    private String welshPocCaseTitleAddress;
+    @JsonIgnore
     private DashboardData dashboardData;
     @JsonIgnore
     private String nextStepsMarkdown;

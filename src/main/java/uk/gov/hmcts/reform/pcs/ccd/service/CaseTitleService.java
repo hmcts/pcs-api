@@ -31,6 +31,14 @@ public class CaseTitleService {
                                       caseBundleLink(pcsCase));
     }
 
+    /**
+     * Welsh case title proof of concept: not for merge. Returns only the short property address, which the
+     * AWAITING_SUBMISSION_TO_HMCTS title template fills in through {@code ${welshPocCaseTitleAddress}}.
+     */
+    public String buildWelshPocCaseTitleAddress(PCSCase pcsCase) {
+        return addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
+    }
+
     private String caseBundleLink(PCSCase pcsCase) {
         // BundleTabView supplies this document only to judges targeted by case-bundle-view-enabled.
         var tab = pcsCase.getBundleTab();

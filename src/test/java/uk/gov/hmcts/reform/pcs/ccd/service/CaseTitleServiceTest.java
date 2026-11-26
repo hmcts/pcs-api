@@ -55,4 +55,19 @@ class CaseTitleServiceTest {
         assertThat(actualCaseTitle).contains(expectedPropertyAddress);
     }
 
+    @Test
+    void shouldReturnOnlyTheFormattedPropertyAddressForTheWelshPocTitle() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
+            .thenReturn("1 Test Street, AB1 2CD");
+
+        // When
+        String actualAddress = underTest.buildWelshPocCaseTitleAddress(pcsCase);
+
+        // Then
+        assertThat(actualAddress).isEqualTo("1 Test Street, AB1 2CD");
+    }
+
 }
