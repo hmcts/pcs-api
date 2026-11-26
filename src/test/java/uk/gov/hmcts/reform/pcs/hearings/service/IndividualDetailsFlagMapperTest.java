@@ -293,10 +293,12 @@ class IndividualDetailsFlagMapperTest {
                 flag("PF0019", "Detained individual", "Active", longComment, false)
             ));
 
+            String marker = IndividualDetailsFlagMapper.TRUNCATION_MARKER;
             String expected = (prefix + longComment + ").")
-                .substring(0, IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH);
+                .substring(0, IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH - marker.length()) + marker;
             assertThat(result.getOtherReasonableAdjustmentDetails())
                 .hasSize(IndividualDetailsFlagMapper.MAX_OTHER_DETAILS_LENGTH)
+                .endsWith(marker)
                 .isEqualTo(expected);
         }
 
