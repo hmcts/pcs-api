@@ -19,15 +19,18 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** One version of a case's judges' bundle. Versions are only ever added; the latest is the bundle as it stands. */
+/**
+ * A case's judges' bundle, as the doc toolkit handed it over. Bundles are only ever added; the one with the highest
+ * case revision is the bundle as it stands.
+ */
 @Entity
 @Immutable
-@Table(name = "case_bundle_versions")
+@Table(name = "case_bundles")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseBundleVersionEntity {
+public class CaseBundleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,6 +38,10 @@ public class CaseBundleVersionEntity {
 
     @Column(nullable = false)
     private UUID caseId;
+
+    /** The case revision the bundle shows the case as at; it stays accurate until an event changes the bundle. */
+    @Column(nullable = false)
+    private long caseRevision;
 
     @Column(nullable = false)
     private UUID documentId;

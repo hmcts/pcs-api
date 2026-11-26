@@ -34,10 +34,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleVersionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -77,7 +77,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private DocumentRepository documents;
     @Autowired
-    private CaseBundleVersionRepository versions;
+    private CaseBundleRepository versions;
     @Autowired
     private JdbcTemplate jdbc;
     @Autowired
@@ -140,13 +140,18 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     void anEventThatLeavesTheBundleAsItIsQueuesNothing() throws Exception {
         long reference = issued();
         render(reference);
+        long builtAt = caseRevision(reference);
+        assertThat(latest(reference).getCaseRevision()).isEqualTo(builtAt);
 
         // A change the bundle does not read.
         event(reference, pcsCase -> pcsCase.setPreActionProtocolCompleted(
             !Boolean.TRUE.equals(pcsCase.getPreActionProtocolCompleted())));
         render(reference);
 
-        assertThat(versions(reference)).hasSize(1);
+        // The bundle still shows the case as at the revision it was built at, which is still accurate.
+        assertThat(caseRevision(reference)).isGreaterThan(builtAt);
+        assertThat(versions(reference)).singleElement()
+            .satisfies(bundle -> assertThat(bundle.getCaseRevision()).isEqualTo(builtAt));
     }
 
     @Test
@@ -157,7 +162,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Inspection.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 5)),
             document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2)))));
         render(reference);
-        CaseBundleVersionEntity first = latest(reference);
+        CaseBundleEntity first = latest(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
         assertThat(judge.getBundleTab().getStatus()).isEqualTo("This is the latest bundle for the case.");
@@ -320,12 +325,17 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         });
     }
 
-    private List<CaseBundleVersionEntity> versions(long reference) {
-        return versions.findByCaseIdOrderByCreatedAtDesc(
+    private long caseRevision(long reference) {
+        return jdbc.queryForObject("select case_revision from ccd.case_data where reference = ?", Long.class,
+                                   reference);
+    }
+
+    private List<CaseBundleEntity> versions(long reference) {
+        return versions.findByCaseIdOrderByCaseRevisionDesc(
             pcsCases.findByCaseReference(reference).orElseThrow().getId());
     }
 
-    private CaseBundleVersionEntity latest(long reference) {
+    private CaseBundleEntity latest(long reference) {
         return versions(reference).getFirst();
     }
 
@@ -333,12 +343,12 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         return stored(latest(reference));
     }
 
-    private Document stored(CaseBundleVersionEntity version) {
+    private Document stored(CaseBundleEntity version) {
         return events.documents().stored().stream().filter(document -> document.getUrl().equals(version.getUrl()))
             .findFirst().orElseThrow();
     }
 
-    private String text(CaseBundleVersionEntity version) throws IOException {
+    private String text(CaseBundleEntity version) throws IOException {
         return text(stored(version));
     }
 
@@ -348,7 +358,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         }
     }
 
-    private String pageText(CaseBundleVersionEntity version, int page) throws IOException {
+    private String pageText(CaseBundleEntity version, int page) throws IOException {
         try (PDDocument pdf = Loader.loadPDF(events.documents().content(stored(version)))) {
             PDFTextStripper stripper = new PDFTextStripper();
             stripper.setStartPage(page);

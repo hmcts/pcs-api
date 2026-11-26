@@ -5,8 +5,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobs;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleVersionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class CaseBundles {
 
     private final ObjectProvider<DocJobs> jobs;
-    private final CaseBundleVersionRepository versions;
+    private final CaseBundleRepository versions;
 
     /** Whether bundles are made at all (ccd.doc-toolkit.jobs.enabled). */
     public boolean enabled() {
@@ -25,12 +25,12 @@ public class CaseBundles {
     }
 
     /** The case's bundle versions, latest first. */
-    public List<CaseBundleVersionEntity> versions(PcsCaseEntity pcsCase) {
-        return versions.findByCaseIdOrderByCreatedAtDesc(pcsCase.getId());
+    public List<CaseBundleEntity> versions(PcsCaseEntity pcsCase) {
+        return versions.findByCaseIdOrderByCaseRevisionDesc(pcsCase.getId());
     }
 
     /** The latest version, if one has been made. */
-    public Optional<CaseBundleVersionEntity> current(PcsCaseEntity pcsCase) {
+    public Optional<CaseBundleEntity> current(PcsCaseEntity pcsCase) {
         return versions(pcsCase).stream().findFirst();
     }
 }

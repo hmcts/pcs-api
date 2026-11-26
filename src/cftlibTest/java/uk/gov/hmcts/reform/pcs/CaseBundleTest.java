@@ -20,8 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleVersionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -55,7 +55,7 @@ class CaseBundleTest extends CftlibTest {
     @Autowired
     private PcsCaseRepository cases;
     @Autowired
-    private CaseBundleVersionRepository versions;
+    private CaseBundleRepository versions;
 
     private String solicitorToken;
 
@@ -96,7 +96,7 @@ class CaseBundleTest extends CftlibTest {
         // Each event submitted the bundle; the worker renders it and PCS keeps each version.
         await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(1))
             .until(() -> !versions(reference).isEmpty());
-        CaseBundleVersionEntity bundle = versions(reference).getFirst();
+        CaseBundleEntity bundle = versions(reference).getFirst();
         assertThat(bundle.getFileName()).isEqualTo(reference + "-case-bundle.pdf");
 
         // The stitched PDF is in dm-store, as CDAM stored it.
@@ -112,9 +112,9 @@ class CaseBundleTest extends CftlibTest {
         }
     }
 
-    private List<CaseBundleVersionEntity> versions(long reference) {
+    private List<CaseBundleEntity> versions(long reference) {
         return cases.findByCaseReference(reference)
-            .map(pcsCase -> versions.findByCaseIdOrderByCreatedAtDesc(pcsCase.getId()))
+            .map(pcsCase -> versions.findByCaseIdOrderByCaseRevisionDesc(pcsCase.getId()))
             .orElse(List.of());
     }
 }

@@ -29,9 +29,10 @@ import java.util.stream.Collectors;
 
 /**
  * The judges' case bundle. PCS says what the bundle is; {@link CaseBundleHook} submits it after every case event and
- * the SDK's doc toolkit renders it when it changed. One section per case file category in display order, each document chronological
- * within its folder, and a placeholder page for an empty folder so a reader can see it was empty rather than left
- * out. An application's documents follow the rest of their folder, under a cover sheet giving its reference.
+ * the SDK's doc toolkit renders it when it changed. One section per case file category in display order, each
+ * document chronological within its folder, and a placeholder page for an empty folder so a reader can see it was
+ * empty rather than left out. An application's documents follow the rest of their folder, under a cover sheet giving
+ * its reference.
  * Presentation is the court default (title page, contents page, folder cover sheets, "N of M" page numbers).
  */
 @Component

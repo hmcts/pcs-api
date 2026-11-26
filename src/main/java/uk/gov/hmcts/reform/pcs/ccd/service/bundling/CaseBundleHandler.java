@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.doctoolkit.DocFailure;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJob;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobHandler;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.UploadedDoc;
-import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleVersionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 
 import java.util.List;
@@ -22,14 +22,15 @@ import java.util.UUID;
 public class CaseBundleHandler implements DocJobHandler {
 
     private final PcsCaseRepository cases;
-    private final CaseBundleVersionRepository versions;
+    private final CaseBundleRepository versions;
 
     @Override
     public void completed(DocJob job, UploadedDoc uploaded) {
         String url = uploaded.document().getUrl();
         UUID caseId = cases.findByCaseReference(job.caseReference()).orElseThrow().getId();
-        versions.save(CaseBundleVersionEntity.builder()
+        versions.save(CaseBundleEntity.builder()
             .caseId(caseId)
+            .caseRevision(job.caseRevision())
             .documentId(UUID.fromString(url.substring(url.lastIndexOf('/') + 1)))
             .url(url)
             .binaryUrl(uploaded.document().getBinaryUrl())
@@ -40,8 +41,8 @@ public class CaseBundleHandler implements DocJobHandler {
     }
 
     /** As the Bundle tab lists them: the folder is the section path below the bundle's own title. */
-    static List<CaseBundleVersionEntity.MissingDocument> missing(List<DocFailure> failures) {
-        return failures.stream().map(failure -> new CaseBundleVersionEntity.MissingDocument(
+    static List<CaseBundleEntity.MissingDocument> missing(List<DocFailure> failures) {
+        return failures.stream().map(failure -> new CaseBundleEntity.MissingDocument(
             failure.id().orElse(null),
             failure.title(),
             String.join(" / ", failure.sectionPath().stream().skip(1).toList()),

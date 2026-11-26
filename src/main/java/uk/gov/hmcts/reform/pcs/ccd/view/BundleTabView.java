@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleVersion;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleVersionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundles;
@@ -50,11 +50,11 @@ public class BundleTabView {
             || !features.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, user.userId())) {
             return;
         }
-        List<CaseBundleVersionEntity> versions = bundles.versions(entity);
+        List<CaseBundleEntity> versions = bundles.versions(entity);
         if (versions.isEmpty()) {
             return;
         }
-        CaseBundleVersionEntity current = versions.getFirst();
+        CaseBundleEntity current = versions.getFirst();
         List<ListValue<MissingBundleDocument>> missing = missingDocuments(current);
         pcsCase.setBundleTab(BundleTab.builder()
             .status(missing.isEmpty() ? LATEST : LATEST_WITH_MISSING)
@@ -67,7 +67,7 @@ public class BundleTabView {
             .build());
     }
 
-    static Document document(CaseBundleVersionEntity version) {
+    static Document document(CaseBundleEntity version) {
         return Document.builder()
             .url(version.getUrl())
             .binaryUrl(version.getBinaryUrl())
@@ -81,12 +81,12 @@ public class BundleTabView {
     }
 
     /** Earlier versions stay in the case data, so CDAM keeps serving a version a judge already has open. */
-    private static List<ListValue<BundleVersion>> previous(List<CaseBundleVersionEntity> versions) {
+    private static List<ListValue<BundleVersion>> previous(List<CaseBundleEntity> versions) {
         if (versions.size() < 2) {
             return null;
         }
         List<ListValue<BundleVersion>> previous = new ArrayList<>();
-        for (CaseBundleVersionEntity version : versions.subList(1, versions.size())) {
+        for (CaseBundleEntity version : versions.subList(1, versions.size())) {
             previous.add(ListValue.<BundleVersion>builder().id(version.getId().toString())
                 .value(new BundleVersion(document(version), lastUpdated(version.getCreatedAt()),
                                          version.getPageCount()))
@@ -95,9 +95,9 @@ public class BundleTabView {
         return previous;
     }
 
-    private static List<ListValue<MissingBundleDocument>> missingDocuments(CaseBundleVersionEntity version) {
+    private static List<ListValue<MissingBundleDocument>> missingDocuments(CaseBundleEntity version) {
         List<ListValue<MissingBundleDocument>> missing = new ArrayList<>();
-        for (CaseBundleVersionEntity.MissingDocument document : version.getMissingDocuments()) {
+        for (CaseBundleEntity.MissingDocument document : version.getMissingDocuments()) {
             missing.add(ListValue.<MissingBundleDocument>builder()
                 .id(document.id() != null ? document.id() : String.valueOf(missing.size() + 1))
                 .value(new MissingBundleDocument(document.title(), document.folder(), document.page(),
