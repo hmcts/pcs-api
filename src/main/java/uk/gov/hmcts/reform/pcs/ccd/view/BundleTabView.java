@@ -30,8 +30,6 @@ import java.util.Locale;
 public class BundleTabView {
 
     static final String LATEST = "This is the latest bundle for the case.";
-    static final String LATEST_WITH_MISSING = "This is the latest bundle for the case. Some documents could not be "
-        + "included; each has a page in the bundle explaining why.";
 
     private static final DateTimeFormatter LAST_UPDATED =
         DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mma", Locale.UK).withZone(ZoneId.of("Europe/London"));
@@ -54,7 +52,7 @@ public class BundleTabView {
         CaseBundleEntity current = versions.getFirst();
         List<ListValue<MissingBundleDocument>> missing = missingDocuments(current);
         pcsCase.setBundleTab(BundleTab.builder()
-            .status(missing.isEmpty() ? LATEST : LATEST_WITH_MISSING)
+            .status(LATEST)
             .documentId(current.getDocumentId())
             .bundle(document(current))
             .lastUpdated(lastUpdated(current.getCreatedAt()))

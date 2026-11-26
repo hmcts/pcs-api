@@ -243,7 +243,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         render(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         BundleTab tab = view(reference, "judge").getBundleTab();
-        assertThat(tab.getStatus()).contains("Some documents could not be included");
         assertThat(tab.getMissingDocuments()).singleElement().satisfies(missingDocument -> {
             assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
             assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
