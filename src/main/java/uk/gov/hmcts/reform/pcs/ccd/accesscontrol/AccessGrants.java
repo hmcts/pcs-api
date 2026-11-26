@@ -120,6 +120,11 @@ final class AccessGrants {
         return readAccess(PAYMENT_HISTORY_READ_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> hearingTabReadAccess() {
+        return readAccess(HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
+            CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER);
+    }
+
     private static SetMultimap<HasRole, Permission> readAccess(UserRole... roles) {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         addReadAccess(grants, roles);

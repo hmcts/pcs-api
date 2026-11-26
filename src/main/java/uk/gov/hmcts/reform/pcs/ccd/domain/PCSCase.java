@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.HearingTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
@@ -422,6 +423,17 @@ public class PCSCase {
         access = {InternalTabAccess.class}
     )
     private String orderListMarkdownLabel;
+
+    @CCD(searchable = false, access = {HearingTabAccess.class})
+    private String hearingListMarkdown;
+
+    @CCD(
+        label = "${hearingListMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {HearingTabAccess.class}
+    )
+    private String hearingListMarkdownLabel;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD

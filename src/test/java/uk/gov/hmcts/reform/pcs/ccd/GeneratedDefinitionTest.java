@@ -84,7 +84,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(19);
+        assertThat(roleByTab).hasSize(20);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -163,6 +163,21 @@ class GeneratedDefinitionTest {
         assertThat(readers.get("caseReviewDatesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdown")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
+    }
+
+    @Test
+    void caseHearingsTabUsesTheOrdersFlagAndIsVisibleToStaffOnly() {
+        Set<String> staffProfiles = Set.of("hearing-centre-admin", "hearing-centre-team-leader",
+            "ctsc", "ctsc-team-leader", "wlu-admin", "wlu-team-leader");
+        List<JsonNode> caseHearingsTab = tabs.get("caseHearings");
+
+        assertThat(caseHearingsTab).extracting(row -> row.path("CaseFieldID").asText())
+            .containsExactlyInAnyOrder("hearingListMarkdownLabel", "hearingListMarkdown");
+        assertThat(caseHearingsTab).filteredOn(row -> row.path("TabFieldDisplayOrder").asInt() == 1)
+            .singleElement().satisfies(row -> assertThat(row.path("TabShowCondition").asText())
+                .contains("featureFlags.makeOrderEnabled=\"YES\""));
+        assertThat(readers.get("hearingListMarkdownLabel")).containsExactlyInAnyOrderElementsOf(staffProfiles);
+        assertThat(readers.get("hearingListMarkdown")).containsExactlyInAnyOrderElementsOf(staffProfiles);
     }
 
     @Test
