@@ -12,12 +12,12 @@ export const nameAndAddressForEviction = {
   previousButton: `Yn ôl`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,
-  thereIsAProblemErrorMessageHeader: `There is a problem`,
+  thereIsAProblemErrorMessageHeader: `Mae yna broblem`,
   errorValidation: `NO`,//set it to `NO` before raising a PR
   errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `Is this the correct name and address for the eviction? is required` },
+      { type: `none`, input: ``, errMessage: `A yw'r enw a'r cyfeiriad hwn yn gywir ar gyfer y troi allan? yn ofynnol` },
     ],
   }
 }

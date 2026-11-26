@@ -1,6 +1,6 @@
 export const livingInTheProperty = {
   EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
-  mainHeader: `Pawb sy'n byw yn yr eiddo`,
+  mainHeader: `Pawb sy'n byw yn yr eiddo `,
   theBailiffNeedsToKnowParagraph: `Mae'r beili angen gwybod os oes unrhyw un yn yr eiddo yn peri risg.`,
   forExampleParagraph: `Er enghraifft, os ydynt yn:`,
   areVoilentList: `dreisgar neu'n ymosodol`,
