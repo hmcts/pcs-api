@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
@@ -149,12 +148,13 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         CaseBundleEntity first = latest(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
-        assertThat(judge.getBundleTab().getStatus()).isEqualTo("This is the latest bundle for the case.");
-        assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.getUrl());
-        assertThat(judge.getBundleTab().getBundle().getCategoryId()).isEqualTo(CaseBundleDefinition.FOLDER_ID);
+        assertThat(judge.getCaseBundles()).singleElement().satisfies(bundle -> {
+            assertThat(bundle.getValue().getUrl()).isEqualTo(first.getUrl());
+            assertThat(bundle.getValue().getCategoryId()).isEqualTo(CaseBundleDefinition.FOLDER_ID);
+        });
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
             .doesNotContain(first.getUrl());
-        assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
+        assertThat(view(reference, "hearing-centre-admin").getCaseBundles()).isNull();
         // The judge making an order links it; nobody else is given it.
         assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
             first.getDocumentId(), first.getFileName(), first.getCreatedAt()));
@@ -187,10 +187,9 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         render(reference);
         assertThat(text(latest(reference))).doesNotContain("Amended witness.pdf").doesNotContain("Content of");
 
-        BundleTab tab = view(reference, "judge").getBundleTab();
-        assertThat(tab.getPreviousVersions()).hasSize(versions(reference).size() - 1);
-        assertThat(tab.getPreviousVersions()).extracting(version -> version.getValue().getBundle().getUrl())
-            .doesNotContain(tab.getBundle().getUrl())
+        // Every version stays in the case data, newest first, so CDAM keeps serving each of them.
+        assertThat(view(reference, "judge").getCaseBundles()).extracting(bundle -> bundle.getValue().getUrl())
+            .containsExactlyElementsOf(versions(reference).stream().map(CaseBundleEntity::getUrl).toList())
             .allSatisfy(url -> assertThat(events.documents().stored()).extracting(Document::getUrl).contains(url));
     }
 
@@ -225,25 +224,25 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         var allowed = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
         final var other = events.registerActor("Other", "Judge", "caseworker-pcs", "judge");
         var admin = events.registerActor("Selected", "Admin", "caseworker-pcs", "hearing-centre-admin");
-        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseBundles()).isNull();
         String originalTitle = events.view(reference, allowed).getCaseTitleMarkdown();
         assertThat(originalTitle).doesNotContain("/documentsv2/");
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false)
             .variationForUser(allowed.uid(), true).variationForUser(admin.uid(), true));
         PCSCase visible = events.view(reference, allowed);
-        assertThat(visible.getBundleTab().getBundle()).isNotNull();
+        assertThat(visible.getCaseBundles()).isNotEmpty();
         assertThat(visible.getCaseTitleMarkdown())
             .contains("href=\"/documentsv2/" + latest(reference).getDocumentId() + "/binary\"")
             .contains("target=\"_blank\" rel=\"noopener noreferrer\"")
             .contains("Whole file download (opens in new tab)");
-        assertThat(events.view(reference, other).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, other).getCaseBundles()).isNull();
         assertThat(events.view(reference, other).getCaseTitleMarkdown()).isEqualTo(originalTitle);
-        assertThat(events.view(reference, admin).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, admin).getCaseBundles()).isNull();
         assertThat(events.view(reference, admin).getCaseTitleMarkdown()).isEqualTo(originalTitle);
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
-        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseBundles()).isNull();
         assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
     }
 
@@ -253,7 +252,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
 
-        assertThat(events.view(reference, judge).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, judge).getCaseBundles()).isNull();
         assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
         render(reference);
         assertThat(events.view(reference, judge).getCaseTitleMarkdown()).contains("/documentsv2/");

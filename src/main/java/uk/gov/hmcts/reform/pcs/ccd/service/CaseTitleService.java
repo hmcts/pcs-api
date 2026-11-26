@@ -32,17 +32,18 @@ public class CaseTitleService {
     }
 
     private String caseBundleLink(PCSCase pcsCase) {
-        // BundleTabView supplies this document only to judges targeted by case-bundle-view-enabled.
-        var tab = pcsCase.getBundleTab();
-        if (tab == null || tab.getDocumentId() == null) {
+        // CaseBundlesView supplies the bundles only to judges targeted by case-bundle-view-enabled.
+        var bundles = pcsCase.getCaseBundles();
+        if (bundles == null || bundles.isEmpty()) {
             return "";
         }
+        String url = bundles.getFirst().getValue().getUrl();
         return """
 
                 <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
                     <a class="govuk-link" href="/documentsv2/%s/binary" target="_blank" rel="noopener noreferrer">Whole \
                 file download (opens in new tab)</a>
-                </p>""".formatted(tab.getDocumentId());
+                </p>""".formatted(url.substring(url.lastIndexOf('/') + 1));
     }
 
 }
