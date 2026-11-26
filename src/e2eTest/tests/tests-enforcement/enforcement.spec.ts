@@ -39,7 +39,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  defendantInBreathingSpace, missedPayments, statementOfTruth
+  defendantInBreathingSpace, missedPayments, statementOfTruth,
+  cannotApplyForWarrantInfo
 } from '@data/index.selector.enforcement';
 
 let sotWarrant: ReturnType<typeof statementOfTruth>;
