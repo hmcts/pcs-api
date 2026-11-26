@@ -12,6 +12,8 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
@@ -62,6 +64,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLan
 @ExtendWith(MockitoExtension.class)
 class DefendantAccessCodeServiceTest {
 
+    private static final TransactionTemplate NO_TRANSACTION = new TransactionTemplate() {
+        @Override
+        public <T> T execute(TransactionCallback<T> action) {
+            return action.doInTransaction(null);
+        }
+    };
+
     private static final String DOC_URL = "http://dm-store/documents/abc";
     private static final String WELSH_DOC_URL = "http://dm-store/documents/welsh";
 
@@ -106,7 +115,9 @@ class DefendantAccessCodeServiceTest {
             documentRepository,
             documentIdExtractor,
             accessCodeActivityLogService,
-            testAccessCodeRecorder
+            testAccessCodeRecorder,
+            new ImmediateSystemEventExecutor(),
+            NO_TRANSACTION
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
         lenient().when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString(), any(), any()))
