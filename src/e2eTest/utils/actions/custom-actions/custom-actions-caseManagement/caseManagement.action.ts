@@ -336,14 +336,14 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
-    await this.validateCaseDetails(selectDoc.submitPayload);
+    await this.validateCaseDetails();
     await performAction('select', selectDoc.question, selectDoc.option);
     await performAction('clickRadioButton', { question: selectDoc.question1, option: selectDoc.option1 });
     await performAction('reTryOnCallBackError', selectDocument.continueButton, selectDoc.nextPage as string);
   }
 
   private async changeCaseState(caseState: actionRecord) {
-    await this.validateCaseDetails(caseState.submitPayload);
+    await this.validateCaseDetails();
     await performAction('select', caseState.question, caseState.option);
     await performAction('reTryOnCallBackError', changeCaseState.continueButton, caseState.nextPage as string);
   }
@@ -364,7 +364,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addReviewDates(reviewDateData: actionRecord) {
-    await this.validateCaseDetails(reviewDateData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('inputDate', reviewDateData.reviewDateLabel as string, reviewDateData.date);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
@@ -422,7 +422,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationDetails(appDetails: actionRecord) {
-    await this.validateCaseDetails(appDetails.submitPayload);
+    await this.validateCaseDetails();
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);
@@ -434,7 +434,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
-    await this.validateCaseDetails(courtHearing.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: courtHearing.question,
       option: courtHearing.option,
@@ -443,7 +443,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
-    await this.validateCaseDetails(fee.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: fee.question1,
       option: fee.option1,
@@ -476,7 +476,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await this.validateCaseDetails(confirmApplicationConsent.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
@@ -491,7 +491,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
-    await this.validateCaseDetails(upload.submitPayload);
+    await this.validateCaseDetails();
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
@@ -516,7 +516,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
-    await this.validateCaseDetails(uploadEvidence.submitPayload);
+    await this.validateCaseDetails();
     if (uploadEvidence.files) {
       await performAction('uploadFile', {files: uploadEvidence.files, label: uploadEvidence.label});
     }
@@ -525,7 +525,7 @@ private formatDisplayDate(entered: string): string {
 
   private async verifyReferToJudge(referToJudgeData: actionRecord) {
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
-    await this.validateCaseDetails(referToJudgeData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
@@ -546,7 +546,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectManageHearing(page: Page, manageHearingOption: actionRecord) {
-    await this.validateCaseDetails(manageHearingOption.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: manageHearingOption.question,
       option: manageHearingOption.option,
@@ -561,7 +561,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async editHearing(editHearingData: actionRecord) {
-    await this.validateCaseDetails(editHearingData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: editHearingData.typeOfHearingQuestion,
       option: editHearingData.option
@@ -625,7 +625,7 @@ private formatDisplayDate(entered: string): string {
     const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
       .replace(':00:00AM', ':00am')
       .replace(':00:00PM', ':00pm');
-    await this.validateCaseDetails(cancelHearingData.submitPayload);
+    await this.validateCaseDetails();
     const validations = [
       {
         heading: cancelHearing.hearingLocationHeader,
@@ -683,7 +683,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
-    await this.validateCaseDetails(selectApp.submitPayload)
+    await this.validateCaseDetails()
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -858,7 +858,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectParty(partyData: actionRecord): Promise<void> {
-    await this.validateCaseDetails(partyData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: partyData.question1,
       option: partyData.option1
@@ -886,7 +886,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async updatePartyDetails(page: Page, updatePartyData: actionRecord): Promise<void> {
-    await this.validateCaseDetails(updatePartyData.submitPayload);
+    await this.validateCaseDetails();
     const addLoc = page.locator('button').filter({hasText: 'Find address'})
     const count = await addLoc.count();
     const dobField = page.locator('span').filter({hasText: 'Date of birth'}).first();
@@ -918,7 +918,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectManageParty(manageParties: actionRecord) {
-    await this.validateCaseDetails(manageParties.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: manageParties.partyToChangeQn,
       option: manageParties.option,
@@ -931,7 +931,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addNewParty(partyDetail: actionRecord) {
-    await this.validateCaseDetails(partyDetail.submitPayload);
+    await this.validateCaseDetails();
     if (partyDetail.orgLabel) {
       await performAction('inputText', partyDetail.orgLabel, partyDetail.orgInput);
       await performAction('inputText', partyDetail.label1, partyDetail.input1);
@@ -1008,7 +1008,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
-    await this.validateCaseDetails(judicialNotes.submitPayload)
+    await this.validateCaseDetails()
     await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
     await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
   }
@@ -1026,7 +1026,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
-    await this.validateCaseDetails(judicialNotes.submitPayload)
+    await this.validateCaseDetails()
     const judicialNote = new Map<string, string>();
 
     judicialNote.set('Note', judicialNotes.userInput as string);
@@ -1303,7 +1303,7 @@ private formatDisplayDate(entered: string): string {
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
     if (defendantsDetails.submitPayload) {
-      await this.validateCaseDetails(defendantsDetails.submitPayload);
+      await this.validateCaseDetails();
     }
     const defendant = new Map<string, string>();
     let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
@@ -1357,7 +1357,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
-    await this.validateCaseDetails(claimantDetails.submitPayload);
+    await this.validateCaseDetails();
     const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
@@ -1563,13 +1563,11 @@ private formatDisplayDate(entered: string): string {
       .innerText();
   }
 
-  private async validateCaseDetails(payLoadInput: any) {
-    const payLoad = payLoadInput as Record<string, any>;
+  private async validateCaseDetails() {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
   }
 }
