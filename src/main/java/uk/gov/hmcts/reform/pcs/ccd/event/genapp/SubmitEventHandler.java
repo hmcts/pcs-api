@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -23,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -36,8 +33,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.util.List;
@@ -68,8 +63,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
-    private final DraftOrderWordingAccess draftOrderWordingAccess;
-    private final FeatureToggleService featureToggleService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -77,20 +70,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PCSCase caseData = eventPayload.caseData();
 
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
-        if (createGenAppRequest instanceof XuiGenAppRequest xuiRequest) {
-            if (featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-                boolean allowed = draftOrderWordingAccess.isAllowed(caseReference);
-                String wording = xuiRequest.getDraftOrderWording();
-                if (allowed && isBlankDraftOrderWording(wording)) {
-                    return errorResponse("Enter the draft order you would like the judge to consider");
-                }
-                if (!allowed && StringUtils.isNotBlank(wording)) {
-                    return errorResponse("Only a solicitor can provide draft order wording");
-                }
-            } else {
-                xuiRequest.setDraftOrderWording(null);
-            }
-        }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity applicantParty = getApplicantParty(caseReference, caseData, createGenAppRequest);
@@ -249,10 +228,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return SubmitResponse.<State>builder()
             .errors(List.of(errorMessage))
             .build();
-    }
-
-    private static boolean isBlankDraftOrderWording(String wording) {
-        return wording == null || Jsoup.parseBodyFragment(wording).body().text().replace('\u00A0', ' ').isBlank();
     }
 
     private static boolean isXuiJourney(GenAppRequest genAppRequest) {

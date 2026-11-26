@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftOrderWordingFieldAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SolicitorAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -90,7 +90,7 @@ public class XuiGenAppRequest implements GenAppRequest {
             + "Use the same format as when submitting a draft word order (for example, with numbered paragraphs "
             + "and any standard wording).",
         typeOverride = FieldType.RichTextArea,
-        access = {SolicitorAccess.class, DefendantSolicitorAccess.class},
+        access = DraftOrderWordingFieldAccess.class,
         inheritAccessFromParent = false
     )
     private String draftOrderWording;
