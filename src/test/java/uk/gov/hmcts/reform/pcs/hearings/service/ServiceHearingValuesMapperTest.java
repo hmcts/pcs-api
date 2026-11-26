@@ -724,8 +724,8 @@ class ServiceHearingValuesMapperTest {
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getParties()).singleElement().satisfies(party -> {
-            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Persons unknown");
-            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("Persons unknown");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Persons");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("unknown");
         });
     }
 

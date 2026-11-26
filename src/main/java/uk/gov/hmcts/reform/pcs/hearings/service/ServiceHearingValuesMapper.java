@@ -71,7 +71,8 @@ public class ServiceHearingValuesMapper {
     static final String CASE_FLAGS_PATH = "/cases/case-details/%d#Case%%20flags";
     private static final String PARTY_ROLE_SEPARATOR = " - ";
     private static final String HEARING_PRIORITY_URGENT = "Urgent";
-    private static final String PERSONS_UNKNOWN = "Persons unknown";
+    private static final String PERSONS_UNKNOWN_FIRST_NAME = "Persons";
+    private static final String PERSONS_UNKNOWN_LAST_NAME = "unknown";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
@@ -233,8 +234,8 @@ public class ServiceHearingValuesMapper {
             details.setFirstName(party.getOrgName());
             details.setLastName(UNDERLESSEE_OR_MORTGAGEE_LAST_NAME);
         } else if (party.getNameKnown() == VerticalYesNo.NO) {
-            details.setFirstName(PERSONS_UNKNOWN);
-            details.setLastName(PERSONS_UNKNOWN);
+            details.setFirstName(PERSONS_UNKNOWN_FIRST_NAME);
+            details.setLastName(PERSONS_UNKNOWN_LAST_NAME);
         } else {
             details.setFirstName(party.getFirstName());
             details.setLastName(party.getLastName());
