@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -36,16 +35,9 @@ public class EnforcementOrderMediator {
         EnforcementState.DRAFT_DISCARDED
     );
 
-    /** Shares the same submitted application between risk-assessment content and visibility. */
-    public Optional<EnforcementOrderEntity> getLatestSubmittedWarrantApplication(PcsCaseEntity pcsCaseEntity) {
-        Set<EnforcementOrderEntity> applications = pcsCaseEntity.getEnforcementOrders();
-        if (applications == null) {
-            return Optional.empty();
-        }
-        // Select before checking the type: a newer writ must not expose an older warrant's assessment.
-        return applications.stream()
+    public Optional<EnforcementOrderEntity> getSubmittedWarrantApplication(PcsCaseEntity pcsCaseEntity) {
+        return getEnforcementOrder(pcsCaseEntity)
             .filter(this::isSubmitted)
-            .max(Comparator.comparing(application -> application.getStatementOfTruth().getCompletedDate()))
             .filter(this::isWarrant);
     }
 

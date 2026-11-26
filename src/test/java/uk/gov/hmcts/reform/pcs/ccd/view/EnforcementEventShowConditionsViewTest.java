@@ -56,7 +56,7 @@ class EnforcementEventShowConditionsViewTest {
             .state(EnforcementState.AWAITING_BAILIFF_ALLOCATION).build();
         when(enforcementOrderMediator.getEnforcementOrder(entity)).thenReturn(Optional.of(application));
         if (enabled) {
-            when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+            when(enforcementOrderMediator.getSubmittedWarrantApplication(entity))
                 .thenReturn(Optional.of(application));
         }
 
@@ -89,7 +89,7 @@ class EnforcementEventShowConditionsViewTest {
 
         assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
-        verify(enforcementOrderMediator, never()).getLatestSubmittedWarrantApplication(entity);
+        verify(enforcementOrderMediator, never()).getSubmittedWarrantApplication(entity);
     }
 
     @ParameterizedTest
@@ -143,7 +143,7 @@ class EnforcementEventShowConditionsViewTest {
     void shouldSetRiskAssessmentVisibilityFromTheSubmittedWarrantState(EnforcementState state, YesOrNo expected) {
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity entity = PcsCaseEntity.builder().build();
-        when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+        when(enforcementOrderMediator.getSubmittedWarrantApplication(entity))
             .thenReturn(Optional.of(EnforcementOrderEntity.builder().state(state).build()));
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);
@@ -165,7 +165,7 @@ class EnforcementEventShowConditionsViewTest {
     void shouldHideRiskAssessmentWhenTheSubmittedWarrantHasNoState() {
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity entity = PcsCaseEntity.builder().build();
-        when(enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity))
+        when(enforcementOrderMediator.getSubmittedWarrantApplication(entity))
             .thenReturn(Optional.of(EnforcementOrderEntity.builder().build()));
 
         enforcementEventShowConditionsView.setCaseFields(entity, pcsCase);

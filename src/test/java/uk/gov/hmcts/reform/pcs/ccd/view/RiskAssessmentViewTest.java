@@ -34,10 +34,13 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
@@ -46,7 +49,7 @@ class RiskAssessmentViewTest {
 
     private final FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
     private final EnforcementOrderMediator enforcementOrderMediator =
-        new EnforcementOrderMediator(featureToggleService);
+        spy(new EnforcementOrderMediator(featureToggleService));
     private final RiskAssessmentView view = new RiskAssessmentView(
         new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()), enforcementOrderMediator,
         featureToggleService
@@ -289,26 +292,31 @@ class RiskAssessmentViewTest {
     }
 
     @Test
-    void shouldUseTheLatestSubmittedApplicationAndIgnoreANewerDraft() {
-        final EnforcementOrderEntity old = application(SelectEnforcementType.WARRANT);
-        EnforcementOrderEntity latest = application(SelectEnforcementType.WARRANT);
-        latest.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 12, 12, 0));
+    void shouldUseTheActiveApplicationEvenWhenAnotherSubmissionOrDraftIsNewer() {
+        EnforcementOrderEntity active = application(SelectEnforcementType.WARRANT);
+        active.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 12, 12, 0));
+        EnforcementOrderEntity newer = application(SelectEnforcementType.WARRANT);
+        newer.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 13, 12, 0));
         EnforcementOrderEntity draft = application(SelectEnforcementType.WARRANT);
         draft.setState(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS);
-        draft.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 13, 12, 0));
+        draft.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 14, 12, 0));
+        PcsCaseEntity entity = caseWithApplications(active, newer, draft);
+        doReturn(Optional.of(active)).when(enforcementOrderMediator).getEnforcementOrder(entity);
 
-        view.setCaseFields(pcsCase, PcsCaseEntity.builder().enforcementOrders(Set.of(old, latest, draft)).build());
+        view.setCaseFields(pcsCase, entity);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains("12 October 2026");
+        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+            .contains("12 October 2026").doesNotContain("13 October 2026", "14 October 2026");
     }
 
     @Test
-    void shouldNotFallBackToAnOldWarrantWhenTheLatestApplicationIsAWrit() {
-        final EnforcementOrderEntity old = application(SelectEnforcementType.WARRANT);
-        EnforcementOrderEntity latest = application(SelectEnforcementType.WRIT);
-        latest.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 12, 12, 0));
+    void shouldNotFallBackToAnotherWarrantWhenTheActiveApplicationIsAWrit() {
+        EnforcementOrderEntity warrant = application(SelectEnforcementType.WARRANT);
+        EnforcementOrderEntity active = application(SelectEnforcementType.WRIT);
+        PcsCaseEntity entity = caseWithApplications(warrant, active);
+        doReturn(Optional.of(active)).when(enforcementOrderMediator).getEnforcementOrder(entity);
 
-        view.setCaseFields(pcsCase, PcsCaseEntity.builder().enforcementOrders(Set.of(old, latest)).build());
+        view.setCaseFields(pcsCase, entity);
 
         assertNoAssessment();
     }
@@ -338,7 +346,7 @@ class RiskAssessmentViewTest {
 
     @ParameterizedTest
     @EnumSource(SelectEnforcementType.class)
-    void shouldUseTheSameSubmittedApplicationForVisibilityAndContent(SelectEnforcementType type) {
+    void shouldUseTheSameActiveApplicationForVisibilityAndContent(SelectEnforcementType type) {
         EnforcementOrderEntity latest = application(type);
         latest.setState(EnforcementState.AWAITING_BAILIFF_ALLOCATION);
         latest.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 12, 12, 0));
@@ -346,7 +354,8 @@ class RiskAssessmentViewTest {
         EnforcementOrderEntity draft = application(SelectEnforcementType.WARRANT);
         draft.setState(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS);
         draft.getStatementOfTruth().setCompletedDate(LocalDateTime.of(2026, 10, 13, 12, 0));
-        PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(old, latest, draft)).build();
+        PcsCaseEntity entity = caseWithApplications(old, latest, draft);
+        doReturn(Optional.of(latest)).when(enforcementOrderMediator).getEnforcementOrder(entity);
 
         view.setCaseFields(pcsCase, entity);
         new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
@@ -364,7 +373,7 @@ class RiskAssessmentViewTest {
     @Test
     void shouldHideTheTabForAnApplicationAwaitingIssueAndResetVisibilityAfterEligibleStates() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
-        PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(application)).build();
+        PcsCaseEntity entity = caseWithApplications(application);
         EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
             enforcementOrderMediator, featureToggleService);
         conditions.setCaseFields(entity, pcsCase);
@@ -380,7 +389,7 @@ class RiskAssessmentViewTest {
     void shouldHideTheTabWhenThereIsNoCompletedSubmission() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         application.getStatementOfTruth().setCompletedDate(null);
-        PcsCaseEntity entity = PcsCaseEntity.builder().enforcementOrders(Set.of(application)).build();
+        PcsCaseEntity entity = caseWithApplications(application);
 
         new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
             .setCaseFields(entity, pcsCase);
@@ -394,7 +403,14 @@ class RiskAssessmentViewTest {
     }
 
     private void render(EnforcementOrderEntity application) {
-        view.setCaseFields(pcsCase, PcsCaseEntity.builder().enforcementOrders(Set.of(application)).build());
+        view.setCaseFields(pcsCase, caseWithApplications(application));
+    }
+
+    private PcsCaseEntity caseWithApplications(EnforcementOrderEntity... applications) {
+        return PcsCaseEntity.builder()
+            .claims(List.of(ClaimEntity.builder().build()))
+            .enforcementOrders(Set.of(applications))
+            .build();
     }
 
     private EnforcementOrderEntity application(SelectEnforcementType type) {

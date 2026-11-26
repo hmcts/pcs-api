@@ -145,7 +145,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags)
-            // CCD requires fields used by tab conditions to be included on a tab, even when hidden.
             .field("enfShowConditions", NEVER_SHOW);
 
         builder.tab("serviceRequest", "Service Request")

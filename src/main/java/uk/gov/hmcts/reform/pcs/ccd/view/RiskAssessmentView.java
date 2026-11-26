@@ -45,8 +45,7 @@ public class RiskAssessmentView {
         if (!featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)) {
             return;
         }
-        // Read the saved application, never the resumable draft loaded into PCSCase.
-        enforcementOrderMediator.getLatestSubmittedWarrantApplication(entity)
+        enforcementOrderMediator.getSubmittedWarrantApplication(entity)
             .ifPresent(application -> setRiskAssessment(pcsCase, application));
     }
 

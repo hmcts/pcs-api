@@ -37,7 +37,6 @@ public class EnforcementEventShowConditionsView {
         EnforcementState.CASE_STAYED
     );
 
-    // HDPI-7350 follows the enforcement-state eligibility supplied for the bailiff events.
     private static final Set<EnforcementState> RISK_ASSESSMENT_STATES = EnumSet.copyOf(RECORD_WARRANT_RETURN_STATES);
 
     public void setCaseFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
@@ -49,7 +48,7 @@ public class EnforcementEventShowConditionsView {
             .map(EnforcementOrderEntity::getState);
         boolean canRecordWarrantReturn = activeState.filter(RECORD_WARRANT_RETURN_STATES::contains).isPresent();
         boolean canViewRiskAssessment = featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)
-            && enforcementOrderMediator.getLatestSubmittedWarrantApplication(pcsCaseEntity)
+            && enforcementOrderMediator.getSubmittedWarrantApplication(pcsCaseEntity)
                 .map(EnforcementOrderEntity::getState)
                 .filter(RISK_ASSESSMENT_STATES::contains)
                 .isPresent();
