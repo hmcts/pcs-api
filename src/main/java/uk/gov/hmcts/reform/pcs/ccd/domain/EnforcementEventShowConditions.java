@@ -15,4 +15,7 @@ public class EnforcementEventShowConditions {
 
     @CCD
     private YesOrNo recordWarrantReturn;
+
+    @CCD
+    private YesOrNo scheduleEviction;
 }

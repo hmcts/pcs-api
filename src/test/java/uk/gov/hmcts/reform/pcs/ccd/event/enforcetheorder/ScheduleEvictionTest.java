@@ -8,12 +8,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalUser;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -83,8 +85,16 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredAsShowForRelease1bFeatureFlag() {
-        assertConfiguredShowConditions(ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B));
+    void shouldBeConfiguredAsShowForRelease1bFeatureFlagAndScheduleEvictionShowCondition() {
+        assertConfiguredShowConditions(ShowConditions.and(
+            ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
+            "enfShowConditions.scheduleEviction=\"Yes\""
+        ));
+    }
+
+    @Test
+    void shouldGrantBailiffAdmin() {
+        assertGrants(UserRole.BAILIFF_ADMIN, Permission.CRU);
     }
 
     @Test
@@ -110,7 +120,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     void shouldReturnCaseAndEvictionDetailsOnStart() {
         // Given
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
-        PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.CASE_PROGRESSION);
+        PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(TEST_CASE_REFERENCE)).thenReturn("1234");
         AddressUK addressUk = AddressUK.builder().build();
@@ -136,7 +146,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     void shouldSaveScheduledEvictionAgainstWarrantInUkTime() {
         // Given
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
-        PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.CASE_PROGRESSION);
+        PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
         WarrantEntity warrant = pcsCase.getEnforcementOrders().iterator().next().getWarrantDetails();
 
@@ -151,6 +161,8 @@ class ScheduleEvictionTest extends BaseEventTest {
         assertThat(saved.getValue().getEnfWarrant()).isSameAs(warrant);
         assertThat(saved.getValue().getCourtGivenPermissionToDispenseWithService()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getValue().getScheduledEvictionDate()).isEqualTo(Instant.parse("2027-06-25T09:00:00Z"));
+        assertThat(pcsCase.getEnforcementOrders().iterator().next().getState())
+            .isEqualTo(EnforcementState.AWAITING_PROPERTY_VISIT);
     }
 
     @Test
@@ -183,7 +195,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     private void givenCaseWithWarrantAwaitingScheduling() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
-            .thenReturn(caseWithWarrant(EnforcementState.CASE_PROGRESSION));
+            .thenReturn(caseWithWarrant(EnforcementState.AWAITING_SCHEDULING));
     }
 
     private PcsCaseEntity caseWithWarrant(EnforcementState state) {

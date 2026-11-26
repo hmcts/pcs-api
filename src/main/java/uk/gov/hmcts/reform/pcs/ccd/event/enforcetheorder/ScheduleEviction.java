@@ -36,10 +36,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-// import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SCHEDULING;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.CASE_PROGRESSION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_PROPERTY_VISIT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -52,6 +51,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     public static final ExternalEventId<ScheduleEvictionStart, ScheduleEvictionRequest> SCHEDULE_EVICTION =
         ExternalEventId.of("ext:scheduleEviction", ScheduleEvictionStart.class, ScheduleEvictionRequest.class);
 
+    static final String CAN_SCHEDULE_EVICTION = "enfShowConditions.scheduleEviction=\"Yes\"";
     static final String NOT_AVAILABLE = "Scheduling evictions is not available";
     static final String NO_WARRANT_AWAITING_SCHEDULING = "There is no warrant awaiting scheduling on this case";
     static final String DATE_REQUIRED = "Enter the date and time of the eviction";
@@ -91,11 +91,11 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
             .externalEvent(SCHEDULE_EVICTION, this::submit)
             .forState(State.CASE_ISSUED)
             .name("Schedule eviction")
-            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B))
-            // TODO HDPI-7344: grant the bailiff roles once they are pulled in
-            .grant(Permission.CRUD, CASEWORKER_ROLES)
-            // TODO HDPI-7344: temporary, to test locally as pcs-solicitor1 until the bailiff roles are in
-            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+            .showCondition(ShowConditions.and(
+                ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
+                CAN_SCHEDULE_EVICTION
+            ))
+            .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
             .grant(Set.of(Permission.R), JUDICIAL_HISTORY_ROLES)
             .onStart(this::start);
     }
@@ -136,19 +136,18 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
             .courtGivenPermissionToDispenseWithService(request.courtGivenPermissionToDispenseWithService())
             .scheduledEvictionDate(evictionDate.atZone(UK_ZONE_ID).toInstant())
             .build());
+        warrantApplication.setState(AWAITING_PROPERTY_VISIT);
 
         return ExternalSubmitResponse.accepted("Eviction scheduled", "Scheduled the eviction");
     }
 
     /**
      * The warrant awaiting scheduling on the case. A change is coming to limit a case to one active warrant at a
-     * time; until then a case can have more than one, so this uses the latest.
+     * time, until then a case can have more than one, so this uses the latest.
      */
     private EnforcementOrderEntity warrantAwaitingScheduling(PcsCaseEntity pcsCase) {
         return pcsCase.getEnforcementOrders().stream()
-            // TODO HDPI-7344: back to AWAITING_SCHEDULING once something moves a warrant into it
-            // .filter(application -> application.getState() == AWAITING_SCHEDULING)
-            .filter(application -> application.getState() == CASE_PROGRESSION)
+            .filter(application -> application.getState() == AWAITING_SCHEDULING)
             .filter(application -> application.getWarrantDetails() != null)
             .max(Comparator.comparing(application -> application.getWarrantDetails().getCreated()))
             .orElseThrow(() -> ExternalRejection.because(NO_WARRANT_AWAITING_SCHEDULING));

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +49,7 @@ public class EnforcementEventShowConditionsView {
         if (enforcementStateOptional.isEmpty()) {
             EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
                 .recordWarrantReturn(YesOrNo.NO)
+                .scheduleEviction(YesOrNo.NO)
                 .build();
             pcsCase.setEnfShowConditions(enforcementEventShowConditions);
             return;
@@ -56,8 +58,17 @@ public class EnforcementEventShowConditionsView {
         EnforcementState activeState = enforcementStateOptional.get();
         EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
             .recordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
+            .scheduleEviction(canScheduleEviction(pcsCaseEntity) ? YesOrNo.YES : YesOrNo.NO)
             .build();
 
         pcsCase.setEnfShowConditions(enforcementEventShowConditions);
+    }
+
+    private boolean canScheduleEviction(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getEnforcementOrders().stream()
+            .filter(application -> application.getWarrantDetails() != null)
+            .max(Comparator.comparing(application -> application.getWarrantDetails().getCreated()))
+            .map(application -> application.getState() == EnforcementState.AWAITING_SCHEDULING)
+            .orElse(false);
     }
 }
