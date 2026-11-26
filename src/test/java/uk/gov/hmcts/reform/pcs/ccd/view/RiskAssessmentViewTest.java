@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -15,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessD
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
@@ -41,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
@@ -54,7 +59,7 @@ class RiskAssessmentViewTest {
         new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()), enforcementOrderMediator,
         featureToggleService
     );
-    private final PCSCase pcsCase = PCSCase.builder().build();
+    private PCSCase pcsCase = PCSCase.builder().build();
 
     @BeforeEach
     void enableRiskAssessment() {
@@ -62,15 +67,11 @@ class RiskAssessmentViewTest {
     }
 
     @Test
-    void shouldClearRiskAssessmentWithoutReadingOrRenderingWhenFlagIsOff() {
+    void shouldSkipReadingAndRenderingWhenFlagIsOff() {
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
         EnforcementOrderMediator mediator = mock(EnforcementOrderMediator.class);
         RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
         final RiskAssessmentView disabledView = new RiskAssessmentView(renderer, mediator, featureToggleService);
-        pcsCase.setRiskAssessmentInternalMarkdown("Previous internal assessment");
-        pcsCase.setRiskAssessmentClaimantMarkdown("Previous claimant assessment");
-        pcsCase.setRiskAssessmentInternalMarkdownLabel("Previous internal label");
-        pcsCase.setRiskAssessmentClaimantMarkdownLabel("Previous claimant label");
 
         disabledView.setCaseFields(pcsCase,
             PcsCaseEntity.builder().enforcementOrders(Set.of(application(SelectEnforcementType.WARRANT))).build());
@@ -82,21 +83,22 @@ class RiskAssessmentViewTest {
     }
 
     @Test
-    void shouldHideAndClearAnExistingAssessmentWhenFlagIsTurnedOff() {
+    void shouldHideAssessmentOnTheNextCaseReadWhenFlagIsTurnedOff() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         PcsCaseEntity entity = PcsCaseEntity.builder()
             .claims(List.of(ClaimEntity.builder().build())).enforcementOrders(Set.of(application)).build();
         EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
-            enforcementOrderMediator, featureToggleService);
-        view.setCaseFields(pcsCase, entity);
+            enforcementOrderMediator);
         conditions.setCaseFields(entity, pcsCase);
+        view.setCaseFields(pcsCase, entity);
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
         assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNotBlank();
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
 
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
-        view.setCaseFields(pcsCase, entity);
+        pcsCase = PCSCase.builder().build();
         conditions.setCaseFields(entity, pcsCase);
+        view.setCaseFields(pcsCase, entity);
 
         assertNoAssessment();
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
@@ -124,7 +126,7 @@ class RiskAssessmentViewTest {
                       "Information provided by the claimant on 10 October 2026",
                       "when they were applying for enforcement",
                       "Do you want to evict everyone at the property?", "Who do you want to evict?",
-                      "Billy Wright", "Jane Wright", "Do you know the defendants")
+                      "Billy Wright", "Jane Wright", "Do you know the defendants’ dates of birth?")
             .doesNotContain("Unselected defendant");
         assertThat(pcsCase.getRiskAssessmentClaimantMarkdown())
             .contains("Your risk assessment", "Information provided by you on 10 October 2026",
@@ -139,16 +141,22 @@ class RiskAssessmentViewTest {
         WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
         warrant.setAnyRiskToBailiff(YesNoNotSure.YES);
         warrant.setRiskCategories(Set.of(category));
+        warrant.setRiskDetails(allRiskDetails());
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains(category.getLabel());
+        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+            .containsSubsequence(category.getLabel(), description(category));
         for (RiskCategory other : RiskCategory.values()) {
             if (other != category) {
-                assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).doesNotContain(other.getLabel());
+                for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
+                                           pcsCase.getRiskAssessmentClaimantMarkdown())) {
+                    assertThat(html).doesNotContain(other.getLabel(), description(other));
+                }
             }
         }
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).contains(category.getLabel());
+        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown())
+            .containsSubsequence(category.getLabel(), description(category));
     }
 
     @Test
@@ -156,11 +164,15 @@ class RiskAssessmentViewTest {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         application.getEnforcementOrder().getWarrantDetails().setAnyRiskToBailiff(YesNoNotSure.YES);
         application.getEnforcementOrder().getWarrantDetails().setRiskCategories(Set.of(RiskCategory.values()));
+        application.getEnforcementOrder().getWarrantDetails().setRiskDetails(allRiskDetails());
 
         render(application);
 
         for (RiskCategory category : RiskCategory.values()) {
-            assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains(category.getLabel());
+            for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
+                                       pcsCase.getRiskAssessmentClaimantMarkdown())) {
+                assertThat(html).containsSubsequence(category.getLabel(), description(category));
+            }
         }
     }
 
@@ -171,9 +183,11 @@ class RiskAssessmentViewTest {
         WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
         warrant.setAnyRiskToBailiff(answer);
         warrant.setRiskCategories(Set.of(RiskCategory.values()));
+        warrant.setRiskDetails(allRiskDetails());
         application.getEnforcementOrder().setRawWarrantDetails(RawWarrantDetails.builder()
             .vulnerablePeoplePresent(answer)
-            .vulnerableAdultsChildren(VulnerableAdultsChildren.builder().vulnerableReasonText("Stale details").build())
+            .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS).vulnerableReasonText("Stale details").build())
             .build());
 
         render(application);
@@ -181,9 +195,10 @@ class RiskAssessmentViewTest {
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
             .contains("Does anyone living at the property pose a risk to the bailiff?",
                       "Is anyone living at the property vulnerable?", answer.getLabel())
-            .doesNotContain("Stale details");
+            .doesNotContain("Stale details", VulnerableCategory.VULNERABLE_ADULTS.getLabel());
         for (RiskCategory category : RiskCategory.values()) {
-            assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).doesNotContain(category.getLabel());
+            assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+                .doesNotContain(category.getLabel(), description(category));
         }
     }
 
@@ -192,6 +207,8 @@ class RiskAssessmentViewTest {
     void shouldShowConditionalDetailsOnlyForYesAnswers(VerticalYesNo answer) {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
+        warrant.setDefendantsDOBKnown(answer);
+        warrant.setDefendantsDOB(DefendantsDOB.builder().defendantsDOBDetails("Billy: 1 February 1978").build());
         warrant.setPropertyAccessDetails(PropertyAccessDetails.builder()
             .isDifficultToAccessProperty(answer).clarificationOnAccessDifficultyText("Communal entrance").build());
         warrant.setAdditionalInformation(AdditionalInformation.builder()
@@ -199,6 +216,7 @@ class RiskAssessmentViewTest {
         application.getEnforcementOrder().setRawWarrantDetails(RawWarrantDetails.builder()
             .vulnerablePeoplePresent(answer == VerticalYesNo.YES ? YesNoNotSure.YES : YesNoNotSure.NO)
             .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN)
                 .vulnerableReasonText("Limited mobility").build())
             .build());
 
@@ -210,15 +228,17 @@ class RiskAssessmentViewTest {
         for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
                                    pcsCase.getRiskAssessmentClaimantMarkdown())) {
             if (answer == VerticalYesNo.YES) {
-                assertThat(html).contains("Communal entrance", "Parking available", "Limited mobility");
+                assertThat(html).contains("Communal entrance", "Parking available", "Limited mobility",
+                                          "Vulnerable adults and children", "Billy: 1 February 1978");
             } else {
-                assertThat(html).doesNotContain("Communal entrance", "Parking available", "Limited mobility");
+                assertThat(html).doesNotContain("Communal entrance", "Parking available", "Limited mobility",
+                                                "Vulnerable adults and children", "Billy: 1 February 1978");
             }
         }
     }
 
     @Test
-    void shouldHideSkippedQuestionsAndNotUseTheOutdatedPrototypeFields() {
+    void shouldHideSkippedQuestionsAndTheirStaleDetails() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
         warrant.setPeopleToEvict(PeopleToEvict.builder().evictEveryone(VerticalYesNo.YES).build());
@@ -283,9 +303,7 @@ class RiskAssessmentViewTest {
     }
 
     @Test
-    void shouldClearPreviouslyPopulatedFieldsWhenThereAreNoApplications() {
-        render(application(SelectEnforcementType.WARRANT));
-
+    void shouldNotPopulateAssessmentWhenThereAreNoApplications() {
         view.setCaseFields(pcsCase, PcsCaseEntity.builder().build());
 
         assertNoAssessment();
@@ -357,9 +375,8 @@ class RiskAssessmentViewTest {
         PcsCaseEntity entity = caseWithApplications(old, latest, draft);
         doReturn(Optional.of(latest)).when(enforcementOrderMediator).getEnforcementOrder(entity);
 
+        new EnforcementEventShowConditionsView(enforcementOrderMediator).setCaseFields(entity, pcsCase);
         view.setCaseFields(pcsCase, entity);
-        new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
-            .setCaseFields(entity, pcsCase);
 
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment())
             .isEqualTo(type == SelectEnforcementType.WARRANT ? YesOrNo.YES : YesOrNo.NO);
@@ -370,36 +387,105 @@ class RiskAssessmentViewTest {
         }
     }
 
-    @Test
-    void shouldHideTheTabForAnApplicationAwaitingIssueAndResetVisibilityAfterEligibleStates() {
+    @ParameterizedTest
+    @EnumSource(EnforcementState.class)
+    void shouldRenderOnlyForEligibleStates(EnforcementState state) {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
-        PcsCaseEntity entity = caseWithApplications(application);
-        EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
-            enforcementOrderMediator, featureToggleService);
-        conditions.setCaseFields(entity, pcsCase);
-        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
+        application.setState(state);
+        boolean eligible = switch (state) {
+            case AWAITING_SUBMISSION_TO_HMCTS, PENDING_CASE_ISSUED, REQUESTED_FOR_DELETION, DRAFT_DISCARDED -> false;
+            default -> true;
+        };
+        RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
+        RiskAssessmentView underTest = new RiskAssessmentView(renderer, enforcementOrderMediator, featureToggleService);
 
-        application.setState(EnforcementState.PENDING_CASE_ISSUED);
-        conditions.setCaseFields(entity, pcsCase);
+        underTest.setCaseFields(pcsCase, caseWithApplications(application));
 
-        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.from(eligible));
+        if (eligible) {
+            verify(renderer).render("10 October 2026", List.of(), false);
+            verify(renderer).render("10 October 2026", List.of(), true);
+        } else {
+            assertNoAssessment();
+            verifyNoInteractions(renderer);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSerializeNestedConditionsAndPreserveWarrantReturnForBothFlagStates(boolean enabled) {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(enabled);
+        PcsCaseEntity entity = caseWithApplications(application(SelectEnforcementType.WARRANT));
+        new EnforcementEventShowConditionsView(enforcementOrderMediator).setCaseFields(entity, pcsCase);
+
+        view.setCaseFields(pcsCase, entity);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode data = mapper.valueToTree(pcsCase);
+        JsonNode conditions = data.path("enfShowConditions");
+        assertThat(conditions.path("recordWarrantReturn")).isEqualTo(mapper.valueToTree(YesOrNo.YES));
+        assertThat(conditions.path("canViewRiskAssessment")).isEqualTo(mapper.valueToTree(YesOrNo.from(enabled)));
+        assertThat(conditions.has("RecordWarrantReturn")).isFalse();
+        assertThat(conditions.has("CanViewRiskAssessment")).isFalse();
+        assertThat(data.has("enforcementEventShowConditions")).isFalse();
+        assertThat(data.has("enfShowConditions_RecordWarrantReturn")).isFalse();
+        assertThat(data.has("enfShowConditions_CanViewRiskAssessment")).isFalse();
+    }
+
+    @ParameterizedTest
+    @EnumSource(VulnerableCategory.class)
+    void shouldShowWhoIsVulnerableBeforeTheirDetails(VulnerableCategory category) {
+        EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
+        application.getEnforcementOrder().setRawWarrantDetails(RawWarrantDetails.builder()
+            .vulnerablePeoplePresent(YesNoNotSure.YES)
+            .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                .vulnerableCategory(category).vulnerableReasonText("Support required").build()).build());
+
+        render(application);
+
+        for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
+                                   pcsCase.getRiskAssessmentClaimantMarkdown())) {
+            assertThat(html).containsSubsequence(category.getLabel(), "Support required");
+        }
     }
 
     @Test
-    void shouldHideTheTabWhenThereIsNoCompletedSubmission() {
+    void shouldEscapeRiskDescriptionsAndOmitBlankDetails() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
-        application.getStatementOfTruth().setCompletedDate(null);
-        PcsCaseEntity entity = caseWithApplications(application);
+        WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
+        warrant.setAnyRiskToBailiff(YesNoNotSure.YES);
+        warrant.setRiskCategories(Set.of(RiskCategory.values()));
+        warrant.setRiskDetails(RiskDetails.builder().violentDetails("<script>unsafe</script>")
+            .firearmsDetails("  ").build());
 
-        new EnforcementEventShowConditionsView(enforcementOrderMediator, featureToggleService)
-            .setCaseFields(entity, pcsCase);
+        render(application);
 
-        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
+                                   pcsCase.getRiskAssessmentClaimantMarkdown())) {
+            assertThat(html).contains("&#60;script&#62;unsafe&#60;/script&#62;")
+                .doesNotContain("<script>", "null");
+        }
+    }
+
+    private RiskDetails allRiskDetails() {
+        return RiskDetails.builder()
+            .violentDetails(description(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+            .firearmsDetails(description(RiskCategory.FIREARMS_POSSESSION))
+            .criminalDetails(description(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+            .verbalThreatsDetails(description(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+            .protestGroupDetails(description(RiskCategory.PROTEST_GROUP_MEMBER))
+            .policeSocialServicesDetails(description(RiskCategory.AGENCY_VISITS))
+            .animalsDetails(description(RiskCategory.AGGRESSIVE_ANIMALS)).build();
+    }
+
+    private String description(RiskCategory category) {
+        return "Description for " + category.name().replace('_', ' ');
     }
 
     private void assertNoAssessment() {
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNull();
         assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNull();
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     private void render(EnforcementOrderEntity application) {

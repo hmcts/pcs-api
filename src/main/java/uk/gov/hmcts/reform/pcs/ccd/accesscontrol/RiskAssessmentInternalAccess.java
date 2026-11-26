@@ -11,6 +11,8 @@ public class RiskAssessmentInternalAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = AccessGrants.internalUserReadAccess();
+        grants.put(UserRole.BAILIFF, Permission.R);
+        grants.put(UserRole.BAILIFF_MANAGER, Permission.R);
         grants.put(UserRole.HEARING_CENTRE_TEAM_LEADER, Permission.R);
         grants.put(UserRole.CTSC_TEAM_LEADER, Permission.R);
         grants.put(UserRole.WLU_TEAM_LEADER, Permission.R);

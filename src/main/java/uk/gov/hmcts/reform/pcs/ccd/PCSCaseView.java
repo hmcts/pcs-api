@@ -152,6 +152,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
         enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        riskAssessmentView.setCaseFields(pcsCase, pcsCaseEntity);
         setDraftUploads(pcsCase, caseReference);
 
         caseFieldsView.setCaseFields(pcsCase);
@@ -216,7 +217,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
         messagesView.setCaseFields(pcsCase, pcsCaseEntity);
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
-        riskAssessmentView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         draftResponseView.setCaseFields(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);

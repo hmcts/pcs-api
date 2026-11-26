@@ -19,15 +19,19 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RawWarrantDetails {
 
+    public static final String SELECTED_DEFENDANTS_LABEL = "Who do you want to evict?";
+
+    public static final String VULNERABLE_PEOPLE_LABEL = "Is anyone living at the property vulnerable?";
+
     @CCD(
-            label = "Is anyone living at the property vulnerable?"
+            label = VULNERABLE_PEOPLE_LABEL
     )
     private YesNoNotSure vulnerablePeoplePresent;
 
     private VulnerableAdultsChildren vulnerableAdultsChildren;
 
     @CCD(
-            label = "Who do you want to evict?",
+            label = SELECTED_DEFENDANTS_LABEL,
             typeOverride = DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList selectedDefendants;

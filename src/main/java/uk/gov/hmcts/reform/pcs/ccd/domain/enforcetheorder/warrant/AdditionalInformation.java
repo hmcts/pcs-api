@@ -20,6 +20,9 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 public class AdditionalInformation {
 
+    public static final String ADDITIONAL_INFORMATION_SELECT_LABEL
+        = "Do you want to tell us anything else that could help with the eviction?";
+
     public static final String ADDITIONAL_INFORMATION_DETAILS_LABEL
         = "Tell us anything else that could help with the eviction";
 

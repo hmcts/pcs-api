@@ -248,6 +248,13 @@ class GeneratedDefinitionTest {
     }
 
     @Test
+    void riskAssessmentRolesDoNotWidenExistingInternalUserFieldAccess() {
+        for (String field : List.of("allClaimants", "allDefendants", "propertyAddress", "caseNameHmctsInternal")) {
+            assertThat(readers.get(field)).as(field).isNotNull().doesNotContain("bailiff", "bailiff-manager");
+        }
+    }
+
+    @Test
     void riskAssessmentShowConditionIsReadableByTheSameUsersAsTheTab() {
         Set<String> profiles = union(readers.get("riskAssessmentInternalMarkdownLabel"),
                                      Set.of("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"));

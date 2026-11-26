@@ -443,7 +443,9 @@ class PCSCaseViewTest {
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
-        verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
+        var viewOrder = org.mockito.Mockito.inOrder(enforcementEventShowConditionsView, riskAssessmentView);
+        viewOrder.verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
+        viewOrder.verify(riskAssessmentView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test
