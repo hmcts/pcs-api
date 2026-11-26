@@ -21,6 +21,14 @@ class CannotApplyForWarrantInfoPageTest extends BasePageTest {
         setPageUnderTest(new CannotApplyForWarrantInfoPage());
     }
 
+    @Test
+    void shouldOnlyShowForAWarrantOfASuspendedOrderWithNoMissedPayments() {
+        assertThat(event.getFields().getPageShowConditions())
+            .containsEntry("cannotApplyForWarrantInfo",
+                           "chooseEnforcementType=\"WARRANT\" AND enforcementIsSuspendedOrder=\"Yes\""
+                               + " AND warrantDefendantMissedPayments=\"NO\"");
+    }
+
     @Nested
     @DisplayName("Mid-event callback tests")
     class MidEventCallbackTests {

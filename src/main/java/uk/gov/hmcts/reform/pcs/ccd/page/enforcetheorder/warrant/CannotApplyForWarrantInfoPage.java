@@ -34,6 +34,7 @@ public class CannotApplyForWarrantInfoPage implements CcdPageConfiguration {
             .showCondition(
                 ShowConditions.and(
                     ShowConditionsEnforcementType.WARRANT_FLOW,
+                    ShowConditionsEnforcementType.SUSPENDED_ORDER,
                     "warrantDefendantMissedPayments=\"NO\""
                 )
             )
