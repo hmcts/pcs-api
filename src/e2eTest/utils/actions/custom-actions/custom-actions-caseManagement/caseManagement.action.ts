@@ -880,41 +880,18 @@ private formatDisplayDate(entered: string): string {
 
   private async confirmPartyDetailsUpdated(confirmParty: actionRecord): Promise<void> {
     let submitPayLoad = confirmParty.submitPayload as Record<string, any>;
+    await this.validateCaseDetails(submitPayLoad);
     const newUser = `${confirmParty.userType}`
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', {elementType: 'inlineText', text: `${newUser} updated`});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
-    });
+    await this.confirmationPageValidation(submitPayLoad, `${newUser} updated`)
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
   private async confirmAddParty(confirmAdd: actionRecord): Promise<void> {
     let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: `${newUser} added` });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseDetails(submitPayLoad);
+    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`;
+    await this.confirmationPageValidation(submitPayLoad, `${newUser} added`)
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
