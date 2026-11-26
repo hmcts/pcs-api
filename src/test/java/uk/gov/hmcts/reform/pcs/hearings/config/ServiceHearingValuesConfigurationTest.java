@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.hearings.config;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.pcs.hearings.model.Navigation;
 import uk.gov.hmcts.reform.pcs.hearings.model.ScreenNavigation;
@@ -87,5 +89,31 @@ class ServiceHearingValuesConfigurationTest {
             .containsExactly(
                 tuple("INCLUDE", "7", "hearing-welsh"),
                 tuple("NOT INCLUDE", "7", "hearing-judge"));
+    }
+
+    @Nested
+    @TestPropertySource(properties = {
+        "HEARINGS_HMCTS_SERVICE_ID=BBA3",
+        "HEARINGS_AUTO_LIST_FLAG=true",
+        "HEARINGS_ROLE_TYPES=10,20,30",
+        "HEARINGS_HEARING_CHANNELS=INTER,VID",
+        "HEARINGS_NUMBER_OF_DAYS_OFFSET=10"
+    })
+    class WithEnvironmentOverrides {
+
+        @Autowired
+        private ServiceHearingValuesConfiguration overridden;
+
+        @Test
+        void shouldBuildServiceHearingValuesUsingEnvironmentOverrides() {
+            ServiceHearingValues result = overridden.getDefaultValues();
+
+            assertThat(result.getHmctsServiceID()).isEqualTo("BBA3");
+            assertThat(result.isAutoListFlag()).isTrue();
+            assertThat(result.getPanelRequirements().getRoleType()).containsExactly("10", "20", "30");
+            assertThat(result.getHearingChannels()).containsExactly("INTER", "VID");
+            assertThat(overridden.getNumberOfDaysOffset()).isEqualTo(10);
+            assertThat(result.getHearingType()).isEqualTo("AAA3-FPH");
+        }
     }
 }
