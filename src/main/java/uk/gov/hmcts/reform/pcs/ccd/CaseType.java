@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -162,6 +163,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        builder.tab("Messages", "Messages")
+            .showCondition(ShowConditions.and(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER)))
+            .field("messagesMarkdownLabel")
+            .field("messagesMarkdown", NEVER_SHOW);
+
+        builder.tab("orders", "Orders")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
+            .field("orderListMarkdownLabel")
+            .field("orderListMarkdown", NEVER_SHOW);
+
         buildJudicialNotesTab(builder);
 
         builder.tab("paymentHistory", "Payment History")
@@ -305,6 +317,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial notes")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASE_MANAGEMENT_R2))
             .field("judicialNotesMarkdownLabel")
             .field("judicialNotesMarkdown", NEVER_SHOW);
     }

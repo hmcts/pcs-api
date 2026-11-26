@@ -50,7 +50,7 @@ export default {
     'enforceTheOrderlandRegistryFeesWrit': 'landRegistryFees',
     'enforceTheOrderlanguageUsedWrit': 'languageUsed',
     'enforceTheOrdersuspendedOrderWrit': 'suspendedOrder',
-    'enforceTheOrderstatementOfTruthWrit': 'statementOfTruth',
+    'enforceTheOrderstatementOfTruthWrit': 'statementOfTruthWrit',
     'enforceTheOrderamountDefendantOwes': 'amountDefendantOwes',
     'enforceTheOrderrepayments-writ': 'repaymentsWrit',
     'enforceTheOrdercannotApplyForWritInfo': 'cannotApplyForWritInfo',

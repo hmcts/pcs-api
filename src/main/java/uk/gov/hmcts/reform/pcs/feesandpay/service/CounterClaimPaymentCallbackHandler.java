@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -63,7 +64,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     }
 
     @Override
-    public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
+    public SystemEventResult handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity,
+                                    String currentState) {
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
         UUID counterClaimId = feesAndPayTaskData.getRelatedEntityId();
         if (counterClaimId == null) {
@@ -83,11 +85,13 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                     counterClaimId,
                     counterClaimEntity.getStatus()
                 );
-                return;
+                return SystemEventResult.withoutStateTransition("counterClaimFeePaid", "Counterclaim fee paid",
+                                                                "Counterclaim " + counterClaimId);
             }
 
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+            assignRankIfMissing(counterClaimEntity);
             scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
 
@@ -95,7 +99,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 getDocumentsRequiringTranslation(counterClaimEntity);
             translationWAService.createTranslateDefendantSubmittedDocumentTask(
                 counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
-            return;
+            return SystemEventResult.withoutStateTransition("counterClaimFeePaid", "Counterclaim fee paid",
+                                                            "Counterclaim " + counterClaimId);
         }
 
         log.warn(
@@ -103,6 +108,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             feePaymentEntity.getPaymentStatus(),
             counterClaimId
         );
+        return null;
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
@@ -160,5 +166,22 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             .toList());
 
         return documents;
+    }
+
+    private void assignRankIfMissing(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity.getRank() != null) {
+            return;
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null
+            && !counterClaimEntity.getPcsCase().getCounterClaims().isEmpty()) {
+            counterClaimEntity.getPcsCase().assignCounterClaimRank(counterClaimEntity);
+        } else if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getId() != null) {
+            int nextRank = counterClaimRepository.countByPcsCase_IdAndStatus(
+                counterClaimEntity.getPcsCase().getId(), CounterClaimState.COUNTER_CLAIM_ISSUED
+            ) + 1;
+            counterClaimEntity.setRank(nextRank);
+        } else {
+            counterClaimEntity.setRank(1);
+        }
     }
 }

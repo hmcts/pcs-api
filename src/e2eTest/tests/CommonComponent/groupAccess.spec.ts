@@ -46,7 +46,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async () => {
-  test('Users belonging to Same SOLICITOR Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+  test('Users belonging to Same SOLICITOR Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.claimantSolicitorForGATest);
     await performAction('createPartialClaimDetails');
@@ -55,7 +55,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.claimantSolicitor1ForGATest);
     await performAction('resumePartialClaim');
   });
-  test('Users belonging to Same Local Authority Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Same Local Authority Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.localAuthorityOrg1Usr1);
     await performAction('createPartialClaimDetails');
@@ -64,7 +65,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr2);
     await performAction('resumePartialClaim');
   });
-  test('Users belonging to Same Other - Real estate activities Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Same Other - Real estate activities Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.otherRealEstateActivitiesOrg1Usr1);
     await performAction('createPartialClaimDetails');
@@ -73,7 +75,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.otherRealEstateActivitiesOrg1Usr2);
     await performAction('resumePartialClaim');
   });
-  test('Users belonging to Same Other - Property and construction Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Same Other - Property and construction Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.otherPropertyAndConstructionOrg1Usr1);
     await performAction('createPartialClaimDetails');
@@ -82,7 +85,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.otherPropertyAndConstructionOrg1Usr2);
     await performAction('resumePartialClaim');
   });
-  test('Users belonging to Same Other-Not for profit Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Same Other-Not for profit Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.otherNotForProfitOrg1Usr1);
     await performAction('createPartialClaimDetails');
@@ -91,7 +95,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.otherNotForProfitOrg1Usr2);
     await performAction('resumePartialClaim');
   });
-  test('Users belonging to Same Other-charity and voluntary work Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Same Other-charity and voluntary work Org allowed to resume case @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('login', user.otherCharityAndVoluntaryWorkOrg1Usr1);
     await performAction('createPartialClaimDetails');
@@ -101,7 +106,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('resumePartialClaim');
   });
 
-  test('Users belonging to Different Org [Solicitor - Solicitor And Solicitor- localAuthority]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+  test('Users belonging to Different Org [Solicitor - Solicitor And Solicitor- localAuthority]are Not allowed to resume case @MAC @CC @groupAccess', async () => {
     //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
     await performAction('login', user.claimantSolicitorForGATest);
     await performAction('clickTab', home.createCaseTab);
@@ -124,8 +129,8 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
     await performValidation('mainHeader', noResultFound.mainHeader);
    });
-   
-  test('Users belonging to Different Org [LocalAuthority - LocalAuthority And LocalAuthority- otherRealEstateActivities]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+
+  test('Users belonging to Different Org [LocalAuthority - LocalAuthority And LocalAuthority- otherRealEstateActivities]are Not allowed to resume case @MAC @CC @groupAccess', async () => {
     //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
     await performAction('login', user.localAuthorityOrg1Usr1);
     await performAction('clickTab', home.createCaseTab);
@@ -149,7 +154,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performValidation('mainHeader', noResultFound.mainHeader);
    });
 
-  test('Users belonging to Different Org [Other-Not for profit - LocalAuthority And Other-Not for profit- Solicitor ]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+  test('Users belonging to Different Org [Other-Not for profit - LocalAuthority And Other-Not for profit- Solicitor ]are Not allowed to resume case @MAC @CC @groupAccess', async () => {
     //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
     await performAction('login', user.otherNotForProfitOrg1Usr1);
     await performAction('clickTab', home.createCaseTab);

@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -41,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.JudicialNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.MessagesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -105,6 +107,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final MessagesView messagesView;
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
 
@@ -136,10 +139,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
-        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setMarkdownFields(pcsCase, caseReference, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
+        setDraftUploads(pcsCase, caseReference);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -201,6 +205,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
+        messagesView.setCaseFields(pcsCase, pcsCaseEntity);
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         legalRepresentativeSummaryService
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
@@ -232,6 +237,15 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .orElse(null);
     }
 
+    // Once a draft upload is attached to the case, CDAM asks the data store whether the user can see it, and the
+    // data store looks for its document_url anywhere in the case data. Without this, every draft upload 404s.
+    private void setDraftUploads(PCSCase pcsCase, long caseReference) {
+        List<ListValue<DraftUpload>> uploads = draftCaseDataService.getOwnDraftDocumentUrls(caseReference).stream()
+            .map(url -> ListValue.<DraftUpload>builder().value(new DraftUpload(url)).build())
+            .toList();
+        pcsCase.setDraftUploads(uploads.isEmpty() ? null : uploads);
+    }
+
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
             .map(party -> party.getPcqId() != null)
@@ -242,8 +256,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
-        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+    private void setMarkdownFields(PCSCase pcsCase, long caseReference, boolean hasUnsubmittedCaseData) {
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase, caseReference));
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

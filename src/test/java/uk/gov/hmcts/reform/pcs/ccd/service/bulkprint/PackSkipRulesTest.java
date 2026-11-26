@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -133,6 +134,46 @@ class PackSkipRulesTest {
         pcsCase.setCaseFlags(List.of(welshCaseFlag("Active")));
 
         assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Skips a Wales claim pack when an Active PF0026 case flag is present")
+    void shouldSkipAWalesClaimPackWithAnActiveCaseFlag() {
+        enableRelease13();
+        ClaimEntity claim = ClaimEntity.builder().languageUsed(LanguageUsed.ENGLISH).build();
+        PcsCaseEntity pcsCase = caseWith(claim);
+        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+        pcsCase.setCaseFlags(List.of(welshCaseFlag("Active")));
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Skips a Wales claim pack when a gen app is expected")
+    void shouldSkipAWalesClaimPackWhenAGenAppIsExpected() {
+        enableRelease13();
+        ClaimEntity claim = ClaimEntity.builder()
+            .languageUsed(LanguageUsed.ENGLISH)
+            .genAppExpected(VerticalYesNo.YES)
+            .build();
+        PcsCaseEntity pcsCase = caseWith(claim);
+        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Does not skip a Wales claim in English with no flag and no expected gen app")
+    void shouldNotSkipAWalesEnglishClaimWithNoFlagOrGenApp() {
+        enableRelease13();
+        ClaimEntity claim = ClaimEntity.builder()
+            .languageUsed(LanguageUsed.ENGLISH)
+            .genAppExpected(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity pcsCase = caseWith(claim);
+        pcsCase.setLegislativeCountry(LegislativeCountry.WALES);
+
+        assertThat(underTest.shouldSkipClaimPack(pcsCase, claim)).isFalse();
     }
 
     @Test

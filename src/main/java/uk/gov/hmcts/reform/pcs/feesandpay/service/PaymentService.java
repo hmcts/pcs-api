@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -17,7 +20,6 @@ import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -40,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -54,6 +57,8 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
     private final IdamAuthenticator idamAuthenticator;
+    private final SystemEventExecutor systemEventExecutor;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -66,7 +71,9 @@ public class PaymentService {
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
                           OrganisationService organisationService,
-                          IdamAuthenticator idamAuthenticator) {
+                          IdamAuthenticator idamAuthenticator,
+                          SystemEventExecutor systemEventExecutor,
+                          TransactionTemplate transactionTemplate) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -76,6 +83,8 @@ public class PaymentService {
         this.objectMapper = objectMapper;
         this.organisationService = organisationService;
         this.idamAuthenticator = idamAuthenticator;
+        this.systemEventExecutor = systemEventExecutor;
+        this.transactionTemplate = transactionTemplate;
     }
 
     /**
@@ -112,7 +121,7 @@ public class PaymentService {
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             systemUpdateUserTokenProvider.getAuthToken(), requestDto);
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+        ClaimEntity claimEntity = pcsCaseService.retrieveClaimEntity(caseReference);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
@@ -212,33 +221,57 @@ public class PaymentService {
         }
     }
 
-    @Transactional
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
 
-        getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
-            .ifPresent(
+        if (PaymentStatus.PAID.getValue().equalsIgnoreCase(paymentStatusCallback.getServiceRequestStatus())) {
+            String serviceRequestReference = paymentStatusCallback.getServiceRequestReference();
+            Optional<Long> caseReference = feePaymentRepository.findCaseReference(serviceRequestReference);
+            if (caseReference.isEmpty()) {
+                log.error("Unable to find a payment with the service request reference : {}", serviceRequestReference);
+                return;
+            }
+            if (feePaymentRepository.existsByServiceRequestReferenceAndPaymentStatusAndExternalReference(
+                serviceRequestReference, PaymentStatus.PAID, paymentStatusCallback.getPaymentReference())) {
+                log.info("Payment {} already recorded as paid for service request reference : {}",
+                         paymentStatusCallback.getPaymentReference(), serviceRequestReference);
+                return;
+            }
+            systemEventExecutor.execute(caseReference.get(), UUID.randomUUID(),
+                                        context -> updatePayment(paymentStatusCallback, context.currentState()));
+        } else {
+            transactionTemplate.executeWithoutResult(status -> updatePayment(paymentStatusCallback, null));
+        }
+    }
+
+    private SystemEventResult updatePayment(PaymentStatusCallback paymentStatusCallback, String currentState) {
+        return getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
+            .map(
                 feePaymentEntity -> {
                     feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
                     feePaymentEntity
                         .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
 
-                    callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
+                    SystemEventResult result =
+                        callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity, currentState);
 
                     feePaymentRepository.save(feePaymentEntity);
-                });
+                    return result;
+                })
+            .orElse(null);
     }
 
-    private void callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
-                                            FeePaymentEntity feePaymentEntity) {
+    private SystemEventResult callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
+                                            FeePaymentEntity feePaymentEntity, String currentState) {
 
         PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
             .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
 
         if (paymentCallbackStrategy != null) {
-            paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
+            return paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity, currentState);
         } else {
             log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
+            return null;
         }
     }
 
@@ -257,12 +290,6 @@ public class PaymentService {
             .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
         feePaymentRepository.save(feePaymentEntity);
-    }
-
-    private ClaimEntity retrieveClaimEntity(Long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        // Assuming 1 claim per PcsCase
-        return pcsCaseEntity.getClaims().getFirst();
     }
 
     private Optional<FeePaymentEntity> getFeePaymentEntity(String serviceRequestReference) {

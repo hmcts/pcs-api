@@ -4,11 +4,10 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -46,9 +45,9 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     private final ClaimWaTaskService claimWaTaskService;
 
     @Override
-    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(claimIssuePayment.name(), this::submit)
+            .event(claimIssuePayment.name())
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
@@ -72,20 +71,27 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        long caseReference = eventPayload.caseReference();
-        if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling claim-form, "
-                     + "access-code letter generation, claim-issued notification and WA tasks", caseReference);
-            pcsCaseService.setCaseIssuedDate(caseReference);
-            claimFormScheduler.scheduleClaimFormGeneration(caseReference);
-            // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
-            scheduleAccessCodeFormGeneration(caseReference);
-            scheduleClaimIssuedNotification(caseReference);
-            claimWaTaskService.createTasksForIssuedClaim(caseReference);
+    public SystemEventResult issue(long caseReference, String currentState) {
+        if (!State.PENDING_CASE_ISSUED.name().equals(currentState) && !State.CASE_ISSUED.name().equals(currentState)) {
+            throw new IllegalStateException("Cannot confirm claim issue payment for case " + caseReference
+                                            + " in state " + currentState);
         }
-        return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
+        if (pcsCaseService.retrieveClaimEntity(caseReference).getClaimIssuedDate() == null) {
+            issueClaim(caseReference);
+        }
+        return SystemEventResult.withStateTransition(claimIssuePayment.name(), "Payment Confirmation",
+                                                     State.CASE_ISSUED);
+    }
+
+    private void issueClaim(long caseReference) {
+        log.info("Payment confirmed for case {} - issuing case and scheduling claim-form, "
+                 + "access-code letter generation, claim-issued notification and WA tasks", caseReference);
+        pcsCaseService.setCaseIssuedDate(caseReference);
+        claimFormScheduler.scheduleClaimFormGeneration(caseReference);
+        // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
+        scheduleAccessCodeFormGeneration(caseReference);
+        scheduleClaimIssuedNotification(caseReference);
+        claimWaTaskService.createTasksForIssuedClaim(caseReference);
     }
 
     private void scheduleClaimIssuedNotification(long caseReference) {

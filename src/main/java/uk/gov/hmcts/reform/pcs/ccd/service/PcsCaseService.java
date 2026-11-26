@@ -81,7 +81,7 @@ public class PcsCaseService {
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
-
+    
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
@@ -207,5 +207,11 @@ public class PcsCaseService {
     public void setCaseIssuedDate(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
+    }
+
+    public ClaimEntity retrieveClaimEntity(Long caseReference) {
+        PcsCaseEntity pcsCaseEntity = this.loadCase(caseReference);
+        // Assuming 1 claim per PcsCase
+        return pcsCaseEntity.getClaims().getFirst();
     }
 }

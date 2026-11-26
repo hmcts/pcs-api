@@ -5,7 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.reform.pcs.ccd.service.ImmediateSystemEventExecutor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
 
@@ -38,6 +41,8 @@ class CounterClaimFormServiceTest {
     private CounterClaimFormDocumentGenerator documentGenerator;
     @Mock
     private DocumentImportService documentImportService;
+    @Spy
+    private SystemEventExecutor systemEventExecutor = new ImmediateSystemEventExecutor();
 
     @InjectMocks
     private CounterClaimFormService underTest;
@@ -73,7 +78,7 @@ class CounterClaimFormServiceTest {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
 
@@ -89,7 +94,7 @@ class CounterClaimFormServiceTest {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
         doThrow(new RuntimeException("dm-store unreachable"))

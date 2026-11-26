@@ -8,6 +8,7 @@ import java.util.Optional;
 // and there is no system property override
 public enum FeatureFlag {
 
+    CASE_BUNDLE_VIEW("case-bundle-view-enabled", false),
     BULK_PRINT("bulk-print-enabled", false),
     SDP_EXPORT("sdp-export-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", true),
@@ -19,7 +20,10 @@ public enum FeatureFlag {
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
-    ENFORCEMENT("enforcement-enabled", false);
+    ENFORCEMENT("enforcement-enabled", false),
+    HMC_INTEGRATION("hmc-integration-enabled", false),
+    CASE_MANAGEMENT_R2("case-management-r-2-enabled", false),
+    BAILIFF_MANAGEMENT_ENABLED("bailiff-management-enabled", false);
 
     private final String key;
     private final boolean defaultValue;

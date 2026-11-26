@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 
-import java.util.Optional;
-
 /**
  * Every change to an order is a step appended to it, leaving the order in a state. The latest step
  * is the order as it stands, and its id is the order's version: the frontend sends it back with a
@@ -35,12 +33,6 @@ public class OrderSteps {
             throw ExternalRejection.because("The order has been updated by another user. Reload it and try again");
         }
         return latest;
-    }
-
-    /** The query the order was last returned to its judge with. */
-    public Optional<String> query(OrderEntity order) {
-        return orderStepRepository.findFirstByOrderIdAndNoteIsNotNullOrderByIdDesc(order.getId())
-            .map(returned -> returned.getNote().getNote());
     }
 
     public OrderStepEntity append(OrderEntity order, OrderState to, String actor,
