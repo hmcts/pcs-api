@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -67,6 +68,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -219,7 +221,7 @@ class PCSCaseViewTest {
         AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
 
         String expectedCaseTitle = "expected case title";
-        when(caseTitleService.buildCaseTitle(any(PCSCase.class))).thenReturn(expectedCaseTitle);
+        when(caseTitleService.buildCaseTitle(any(PCSCase.class), eq(CASE_REFERENCE))).thenReturn(expectedCaseTitle);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -228,7 +230,7 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getCaseTitleMarkdown()).isEqualTo(expectedCaseTitle);
 
         ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture());
+        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture(), eq(CASE_REFERENCE));
         assertThat(pcsCaseCaptor.getValue().getPropertyAddress()).isEqualTo(addressUK);
     }
 
@@ -482,6 +484,31 @@ class PCSCaseViewTest {
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
+    void shouldReturnTheDocumentsInTheUsersDraftsSoTheDataStoreCanFindTheirDocumentUrl() {
+        // Given
+        when(draftCaseDataService.getOwnDraftDocumentUrls(CASE_REFERENCE))
+            .thenReturn(List.of("http://dm-store/documents/abc", "http://dm-store/documents/def"));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDraftUploads())
+            .extracting(ListValue::getValue)
+            .containsExactly(new DraftUpload("http://dm-store/documents/abc"),
+                             new DraftUpload("http://dm-store/documents/def"));
+    }
+
+    @Test
+    void shouldLeaveDraftUploadsNullWhenTheUserHasNoDraftDocuments() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDraftUploads()).isNull();
     }
 
     @Test

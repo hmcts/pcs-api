@@ -2,7 +2,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseSummary } from '@data/page-data';
 import { home } from '@data/page-data-cy';
 import {
   checkYourAnswers
@@ -15,6 +14,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {
   aggressiveAnimalsRisk,
   additionalInformation,
+  caseSummary,
   criminalAntisocialRisk,
   livingInTheProperty,
   evictionDelayWarning,
@@ -39,8 +39,10 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth, defendantInBreathingSpace, missedPayments
-} from '@data/page-data-figma/page-data-enforcement-figma';
+  defendantInBreathingSpace, missedPayments, statementOfTruth
+} from '@data/index.selector.enforcement';
+
+let sotWarrant: ReturnType<typeof statementOfTruth>;
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -84,6 +86,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   if (process.env.RUN_E2E_IN_WELSH === 'true') {
     await performAction('clickButton', home.cymraegLink);
   }
+  sotWarrant = statementOfTruth(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -97,7 +100,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] - ClaimantSOT @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -269,21 +272,22 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.yesRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
-      await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('errorValidationSOT1Page', sotWarrant.errorValidation);
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruth.nameOfFirmHiddenTextInput,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantRadioOption,
+        option1: sotWarrant.clarificationLabelThreeList,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        label2: sotWarrant.nameOfFirmHiddenTextLabel,
+        input2: sotWarrant.nameOfFirmHiddenTextInput,
+        continueButton: sotWarrant.continueButton,
         nextPage: checkYourAnswers.mainHeader
       });
     });
@@ -388,25 +392,26 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.noRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruth.signThisStatementHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruth.nameOfFirmHiddenTextInput,
-      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantLegalRepresentativeRadioOption,
+      option1: sotWarrant.clarificationLabelThreeList,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.nameOfFirmHiddenTextLabel,
+      input1: sotWarrant.nameOfFirmHiddenTextInput,
+      label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+      continueButton: sotWarrant.continueButton,
       nextPage: checkYourAnswers.mainHeader
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] - ClaimantSOT @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -511,20 +516,21 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.yesRadioOption,
-      nextPage: statementOfTruth.mainHeader
+      nextPage: sotWarrant.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-      question: statementOfTruth.completedByParagraph,
-      option: statementOfTruth.claimantRadioOption,
-      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
-      label: statementOfTruth.fullNameHiddenTextLabel,
-      input: statementOfTruth.fullNameHiddenTextInput,
-      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruth.nameOfFirmHiddenTextInput,
+      selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+      question: sotWarrant.completedByParagraph,
+      option: sotWarrant.claimantRadioOption,
+      option1: sotWarrant.clarificationLabelThreeList,
+      label: sotWarrant.fullNameHiddenTextLabel,
+      input: sotWarrant.fullNameHiddenTextInput,
+      label1: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+      input1: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+      label2: sotWarrant.nameOfFirmHiddenTextLabel,
+      input2: sotWarrant.nameOfFirmHiddenTextInput,
+      continueButton: sotWarrant.continueButton,
       nextPage: checkYourAnswers.mainHeader
     });
   });
@@ -679,25 +685,26 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader
+        nextPage: sotWarrant.mainHeader
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.clarificationLabelThreeList,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        continueButton: sotWarrant.continueButton,
         nextPage: checkYourAnswers.mainHeader
       });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement @asha @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -797,20 +804,21 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruth.mainHeader,
+        nextPage: sotWarrant.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: sotWarrant.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruth.signThisStatementHiddenCheckbox,
-        label: statementOfTruth.fullNameHiddenTextLabel,
-        input: statementOfTruth.fullNameHiddenTextInput,
-        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruth.nameOfFirmHiddenTextInput,
-        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: sotWarrant.iCertifyCheckboxDynamic,
+        question: sotWarrant.completedByParagraph,
+        option: sotWarrant.claimantLegalRepresentativeRadioOption,
+        option1: sotWarrant.clarificationLabelThreeList,
+        label: sotWarrant.fullNameHiddenTextLabel,
+        input: sotWarrant.fullNameHiddenTextInput,
+        label1: sotWarrant.nameOfFirmHiddenTextLabel,
+        input1: sotWarrant.nameOfFirmHiddenTextInput,
+        label2: sotWarrant.positionOrOfficeHeldHiddenTextLabel,
+        input2: sotWarrant.positionOrOfficeHeldHiddenTextInput,
+        continueButton: sotWarrant.continueButton,
         nextPage: checkYourAnswers.mainHeader,
       });
   });
