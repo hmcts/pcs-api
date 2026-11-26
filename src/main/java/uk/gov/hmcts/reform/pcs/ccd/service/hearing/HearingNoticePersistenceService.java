@@ -146,6 +146,11 @@ public class HearingNoticePersistenceService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public long caseReference(Integer hearingId) {
+        return loadHearing(hearingId).getPcsCase().getCaseReference();
+    }
+
     private HearingEntity loadHearing(Integer hearingId) {
         return hearingRepository.findById(hearingId)
             .orElseThrow(() -> new IllegalStateException("No hearing found for id: " + hearingId));
