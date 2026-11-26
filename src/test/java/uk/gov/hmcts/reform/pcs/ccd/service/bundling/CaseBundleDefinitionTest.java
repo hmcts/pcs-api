@@ -31,7 +31,7 @@ class CaseBundleDefinitionTest {
 
     @Test
     void shouldMakeOneFolderPerCaseFileCategoryInDisplayOrder() {
-        PdfRequest request = CaseBundleDefinition.build(caseWith());
+        PdfRequest request = bundleOf();
 
         assertThat(request.fileName()).isEqualTo("1234567812345678-case-bundle.pdf");
         assertThat(request.root().sections()).extracting(PdfSection::title)
@@ -54,8 +54,8 @@ class CaseBundleDefinitionTest {
         applicationForm.setGeneralApplication(application);
 
         // The fingerprint that decides whether to re-render is of the stored request, so it must not vary.
-        assertThat(DocRequestJson.write(CaseBundleDefinition.build(caseWith(first, second, applicationForm))))
-            .isEqualTo(DocRequestJson.write(CaseBundleDefinition.build(caseWith(applicationForm, second, first))));
+        assertThat(DocRequestJson.write(bundleOf(first, second, applicationForm)))
+            .isEqualTo(DocRequestJson.write(bundleOf(applicationForm, second, first)));
     }
 
     @Test
@@ -66,13 +66,12 @@ class CaseBundleDefinitionTest {
         undated.setSubmittedDate(Instant.parse("2026-02-01T10:00:00Z"));
         DocumentEntity claim = document("claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 5, 1));
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(late, early, undated, claim));
+        PdfRequest request = bundleOf(late, early, undated, claim);
 
         assertThat(titles(request, "Evidence")).containsExactly("early.pdf", "undated.pdf", "late.pdf");
         assertThat(titles(request, "Statements of case")).containsExactly("claim.pdf");
         PdfPart first = section(request, "Evidence").parts().getFirst();
         assertThat(first.source()).isEqualTo(DocSource.cdam(early.getDocumentId()));
-        assertThat(first.id()).contains(early.getId().toString());
     }
 
     @Test
@@ -84,7 +83,7 @@ class CaseBundleDefinitionTest {
         DocumentEntity nonCdam = document("external.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         nonCdam.setDocumentId(null);
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(kept, accessCode, nonCdam));
+        PdfRequest request = bundleOf(kept, accessCode, nonCdam);
 
         assertThat(request.allParts()).extracting(PdfPart::title).containsExactly("kept.pdf");
     }
@@ -94,7 +93,7 @@ class CaseBundleDefinitionTest {
         DocumentEntity stray = document("stray.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         stray.setCategoryId("somethingElse");
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(stray));
+        PdfRequest request = bundleOf(stray);
 
         assertThat(titles(request, "Uncategorised documents")).containsExactly("stray.pdf");
     }
@@ -105,7 +104,7 @@ class CaseBundleDefinitionTest {
         typed.setType(DocumentType.WITNESS_STATEMENT);
         DocumentEntity untyped = document(null, CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(typed, untyped));
+        PdfRequest request = bundleOf(typed, untyped);
 
         assertThat(titles(request, "Evidence")).containsExactly("Witness statement", "Document");
     }
@@ -127,7 +126,7 @@ class CaseBundleDefinitionTest {
         draftCounterclaim.setCounterClaim(counterClaim);
 
         PdfRequest request =
-            CaseBundleDefinition.build(caseWith(issuedApp, pendingApp, withoutNotice, draftCounterclaim));
+            bundleOf(issuedApp, pendingApp, withoutNotice, draftCounterclaim);
 
         assertThat(request.allParts()).extracting(PdfPart::title)
             .containsExactly("issued-app.pdf", "without-notice.pdf");
@@ -146,7 +145,7 @@ class CaseBundleDefinitionTest {
             document("adjourn-1.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 2));
         adjournEarly.setGeneralApplication(first);
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(loose, suspendForm, adjournLate, adjournEarly));
+        PdfRequest request = bundleOf(loose, suspendForm, adjournLate, adjournEarly);
 
         PdfSection applications = section(request, "Applications");
         assertThat(titles(request, "Applications")).containsExactly("letter.pdf");
@@ -165,18 +164,18 @@ class CaseBundleDefinitionTest {
         DocumentEntity video = document("inspection.mov", CaseFileCategory.HEARING_DOCUMENTS, null);
         video.setContentType("video/quicktime");
 
-        PdfRequest request = CaseBundleDefinition.build(caseWith(audio, video));
+        PdfRequest request = bundleOf(audio, video);
 
         // Fetched, so an unsupported recording becomes a missing-document page rather than failing the bundle.
         assertThat(section(request, "Hearing documents").parts())
             .hasSize(2).allSatisfy(part -> assertThat(part.source()).isInstanceOf(DocSource.Cdam.class));
     }
 
-    private static PcsCaseEntity caseWith(DocumentEntity... documents) {
+    private static PdfRequest bundleOf(DocumentEntity... documents) {
         PcsCaseEntity pcsCase = new PcsCaseEntity();
         pcsCase.setCaseReference(1234567812345678L);
         pcsCase.addDocuments(List.of(documents));
-        return pcsCase;
+        return CaseBundleDefinition.build(pcsCase, pcsCase.getDocuments());
     }
 
     private static DocumentEntity document(String fileName, CaseFileCategory category, LocalDate issueDate) {

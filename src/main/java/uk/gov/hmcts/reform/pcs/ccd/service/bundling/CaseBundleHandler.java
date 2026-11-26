@@ -24,14 +24,11 @@ public class CaseBundleHandler implements DocJobHandler {
 
     @Override
     public void completed(DocJob job, UploadedDoc uploaded) {
-        String url = uploaded.document().getUrl();
         UUID caseId = cases.findByCaseReference(job.caseReference()).orElseThrow().getId();
         versions.save(CaseBundleEntity.builder()
             .caseId(caseId)
             .caseRevision(job.caseRevision())
-            .documentId(UUID.fromString(url.substring(url.lastIndexOf('/') + 1)))
-            .url(url)
-            .binaryUrl(uploaded.document().getBinaryUrl())
+            .url(uploaded.document().getUrl())
             .fileName(uploaded.document().getFilename())
             .build());
     }

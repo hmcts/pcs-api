@@ -40,13 +40,7 @@ public class CaseBundleEntity {
     private long caseRevision;
 
     @Column(nullable = false)
-    private UUID documentId;
-
-    @Column(nullable = false)
     private String url;
-
-    @Column(nullable = false)
-    private String binaryUrl;
 
     @Column(nullable = false)
     private String fileName;
@@ -54,4 +48,13 @@ public class CaseBundleEntity {
     /** Set by the database when the bundle is saved. */
     @Column(insertable = false, updatable = false)
     private Instant createdAt;
+
+    /** The document's id in CDAM, the last part of its URL. */
+    public UUID getDocumentId() {
+        return UUID.fromString(url.substring(url.lastIndexOf('/') + 1));
+    }
+
+    public String getBinaryUrl() {
+        return url + "/binary";
+    }
 }

@@ -6,9 +6,7 @@ CREATE TABLE case_bundles (
     case_id           UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
     -- The case revision the bundle shows the case as at; the latest bundle has the highest.
     case_revision     BIGINT NOT NULL,
-    document_id       UUID NOT NULL UNIQUE,
     url               TEXT NOT NULL,
-    binary_url        TEXT NOT NULL,
     file_name         TEXT NOT NULL,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (case_id, case_revision)

@@ -83,7 +83,7 @@ class OrderCaseContext {
             .orElse("[court]");
     }
 
-    /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */
+    /** The case's current bundle, which only judges are given. */
     private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
         if (!JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
             return null;

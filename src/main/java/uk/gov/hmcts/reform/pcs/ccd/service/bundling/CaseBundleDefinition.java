@@ -66,10 +66,6 @@ public class CaseBundleDefinition implements CaseEventHook {
             event.caseReference(), NAME, build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId()))));
     }
 
-    static PdfRequest build(PcsCaseEntity pcsCase) {
-        return build(pcsCase, pcsCase.getDocuments());
-    }
-
     static PdfRequest build(PcsCaseEntity pcsCase, List<DocumentEntity> documents) {
         Map<CaseFileCategory, List<DocumentEntity>> byFolder = documents.stream()
             .filter(CaseBundleDefinition::isInBundle)
@@ -151,7 +147,6 @@ public class CaseBundleDefinition implements CaseEventHook {
     // The source carries no name, so CDAM's own file name decides the type when its content type does not.
     private static PdfPart toBundleDocument(DocumentEntity document) {
         return PdfPart.builder(DocSource.cdam(document.getDocumentId()))
-            .id(document.getId().toString())
             .title(title(document))
             .date(date(document))
             .build();
