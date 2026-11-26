@@ -170,7 +170,8 @@ class CaseTypeTest {
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
-        assertThat(hiddenTab.getFields()).hasSize(4);
+        // 5 rather than 4: the Welsh case title proof of concept adds welshPocCaseTitleAddress. Not for merge.
+        assertThat(hiddenTab.getFields()).hasSize(5);
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
             .containsExactly("casePaymentHistoryViewer");
