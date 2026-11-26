@@ -29,6 +29,10 @@ public class ServiceHearingValuesConfiguration {
     private List<String> roleTypes;
     private String preferredHearingChannel;
     private int numberOfDaysOffset;
+    private int numberOfDaysStartOffset;
+    private String hearingType;
+    private List<String> hearingChannels;
+    private String hearingPriority;
 
     public ServiceHearingValues getDefaultValues() {
         List<PartyDetails> parties = List.of(
@@ -47,6 +51,9 @@ public class ServiceHearingValuesConfiguration {
             .hearingInWelshFlag(hearingInWelshFlag)
             .privateHearingRequiredFlag(privateHearingRequiredFlag)
             .hearingIsLinkedFlag(hearingIsLinkedFlag)
+            .hearingType(hearingType)
+            .hearingChannels(hearingChannels)
+            .hearingPriorityType(getHearingPriority())
             .hearingLocations(List.of(
                 HearingLocation.builder()
                     .locationType(locationType)

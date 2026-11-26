@@ -46,8 +46,6 @@ public class ClaimPartyEntity {
     @Enumerated(EnumType.STRING)
     private PartyRole role;
 
-    private String entityRoleCodeKey;
-
     private String claimantTypeKey;
 
     @ManyToOne(fetch = FetchType.LAZY)

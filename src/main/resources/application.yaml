@@ -492,3 +492,8 @@ service-hearing-values:
       - "45"
   preferred-hearing-channel: INTER
   number-of-days-offset: 57
+  number-of-days-start-offset: 27
+  hearing-type: AAA3-FPH
+  hearing-channels:
+    - INTER
+  hearing-priority: Standard
