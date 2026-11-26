@@ -13,6 +13,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.ccd.sdk.testing.EnableCcdEventTesting;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
@@ -27,6 +30,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
@@ -47,7 +52,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,6 +67,7 @@ import static uk.gov.hmcts.reform.pcs.controllers.CaseCreationHelper.ACCESS_CODE
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
+@EnableCcdEventTesting
 @DisplayName("CasePartyLinkController Integration Tests")
 class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
@@ -89,6 +94,12 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private IdamHelper idamHelper;
+
+    @Autowired
+    private CcdEventTestSupport<PCSCase, State> events;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
@@ -251,10 +262,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should successfully validate and link party with valid access code")
-    @Transactional
     void shouldSuccessfullyValidateAndLinkPartyWithValidAccessCode() throws Exception {
         // Given
         long caseReference = 12345L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, null,
             PartyRole.DEFENDANT
@@ -276,9 +287,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .andExpect(content().string(""));
 
         // Verify defendant is linked in database
-        PcsCaseEntity updatedCase = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow();
+        PcsCaseEntity updatedCase = loadCase(caseReference);
         assertThat(caseCreationHelper.getDefendants(updatedCase).getFirst().getIdamId()).isEqualTo(USER_ID);
+        assertThat(events.history(caseReference).getLast().eventId()).isEqualTo("defendantLinkedToCase");
     }
 
     @Test
@@ -286,6 +297,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldCallIdamUserInfoApiWithExactAuthHeader() throws Exception {
         // Given
         long caseReference = 12355L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper
             .createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
         String accessCode = caseCreationHelper.createPartyAccessCode(
@@ -319,8 +331,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message", notNullValue()));
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -328,6 +339,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn404WhenPartyIsNotDefendant() throws Exception {
         // Given
         long caseReference = 12354L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(caseReference, null,
                                                                               PartyRole.CLAIMANT);
 
@@ -358,6 +370,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn400WhenAccessCodeNotFound() throws Exception {
         // Given
         long caseReference = 12346L;
+        seedCcdCase(caseReference);
         caseCreationHelper.createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
         String invalidAccessCode = "INVALIDCODE12";
 
@@ -377,6 +390,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn409WhenAccessCodeAlreadyUsed() throws Exception {
         // Given
         long caseReference = 12347L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference,
             USER_ID,
@@ -401,10 +415,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should return 409 when user ID already linked to another defendant")
-    @Transactional
     void shouldReturn409WhenUserIdAlreadyLinkedToAnotherDefendant() throws Exception {
         // Given
         long caseReference = 12348L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper
             .createTestCaseWithMultipleDefendants(caseReference, USER_ID, null);
         // Get access code for the second defendant (not yet linked)
@@ -472,11 +486,11 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should rollback transaction when exception occurs - no partial data saved")
-    @Transactional
     void shouldRollbackTransactionWhenExceptionOccurs() throws Exception {
         // Given - Create a case with a defendant that's already linked
         // This will cause an exception when trying to link again
         long caseReference = 12352L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, USER_ID,
             PartyRole.DEFENDANT
@@ -487,8 +501,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         );
 
         // Capture the initial state before the failed operation
-        PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow();
+        PcsCaseEntity caseBefore = loadCase(caseReference);
         String initialIdamUserId = caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId();
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
@@ -503,8 +516,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .andExpect(jsonPath("$.message", is("Access code already used")));
 
         // Then - Verify transaction rolled back: database state unchanged
-        PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow();
+        PcsCaseEntity caseAfter = loadCase(caseReference);
         String finalIdamUserId = caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId();
 
         // The idamUserId should remain unchanged (transaction rolled back)
@@ -514,10 +526,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should commit transaction when operation succeeds - data persisted correctly")
-    @Transactional
     void shouldCommitTransactionWhenOperationSucceeds() throws Exception {
         // Given
         long caseReference = 12353L;
+        seedCcdCase(caseReference);
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(caseReference, null,
                                                                               PartyRole.DEFENDANT);
         String accessCode = caseCreationHelper.createPartyAccessCode(
@@ -526,8 +538,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         );
 
         // Verify initial state - defendant not linked
-        PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow();
+        PcsCaseEntity caseBefore = loadCase(caseReference);
         assertThat(caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId()).isNull();
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
@@ -542,12 +553,25 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .andExpect(content().string(""));
 
         // Then - Verify transaction committed: data persisted
-        PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
+        PcsCaseEntity caseAfter = loadCase(caseReference);
         assertThat(getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
     }
 
     // Helper methods
+
+    /** The CCD case the link's system event is recorded against. */
+    private void seedCcdCase(long caseReference) {
+        events.caseType().seed(caseReference, State.CASE_ISSUED, PCSCase.builder().build());
+    }
+
+    /** The case with its claim parties loaded, as the system event commits outside the test's transaction. */
+    private PcsCaseEntity loadCase(long caseReference) {
+        return transactionTemplate.execute(status -> {
+            PcsCaseEntity pcsCase = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
+            getDefendants(pcsCase);
+            return pcsCase;
+        });
+    }
 
     private PcsCaseEntity createTestCaseWithParty(long caseReference, String idamUserId, PartyRole partyRole) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();

@@ -67,9 +67,12 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
-    /** The hearing the judge made the order for, if they made it for one; an order keeps its hearing. */
+    /**
+     * The hearing the judge made the order at, if they made it at one. The judge can change it while the order is
+     * theirs to change, as a draft or returned to them; while it is with court staff, and once issued, it keeps it.
+     */
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hearing_id", updatable = false)
+    @JoinColumn(name = "hearing_id")
     private HearingEntity hearing;
 
     /** The parties court staff served the order on without notice; none means it is served on all parties. */
@@ -80,7 +83,7 @@ public class OrderEntity {
     @Setter(AccessLevel.NONE)
     private Set<PartyEntity> servedParties = new HashSet<>();
 
-    /** What the order decided about each application it covers, by application id, recorded when it is issued. */
+    /** Which applications the order disposed of or listed, by application id, recorded when it is issued. */
     @ElementCollection
     @CollectionTable(name = "order_gen_app", joinColumns = @JoinColumn(name = "order_id"))
     @MapKeyColumn(name = "gen_app_id")
