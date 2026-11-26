@@ -61,7 +61,7 @@ public class ChangeNameAddressWritPage implements CcdPageConfiguration {
                         href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                         target="_blank" rel="noopener noreferrer">
                         Ask the judge if you can change the name or address for the eviction
-                        (opens in a new tab)</a>.
+                        (GOV.UK, opens in a new tab)</a>.
                 </p>
                 """.formatted(claimantMakeAnApplication.name())
             )
