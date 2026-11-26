@@ -14,6 +14,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -114,8 +115,9 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        underTest.handle(callback, feePaymentEntity);
+        SystemEventResult result = underTest.handle(callback, feePaymentEntity, null);
 
+        assertThat(result.summary()).hasValue("Counterclaim " + counterClaimId);
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
         assertThat(counterClaimEntity.getRank()).isEqualTo(1);
@@ -157,8 +159,9 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        underTest.handle(callback, feePaymentEntity);
+        SystemEventResult result = underTest.handle(callback, feePaymentEntity, null);
 
+        assertThat(result.summary()).hasValue("Counterclaim " + counterClaimId);
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(existingIssuedDate);
     }
@@ -188,7 +191,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        underTest.handle(callback, feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity, null);
     }
 
     @Test
@@ -208,7 +211,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity, null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Counterclaim not found");
     }
@@ -264,7 +267,7 @@ class CounterClaimPaymentCallbackHandlerTest {
             .build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
 
-        underTest.handle(callback, feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity, null);
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
@@ -324,7 +327,7 @@ class CounterClaimPaymentCallbackHandlerTest {
             .build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
 
-        underTest.handle(callback, feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity, null);
 
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             eq(pcsCaseEntity), eq(party), documentsCaptor.capture());
@@ -367,7 +370,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        underTest.handle(callback, feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity, null);
 
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
     }
@@ -386,7 +389,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
             .thenThrow(new com.fasterxml.jackson.core.JsonParseException(null, "invalid"));
 
-        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity, null))
             .isInstanceOf(PaymentCallbackException.class)
             .hasMessageContaining("Unable to process");
     }
@@ -406,7 +409,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity, null))
             .isInstanceOf(PaymentCallbackException.class)
             .hasMessageContaining("missing relatedEntityId");
     }
