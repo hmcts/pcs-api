@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +80,7 @@ class SendReplyMessageIT extends OrderEventIT {
             PartyEntity defendant = pcsCase.getParties().stream()
                 .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
             pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
+                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 1, 9, 30))
                 .whatOrderWanted("The hearing is adjourned.").build());
         });
         caseworker = events.registerActor("Tom", "Caseworker", "caseworker-pcs");
@@ -237,8 +239,8 @@ class SendReplyMessageIT extends OrderEventIT {
 
         events.external(caseReference, MAKE_ORDER).as(judge).submitExpectingSuccess(new MakeOrderRequest(
             SUBMIT_FOR_REVIEW, new OrderChange(null, 0, OrderType.FREE_FORM,
-                Map.of("app-" + genAppId + "-decision", "grant"), WORDING,
-                List.of(new ApplicationDecision(genAppId, GenAppDecision.GRANT))), null));
+                Map.of("app-" + genAppId + "-decision", "freeform"), WORDING,
+                List.of(new ApplicationDecision(genAppId, GenAppDecision.DISPOSED))), null));
 
         assertThat(replyList(judge)).isEmpty();
         assertThat(events.view(caseReference, caseworker).getMessagesMarkdown())

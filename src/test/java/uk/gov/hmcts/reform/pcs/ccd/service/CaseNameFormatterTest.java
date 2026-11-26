@@ -181,13 +181,37 @@ class CaseNameFormatterTest {
                 "Treetops Housing vs Persons unknown and David Jackson"
             ),
             Arguments.argumentSet(
+                "Claimant is individual and more than two defendants and first defendant is not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(unknownDefendant(), defendant("David", "Jackson"), defendant("Sam", "Taylor")),
+                "Sarah Freeman vs Persons unknown, David Jackson and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and more than two defendants and first defendant is not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(unknownDefendant(), defendant("David", "Jackson"), defendant("Sam", "Taylor")),
+                "Treetops Housing vs Persons unknown, David Jackson and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and more than two defendants and third defendant is not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(defendant("David", "Jackson"), defendant("Sam", "Taylor"), unknownDefendant()),
+                "Sarah Freeman vs David Jackson, Sam Taylor and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and more than two defendants and third defendant is not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson"), defendant("Sam", "Taylor"), unknownDefendant()),
+                "Treetops Housing vs David Jackson, Sam Taylor and Others"
+            ),
+            Arguments.argumentSet(
                 "Claimant is individual and more than two defendants and second defendant is not known",
                 List.of(individualClaimant("Sarah", "Freeman")),
                 List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor")),
                 "Sarah Freeman vs David Jackson, Persons unknown and Others"
             ),
             Arguments.argumentSet(
-                "Claimant is organisation and more than two defendants and first defendant is not known",
+                "Claimant is organisation and more than two defendants and second defendant is not known",
                 List.of(organisationClaimant("Treetops Housing")),
                 List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor")),
                 "Treetops Housing vs David Jackson, Persons unknown and Others"
