@@ -1,13 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
@@ -110,8 +107,8 @@ public class DefencePackSelector {
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
-                .filter(this::wantsPost)
-                .filter(defendant -> !isRepresented(defendant))
+                .filter(PostalPreferences::wantsPost)
+                .filter(defendant -> !PostalPreferences.isRepresented(defendant))
                 .toList();
         }
 
@@ -120,18 +117,7 @@ public class DefencePackSelector {
         return allParties;
     }
 
-    private boolean isRepresented(PartyEntity party) {
-        return party.getClaimPartyOrganisationList().stream()
-            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
-    }
 
-    private boolean wantsPost(PartyEntity party) {
-        ContactPreferencesEntity preferences = party.getContactPreferences();
-        if (preferences == null || preferences.getContactByPost() == null) {
-            return true;
-        }
-        return preferences.getContactByPost() != VerticalYesNo.NO;
-    }
 
     private void addPending(Map<UUID, PartyEntity> recipients, Map<UUID, Set<DocumentEntity>> documentsByRecipient,
                             PartyEntity recipient, DocumentEntity document) {

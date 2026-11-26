@@ -32,7 +32,10 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatOrdinalDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatShortTime;
@@ -47,6 +50,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 public class HearingNoticePersistenceService {
 
     private static final String OUTPUT_FILENAME_FORMAT = "Notice of hearing %d";
+    private static final Pattern NOTICE_NUMBER_IN_FILENAME = Pattern.compile("^Notice of hearing (\\d+)(?:[ .].*)?$");
 
     private final HearingRepository hearingRepository;
     private final LocationReferenceService locationReferenceService;
@@ -144,6 +148,15 @@ public class HearingNoticePersistenceService {
             PartyRole role = claimants.contains(recipient) ? PartyRole.CLAIMANT : PartyRole.DEFENDANT;
             notificationService.sendHearingNoticeEmail(pcsCase, recipient, role);
         }
+    }
+
+    /** The notice number a generated notice was issued under, read back from the filename it was given. */
+    public static OptionalInt noticeNumberOf(String filename) {
+        if (filename == null) {
+            return OptionalInt.empty();
+        }
+        Matcher matcher = NOTICE_NUMBER_IN_FILENAME.matcher(filename);
+        return matcher.matches() ? OptionalInt.of(Integer.parseInt(matcher.group(1))) : OptionalInt.empty();
     }
 
     @Transactional(readOnly = true)

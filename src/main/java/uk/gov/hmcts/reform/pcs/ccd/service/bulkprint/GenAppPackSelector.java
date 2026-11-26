@@ -1,14 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
@@ -82,7 +80,7 @@ public class GenAppPackSelector {
             PartyEntity applicant = genApp.getParty();
             for (PartyEntity party : candidateParties) {
                 if (isExcludedRecipient(party, applicant, roleByPartyId)
-                    || !wantsPost(party) || sent.contains(key(party, document))) {
+                    || !PostalPreferences.wantsPost(party) || sent.contains(key(party, document))) {
                     continue;
                 }
                 candidates.add(new GenAppPackCandidate(
@@ -127,22 +125,10 @@ public class GenAppPackSelector {
         if (applicant != null && party.getId().equals(applicant.getId())) {
             return true;
         }
-        return roleByPartyId.get(party.getId()) == PartyRole.DEFENDANT && isRepresented(party);
+        return roleByPartyId.get(party.getId()) == PartyRole.DEFENDANT && PostalPreferences.isRepresented(party);
     }
 
-    private boolean isRepresented(PartyEntity party) {
-        return party.getClaimPartyOrganisationList() != null
-            && party.getClaimPartyOrganisationList().stream()
-                .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
-    }
 
-    private boolean wantsPost(PartyEntity party) {
-        ContactPreferencesEntity preferences = party.getContactPreferences();
-        if (preferences == null || preferences.getContactByPost() == null) {
-            return true;
-        }
-        return preferences.getContactByPost() != VerticalYesNo.NO;
-    }
 
     private String key(PartyEntity party, DocumentEntity document) {
         return SentPackDocuments.key(party.getId(), document.getId());

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.HearingNoticePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -39,6 +40,7 @@ public class BulkPrintScheduledTask {
     private final ClaimPackSender claimPackSender;
     private final DefencePackSender defencePackSender;
     private final GenAppPackSender genAppPackSender;
+    private final HearingNoticePackSender hearingNoticePackSender;
     private final String schedule;
     private final Integer lookbackHours;
 
@@ -47,6 +49,7 @@ public class BulkPrintScheduledTask {
                                         ClaimPackSender claimPackSender,
                                         DefencePackSender defencePackSender,
                                         GenAppPackSender genAppPackSender,
+                                        HearingNoticePackSender hearingNoticePackSender,
                                         @Value("${bulk-print.schedule}") String schedule,
                                         @Value("${bulk-print.lookback-hours:#{null}}") Integer lookbackHours) {
         this.featureToggleService = featureToggleService;
@@ -54,6 +57,7 @@ public class BulkPrintScheduledTask {
         this.claimPackSender = claimPackSender;
         this.defencePackSender = defencePackSender;
         this.genAppPackSender = genAppPackSender;
+        this.hearingNoticePackSender = hearingNoticePackSender;
         this.schedule = schedule;
         this.lookbackHours = lookbackHours;
     }
@@ -79,12 +83,16 @@ public class BulkPrintScheduledTask {
         }
     }
 
-    // Claim, defence and gen-app are independent; isolate each so one failing never stops the others or the sweep.
+    // Each pack type is independent; isolate each so one failing never stops the others or the sweep.
     private void sendPacksForCase(UUID caseId) {
         sendPhase(caseId, "claim pack", () -> claimPackSender.sendClaimPacks(caseId));
         sendPhase(caseId, "defence pack", () -> defencePackSender.sendDefencePacks(caseId));
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             sendPhase(caseId, "gen app pack", () -> genAppPackSender.sendGenAppPacks(caseId));
+        }
+        if (featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            sendPhase(caseId, "hearing notice pack",
+                () -> hearingNoticePackSender.sendHearingNoticePacks(caseId));
         }
     }
 

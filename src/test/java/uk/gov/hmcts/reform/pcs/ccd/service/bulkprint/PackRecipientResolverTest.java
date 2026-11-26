@@ -49,6 +49,8 @@ class PackRecipientResolverTest {
     @Mock
     private GenAppPackSelector genAppPackSelector;
     @Mock
+    private HearingNoticePackSelector hearingNoticePackSelector;
+    @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
@@ -232,6 +234,35 @@ class PackRecipientResolverTest {
             assertThat(recipient.address()).isEqualTo(addressUk);
             assertThat(recipient.documents()).containsExactly(defenceForm);
         });
+    }
+
+    @Test
+    @DisplayName("Resolves a hearing notice with HEARING_NOTICE_PACK and the recipient's correspondence address")
+    void shouldResolveHearingNoticeRecipients() {
+        DocumentEntity notice = DocumentEntity.builder().id(UUID.randomUUID()).build();
+        AddressUK defendantAddress = AddressUK.builder().addressLine1("42 Renters Way").build();
+        AddressEntity claimantAddressEntity = AddressEntity.builder().addressLine1("1 Landlord Road").build();
+        AddressUK claimantAddress = AddressUK.builder().addressLine1("1 Landlord Road").build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(hearingNoticePackSelector.findHearingNoticePackCandidates(pcsCase)).thenReturn(List.of(
+            new HearingNoticePackCandidate(PartyRole.DEFENDANT, defendant, List.of(notice)),
+            new HearingNoticePackCandidate(PartyRole.CLAIMANT, claimant, List.of(notice))));
+        when(recipientAddressResolver.resolveDisplayName(defendant)).thenReturn("Bob Tenant");
+        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, pcsCase.getPropertyAddress()))
+            .thenReturn(defendantAddress);
+        when(recipientAddressResolver.resolvePostalAddress(claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
+            .thenReturn(claimantAddressEntity);
+        when(addressMapper.toAddressUK(claimantAddressEntity)).thenReturn(claimantAddress);
+
+        List<ResolvedRecipient> resolved = underTest.resolveHearingNoticeRecipients(CASE_ID);
+
+        assertThat(resolved).extracting(ResolvedRecipient::letterType)
+            .containsOnly(LetterType.HEARING_NOTICE_PACK);
+        assertThat(resolved).extracting(ResolvedRecipient::address).containsExactly(defendantAddress, claimantAddress);
+        assertThat(resolved.getFirst().recipientName()).isEqualTo("Bob Tenant");
+        assertThat(resolved.getFirst().documents()).containsExactly(notice);
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
+        assertThat(underTest.resolveHearingNoticeRecipients(CASE_ID)).isEmpty();
     }
 
     @Test

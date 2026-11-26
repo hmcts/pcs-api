@@ -169,6 +169,21 @@ class HearingNoticePersistenceServiceTest {
     }
 
     @Test
+    void shouldReadTheNoticeNumberBackFromTheNamesNoticesAreGiven() {
+        HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
+        hearing.setNoticeNumber(12);
+        hearing.addParty(defendant1);
+        String generated = buildNoticeContexts(hearing).getFirst().filename();
+
+        assertThat(HearingNoticePersistenceService.noticeNumberOf(generated)).hasValue(12);
+        assertThat(HearingNoticePersistenceService.noticeNumberOf(generated + " - Defendant 1.pdf")).hasValue(12);
+        assertThat(HearingNoticePersistenceService.noticeNumberOf("Notice of hearing 12a.pdf")).isEmpty();
+        assertThat(HearingNoticePersistenceService.noticeNumberOf("Notice of hearing")).isEmpty();
+        assertThat(HearingNoticePersistenceService.noticeNumberOf("Order 12.pdf")).isEmpty();
+        assertThat(HearingNoticePersistenceService.noticeNumberOf(null)).isEmpty();
+    }
+
+    @Test
     void shouldBuildDefendantNoticePayload() {
         when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Acme Ltd");
         when(recipientAddressResolver.resolveDisplayName(defendant1)).thenReturn("Bob Tenant");
