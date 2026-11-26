@@ -57,7 +57,8 @@ public class EnforcementDraftDeletionScheduledTask {
     public void runSweep() {
         if (featureToggleService.isEnabled(ENFORCEMENT)) {
             log.info("runSweep starting up for Enforcement drafts deletion ...");
-            draftEnforcementDeletionService.deleteEnforcementDraftsBatch(discardAfterDays);
+            draftEnforcementDeletionService.deleteExpiredDraftEnforcementApplications(discardAfterDays);
+            draftEnforcementDeletionService.deleteDraftEnforcementApplicationsMarkedForDeletion();
             log.info("--- runSweep closing down for Enforcement drafts deletion");
         } else {
             log.info("Enforcement drafts deletion Not enabled in this release.");

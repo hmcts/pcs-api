@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,12 +54,22 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         DELETE FROM DraftCaseDataEntity d
         WHERE d.eventId = :eventId
-          AND d.createdAt < :cutoff
+          AND d.lastModifiedAt < :cutoff
         """)
     int deleteByEventIdAndCutoff(@Param("eventId") EventId eventId, @Param("cutoff") Instant cutoff);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        DELETE FROM DraftCaseDataEntity draft
+        WHERE draft.eventId = :eventId
+          AND draft.caseReference IN (:caseReferences)
+        """)
+    int deleteByEventIdAndCaseReferenceIn(
+        @Param("eventId") EventId eventId,
+        @Param("caseReferences") Collection<Long> caseReferences
+    );
 }
