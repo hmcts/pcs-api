@@ -17,6 +17,8 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -44,8 +46,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.ImmediateSystemEventExecutor;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -84,6 +88,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_
 @ExtendWith(MockitoExtension.class)
 class GenAppServiceTest {
 
+    private static final TransactionTemplate NO_TRANSACTION = new TransactionTemplate() {
+        @Override
+        public <T> T execute(TransactionCallback<T> action) {
+            return action.doInTransaction(null);
+        }
+    };
+
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
@@ -101,6 +112,8 @@ class GenAppServiceTest {
     private DocumentIdExtractor documentIdExtractor;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private DocumentImportService documentImportService;
     @Mock
     private NotificationService notificationService;
     @Mock
@@ -130,7 +143,9 @@ class GenAppServiceTest {
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
                                       documentRepository, claimActivityLogService, documentIdExtractor,
                                       genAppDocumentGenerator,
-                                      notificationService, genAppWaTaskService, utcClock
+                                      notificationService, genAppWaTaskService,
+                                      new ImmediateSystemEventExecutor(), NO_TRANSACTION,
+                                      documentImportService, utcClock
         );
     }
 
@@ -1209,6 +1224,7 @@ class GenAppServiceTest {
     class GenerateSubmissionDocumentTests {
 
         private static final long CASE_REFERENCE = 1234567812345678L;
+        private static final String DOCUMENT_URL = "http://dm-store/documents/genapp";
 
         @Test
         void shouldGenerateWhenNoSubmissionDocumentAttached() {
@@ -1219,12 +1235,14 @@ class GenAppServiceTest {
             when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+            when(genAppDocumentGenerator.renderSubmissionDocument(eq(CASE_REFERENCE), eq(genAppEntity), any()))
+                .thenReturn(DOCUMENT_URL);
 
             // When
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
-            verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            verify(genAppDocumentGenerator).attachSubmissionDocument(CASE_REFERENCE, genAppEntity, DOCUMENT_URL);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
             verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
@@ -1239,13 +1257,16 @@ class GenAppServiceTest {
             when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+            when(genAppDocumentGenerator.renderSubmissionDocument(eq(CASE_REFERENCE), eq(genAppEntity), any()))
+                .thenReturn(DOCUMENT_URL);
 
             // When
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
             InOrder inOrder = inOrder(genAppDocumentGenerator, genAppWaTaskService);
-            inOrder.verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            inOrder.verify(genAppDocumentGenerator)
+                .attachSubmissionDocument(CASE_REFERENCE, genAppEntity, DOCUMENT_URL);
             inOrder.verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
         }
 
