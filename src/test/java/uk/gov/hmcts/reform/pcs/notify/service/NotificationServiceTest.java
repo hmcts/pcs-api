@@ -1022,6 +1022,34 @@ class NotificationServiceTest {
         }
 
         @Test
+        void whenSendWritOfPossessionSubmittedEmail_thenScheduleWritEmailToClaimant() {
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getClaims())
+                .thenReturn(List.of(mock(ClaimEntity.class)));
+
+            PartyEntity claimant = mock(PartyEntity.class);
+            when(claimant.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(claimant.getEmailAddress()).thenReturn(TEST_EMAIL);
+            when(partyService.getPartyRole(claimant)).thenReturn(PartyRole.CLAIMANT);
+            when(partyService.canSendEmailNotification(claimant, PartyRole.CLAIMANT)).thenReturn(true);
+
+            BasePersonalisation personalisation = mock(BasePersonalisation.class);
+
+            when(notificationPersonalisationFactory.forParty(claimant, pcsCaseEntity))
+                .thenReturn(personalisation);
+            when(templateConfiguration.getTemplateId(EmailTemplate.WRIT_OF_POSSESSION_SUBMITTED))
+                .thenReturn(TEMPLATE_ID);
+            when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
+
+            notificationService.sendWritOfPossessionSubmittedEmail(claimant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData actualTaskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(actualTaskData.getEmailAddress()).isEqualTo(TEST_EMAIL);
+            assertThat(actualTaskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+        }
+
+        @Test
         @DisplayName("Should send notification for organisation with no counter claim")
         void notificationSentForOrganisationNoCounterclaim() {
             PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();

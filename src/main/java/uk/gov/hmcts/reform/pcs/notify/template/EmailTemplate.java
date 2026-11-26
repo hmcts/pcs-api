@@ -33,7 +33,8 @@ public enum EmailTemplate {
     NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED("notice-of-change-other-party-represented"),
 
     // Enforcement Email Templates
-    WARRANT_OF_POSSESSION_SUBMITTED("notice-of-warrant-possession-submitted-paid");
+    WARRANT_OF_POSSESSION_SUBMITTED("notice-of-warrant-possession-submitted-paid"),
+    WRIT_OF_POSSESSION_SUBMITTED("notice-of-writ-possession-submitted-paid");
 
     private final String templateKey;
 
