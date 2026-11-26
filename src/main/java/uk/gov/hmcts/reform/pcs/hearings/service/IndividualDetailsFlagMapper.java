@@ -23,6 +23,7 @@ public class IndividualDetailsFlagMapper {
     static final String SPOKEN_LANGUAGE_INTERPRETER = "PF0015";
     static final String SIGN_LANGUAGE_INTERPRETER = "RA0042";
     static final int MAX_OTHER_DETAILS_LENGTH = 3000;
+    static final String TRUNCATION_MARKER = "...";
 
     private static final Set<FlagGroup> ADJUSTMENT_GROUPS =
         EnumSet.of(FlagGroup.REASONABLE_ADJUSTMENTS, FlagGroup.SPECIAL_MEASURES);
@@ -124,9 +125,10 @@ public class IndividualDetailsFlagMapper {
         if (details.isEmpty()) {
             return null;
         }
-        return details.length() > MAX_OTHER_DETAILS_LENGTH
-            ? details.substring(0, MAX_OTHER_DETAILS_LENGTH)
-            : details;
+        if (details.length() <= MAX_OTHER_DETAILS_LENGTH) {
+            return details;
+        }
+        return details.substring(0, MAX_OTHER_DETAILS_LENGTH - TRUNCATION_MARKER.length()) + TRUNCATION_MARKER;
     }
 
     private Optional<String> groupLine(FlagGroup group, List<CasePartyFlagEntity> activeFlags) {

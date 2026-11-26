@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,9 +85,14 @@ class MakeOrderIT extends OrderEventIT {
     void showsThePropertyAndPartiesOfTheClaim() {
         PCSCase claim = cases.claim(ENGLAND);
 
-        var context = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext();
+        var start = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start();
+        var context = start.caseContext();
 
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
+        // The order is made before the judge making it.
+        assertThat(start.judge()).isEqualTo("District Judge First Judge");
+        // England and Wales's bank holidays, from the SDK's copy of GOV.UK's as tests fetch none.
+        assertThat(start.bankHolidays()).contains(LocalDate.of(2026, 12, 25)).doesNotContain(LocalDate.of(2026, 1, 2));
         assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
         assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
     }
@@ -202,6 +208,29 @@ class MakeOrderIT extends OrderEventIT {
             .containsExactly("The order draft does not exist for this case");
         asFirstJudge.submitExpectingSuccess(startDraft("next order"));
         assertThat(workingDraft(asFirstJudge)).isEqualTo("next order");
+    }
+
+    @Test
+    @DisplayName("opens an order by its id only for its own judge, on its own case")
+    void opensAnOrderOnlyForItsJudgeOnItsCase() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first judge's draft"));
+        Map<String, Object> link = Map.of("orderId", asFirstJudge.start().order().id().toString());
+
+        assertThat(asSecondJudge.withClientContext(link).startExpectingRejection())
+            .containsExactly("The order is no longer waiting for you to change it");
+        assertThat(events.external(cases.issue(), MAKE_ORDER).as(firstJudge).withClientContext(link)
+            .startExpectingRejection()).containsExactly("The order is no longer waiting for you to change it");
+    }
+
+    @Test
+    @DisplayName("rejects an unsupported action without changing the saved draft")
+    void refusesUnsupportedAction() {
+        asFirstJudge.submitExpectingSuccess(startDraft("saved wording"));
+        Order draft = asFirstJudge.start().order();
+        assertThat(asFirstJudge.submitExpectingRejection(new MakeOrderRequest(null,
+            new OrderChange(draft.id(), draft.version(), OrderType.ADJOURNMENT, Map.of("notes", "changed"), WORDING),
+            null)).errors()).containsExactly("Select whether to save the draft or send the order for review");
+        assertThat(asFirstJudge.start().order()).isEqualTo(draft);
     }
 
     /** The note on the judge's working draft. */
