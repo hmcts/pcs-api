@@ -56,14 +56,6 @@ public class CaseBundleHandler implements DocJobHandler {
                   job.revision().orElse(0), job.failure().map(DocJob.Failure::message).orElse(""));
     }
 
-    @Override
-    public void removed(DocJob job) {
-        requireBundle(job);
-        // Every case has the bundle, so this does not happen; versions already made stay.
-        log.warn("The case bundle for case {} was removed at revision {}", job.caseReference(),
-                 job.revision().orElse(0));
-    }
-
     private static void requireBundle(DocJob job) {
         if (!job.key().filter(CaseBundleDefinition.NAME::equals).isPresent()) {
             throw new IllegalStateException("PCS queues no doc job other than the case bundle, but was given "
