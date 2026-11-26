@@ -12,12 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.EVICTION_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RECORD_WARRANT_RETURN;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
@@ -28,17 +30,18 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 class ShowConditionsTest {
 
-    private static final Map<FeatureFlag, String> CCD_FIELDS_BY_FLAG = Map.of(
-        RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled",
-        RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled",
-        RELEASE_1B, "featureFlags.release1bEnabled",
-        RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled",
-        CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled",
-        WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
-        CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled",
-        MAKE_ORDER, "featureFlags.makeOrderEnabled",
-        ENFORCEMENT, "featureFlags.enforcementEnabled",
-        RECORD_WARRANT_RETURN, "featureFlags.recordWarrantReturnEnabled"
+    private static final Map<FeatureFlag, String> CCD_FIELDS_BY_FLAG = Map.ofEntries(
+        entry(RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled"),
+        entry(RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled"),
+        entry(RELEASE_1B, "featureFlags.release1bEnabled"),
+        entry(RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled"),
+        entry(CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled"),
+        entry(WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled"),
+        entry(CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled"),
+        entry(MAKE_ORDER, "featureFlags.makeOrderEnabled"),
+        entry(ENFORCEMENT, "featureFlags.enforcementEnabled"),
+        entry(RECORD_WARRANT_RETURN, "featureFlags.recordWarrantReturnEnabled"),
+        entry(EVICTION_SCHEDULING, "featureFlags.evictionSchedulingEnabled")
     );
 
     @Test

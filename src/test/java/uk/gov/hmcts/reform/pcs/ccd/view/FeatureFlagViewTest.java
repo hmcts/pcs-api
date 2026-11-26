@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.EVICTION_SCHEDULING;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RECORD_WARRANT_RETURN;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
@@ -39,17 +41,18 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 @ExtendWith(MockitoExtension.class)
 class FeatureFlagViewTest {
 
-    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.of(
-        CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled,
-        RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled,
-        RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled,
-        RELEASE_1B, FeatureFlags::getRelease1bEnabled,
-        RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled,
-        WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
-        CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
-        MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
-        ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
-        RECORD_WARRANT_RETURN, FeatureFlags::getRecordWarrantReturnEnabled
+    private static final Map<FeatureFlag, Function<FeatureFlags, VerticalYesNo>> FLAG_GETTERS = Map.ofEntries(
+        entry(CASEWORKER_EVENTS, FeatureFlags::getCaseWorkerEventsEnabled),
+        entry(RELEASE_1_DOT_2, FeatureFlags::getRelease1dot2Enabled),
+        entry(RELEASE_1_DOT_3, FeatureFlags::getRelease1dot3Enabled),
+        entry(RELEASE_1B, FeatureFlags::getRelease1bEnabled),
+        entry(RELEASE_1_DOT_4, FeatureFlags::getRelease1dot4Enabled),
+        entry(WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled),
+        entry(CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled),
+        entry(MAKE_ORDER, FeatureFlags::getMakeOrderEnabled),
+        entry(ENFORCEMENT, FeatureFlags::getEnforcementEnabled),
+        entry(RECORD_WARRANT_RETURN, FeatureFlags::getRecordWarrantReturnEnabled),
+        entry(EVICTION_SCHEDULING, FeatureFlags::getEvictionSchedulingEnabled)
     );
 
     @Mock

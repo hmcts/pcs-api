@@ -48,6 +48,7 @@ public class EnforcementEventShowConditionsView {
         if (enforcementStateOptional.isEmpty()) {
             EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
                 .recordWarrantReturn(YesOrNo.NO)
+                .scheduleEviction(YesOrNo.NO)
                 .build();
             pcsCase.setEnfShowConditions(enforcementEventShowConditions);
             return;
@@ -56,8 +57,14 @@ public class EnforcementEventShowConditionsView {
         EnforcementState activeState = enforcementStateOptional.get();
         EnforcementEventShowConditions enforcementEventShowConditions = EnforcementEventShowConditions.builder()
             .recordWarrantReturn(RECORD_WARRANT_RETURN_STATES.contains(activeState) ? YesOrNo.YES : YesOrNo.NO)
+            .scheduleEviction(canScheduleEviction(enforcementOrderEntity.get()) ? YesOrNo.YES : YesOrNo.NO)
             .build();
 
         pcsCase.setEnfShowConditions(enforcementEventShowConditions);
+    }
+
+    private boolean canScheduleEviction(EnforcementOrderEntity activeEnforcementOrder) {
+        return activeEnforcementOrder.getState() == EnforcementState.AWAITING_SCHEDULING
+            && activeEnforcementOrder.getWarrantDetails() != null;
     }
 }

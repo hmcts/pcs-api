@@ -73,6 +73,7 @@ public class ShowConditions {
             case MAKE_ORDER -> "makeOrderEnabled";
             case ENFORCEMENT -> "enforcementEnabled";
             case RECORD_WARRANT_RETURN -> "recordWarrantReturnEnabled";
+            case EVICTION_SCHEDULING -> "evictionSchedulingEnabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };

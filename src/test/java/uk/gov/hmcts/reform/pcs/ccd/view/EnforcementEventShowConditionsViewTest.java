@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -74,6 +76,56 @@ class EnforcementEventShowConditionsViewTest {
 
         // Then
         assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+    }
+
+    @ParameterizedTest
+    @EnumSource(EnforcementState.class)
+    void shouldOnlyAllowScheduleEvictionWhenAWarrantIsAwaitingScheduling(EnforcementState enforcementState) {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        EnforcementOrderEntity application = EnforcementOrderEntity.builder().state(enforcementState).build();
+        application.setWarrantDetails(WarrantEntity.builder().build());
+        pcsCaseEntity.getEnforcementOrders().add(application);
+        when(enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)).thenReturn(Optional.of(application));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnfShowConditions().getScheduleEviction()).isEqualTo(
+            enforcementState == EnforcementState.AWAITING_SCHEDULING ? YesOrNo.YES : YesOrNo.NO);
+    }
+
+    @Test
+    void shouldNotAllowScheduleEvictionWhenActiveEnforcementOrderHasNoWarrant() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        EnforcementOrderEntity application = EnforcementOrderEntity.builder()
+            .state(EnforcementState.AWAITING_SCHEDULING)
+            .build();
+        when(enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)).thenReturn(Optional.of(application));
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnfShowConditions().getScheduleEviction()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldNotAllowScheduleEvictionWhenNoEnforcementState() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)).thenReturn(Optional.empty());
+
+        // When
+        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getEnfShowConditions().getScheduleEviction()).isEqualTo(YesOrNo.NO);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

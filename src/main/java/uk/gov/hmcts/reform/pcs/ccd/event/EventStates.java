@@ -196,4 +196,17 @@ public class EventStates {
             State.CLOSED
         };
     }
+
+    public static State[] scheduleEviction() {
+        return new State[] {
+            State.CASE_ISSUED,
+            State.CASE_PROGRESSION,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE,
+            State.CLOSED
+        };
+    }
 }
