@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -38,12 +39,15 @@ class OrderCaseContextTest {
     private ObjectProvider<CaseBundles> bundles;
     @Mock
     private UserRoleService roles;
+    @Mock
+    private CaseCourts caseCourts;
 
     private OrderCaseContext underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter, orderTasks, bundles, roles);
+        underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter, orderTasks,
+                                         bundles, roles, caseCourts);
     }
 
     @Test
