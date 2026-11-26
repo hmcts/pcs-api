@@ -34,7 +34,6 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth,
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
   cannotApplyForWarrantInfo
 } from '@data/index.selector.enforcement';
@@ -483,37 +482,37 @@ export class EnforcementAction implements IAction{
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
+    if (claimantDetails.option === 'Claimant') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantDetails.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantDetails.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantDetails.continueButton, claimantDetails.nextPage as string);
   }
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
     await performAction('check', claimantSOT.option1);
     await performAction('clickRadioButton', { option:claimantSOT.option } );
-    if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
+    if (claimantSOT.option === 'Claimant') {
       await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('check', claimantSOT.iBelieveCheckBox);
     }
-    if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
+    if (claimantSOT.option === 'Claimant’s legal representative (as defined by CPR 2.3 (1))') {
       await performAction('inputText', claimantSOT.label, claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
       await performAction('check', claimantSOT.claimantBelieveCheckBox);
     }
-    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantSOT.nextPage as string);
+    await performAction('reTryOnCallBackError', claimantSOT.continueButton, claimantSOT.nextPage as string);
   }
 
   private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
