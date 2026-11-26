@@ -15,6 +15,7 @@ import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import { FeatureFlags } from '@utils/actions/custom-actions/featureFlag.action';
 
 
 test.use({ storageState: undefined })
@@ -60,6 +61,7 @@ test.use({ storageState: undefined })
           ],
         },
         async () => {
+          await performAction('skipTestIfFeatureFlagDisabled', FeatureFlags.CASE_MANAGEMENT_R2);
           const judicialNoteText = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
           const currentTime = getCurrentBSTTime();
 
@@ -107,6 +109,7 @@ test.use({ storageState: undefined })
           ],
         },
         async () => {
+          await performAction('skipTestIfFeatureFlagDisabled', FeatureFlags.CASE_MANAGEMENT_R2);
           const judicialNote1Text = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
           const currentTime1 = getCurrentBSTTime();
           const judicialNote2Text = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2);
@@ -191,6 +194,27 @@ test.use({ storageState: undefined })
               });
           });
           await test.step(`And the user verifies that the Judicial Notes tab is not visible`, async () => {
+            await performValidation('elementNotToBeVisible', home.judicialNotes);
+          });
+        });
+
+      test('Case management - As a Judicial user, Add Judicial Note event and Note Tab are not available when case-management-r-2-enabled is off',
+        {
+          tag: ['@CM, @regression'],
+          annotation: [
+            {type: 'jira', description: `The corresponding jira ticket : https://hmcts.atlassian.net/browse/HDPI-8682`},
+          ],
+        },
+        async () => {
+          await performAction('skipTestIfFeatureFlagEnabled', FeatureFlags.CASE_MANAGEMENT_R2);
+          await test.step(`Then the judicial user does not see the "Add a judicial note" event in the event dropdown`, async () => {
+            await performValidation('elementNotToBeVisible',
+              {
+                locator: `${caseSummary.nextStepEventList} option`,
+                text: caseSummary.addJudicialNote,
+              });
+          });
+          await test.step(`And the Judicial Notes tab is not visible`, async () => {
             await performValidation('elementNotToBeVisible', home.judicialNotes);
           });
         });

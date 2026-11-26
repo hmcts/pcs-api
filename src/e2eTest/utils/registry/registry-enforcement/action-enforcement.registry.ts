@@ -1,3 +1,4 @@
+import { FeatureFlagAction } from '@utils/actions/custom-actions/featureFlag.action';
 import { IAction } from '@utils/interfaces/action.interface';
 import { ClickTabAction } from '@utils/actions/element-actions/clickTab.action';
 import { InputTextAction } from '@utils/actions/element-actions/inputText.action';
@@ -103,6 +104,8 @@ export class ActionEnforcementRegistry {
     ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],
     ['cannotApplyForWarrantInfo', new EnforcementAction()],
     ['errorValidationCannotApplyForWarrantPage', new ErrorValidationAction()],
+    ['skipTestIfFeatureFlagDisabled', new FeatureFlagAction()],
+    ['skipTestIfFeatureFlagEnabled', new FeatureFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {
