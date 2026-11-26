@@ -366,9 +366,13 @@ class GenAppServiceTest {
         }
 
         @Test
-        void shouldKeepDraftOrderFormattingSeparateFromTheExplanation() {
+        void shouldSaveSanitisedDraftOrderSeparateFromTheExplanation() {
             String explanation = "Please adjourn because the claimant has a medical appointment.";
-            String draft = "<ol><li>The hearing is adjourned.</li><li><strong>Costs reserved.</strong></li></ol>";
+            String formattedList = "<ol start=\"2\" type=\"a\" data-indent=\"1\">"
+                + "<li>The hearing is adjourned.</li><li><strong>Costs reserved.</strong></li></ol>";
+            String draft = "<h2 title=\"Draft\">Draft order</h2>" + formattedList
+                + "<img src=\"https://example.com/image.png\">";
+            String expectedDraft = "<h2>Draft order</h2>" + formattedList;
             XuiGenAppRequest request = XuiGenAppRequest.builder()
                 .whatOrderWanted(explanation)
                 .draftOrderWording(draft)
@@ -380,12 +384,12 @@ class GenAppServiceTest {
 
             GenAppEntity saved = getSavedGenAppEntity();
             assertThat(saved.getWhatOrderWanted()).isEqualTo(explanation);
-            assertThat(saved.getDraftOrderWording()).isEqualTo(draft);
+            assertThat(saved.getDraftOrderWording()).isEqualTo(expectedDraft);
         }
 
         @ParameterizedTest
         @NullAndEmptySource
-        @ValueSource(strings = {" ", "\t\n"})
+        @ValueSource(strings = {" ", "\t\n", "<p>&nbsp;</p>", "<img alt=\"No wording\">"})
         void shouldLeaveDraftOrderNullWhenSolicitorDoesNotSupplyWording(String draft) {
             XuiGenAppRequest request = XuiGenAppRequest.builder()
                 .whatOrderWanted("The explanation must not become the draft order")

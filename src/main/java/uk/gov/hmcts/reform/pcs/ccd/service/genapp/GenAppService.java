@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -135,8 +134,8 @@ public class GenAppService {
 
         genAppEntity.setWhatOrderWanted(genAppRequest.getWhatOrderWanted());
         if (genAppRequest instanceof XuiGenAppRequest xuiGenAppRequest) {
-            String draftOrderWording = xuiGenAppRequest.getDraftOrderWording();
-            genAppEntity.setDraftOrderWording(StringUtils.isBlank(draftOrderWording) ? null : draftOrderWording);
+            String draftOrderWording = DraftOrderWordingHtml.forStorage(xuiGenAppRequest.getDraftOrderWording());
+            genAppEntity.setDraftOrderWording(draftOrderWording);
         }
 
         genAppEntity.setDocumentsUploaded(genAppRequest.getHasSupportingDocuments());
