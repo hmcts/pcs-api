@@ -9,9 +9,12 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 @Component("genAppStartEventHandler")
@@ -21,10 +24,16 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final OrganisationService organisationService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final FeeApplier feeApplier;
+    private final DraftOrderWordingAccess draftOrderWordingAccess;
+    private final FeatureToggleService featureToggleService;
 
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+
+        boolean showDraftOrderWording = featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)
+            && draftOrderWordingAccess.isAllowed(caseReference);
+        caseData.getXuiGenAppRequest().setDraftOrderWordingAllowed(VerticalYesNo.from(showDraftOrderWording));
 
         setRepresentedParties(caseReference, caseData);
 

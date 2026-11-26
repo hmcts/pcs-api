@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -132,6 +133,10 @@ public class GenAppService {
         }
 
         genAppEntity.setWhatOrderWanted(genAppRequest.getWhatOrderWanted());
+        if (genAppRequest instanceof XuiGenAppRequest xuiGenAppRequest) {
+            String draftOrderWording = DraftOrderWordingHtml.forStorage(xuiGenAppRequest.getDraftOrderWording());
+            genAppEntity.setDraftOrderWording(draftOrderWording);
+        }
 
         genAppEntity.setDocumentsUploaded(genAppRequest.getHasSupportingDocuments());
         if (genAppRequest.getHasSupportingDocuments() == VerticalYesNo.YES) {

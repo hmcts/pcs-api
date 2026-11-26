@@ -161,6 +161,7 @@ public class GenAppDocumentGenerator {
             .applicationType(genAppEntity.getType())
             .within14Days(genAppEntity.getWithin14Days())
             .whatOrderWanted(genAppEntity.getWhatOrderWanted())
+            .draftOrderWording(DraftOrderWordingHtml.forPdf(genAppEntity.getDraftOrderWording()))
             .otherPartiesAgreed(genAppEntity.getOtherPartiesAgreed())
             .withoutNotice(genAppEntity.getWithoutNotice())
             .withoutNoticeReason(genAppEntity.getWithoutNoticeReason())
