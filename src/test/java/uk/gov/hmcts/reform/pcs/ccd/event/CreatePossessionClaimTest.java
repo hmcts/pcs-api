@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.WelshDynamicListInterpolationPoc;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
@@ -25,9 +27,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CreatePossessionClaimTest extends BaseEventTest {
@@ -52,8 +54,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         UserInfo userDetails = mock(UserInfo.class);
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
-        when(userDetails.getUid()).thenReturn(USER_ID);
+        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+        lenient().when(userDetails.getUid()).thenReturn(USER_ID);
 
         CreatePossessionClaim underTest = new CreatePossessionClaim(
             pcsCaseService, feeApplier, enterPropertyAddress,
@@ -90,6 +92,18 @@ class CreatePossessionClaimTest extends BaseEventTest {
         RoleAssignmentTaskData taskData = getCapturedRoleAssignmentTaskData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         assertThat(taskData.getUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldSetWelshDynamicListInterpolationPocOptionsOnStart() {
+        // When
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getWelshPocGaRank()).isEqualTo("3");
+        assertThat(result.getWelshPocDynamicRadioList().getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(WelshDynamicListInterpolationPoc.TEMPLATE, WelshDynamicListInterpolationPoc.RESOLVED);
     }
 
     @SuppressWarnings("unchecked")

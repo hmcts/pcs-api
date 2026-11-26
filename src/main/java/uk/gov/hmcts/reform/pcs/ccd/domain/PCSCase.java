@@ -143,6 +143,39 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
+    // Welsh Yes/No context proof of concept: not for merge.
+    // YesOrNo radios are translated using the label's yes/no columns; VerticalYesNo (FixedRadioList) radios
+    // are not.
+    @CCD(label = "Welsh Placeholder YesNo 1", searchable = false)
+    private YesOrNo welshPlaceholderYesNo1;
+
+    @CCD(label = "Welsh Placeholder YesNo 2", searchable = false)
+    private YesOrNo welshPlaceholderYesNo2;
+
+    @CCD(label = "Welsh Placeholder VerticalYesNo 1", searchable = false)
+    private VerticalYesNo welshPlaceholderVerticalYesNo1;
+
+    @CCD(label = "Welsh Placeholder VerticalYesNo 2", searchable = false)
+    private VerticalYesNo welshPlaceholderVerticalYesNo2;
+
+    // Welsh dynamic list interpolation proof of concept: not for merge.
+    // ExUI fills in ${} placeholders in field labels but not in dynamic list option labels.
+    @CCD(
+        label = "TEST- Welsh Placeholder dynamic list question",
+        typeOverride = DynamicRadioList,
+        searchable = false
+    )
+    private DynamicStringList welshPocDynamicRadioList;
+
+    @CCD(label = "TEST- Welsh Placeholder GA rank", searchable = false)
+    private String welshPocGaRank;
+
+    @CCD(label = "TEST- Welsh Placeholder party rank", searchable = false)
+    private String welshPocPartyRank;
+
+    @CCD(label = "TEST- Welsh Placeholder submitted date", searchable = false)
+    private LocalDate welshPocSubmittedDate;
+
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
