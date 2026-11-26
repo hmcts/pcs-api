@@ -38,6 +38,7 @@
   "dependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@hmcts/playwright-common": "^1.0.33",
+    "@launchdarkly/node-server-sdk": "^9.17.1",
     "oauth4webapi": "^3.5.1",
     "uuid": "^14.0.0"
   },

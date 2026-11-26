@@ -1,6 +1,12 @@
 type BreathingSpaceDate = { day: string; month: string; year: string };
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
+import {
+  BAILIFF_MANAGEMENT_ENABLED,
+  resolveLdFlagged,
+  whenLdFlag,
+} from '@utils/actions/custom-actions/launchDarkly.action'
+
 import test, { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
@@ -1444,12 +1450,20 @@ private formatDisplayDate(entered: string): string {
 
   private async validateCaseDetails(payLoadInput: any) {
     const payLoad = payLoadInput as Record<string, any>;
+    const partiesText = await resolveLdFlagged(
+      whenLdFlag(BAILIFF_MANAGEMENT_ENABLED, {
+        on: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}`,
+        off: undefined,
+      })
+    );
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+    if (partiesText) {
+      await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+    }
   }
 
   private async confirmationPageValidation(submitPayLoad : any, validationText: string): Promise<void> {
