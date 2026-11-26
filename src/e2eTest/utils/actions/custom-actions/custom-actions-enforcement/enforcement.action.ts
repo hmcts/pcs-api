@@ -159,13 +159,12 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    if (applicationType.option === enforcementApplication.writOfPossessionRadioOption && applicationType.option1 !== enforcementApplication.noRadioOptionHidden) {
+    if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === enforcementApplication.warrantOfPossessionRadioOption || applicationType.option === enforcementApplication.warrantOfRestitutionRadioOptionDynamic) {
+    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
-
   }
 
   private async isDefendantInBreathingSpace(breathingSpaceData: actionRecord) {
