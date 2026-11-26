@@ -133,7 +133,7 @@ class SubmitEventHandlerTest {
 
     @Test
     void shouldRejectDraftWordingFromAnUnsupportedActorEvenWhenClientSetsTheEligibilityFlag() {
-        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
         XuiGenAppRequest request = XuiGenAppRequest.builder()
             .applicationType(GenAppType.SOMETHING_ELSE)
             .draftOrderWording("<p>The hearing is adjourned.</p>")
@@ -151,7 +151,7 @@ class SubmitEventHandlerTest {
     @NullAndEmptySource
     @ValueSource(strings = {" ", "\t\n", "<p><br></p>", "<p>&nbsp;</p>"})
     void shouldRequireDraftWordingFromAnEligibleSolicitor(String wording) {
-        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
         when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
         XuiGenAppRequest request = XuiGenAppRequest.builder()
             .applicationType(GenAppType.SOMETHING_ELSE)
@@ -183,7 +183,7 @@ class SubmitEventHandlerTest {
             UUID claimantPartyId = UUID.randomUUID();
             PartyEntity claimantParty = mock(PartyEntity.class);
 
-            when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(true);
+            when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
             when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(true);
 
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()

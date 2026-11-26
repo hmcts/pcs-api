@@ -66,7 +66,7 @@ class StartEventHandlerTest {
     @ParameterizedTest
     @MethodSource("draftOrderWordingVisibilityScenarios")
     void shouldSetDraftWordingVisibility(boolean enabled, boolean solicitor, VerticalYesNo expectedVisibility) {
-        when(featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)).thenReturn(enabled);
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(enabled);
         if (enabled) {
             when(draftOrderWordingAccess.isAllowed(TEST_CASE_REFERENCE)).thenReturn(solicitor);
         }

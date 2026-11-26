@@ -20,7 +20,6 @@ public enum FeatureFlag {
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
-    GEN_APP_DRAFT_ORDER_WORDING("gen-app-draft-order-wording-enabled", false),
     ENFORCEMENT("enforcement-enabled", false),
     HMC_INTEGRATION("hmc-integration-enabled", false),
     CASE_MANAGEMENT_R2("case-management-r-2-enabled", false),

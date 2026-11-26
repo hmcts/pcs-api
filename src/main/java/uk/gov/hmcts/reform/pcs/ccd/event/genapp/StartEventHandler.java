@@ -31,7 +31,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        boolean showDraftOrderWording = featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)
+        boolean showDraftOrderWording = featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)
             && draftOrderWordingAccess.isAllowed(caseReference);
         caseData.getXuiGenAppRequest().setDraftOrderWordingAllowed(VerticalYesNo.from(showDraftOrderWording));
 

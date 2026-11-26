@@ -78,7 +78,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
         if (createGenAppRequest instanceof XuiGenAppRequest xuiRequest) {
-            if (featureToggleService.isEnabled(FeatureFlag.GEN_APP_DRAFT_ORDER_WORDING)) {
+            if (featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
                 boolean allowed = draftOrderWordingAccess.isAllowed(caseReference);
                 String wording = xuiRequest.getDraftOrderWording();
                 if (allowed && isBlankDraftOrderWording(wording)) {
