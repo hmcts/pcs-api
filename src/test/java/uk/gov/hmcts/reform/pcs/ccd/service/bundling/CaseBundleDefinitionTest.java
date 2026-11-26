@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -118,6 +119,31 @@ class CaseBundleDefinitionTest {
     }
 
     @Test
+    void shouldPutEachApplicationsDocumentsUnderItsReferenceAfterTheRestOfTheFolder() {
+        GenAppEntity second = issuedApp(2, GenAppType.SUSPEND);
+        GenAppEntity first = issuedApp(1, GenAppType.ADJOURN);
+        final DocumentEntity loose = document("letter.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 3, 1));
+        DocumentEntity suspendForm = document("suspend.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 2, 1));
+        suspendForm.setGeneralApplication(second);
+        DocumentEntity adjournLate = document("adjourn-2.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 9));
+        adjournLate.setGeneralApplication(first);
+        DocumentEntity adjournEarly =
+            document("adjourn-1.pdf", CaseFileCategory.APPLICATIONS, LocalDate.of(2026, 1, 2));
+        adjournEarly.setGeneralApplication(first);
+
+        BundleRequest request = CaseBundleDefinition.build(caseWith(loose, suspendForm, adjournLate, adjournEarly));
+
+        BundleSection applications = section(request, "Applications");
+        assertThat(titles(request, "Applications")).containsExactly("letter.pdf");
+        assertThat(applications.sections()).extracting(BundleSection::title)
+            .containsExactly("GA1: " + GenAppType.ADJOURN.getShortName(), "GA2: " + GenAppType.SUSPEND.getShortName());
+        assertThat(applications.sections().getFirst().documents()).extracting(BundleDocument::title)
+            .containsExactly("adjourn-1.pdf", "adjourn-2.pdf");
+        assertThat(applications.sections().get(1).documents()).extracting(BundleDocument::title)
+            .containsExactly("suspend.pdf");
+    }
+
+    @Test
     void shouldFetchRecordingsRatherThanLinkToDmStore() {
         DocumentEntity audio = document("hearing.mp3", CaseFileCategory.HEARING_DOCUMENTS, null);
         audio.setContentType("audio/mpeg");
@@ -157,6 +183,13 @@ class CaseBundleDefinitionTest {
 
     private static List<String> titles(BundleRequest request, String folder) {
         return section(request, folder).documents().stream().map(BundleDocument::title).toList();
+    }
+
+    private static GenAppEntity issuedApp(int rank, GenAppType type) {
+        GenAppEntity genApp = genApp(GenAppState.GEN_APP_ISSUED, VerticalYesNo.NO);
+        genApp.setRank(rank);
+        genApp.setType(type);
+        return genApp;
     }
 
     private static GenAppEntity genApp(GenAppState state, VerticalYesNo withoutNotice) {

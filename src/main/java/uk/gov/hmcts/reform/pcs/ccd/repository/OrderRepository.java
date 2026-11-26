@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    /** A judge's draft for one of the case's hearings, or with a null hearing, their draft made without one. */
-    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndHearingId(
-        long caseReference, String authorIdamUserId, OrderState state, Integer hearingId);
+    /** A judge's order on the case in the state: their draft, of which they have one, wherever it is made. */
+    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
+        long caseReference, String authorIdamUserId, OrderState state);
 
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
         UUID id, long caseReference, String authorIdamUserId, Collection<OrderState> states);
@@ -26,10 +26,15 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     boolean existsByIdAndDocumentIsNotNull(UUID id);
 
-    /** Whether an issued order has granted, dismissed or struck out the application. */
+    /** Whether an issued order has disposed of the application. */
     @Query(value = "SELECT EXISTS (SELECT 1 FROM order_gen_app WHERE gen_app_id = :genAppId "
-        + "AND decision IN ('GRANT', 'DISMISS', 'STRIKE_OUT'))", nativeQuery = true)
+        + "AND decision = 'DISPOSED')", nativeQuery = true)
     boolean isGenAppDecided(UUID genAppId);
+
+    /** Whether an issued order has listed the application for a hearing. */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM order_gen_app WHERE gen_app_id = :genAppId "
+        + "AND decision = 'LISTED')", nativeQuery = true)
+    boolean isGenAppListed(UUID genAppId);
 
     /**
      * The recipients of each generated without-notice order among the documents, by document id, in one query;
