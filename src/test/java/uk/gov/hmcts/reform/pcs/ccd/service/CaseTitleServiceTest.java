@@ -41,7 +41,7 @@ class CaseTitleServiceTest {
     void shouldGenerateCaseTitleWithCaseNameForInternalUsers() {
         // Given
         stubUserRole(UserRole.JUDGE);
-        stubFeatureFlag(FeatureFlag.RELEASE_1B, true);
+        stubFeatureFlag(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED, true);
 
         // When
         String actualCaseTitle = underTest.buildCaseTitle(pcsCase, CASE_REFERENCE);
@@ -64,7 +64,7 @@ class CaseTitleServiceTest {
     void shouldGenerateCaseTitleWithoutCaseNameForInternalUsersWhenNotEnabled() {
         // Given
         stubUserRole(UserRole.JUDGE);
-        stubFeatureFlag(FeatureFlag.RELEASE_1B, false);
+        stubFeatureFlag(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED, false);
 
         // When
         String actualCaseTitle = underTest.buildCaseTitle(pcsCase, CASE_REFERENCE);

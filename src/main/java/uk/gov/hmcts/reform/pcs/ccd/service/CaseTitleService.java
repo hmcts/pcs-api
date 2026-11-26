@@ -44,7 +44,7 @@ public class CaseTitleService {
      */
     public String buildCaseTitle(PCSCase pcsCase, long caseReference) {
 
-        if (isCurrentUserInternal(caseReference) && featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
+        if (isCurrentUserInternal(caseReference) && featureToggleService.isEnabled(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED)) {
             return buildInternalCaseTitle(pcsCase);
         } else {
             return buildDefaultCaseTitle(pcsCase);
