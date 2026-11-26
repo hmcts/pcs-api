@@ -88,7 +88,8 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
         form.setManageHearingOption(ManageHearingOption.CANCEL);
         assertThat(continuePage().getErrors()).isNullOrEmpty();
-        assertThat(form.getHearing().getHearingSummaryMarkdown()).contains("2 January 2030");
+        assertThat(form.getHearing().getHearingSummaryMarkdown())
+            .contains("2 January 2030", "You’re viewing the next scheduled hearing for this case.");
         form.getHearing().setCancellationReason("No longer required");
         events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
         assertThat(stored(earlier).getCancelled()).isTrue();
@@ -96,27 +97,46 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void disablingTheFlagBeforeSubmitRejectsALaterHearingWithoutChangingEitherHearing() {
-        select(later, ManageHearingOption.EDIT);
+    void flagOffSubmissionChangesTheHearingStaffWereShownEvenIfTheNextHearingChanges() {
         doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
-        for (ManageHearingOption option : new ManageHearingOption[] {
-            ManageHearingOption.EDIT, ManageHearingOption.CANCEL}) {
-            form.setManageHearingOption(option);
-            assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
-                .containsExactly("Only the next hearing can be managed. Reopen Manage hearing to continue.");
-        }
-        assertThat(events.history(reference)).isEmpty();
+        form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
+        form.setManageHearingOption(ManageHearingOption.EDIT);
+        assertThat(continuePage().getErrors()).isNullOrEmpty();
+        assertThat(form.getHearing().getHearingId()).isEqualTo(earlier);
+
+        // Another user lists a sooner hearing while this edit is open, as master allowed.
+        int sooner = cases.hearing(reference, LocalDateTime.of(2029, 12, 1, 10, 0), false);
+        form.getHearing().setNotes("Edited after a sooner hearing was listed");
+        events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
+
+        assertThat(stored(earlier).getNotes()).isEqualTo("Edited after a sooner hearing was listed");
+        assertThat(stored(sooner).getNotes()).isNull();
     }
 
     @Test
-    void cancellationOpenedWithThePreviousDefinitionCanOnlyCancelTheNextHearing() {
+    void disablingTheFlagAfterSelectionChangesOnlyTheChosenHearing() {
+        select(later, ManageHearingOption.EDIT);
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        form.getHearing().setNotes("Chosen before the flag was disabled");
+        events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
+
+        assertThat(stored(later).getNotes()).isEqualTo("Chosen before the flag was disabled");
+        assertThat(stored(earlier).getNotes()).isNull();
+    }
+
+    @Test
+    void cancellationOpenedWithThePreviousDefinitionCancelsOnlyALiveHearingOnTheCase() {
+        int foreign = cases.hearing(cases.issue(), LocalDateTime.of(2030, 1, 1, 10, 0), false);
         form.setManageHearingOption(ManageHearingOption.CANCEL);
         form.setHearingSelection(null);
-        form.setHearing(Hearing.builder().hearingId(later).cancellationReason("No longer required").build());
-        assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
-            .containsExactly("Only the next hearing can be managed. Reopen Manage hearing to continue.");
+        for (int id : new int[] {cancelled, foreign}) {
+            form.setHearing(Hearing.builder().hearingId(id).cancellationReason("No longer required").build());
+            assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
+                .containsExactly("Select an available hearing on this case");
+        }
+        assertThat(events.history(reference)).isEmpty();
 
-        form.getHearing().setHearingId(earlier);
+        form.setHearing(Hearing.builder().hearingId(earlier).cancellationReason("No longer required").build());
         events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
         assertThat(stored(earlier).getCancelled()).isTrue();
         assertThat(stored(later).getCancelled()).isFalse();
@@ -181,7 +201,8 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         form.setHearingSummaryLocation("Central London County Court");
         select(later, ManageHearingOption.CANCEL);
         assertThat(form.getHearing().getHearingSummaryMarkdown())
-            .contains("Central London County Court", "3 February 2030");
+            .contains("Central London County Court", "3 February 2030",
+                "You’re viewing the selected hearing for this case.");
         form.getHearing().setCancellationReason("No longer required");
         var cancelledEvent = events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
         assertThat(cancelledEvent.changes("hearing")).singleElement()

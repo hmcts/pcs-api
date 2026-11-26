@@ -29,8 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -42,7 +40,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
@@ -69,22 +66,17 @@ public class HearingServiceTest {
     @Mock
     private DocumentRepository documentRepository;
 
-    @Mock
-    private FeatureToggleService featureToggleService;
-
     private HearingService hearingService;
 
     @BeforeEach
     void setUp() {
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
         hearingService = new HearingService(
             pcsCaseService,
             hearingRepository,
             partyRepository,
             partyService,
             documentRepository,
-            FIXED_UK_CLOCK,
-            featureToggleService
+            FIXED_UK_CLOCK
         );
     }
 

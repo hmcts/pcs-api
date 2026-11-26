@@ -24,8 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -51,22 +49,19 @@ public class HearingService {
     private final PartyService partyService;
     private final DocumentRepository documentRepository;
     private final Clock ukClock;
-    private final FeatureToggleService featureToggleService;
 
     public HearingService(PcsCaseService pcsCaseService,
                           HearingRepository hearingRepository,
                           PartyRepository partyRepository,
                           PartyService partyService,
                           DocumentRepository documentRepository,
-                          @Qualifier("ukClock") Clock ukClock,
-                          FeatureToggleService featureToggleService) {
+                          @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
         this.hearingRepository = hearingRepository;
         this.partyRepository = partyRepository;
         this.partyService = partyService;
         this.documentRepository = documentRepository;
         this.ukClock = ukClock;
-        this.featureToggleService = featureToggleService;
     }
 
     public HearingEntity addHearing(long caseReference, PCSCase pcsCase) {
@@ -79,7 +74,7 @@ public class HearingService {
 
     public HearingEntity updateHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        HearingEntity hearingEntity = requireEditableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId());
+        HearingEntity hearingEntity = requireAvailableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId());
 
         populateHearingEntity(hearingEntity, pcsCase);
         // Edits before the notice is generated keep the same notice number and later edits get the next number
@@ -104,14 +99,12 @@ public class HearingService {
 
     public void cancelHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity entity = pcsCaseService.loadCase(caseReference);
-        HearingEntity hearingEntity;
-        if (pcsCase.getSelectedHearingId() == null && pcsCase.getHearingSelection() == null
-            && pcsCase.getHearing() != null && pcsCase.getHearing().getHearingId() != null) {
-            // A cancellation opened with the previous definition carries only the next hearing's ID.
-            hearingEntity = requireNextHearing(entity, pcsCase.getHearing().getHearingId().toString());
-        } else {
-            hearingEntity = requireEditableHearing(entity, pcsCase.getSelectedHearingId());
+        String hearingId = pcsCase.getSelectedHearingId();
+        if (hearingId == null && pcsCase.getHearing() != null && pcsCase.getHearing().getHearingId() != null) {
+            // A cancellation opened with the previous definition carries only the hearing's ID.
+            hearingId = pcsCase.getHearing().getHearingId().toString();
         }
+        HearingEntity hearingEntity = requireAvailableHearing(entity, hearingId);
         hearingEntity.setCancelled(true);
         hearingEntity.setCancellationReason(pcsCase.getHearing().getCancellationReason());
     }
@@ -140,26 +133,17 @@ public class HearingService {
             return findEditableHearing(pcsCase).orElseThrow(HearingService::unavailableHearing);
         }
         String selectedId = form.getHearingSelection() == null ? null : form.getHearingSelection().getValueCode();
-        return requireEditableHearing(pcsCase, selectedId);
+        return requireAvailableHearing(pcsCase, selectedId);
     }
 
-    private HearingEntity requireEditableHearing(PcsCaseEntity pcsCaseEntity, String hearingId) {
-        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            return requireNextHearing(pcsCaseEntity, hearingId);
-        }
+    // The flag only decides which hearings staff are offered; a submission may change any live hearing on the case.
+    private HearingEntity requireAvailableHearing(PcsCaseEntity pcsCaseEntity, String hearingId) {
         return pcsCaseEntity.getHearings().stream()
             .filter(hearing -> hearing != null && hearing.getId() != null)
             .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
             .filter(hearing -> hearing.getId().toString().equals(hearingId))
             .findFirst()
             .orElseThrow(HearingService::unavailableHearing);
-    }
-
-    private HearingEntity requireNextHearing(PcsCaseEntity pcsCaseEntity, String hearingId) {
-        return findEditableHearing(pcsCaseEntity)
-            .filter(hearing -> hearing.getId().toString().equals(hearingId))
-            .orElseThrow(() -> new HearingNotFoundException(
-                "Only the next hearing can be managed. Reopen Manage hearing to continue."));
     }
 
     private static HearingNotFoundException unavailableHearing() {

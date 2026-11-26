@@ -130,7 +130,7 @@ class ManageHearingPageTest extends BasePageTest {
             caseData.setHearing(Hearing.builder().hearingId(2).build());
             return null;
         }).when(hearingService).initialiseEditableHearing(TEST_CASE_REFERENCE, caseData, "1");
-        when(hearingSummaryRenderer.renderMarkdown(hearing, null)).thenReturn("Selected hearing summary");
+        when(hearingSummaryRenderer.renderMarkdown(hearing, null, false)).thenReturn("Selected hearing summary");
 
         PCSCase result = callMidEventHandler(caseData).getData();
 
@@ -148,7 +148,7 @@ class ManageHearingPageTest extends BasePageTest {
             caseData.setHearing(Hearing.builder().hearingId(2).build());
             return null;
         }).when(hearingService).initialiseEditableHearing(TEST_CASE_REFERENCE, caseData, "1");
-        when(hearingSummaryRenderer.renderMarkdown(hearing, null)).thenReturn("Selected hearing summary");
+        when(hearingSummaryRenderer.renderMarkdown(hearing, null, false)).thenReturn("Selected hearing summary");
 
         PCSCase result = callMidEventHandler(caseData).getData();
 

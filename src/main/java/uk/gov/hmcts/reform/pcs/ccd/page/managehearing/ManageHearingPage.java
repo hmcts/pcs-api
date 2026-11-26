@@ -85,7 +85,8 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
                 caseData.setSelectedHearingId(selected.getId().toString());
                 hearingService.initialiseEditableHearing(details.getId(), caseData, previousId);
                 caseData.getHearing().setHearingSummaryMarkdown(
-                    hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingSummaryLocation()));
+                    hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingSummaryLocation(),
+                        caseData.makeOrderEnabled()));
             } catch (HearingNotFoundException e) {
                 return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .data(caseData).errors(List.of(e.getMessage())).build();

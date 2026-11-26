@@ -17,7 +17,7 @@ public class HearingSummaryRenderer {
         = DateTimeFormatter.ofPattern("d MMMM yyyy, hh:mma", Locale.UK);
 
     private static final String TEMPLATE = """
-        <p class="body govuk-!-font-weight-bold">You’re viewing the selected hearing for this case.</p>
+        <p class="body govuk-!-font-weight-bold">You’re viewing the %s hearing for this case.</p>
 
         <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Hearing location:</h3>
         <p class="body">%s</p>
@@ -39,7 +39,8 @@ public class HearingSummaryRenderer {
 
     private final DurationFormatter durationFormatter;
 
-    public String renderMarkdown(HearingEntity hearingEntity, String hearingLocation) {
+    /** Staff who chose the hearing see it described as selected rather than as the next scheduled hearing. */
+    public String renderMarkdown(HearingEntity hearingEntity, String hearingLocation, boolean chosenByStaff) {
 
         String hearingTypeLabel = getHearingTypeLabel(hearingEntity);
         String formattedDate = DATE_TIME_FORMATTER.format(hearingEntity.getHearingDate());
@@ -49,6 +50,7 @@ public class HearingSummaryRenderer {
         String hearingNotes = StringUtils.isBlank(hearingEntity.getNotes()) ? "Not provided" : hearingEntity.getNotes();
 
         return TEMPLATE.formatted(
+            chosenByStaff ? "selected" : "next scheduled",
             hearingLocation,
             hearingTypeLabel,
             formattedDate,

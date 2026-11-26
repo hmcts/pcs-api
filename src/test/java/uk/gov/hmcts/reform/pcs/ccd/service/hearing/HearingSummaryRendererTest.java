@@ -44,16 +44,29 @@ class HearingSummaryRendererTest {
         when(durationFormatter.format(2, 1, 30)).thenReturn("formatted duration");
 
         // When
-        String hearingSummary = underTest.renderMarkdown(hearingEntity, hearingLocation);
+        String hearingSummary = underTest.renderMarkdown(hearingEntity, hearingLocation, false);
 
         // Then
         assertThat(hearingSummary)
+            .contains("You’re viewing the next scheduled hearing for this case.")
             .contains("<p class=\"body\">some hearing location</p>")
             .contains("<p class=\"body\">Other (some other hearing type)</p>")
             .contains("<p class=\"body\">10 July 2026, 09:00am</p>")
             .contains("<p class=\"body\">formatted duration</p>")
             .contains("<p class=\"body\">some notes</p>");
 
+    }
+
+    @Test
+    void shouldDescribeAHearingChosenByStaffAsSelected() {
+        HearingEntity hearingEntity = HearingEntity.builder()
+            .type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.parse("2026-07-10T09:00:00"))
+            .build();
+
+        assertThat(underTest.renderMarkdown(hearingEntity, "some hearing location", true))
+            .contains("You’re viewing the selected hearing for this case.")
+            .doesNotContain("next scheduled");
     }
 
 }
