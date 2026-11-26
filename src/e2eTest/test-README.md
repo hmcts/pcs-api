@@ -151,7 +151,7 @@ E2E_WORKERS=1 yarn test:pr
 
 **Preview or other values of `ENVIRONMENT`:** global setup defaults IdAM to **AAT**; export **`MANAGE_CASE_BASE_URL`** and **`DATA_STORE_URL_BASE`** yourself (e.g. preview XUI / data-store).
 
-**Always export** **`S2S_URL`** (the S2S `/testing-support/lease` endpoint), **`DM_STORE`** and **`CDAM_URL`**. These are internal service URLs, so the repo doesn't default them: Jenkins sets them in `setE2eServiceUrls` (`Jenkinsfile_CNP`, `Jenkinsfile_nightly`), and global setup stops with a list of any that are missing. Tests that back-date a payment also need **`PAYMENT_API_URL`**.
+**Always export** **`S2S_URL`** (the S2S `/testing-support/lease` endpoint), **`DM_STORE`** and **`CDAM_URL`**. These are internal service URLs, so the repo doesn't default them: Jenkins sets them in `setE2eServiceUrls` (`Jenkinsfile_CNP`, `Jenkinsfile_nightly`), and global setup stops with a list of any that are missing. Tests that back-date a payment also need **`E2E_PAYMENT_API_URL`** (named so the app config, which reads `PAYMENT_API_URL`, never picks it up).
 
 Also required:
 

@@ -196,5 +196,5 @@ def setE2eServiceUrls(String envName) {
   env.S2S_URL = env.S2S_URL ?: internalUrl('rpe-service-auth-provider', envName, '/testing-support/lease')
   env.DM_STORE = env.DM_STORE ?: internalUrl('dm-store', envName)
   env.CDAM_URL = env.CDAM_URL ?: internalUrl('ccd-case-document-am-api', envName)
-  env.PAYMENT_API_URL = env.PAYMENT_API_URL ?: internalUrl('payment-api', envName)
+  env.E2E_PAYMENT_API_URL = env.E2E_PAYMENT_API_URL ?: internalUrl('payment-api', envName)
 }
