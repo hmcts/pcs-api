@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 
 import java.time.Instant;
@@ -52,8 +51,7 @@ public class CaseBundleEntity {
     @Column(nullable = false)
     private String fileName;
 
-    // Set here rather than by the database: Hibernate cannot read a generated value back into an immutable entity.
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    /** Set by the database when the bundle is saved. */
+    @Column(insertable = false, updatable = false)
     private Instant createdAt;
 }
