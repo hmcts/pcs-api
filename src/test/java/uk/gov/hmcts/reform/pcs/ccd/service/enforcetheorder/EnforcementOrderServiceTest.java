@@ -38,6 +38,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.DRAFT_DISCARDED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.REQUESTED_FOR_DELETION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
@@ -127,6 +128,25 @@ class EnforcementOrderServiceTest {
 
         // Then
         assertThat(enforcementOrderEntity.getState()).isEqualTo(DRAFT_DISCARDED);
+        verify(enforcementOrderRepository).save(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldMarkAwaitingEnforcementOrderAsRequestedForDeletion() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .state(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS)
+                .build();
+        pcsCaseEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        enforcementOrderService.requestDraftDeletion(CASE_REFERENCE);
+
+        // Then
+        assertThat(enforcementOrderEntity.getState()).isEqualTo(REQUESTED_FOR_DELETION);
         verify(enforcementOrderRepository).save(enforcementOrderEntity);
     }
 

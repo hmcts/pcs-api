@@ -9,19 +9,21 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.deleteDraftApplication;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
@@ -36,7 +38,6 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 </div>
                 """;
 
-    private final DraftCaseDataService draftCaseDataService;
     private final EnforcementOrderService enforcementOrderService;
 
     @Override
@@ -44,11 +45,11 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                         .decentralisedEvent(deleteDraftApplication.name(), this::submit)
-                        .forState(State.CASE_ISSUED)
+                        .forState(CASE_ISSUED)
                         .name("Delete draft application")
-                        .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                        .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                        .grant(Permission.CRUD, UserRole.CLAIMANT)
+                        .grant(Permission.CRUD, PCS_SOLICITOR)
+                        .grant(Permission.CRUD, GA_CLAIMANT_SOLICITOR)
+                        .grant(Permission.CRUD, CLAIMANT)
                         .showCondition(and("hasUnsubmittedEnforcementData=\"Yes\"", featureFlagsEnabled(ENFORCEMENT)))
                         .endButtonLabel("Continue");
 
@@ -61,16 +62,14 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        if (eventPayload.caseData().getEnforcementOrder().getDeleteDraftApplication() != YesOrNo.YES) {
+        if (eventPayload.caseData().getEnforcementOrder().getDeleteDraftApplication() != YES) {
             return SubmitResponse.defaultResponse();
         }
 
         long caseReference = eventPayload.caseReference();
-        draftCaseDataService.deleteUnsubmittedCaseData(
-                caseReference, enforceTheOrder);
-        enforcementOrderService.markEnforcementApplicationAsDraftDiscarded(eventPayload.caseReference());
+        enforcementOrderService.requestDraftDeletion(caseReference);
 
-        log.info("Deleted draft enforcement for case {}", caseReference);
+        log.info("Requested draft enforcement deletion for case {}", caseReference);
 
         return SubmitResponse.<State>builder()
                 .confirmationBody(CONFIRMATION_MARKUP)

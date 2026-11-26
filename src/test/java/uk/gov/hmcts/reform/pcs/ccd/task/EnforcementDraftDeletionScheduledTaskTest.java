@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,12 +50,12 @@ class EnforcementDraftDeletionScheduledTaskTest {
 
     @BeforeEach
     void beforeEach() {
-        underTest = newScheduledTask("DAILY|02:00");
+        underTest = newScheduledTask("FIXED_DELAY|180s");
         when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(true);
     }
 
     @Test
-    void shouldIgnoreDeleteDraftResponsesWhenNotEnabled() {
+    void shouldIgnoreDraftDeletionWhenNotEnabled() {
         // Given
         when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(false);
 
@@ -62,16 +63,16 @@ class EnforcementDraftDeletionScheduledTaskTest {
         underTest.runSweep();
 
         // Then
-        verify(draftEnforcementDeletionService, never()).deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
+        verify(draftEnforcementDeletionService, never()).deleteExpiredDraftEnforcementApplications(DISCARD_AFTER_DAYS);
     }
 
     @Test
-    void shouldDeleteDraftResponsesOlderThanConfiguredNumberOfDays() {
+    void shouldDeleteDraftEnforcementApplicationsOlderThanConfiguredNumberOfDays() {
         // Given / When
         underTest.runSweep();
 
         // Then
-        verify(draftEnforcementDeletionService).deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
+        verify(draftEnforcementDeletionService).deleteExpiredDraftEnforcementApplications(DISCARD_AFTER_DAYS);
     }
 
     @Test
@@ -80,12 +81,12 @@ class EnforcementDraftDeletionScheduledTaskTest {
         RuntimeException exception = new RuntimeException("Deletion failed");
         doThrow(exception)
                 .when(draftEnforcementDeletionService)
-                .deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
+                .deleteExpiredDraftEnforcementApplications(DISCARD_AFTER_DAYS);
 
         // When
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> underTest.runSweep());
 
-        verify(draftEnforcementDeletionService).deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
+        verify(draftEnforcementDeletionService).deleteExpiredDraftEnforcementApplications(DISCARD_AFTER_DAYS);
         assertSame(exception, thrown);
     }
 
@@ -97,6 +98,12 @@ class EnforcementDraftDeletionScheduledTaskTest {
         // Then
         assertThat(task).isNotNull();
         assertThat(task.getName()).isEqualTo(TASK_NAME);
+    }
+
+    @Test
+    void shouldBuildRecurringTaskWithFixedDelaySchedule() {
+        // When / Then
+        assertThatCode(underTest::enforcementDraftDeletionTask).doesNotThrowAnyException();
     }
 
     @Test
@@ -118,7 +125,7 @@ class EnforcementDraftDeletionScheduledTaskTest {
         task.execute(taskInstance(), null);
 
         // Then
-        verify(draftEnforcementDeletionService).deleteEnforcementDraftsBatch(DISCARD_AFTER_DAYS);
+        verify(draftEnforcementDeletionService).deleteExpiredDraftEnforcementApplications(DISCARD_AFTER_DAYS);
     }
 
     @Test

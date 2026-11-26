@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,14 +21,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteDraftApplicationTest extends BaseEventTest {
-
-    @Mock
-    private DraftCaseDataService draftCaseDataService;
 
     @Mock
     private EnforcementOrderService enforcementOrderService;
@@ -77,9 +72,8 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // Then
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(
-                TEST_CASE_REFERENCE, enforceTheOrder);
-        verify(enforcementOrderService).markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
+        verify(enforcementOrderService).requestDraftDeletion(TEST_CASE_REFERENCE);
+        verify(enforcementOrderService, never()).markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
 
         assertThat(submitResponse.getConfirmationBody())
                 .contains("Draft application deleted");
@@ -98,10 +92,8 @@ class DeleteDraftApplicationTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // Then
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(
-                TEST_CASE_REFERENCE, enforceTheOrder);
-        verify(enforcementOrderService, never())
-                .markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
+        verify(enforcementOrderService, never()).requestDraftDeletion(TEST_CASE_REFERENCE);
+        verify(enforcementOrderService, never()).markEnforcementApplicationAsDraftDiscarded(TEST_CASE_REFERENCE);
 
         assertThat(submitResponse.getConfirmationBody()).isNull();
     }

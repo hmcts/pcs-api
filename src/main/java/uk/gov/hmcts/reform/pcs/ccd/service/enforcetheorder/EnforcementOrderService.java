@@ -20,6 +20,7 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.DRAFT_DISCARDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.PENDING_CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState.REQUESTED_FOR_DELETION;
 
 @Service
 @AllArgsConstructor
@@ -90,6 +91,14 @@ public class EnforcementOrderService {
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
 
         return enforcementOrderRepository.save(enfEntity);
+    }
+
+    @Transactional
+    public void requestDraftDeletion(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        EnforcementOrderEntity enfEntity = findDraftEnforcementOrderEntity(pcsCaseEntity);
+        enfEntity.setState(REQUESTED_FOR_DELETION);
+        enforcementOrderRepository.save(enfEntity);
     }
 
     @Transactional
