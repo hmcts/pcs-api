@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseStateOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,9 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @Mock
     private CamundaService camundaService;
+
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
     @InjectMocks
     private ChangeCaseState changeCaseState;
@@ -90,6 +94,12 @@ class ChangeCaseStateTest extends BaseEventTest {
             verify(camundaService).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         } else {
             verify(camundaService, never()).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        }
+
+        if (targetState == State.CASE_PROGRESSION) {
+            verify(enforcementOrderService).requestDraftDeletion(1234L);
+        } else {
+            verify(enforcementOrderService, never()).requestDraftDeletion(1234L);
         }
     }
 

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.changecasestate.ChangeCaseStatePage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -31,6 +32,7 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddressFormatter addressFormatter;
     private final CamundaService camundaService;
+    private final EnforcementOrderService enforcementOrderService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -64,6 +66,10 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
 
         if (targetState == State.CASE_STAYED) {
             camundaService.cancelTask(eventPayload.caseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        }
+
+        if (targetState == State.CASE_PROGRESSION) {
+            enforcementOrderService.requestDraftDeletion(eventPayload.caseReference());
         }
 
         return SubmitResponse.<State>builder()
