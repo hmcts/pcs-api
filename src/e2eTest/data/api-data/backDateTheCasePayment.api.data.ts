@@ -1,6 +1,6 @@
 export const backDateTheCasePaymentApiData = {
   backDateTheCasePaymentApiInstance: () => ({
-    baseURL: `http://payment-api-aat.service.core-compute-aat.internal`,
+    baseURL: process.env.PAYMENT_API_URL,
     headers: {
       Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
       ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,

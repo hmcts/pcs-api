@@ -64,7 +64,7 @@ class SupportTabAccessTest extends CftlibTest {
 
     @BeforeAll
     void setUp() {
-        claimantSolicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        claimantSolicitorToken = idamClient.getAccessToken("pcs-solicitor1@example.com", "password");
     }
 
     @Test

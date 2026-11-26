@@ -121,7 +121,7 @@ export async function uploadTestDocuments(): Promise<void> {
   console.log(`\nAS PART OF GLOBAL SETUP UPLOAD TEST DOCUMENTS AND GENERATE MANIFEST\n`);
 
   if (!process.env.CDAM_URL) {
-    throw new Error('CDAM_URL is not set (applyPlaywrightServiceUrls should have defaulted it)');
+    throw new Error('CDAM_URL is not set (export it, or let Jenkins set it in setE2eServiceUrls)');
   }
 
   const uploads = await Promise.all(

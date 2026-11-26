@@ -16,11 +16,11 @@
 global:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
-  ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
-  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
+  ccdUserProfileUrl: ${AAT_USER_PROFILE_URL}
+  dmStoreUrl: ${AAT_DM_STORE_URL}
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
-  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+  s2sUrl: ${AAT_S2S_URL}
   amRoleAssignmentServiceUrl: http://${SERVICE_NAME}-am-role-assignment-service
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
@@ -132,7 +132,7 @@ ccd:
         DATA_STORE_DB_MAX_POOL_SIZE: 5
         DATA_STORE_DB_MIN_IDLE: 1
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
-        CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
+        CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:${AAT_DM_STORE_HOST_REGEX}(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
         CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS: https://${SERVICE_FQDN}
         DATA_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_ps,probate_backend,divorce_ccd_submission,sscs,sscs_bulkscan,cmc,cmc_claim_store,cmc_claim_external_api,jui_webapp,pui_webapp,bulk_scan_orchestrator,fpl_case_service,iac,finrem_ccd_data_migrator,finrem_case_orchestration,employment_tribunals,ethos_repl_service,ccpay_bubble,ctsc_work_allocation,em_ccd_orchestrator,xui_webapp,bulk_scan_payment_processor,pcq_consolidation_service,em_npa_app,ecm_consumer,aac_manage_case_assignment,unspec_service,divorce_frontend,wa_task_configuration_api,wa_task_monitor,wa_task_management_api,ccd_case_document_am_api,hmc_cft_hearing_service,prl_citizen_frontend,prl_cos_api,et_cos,et_msg_handler,ccd_next_hearing_date_updater,et_sya_api,sptribs_case_api,civil_general_applications,fis_ds_update_web,pcs_frontend,pcs_api,am_role_assignment_service"
         ELASTIC_SEARCH_ENABLED: true
@@ -141,7 +141,7 @@ ccd:
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend,xui_webapp"
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: "PCS"
         ENABLE_CASE_GROUP_ACCESS_FILTERING: true
-        OIDC_ALLOWED_ISSUERS: "https://idam-web-public.aat.platform.hmcts.net/o,https://hmcts-access.aat.platform.hmcts.net/o,https://forgerock-am.service.core-compute-idam-aat2.internal:8443/openam/oauth2/realms/root/realms/hmcts"
+        OIDC_ALLOWED_ISSUERS: "https://idam-web-public.aat.platform.hmcts.net/o,https://hmcts-access.aat.platform.hmcts.net/o,${AAT2_OIDC_ISSUER}"
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -162,7 +162,7 @@ ccd:
       image: hmctsprod.azurecr.io/ccd/api-gateway-web:latest
       imagePullPolicy: Always
       environment:
-        PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
+        PROXY_DOCUMENT_MANAGEMENT: ${AAT_DM_STORE_URL}
         ALLOW_CONFIG_MUTATIONS: true
         IDAM_WEB_PUBLIC_URL: https://idam-web-public.aat.platform.hmcts.net
         IDAM_HMCTS_ACCESS_URL: https://hmcts-access.aat.platform.hmcts.net
@@ -262,14 +262,14 @@ xui-webapp:
       SERVICES_DOCUMENTS_API_V2: http://${SERVICE_NAME}-cdam
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
       HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
-      HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
+      HEALTH_TERMS_AND_CONDITIONS_API: ${AAT_XUI_TERMS_URL}/health
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_CCD_CASE_ASSIGNMENT_API: http://${SERVICE_NAME}-aac-manage-case-assignment
       SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
       SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://${SERVICE_NAME}-am-org-role-mapping-service
-      SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
-      SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
+      SERVICES_TERMS_AND_CONDITIONS: ${AAT_XUI_TERMS_URL}
+      SERVICES_HEARINGS_COMPONENT_API: ${AAT_HEARINGS_URL}
       JURISDICTIONS: PCS
       WA_SUPPORTED_JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
@@ -315,7 +315,7 @@ xui-mo-webapp:
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DEFINITION_STORE_API: http://${SERVICE_NAME}-ccd-definition-store
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
-      RD_PROFESSIONAL_API_SERVICE: http://rd-professional-api-aat.service.core-compute-aat.internal
+      RD_PROFESSIONAL_API_SERVICE: ${AAT_PRD_URL}
       SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
       SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://${SERVICE_NAME}-am-org-role-mapping-service
       SERVICES_MCA_PROXY_API: http://${SERVICE_NAME}-aac-manage-case-assignment
@@ -332,9 +332,9 @@ ccd-case-document-am-api:
     environment:
       IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
       IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
-      OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat.internal:8443/openam/oauth2/hmcts
-      S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-      DM_STORE_BASE_URL: http://dm-store-aat.service.core-compute-aat.internal
+      OIDC_ISSUER: ${AAT_OIDC_ISSUER}
+      S2S_URL: ${AAT_S2S_URL}
+      DM_STORE_BASE_URL: ${AAT_DM_STORE_URL}
       CCD_DATA_STORE_API_BASE_URL: http://${SERVICE_NAME}-ccd-data-store-api
       CASE_DOCUMENT_S2S_AUTHORISED_SERVICES: ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,bulk_scan_processor,sscs,probate_backend,iac,em_npa_app,fprl_dgs_api,dg_docassembly_api,em_stitching_api,em_ccd_orchestrator,cmc_claim_store,civil_service,bulk_scan_orchestrator,ethos_repl_service,divorce_document_generator,finrem_document_generator,finrem_case_orchestration,fpl_case_service,et_cos,prl_cos_api,prl_dgs_api,et_sya_api,adoption_cos_api,adoption_web,nfdiv_case_api,divorce_frontend,sptribs_case_api,sptribs_dss_backend,civil_general_applications,pcs_api,pcs_frontend
     keyVaults:
@@ -401,15 +401,15 @@ aac-manage-case-assignment:
     environment:
       IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
       IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
-      OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat.internal:8443/openam/oauth2/hmcts
-      S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+      OIDC_ISSUER: ${AAT_OIDC_ISSUER}
+      S2S_URL: ${AAT_S2S_URL}
       MCA_DS_PROXY_URLS_ALLOWED_LIST: /searchCases.*,/internal/searchCases.*,/internal/cases.*
       MCA_DEF_STORE_PROXY_URLS_ALLOWED_LIST: /api/display/challenge-questions.*
       MCA_CONDITIONAL_APIS_CASE_ASSIGNMENTS_ENABLED: "true"
       MANAGE_CASE_S2S_AUTHORISED_SERVICES: xui_webapp,ccd_data,ccd_gw,xui_mo_webapp,pcs
       CCD_DATA_STORE_API_BASE_URL: http://${SERVICE_NAME}-ccd-data-store-api
       CCD_DEFINITION_STORE_API_BASE_URL: http://${SERVICE_NAME}-ccd-definition-store
-      PRD_HOST: http://rd-professional-api-aat.service.core-compute-aat.internal
+      PRD_HOST: ${AAT_PRD_URL}
       CCD_DEFINITION_STORE_ALLOWED_SERVICE: xui_webapp
       CCD_DATA_STORE_ALLOWED_SERVICE: xui_webapp
       ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service

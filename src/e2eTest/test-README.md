@@ -147,11 +147,11 @@ E2E_WORKERS=1 yarn test:pr
 
 ### Environment variables (local)
 
-**With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, IdAM, and S2S URLs from standard HMCTS patterns (same idea as the nightly job). You can still override any of those by exporting them first.
+**With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`** and the IdAM URLs from the public HMCTS patterns. Export **`DATA_STORE_URL_BASE`** and **`CASE_API_URL`** yourself.
 
-**Preview or other values of `ENVIRONMENT`:** global setup defaults IdAM / S2S to **AAT**; you must export **`MANAGE_CASE_BASE_URL`** and **`DATA_STORE_URL_BASE`** yourself (e.g. preview XUI / data-store).
+**Preview or other values of `ENVIRONMENT`:** global setup defaults IdAM to **AAT**; export **`MANAGE_CASE_BASE_URL`** and **`DATA_STORE_URL_BASE`** yourself (e.g. preview XUI / data-store).
 
-Alternatively set **`ENVIRONMENT`** as above, or export **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, and explicit **`IDAM_WEB_URL`** / **`IDAM_TESTING_SUPPORT_URL`** / **`S2S_URL`**.
+**Always export** **`S2S_URL`** (the S2S `/testing-support/lease` endpoint), **`DM_STORE`** and **`CDAM_URL`**. These are internal service URLs, so the repo doesn't default them: Jenkins sets them in `setE2eServiceUrls` (`Jenkinsfile_CNP`, `Jenkinsfile_nightly`), and global setup stops with a list of any that are missing. Tests that back-date a payment also need **`PAYMENT_API_URL`**.
 
 Also required:
 

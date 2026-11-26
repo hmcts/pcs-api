@@ -57,7 +57,7 @@ def shutterService = false
 
 withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
-  env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+  env.IDAM_S2S_AUTH_URL = "${internalUrl('rpe-service-auth-provider', 'aat')}"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
@@ -137,7 +137,8 @@ withPipeline(type, product, component) {
     // Do not modify: imports the CCD definition into production.
     enableHighLevelDataSetup()
     setAatEnvVars()
-    env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
+    setE2eServiceUrls('aat')
+    env.CAMUNDA_BASE_URL = "${internalUrl('camunda-api', 'aat')}"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
       enableE2eTest()
@@ -170,33 +171,33 @@ withPipeline(type, product, component) {
     onMaster{
       if(env.ENVIRONMENT == "prod") {
         env.SHUTTER_SERVICE = false
-        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-        env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
+        env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'prod')}"
+        env.CASE_API_URL = "${internalUrl('pcs-api', 'prod')}"
         env.CASE_TYPE_SUFFIX=""
       } else {
-        env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
-        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+        env.DEFINITION_STORE_URL_BASE = "${internalUrl('ccd-definition-store-api', 'aat')}"
+        env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'aat')}"
         env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
         env.CASE_TYPE_SUFFIX="staging"
         generateDefinitions(builder)
-        env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
+        env.CASE_API_URL = "${internalUrl('pcs-api', 'aat')}"
         env.CASE_TYPE_SUFFIX=""
       }
     }
     onPerftest{
-      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
-      env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
-      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
+      env.DEFINITION_STORE_URL_BASE = "${internalUrl('ccd-definition-store-api', 'perftest')}"
+      env.CASE_API_URL = "${internalUrl('pcs-api', 'perftest')}"
+      env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'perftest')}"
     }
     onDemo {
-      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-demo.service.core-compute-demo.internal"
-      env.CASE_API_URL = "http://pcs-api-demo.service.core-compute-demo.internal"
-      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-demo.service.core-compute-demo.internal"
+      env.DEFINITION_STORE_URL_BASE = "${internalUrl('ccd-definition-store-api', 'demo')}"
+      env.CASE_API_URL = "${internalUrl('pcs-api', 'demo')}"
+      env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'demo')}"
     }
     onIthc{
-      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-ithc.service.core-compute-ithc.internal"
-      env.CASE_API_URL = "http://pcs-api-ithc.service.core-compute-ithc.internal"
-      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-ithc.service.core-compute-ithc.internal"
+      env.DEFINITION_STORE_URL_BASE = "${internalUrl('ccd-definition-store-api', 'ithc')}"
+      env.CASE_API_URL = "${internalUrl('pcs-api', 'ithc')}"
+      env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'ithc')}"
     }
     generateDefinitions(builder)
   }
@@ -259,7 +260,7 @@ withPipeline(type, product, component) {
   // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
   afterSuccess('functionalTest:aat') {
     env.ENVIRONMENT = "prod"
-    env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
+    env.CAMUNDA_BASE_URL = "${internalUrl('camunda-api', 'prod')}"
     uploadDmnDiagrams()
     uploadBpmnDiagram()
   }
@@ -339,6 +340,8 @@ withPipeline(type, product, component) {
 }
 
 def setPreviewEnvVars(githubApi) {
+  setPreviewChartUrls()
+  setE2eServiceUrls('aat')
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
   env.ENABLE_TESTING_SUPPORT = "true"
@@ -370,15 +373,15 @@ def setAatEnvVars() {
 def setProdEnvVars() {
   env.SHUTTER_SERVICE = true
   env.ENVIRONMENT= "prod"
-  env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
-  env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-  env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
+  env.DEFINITION_STORE_URL_BASE = "${internalUrl('ccd-definition-store-api', 'prod')}"
+  env.DATA_STORE_URL_BASE="${internalUrl('ccd-data-store-api', 'prod')}"
+  env.CASE_API_URL = "${internalUrl('pcs-api', 'prod')}"
 }
 
 def setDemoEnvVars() {
   env.ENVIRONMENT= "demo"
-  env.CAMUNDA_BASE_URL = "http://camunda-api-demo.service.core-compute-demo.internal"
-  env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
+  env.CAMUNDA_BASE_URL = "${internalUrl('camunda-api', 'demo')}"
+  env.S2S_URL_BASE = "${internalUrl('rpe-service-auth-provider', 'demo')}"
 }
 
 def runDemoSmokeTests(builder, Map secrets, String product) {
@@ -388,10 +391,10 @@ def runDemoSmokeTests(builder, Map secrets, String product) {
   stageWithEnvironmentAgent('Smoke Test - demo', product, 'demo') {
     withTeamSecrets(vaultConfig, 'demo', 'pcs') {
     withEnv([
-      "TEST_URL=http://pcs-api-demo.service.core-compute-demo.internal",
+      "TEST_URL=${internalUrl('pcs-api', 'demo')}",
       "ENVIRONMENT_NAME=demo",
-      "DATA_STORE_URL_BASE=http://ccd-data-store-api-demo.service.core-compute-demo.internal",
-      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
+      "DATA_STORE_URL_BASE=${internalUrl('ccd-data-store-api', 'demo')}",
+      "IDAM_S2S_AUTH_URL=${internalUrl('rpe-service-auth-provider', 'demo')}",
       "IDAM_API_URL=https://idam-api.demo.platform.hmcts.net",
       "CASE_TYPE_SUFFIX="
     ]) {
@@ -404,8 +407,8 @@ def runDemoSmokeTests(builder, Map secrets, String product) {
 
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
-  env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
-  env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
+  env.CAMUNDA_BASE_URL = "${internalUrl('camunda-api', 'ithc')}"
+  env.S2S_URL_BASE = "${internalUrl('rpe-service-auth-provider', 'ithc')}"
 }
 
 def runIthcSmokeTests(builder, Map secrets, String product) {
@@ -415,10 +418,10 @@ def runIthcSmokeTests(builder, Map secrets, String product) {
   stageWithEnvironmentAgent('Smoke Test - ithc', product, 'ithc') {
     withTeamSecrets(vaultConfig, 'ithc', 'pcs') {
     withEnv([
-      "TEST_URL=http://pcs-api-ithc.service.core-compute-ithc.internal",
+      "TEST_URL=${internalUrl('pcs-api', 'ithc')}",
       "ENVIRONMENT_NAME=ithc",
-      "DATA_STORE_URL_BASE=http://ccd-data-store-api-ithc.service.core-compute-ithc.internal",
-      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal",
+      "DATA_STORE_URL_BASE=${internalUrl('ccd-data-store-api', 'ithc')}",
+      "IDAM_S2S_AUTH_URL=${internalUrl('rpe-service-auth-provider', 'ithc')}",
       "IDAM_API_URL=https://idam-api.ithc.platform.hmcts.net",
       "CASE_TYPE_SUFFIX="
     ]) {
@@ -431,8 +434,8 @@ def runIthcSmokeTests(builder, Map secrets, String product) {
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
-  env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
-  env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
+  env.CAMUNDA_BASE_URL = "${internalUrl('camunda-api', 'perftest')}"
+  env.S2S_URL_BASE = "${internalUrl('rpe-service-auth-provider', 'perftest')}"
 }
 
 def runPerftestSmokeTests(builder, Map secrets, String product) {
@@ -442,10 +445,10 @@ def runPerftestSmokeTests(builder, Map secrets, String product) {
   stageWithEnvironmentAgent('Smoke Test - perftest', product, 'perftest') {
     withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
     withEnv([
-      "TEST_URL=http://pcs-api-perftest.service.core-compute-perftest.internal",
+      "TEST_URL=${internalUrl('pcs-api', 'perftest')}",
       "ENVIRONMENT_NAME=perftest",
-      "DATA_STORE_URL_BASE=http://ccd-data-store-api-perftest.service.core-compute-perftest.internal",
-      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal",
+      "DATA_STORE_URL_BASE=${internalUrl('ccd-data-store-api', 'perftest')}",
+      "IDAM_S2S_AUTH_URL=${internalUrl('rpe-service-auth-provider', 'perftest')}",
       "IDAM_API_URL=https://idam-api.perftest.platform.hmcts.net",
       "CASE_TYPE_SUFFIX="
     ]) {
@@ -536,4 +539,44 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
+}
+
+// Internal service URLs are built here rather than written out in full (ITHC HDPI-8694).
+// The parameter is not called "env", which would shadow the pipeline's env global.
+String internalHost(String svc, String envName) {
+  "${svc}-${envName}.service.core-compute-${envName}.internal"
+}
+
+String internalUrl(String svc, String envName, String path = '') {
+  "http://${internalHost(svc, envName)}${path}"
+}
+
+String idamIssuer(String idamEnv, String realmPath) {
+  "https://forgerock-am.service.core-compute-idam-${idamEnv}.internal:8443/openam/oauth2/${realmPath}"
+}
+
+// AAT services the preview chart templates point at, substituted into values.*.preview.template.yaml by envsubst.
+def setPreviewChartUrls() {
+  env.AAT_USER_PROFILE_URL = internalUrl('ccd-user-profile-api', 'aat')
+  env.AAT_DM_STORE_URL = internalUrl('dm-store', 'aat')
+  env.AAT_DM_STORE_HOST_REGEX = internalHost('dm-store', 'aat').replace('.', '\\.')
+  env.AAT_S2S_URL = internalUrl('rpe-service-auth-provider', 'aat')
+  env.AAT_ROLE_ASSIGNMENT_URL = internalUrl('am-role-assignment-service', 'aat')
+  env.AAT_ORG_ROLE_MAPPING_URL = internalUrl('am-org-role-mapping-service', 'aat')
+  env.AAT_XUI_TERMS_URL = internalUrl('xui-terms-and-conditions', 'aat')
+  env.AAT_HEARINGS_URL = internalUrl('jurisdiction-hearings-api', 'aat')
+  env.AAT_PRD_URL = internalUrl('rd-professional-api', 'aat')
+  env.AAT_FEES_URL = internalUrl('fees-register-api', 'aat')
+  env.AAT_DOC_ASSEMBLY_URL = internalUrl('dg-docassembly', 'aat')
+  env.AAT_SEND_LETTER_URL = internalUrl('rpe-send-letter-service', 'aat')
+  env.AAT_OIDC_ISSUER = idamIssuer('aat', 'hmcts')
+  env.AAT2_OIDC_ISSUER = idamIssuer('aat2', 'realms/root/realms/hmcts')
+}
+
+// Service URLs the Playwright E2E setup needs; src/e2eTest/config/global-setup.config.ts no longer defaults them.
+def setE2eServiceUrls(String envName) {
+  env.S2S_URL = env.S2S_URL ?: internalUrl('rpe-service-auth-provider', envName, '/testing-support/lease')
+  env.DM_STORE = env.DM_STORE ?: internalUrl('dm-store', envName)
+  env.CDAM_URL = env.CDAM_URL ?: internalUrl('ccd-case-document-am-api', envName)
+  env.PAYMENT_API_URL = env.PAYMENT_API_URL ?: internalUrl('payment-api', envName)
 }

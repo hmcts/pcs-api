@@ -101,7 +101,7 @@ class BulkPrintPacksTest extends CftlibTest {
 
     @BeforeAll
     void setup() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@example.com", "password");
         defendant1Token = idamClient.getAccessToken("defendant1@localhost", "password");
         defendant2Token = idamClient.getAccessToken("defendant2@localhost", "password");
     }
