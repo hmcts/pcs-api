@@ -49,7 +49,7 @@ public class ServiceHearingValuesConfiguration {
     private int numberOfDaysStartOffset;
     private String hearingType;
     private List<String> hearingChannels;
-    private String hearingPriorityStandard;
+    private String hearingPriority;
 
     public ServiceHearingValues getDefaultValues() {
         List<PartyDetails> parties = List.of(
@@ -70,7 +70,7 @@ public class ServiceHearingValuesConfiguration {
             .hearingIsLinkedFlag(hearingIsLinkedFlag)
             .hearingType(hearingType)
             .hearingChannels(hearingChannels)
-            .hearingPriorityType(getHearingPriorityStandard())
+            .hearingPriorityType(getHearingPriority())
             .hearingLocations(List.of(
                 HearingLocation.builder()
                     .locationType(locationType)
