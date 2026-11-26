@@ -2,7 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.CaseEventContext;
+import uk.gov.hmcts.ccd.sdk.CaseEventHook;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobs;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocSource;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.MissingDocuments;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.PageNumbers;
@@ -24,20 +28,19 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * The judges' case bundle. PCS says what the bundle is; {@link CaseBundleHook} submits it after every case event and
- * the SDK's doc toolkit renders it when it changed. One section per case file category in display order, each
- * document chronological within its folder, and a placeholder page for an empty folder so a reader can see it was
- * empty rather than left out. An application's documents follow the rest of their folder, under a cover sheet giving
- * its reference.
+ * The judges' case bundle, submitted to the SDK's doc toolkit after every case event; the toolkit renders it only
+ * when it changed, so PCS never works out which changes affect the bundle. One section per case file category in
+ * display order, each document chronological within its folder, and a placeholder page for an empty folder so a
+ * reader can see it was empty rather than left out. An application's documents follow the rest of their folder, under
+ * a cover sheet giving its reference.
  * Presentation is the court default (title page, contents page, folder cover sheets, "N of M" page numbers).
  */
 @Component
 @RequiredArgsConstructor
-public class CaseBundleDefinition {
+public class CaseBundleDefinition implements CaseEventHook {
 
     public static final String NAME = "case-bundle";
     /** Case file view folder for generated bundles; not a CaseFileCategory, as those drive the upload journeys. */
@@ -48,13 +51,19 @@ public class CaseBundleDefinition {
 
     private final PcsCaseRepository cases;
     private final DocumentRepository documents;
+    private final ObjectProvider<DocJobs> jobs;
 
-    /** The case's bundle as it stands, or empty if PCS has no such case. */
-    public Optional<PdfRequest> build(long caseReference) {
+    /** Runs in the event's transaction, so the bundle is submitted only if the event commits. */
+    @Override
+    public void afterCaseEvent(CaseEventContext event) {
+        DocJobs docJobs = jobs.getIfAvailable();
+        if (docJobs == null) {
+            return;
+        }
         // The documents are queried rather than read from the case's list: an event can save or delete a document
         // without touching a list it has already loaded.
-        return cases.findByCaseReference(caseReference)
-            .map(pcsCase -> build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId())));
+        cases.findByCaseReference(event.caseReference()).ifPresent(pcsCase -> docJobs.submit(
+            event.caseReference(), NAME, build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId()))));
     }
 
     static PdfRequest build(PcsCaseEntity pcsCase) {
