@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.BAILIFF_MANAGEMENT_ENABLED;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASE_MANAGEMENT_R2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
@@ -28,17 +29,18 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 class ShowConditionsTest {
 
-    private static final Map<FeatureFlag, String> CCD_FIELDS_BY_FLAG = Map.of(
-        RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled",
-        RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled",
-        RELEASE_1B, "featureFlags.release1bEnabled",
-        RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled",
-        CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled",
-        WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled",
-        CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled",
-        MAKE_ORDER, "featureFlags.makeOrderEnabled",
-        ENFORCEMENT, "featureFlags.enforcementEnabled",
-        CASE_MANAGEMENT_R2, "featureFlags.caseManagementR2Enabled"
+    private static final Map<FeatureFlag, String> CCD_FIELDS_BY_FLAG = Map.ofEntries(
+        Map.entry(RELEASE_1_DOT_2, "featureFlags.release1dot2Enabled"),
+        Map.entry(RELEASE_1_DOT_3, "featureFlags.release1dot3Enabled"),
+        Map.entry(RELEASE_1B, "featureFlags.release1bEnabled"),
+        Map.entry(RELEASE_1_DOT_4, "featureFlags.release1dot4Enabled"),
+        Map.entry(CASEWORKER_EVENTS, "featureFlags.caseWorkerEventsEnabled"),
+        Map.entry(WALES_MAKE_A_CLAIM, "featureFlags.walesMakeAClaimEnabled"),
+        Map.entry(CUI_RESPOND_TO_CLAIM_LR, "featureFlags.cuiRespondToClaimLrEnabled"),
+        Map.entry(MAKE_ORDER, "featureFlags.makeOrderEnabled"),
+        Map.entry(ENFORCEMENT, "featureFlags.enforcementEnabled"),
+        Map.entry(CASE_MANAGEMENT_R2, "featureFlags.caseManagementR2Enabled"),
+        Map.entry(BAILIFF_MANAGEMENT_ENABLED, "featureFlags.bailiffManagementEnabled")
     );
 
     @Test

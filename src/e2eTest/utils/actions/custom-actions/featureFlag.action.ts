@@ -20,23 +20,35 @@ export const FeatureFlags = {
   MAKE_ORDER: 'makeOrderEnabled',
   ENFORCEMENT: 'enforcementEnabled',
   CASE_MANAGEMENT_R2: 'caseManagementR2Enabled',
+  BAILIFF_MANAGEMENT_ENABLED: 'bailiffManagementEnabled',
 } as const;
 
 export type FeatureFlagName = (typeof FeatureFlags)[keyof typeof FeatureFlags];
+
+// Flags don't change during a test, so each case's featureFlags is fetched once.
+const featureFlagsByCase = new Map<string, Record<string, unknown>>();
 
 /**
  * Whether a flag is on for the current case (CASE_NUMBER), read with the token createCaseAPI set.
  * Throws when the value can't be read: unknown is not the same as off.
  */
 export async function isFeatureFlagEnabled(flag: FeatureFlagName): Promise<boolean> {
-  const api = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
-  const response = await api.get(getCaseApiData.getCaseApiEndPoint());
-  const value = response.data?.data?.featureFlags?.[flag];
+  const caseNumber = process.env.CASE_NUMBER ?? '';
+  if (!featureFlagsByCase.has(caseNumber)) {
+    featureFlagsByCase.set(caseNumber, await fetchFeatureFlags());
+  }
+  const value = featureFlagsByCase.get(caseNumber)?.[flag];
   if (value !== 'YES' && value !== 'NO') {
-    throw new Error(`Feature flag "${flag}" not returned on case ${process.env.CASE_NUMBER} (got ${JSON.stringify(value)})`);
+    throw new Error(`Feature flag "${flag}" not returned on case ${caseNumber} (got ${JSON.stringify(value)})`);
   }
   console.log(`\n✅ Feature flag "${flag}" is ${value === 'YES' ? 'ON' : 'OFF'}`);
   return value === 'YES';
+}
+
+async function fetchFeatureFlags(): Promise<Record<string, unknown>> {
+  const api = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+  const response = await api.get(getCaseApiData.getCaseApiEndPoint());
+  return response.data?.data?.featureFlags ?? {};
 }
 
 /** skipTestIfFeatureFlagDisabled / skipTestIfFeatureFlagEnabled, with a FeatureFlags value. */

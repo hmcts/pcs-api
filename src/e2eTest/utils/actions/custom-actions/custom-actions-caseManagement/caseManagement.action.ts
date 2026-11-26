@@ -35,6 +35,7 @@ import {
   confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace,enterBreathingSpacecheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
+import { FeatureFlags, isFeatureFlagEnabled } from '../featureFlag.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
@@ -610,7 +611,7 @@ private formatDisplayDate(entered: string): string {
     });
     await performValidation('mainHeader',confirmEditHearing.mainHeader);
     await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
@@ -672,7 +673,7 @@ private formatDisplayDate(entered: string): string {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', confirmCancelHearing.mainHeader);
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performAction('clickButton', confirmCancelHearing.closeAndReturnToCaseOverviewButton);
   }
 
@@ -723,10 +724,7 @@ private formatDisplayDate(entered: string): string {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('text', {elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded`});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
-    });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performValidation('mainHeader', confirmUpload.mainHeader);
     await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
   }
@@ -780,7 +778,7 @@ private formatDisplayDate(entered: string): string {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performValidation('mainHeader', confirmHearing.mainHeader);
     await performAction('clickButton', confirmHearing.closeAndReturnToCaseOverviewButton);
   }
@@ -974,10 +972,7 @@ private formatDisplayDate(entered: string): string {
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('text', {elementType: 'inlineText', text: `${newUser} updated`});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
-    });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
@@ -996,7 +991,7 @@ private formatDisplayDate(entered: string): string {
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('text', { elementType: 'inlineText', text: `${newUser} added` });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
@@ -1098,7 +1093,7 @@ private formatDisplayDate(entered: string): string {
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('text', { elementType: 'inlineText', text: `${newUser} removed` });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseNameInTitle(submitPayLoad, 'inlineText');
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
@@ -1557,6 +1552,14 @@ private formatDisplayDate(entered: string): string {
       .innerText();
   }
 
+  // The case name line is only in the internal case title when bailiff-management-enabled is on (CaseTitleService).
+  private async validateCaseNameInTitle(payLoad: any, elementType: string) {
+    if (!(await isFeatureFlagEnabled(FeatureFlags.BAILIFF_MANAGEMENT_ENABLED))) {
+      return;
+    }
+    await performValidation('text', { elementType, text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+  }
+
   private async validateCaseDetails(payLoadInput: any) {
     const payLoad = payLoadInput as Record<string, any>;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
@@ -1564,6 +1567,6 @@ private formatDisplayDate(entered: string): string {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+    await this.validateCaseNameInTitle(payLoad, 'paragraph');
   }
 }
