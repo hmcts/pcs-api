@@ -138,6 +138,8 @@ class CaseTypeTest {
         when(builder.tab("Messages", "Messages")).thenReturn(messagesTabBuilder);
         final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         when(builder.tab("orders", "Orders")).thenReturn(ordersTabBuilder);
+        final TabBuilder<PCSCase, AccessProfile> caseHearingsTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        when(builder.tab("caseHearings", "Case hearings")).thenReturn(caseHearingsTabBuilder);
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(judicialNotesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
@@ -162,6 +164,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
         final Tab<PCSCase, AccessProfile> messagesTab = messagesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseHearingsTab = caseHearingsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> bundleTab = bundleTabBuilder.build();
         final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
 
@@ -194,7 +197,7 @@ class CaseTypeTest {
         // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
         for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
             serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,
-            caseNotesTab, caseFlagsTab, judicialNotesTab, messagesTab, ordersTab)) {
+            caseNotesTab, caseFlagsTab, judicialNotesTab, messagesTab, ordersTab, caseHearingsTab)) {
             assertThat(tab.getForRoles()).as(tab.getTabID()).isEmpty();
         }
         verify(builder).tabsRespectDeclaredFieldAccess();
@@ -309,6 +312,7 @@ class CaseTypeTest {
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("Messages", "Messages")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("orders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseHearings", "Case hearings")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("judicialNotes", "Judicial notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
