@@ -21,7 +21,8 @@ public enum FeatureFlag {
     CASEWORKER_WA("caseworker-wa-enabled", true),
     MAKE_ORDER("make-order-enabled", false),
     ENFORCEMENT("enforcement-enabled", false),
-    RECORD_WARRANT_RETURN("record-warrant-return-enabled", false);
+    RECORD_WARRANT_RETURN("record-warrant-return-enabled", false),
+    EVICTION_SCHEDULING("eviction-scheduling-enabled", false);
 
     private final String key;
     private final boolean defaultValue;

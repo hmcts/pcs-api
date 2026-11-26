@@ -90,9 +90,9 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredAsShowForRelease1bFeatureFlagAndScheduleEvictionShowCondition() {
+    void shouldBeConfiguredAsShowForEvictionSchedulingFeatureFlagAndScheduleEvictionShowCondition() {
         assertConfiguredShowConditions(ShowConditions.and(
-            ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
+            ShowConditions.featureFlagsEnabled(FeatureFlag.EVICTION_SCHEDULING),
             "enfShowConditions.scheduleEviction=\"Yes\""
         ));
     }
@@ -108,8 +108,8 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     @Test
-    void shouldRejectStartWhenRelease1bIsOff() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
+    void shouldRejectStartWhenEvictionSchedulingIsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(false);
 
         assertThat(startRejection()).containsExactly(ScheduleEviction.NOT_AVAILABLE);
         verifyNoInteractions(pcsCaseService);
@@ -118,7 +118,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     @Test
     void shouldRejectStartWhenNoWarrantAwaitingScheduling() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(true);
         PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.PENDING_CASE_ISSUED);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
 
@@ -129,7 +129,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     @Test
     void shouldReturnCaseAndEvictionDetailsOnStart() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(true);
         PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(TEST_CASE_REFERENCE)).thenReturn("1234");
@@ -155,7 +155,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     @Test
     void shouldSaveScheduledEvictionAgainstWarrantInUkTime() {
         // Given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(true);
         PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
         WarrantEntity warrant = pcsCase.getEnforcementOrders().iterator().next().getWarrantDetails();
@@ -203,7 +203,7 @@ class ScheduleEvictionTest extends BaseEventTest {
     }
 
     private void givenCaseWithWarrantAwaitingScheduling() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)).thenReturn(true);
         PcsCaseEntity pcsCase = caseWithWarrant(EnforcementState.AWAITING_SCHEDULING);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCase);
     }

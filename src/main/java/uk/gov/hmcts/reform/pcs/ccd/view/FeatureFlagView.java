@@ -26,6 +26,7 @@ public class FeatureFlagView {
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
                                     .enforcementEnabled(getFlag(FeatureFlag.ENFORCEMENT))
                                     .recordWarrantReturnEnabled(getFlag(FeatureFlag.RECORD_WARRANT_RETURN))
+                                    .evictionSchedulingEnabled(getFlag(FeatureFlag.EVICTION_SCHEDULING))
                                     .build());
     }
 

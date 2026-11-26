@@ -97,7 +97,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(EventStates.scheduleEviction())
             .name("Schedule eviction")
             .showCondition(ShowConditions.and(
-                ShowConditions.featureFlagsEnabled(FeatureFlag.RELEASE_1B),
+                ShowConditions.featureFlagsEnabled(FeatureFlag.EVICTION_SCHEDULING),
                 CAN_SCHEDULE_EVICTION
             ))
             .grant(Permission.CRU, UserRole.BAILIFF_ADMIN)
@@ -106,7 +106,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<ScheduleEvictionStart> start(ExternalStartRequest start) {
-        requireRelease1b();
+        requireEvictionScheduling();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(start.caseReference());
         EnforcementOrderEntity warrantApplication = warrantAwaitingScheduling(pcsCase);
         ClaimEntity mainClaim = pcsCase.getMainClaim();
@@ -124,7 +124,7 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ScheduleEvictionRequest> submit) {
-        requireRelease1b();
+        requireEvictionScheduling();
         ScheduleEvictionRequest request = submit.payload();
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(submit.caseReference());
         EnforcementOrderEntity warrantApplication = warrantAwaitingScheduling(pcsCase);
@@ -169,8 +169,8 @@ public class ScheduleEviction implements CCDConfig<PCSCase, State, UserRole> {
             .toList();
     }
 
-    private void requireRelease1b() {
-        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
+    private void requireEvictionScheduling() {
+        if (!featureToggleService.isEnabled(FeatureFlag.EVICTION_SCHEDULING)) {
             throw ExternalRejection.because(NOT_AVAILABLE);
         }
     }
