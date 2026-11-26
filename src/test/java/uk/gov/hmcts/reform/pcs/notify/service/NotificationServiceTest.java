@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -982,7 +983,7 @@ class NotificationServiceTest {
 
         @Test
         @DisplayName("Should send warrant of possession submitted email to the claimant")
-        void givenWarrantOfPossessionIsSubmitted_whenSendWarrantOfPossessionSubmittedEmail_thenScheduleEmail() {
+        void givenWarrantOfPossessionIsSubmitted_whenSendEnforcementSubmittedEmail_thenScheduleEmail() {
 
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
@@ -999,13 +1000,17 @@ class NotificationServiceTest {
 
             when(notificationPersonalisationFactory.forParty(claimant, pcsCaseEntity))
                 .thenReturn(personalisation);
-            when(templateConfiguration.getTemplateId(EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED))
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED,
+                LanguageUsed.WELSH))
                 .thenReturn(TEMPLATE_ID);
 
             when(notificationRepository.save(any()))
                 .thenReturn(mock(CaseNotification.class));
 
-            notificationService.sendWarrantOfPossessionSubmittedEmail(claimant);
+            notificationService.sendEnforcementSubmittedEmail(
+                claimant, EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED,
+                LanguageUsed.WELSH);
 
             verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
             SendEmailTaskData actualTaskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
