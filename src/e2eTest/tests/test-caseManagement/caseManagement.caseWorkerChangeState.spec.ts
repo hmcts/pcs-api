@@ -50,6 +50,7 @@ test.describe('Case management - Case Worker change case state @nightly', async 
     await performAction('errorValidationChangeCaseStatePage', changeCaseState.errorValidation);
     await performAction('changeCaseState', {
       question: changeCaseState.whichStateYouMovingCaseToQuestion, option: changeCaseState.caseStateHiddenOption,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       nextPage: checkYourAnswersChangeState.mainHeader
     });
     await performAction('clickButton', checkYourAnswersChangeState.submitButton);

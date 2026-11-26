@@ -8,11 +8,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertionStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -55,6 +54,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isYes;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.toDomainParties;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 
 /**
@@ -462,10 +462,6 @@ public class DefenceFormPayloadBuilder {
 
     private static List<PartyEntity> partiesByRole(ClaimEntity claim, PartyRole role) {
         return PartyDisplayMapper.partiesByRole(claim, role);
-    }
-
-    private static List<Party> toDomainParties(List<PartyEntity> parties) {
-        return parties.stream().map(PartyDisplayMapper::toDomainParty).toList();
     }
 
 }
