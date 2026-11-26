@@ -3,7 +3,8 @@ package uk.gov.hmcts.reform.pcs.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -26,8 +27,8 @@ public class PartyAccessCodeLinkService {
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeLinkValidator validator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final SystemEventExecutor systemEventExecutor;
 
-    @Transactional
     public void linkPartyByAccessCode(
             long caseReference,
             String accessCode,
@@ -35,6 +36,14 @@ public class PartyAccessCodeLinkService {
     ) {
         String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
+        systemEventExecutor.execute(
+            caseReference,
+            UUID.randomUUID(),
+            context -> linkParty(caseReference, accessCode, idamUserId)
+        );
+    }
+
+    private SystemEventResult linkParty(long caseReference, String accessCode, String idamUserId) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyAccessCodeEntity pac = validator.validateAccessCode(
@@ -64,6 +73,8 @@ public class PartyAccessCodeLinkService {
         partyEntity.setIdamId(idamUserId);
 
         caseRoleAssignmentService.assignRasRole(caseReference, idamUserId, UserRole.DEFENDANT);
+
+        return SystemEventResult.withoutStateTransition("defendantLinkedToCase", "Defendant linked to case");
     }
 
 }
