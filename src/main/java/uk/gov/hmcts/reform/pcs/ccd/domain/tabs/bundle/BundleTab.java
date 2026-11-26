@@ -42,12 +42,6 @@ public class BundleTab {
     @CCD(label = "Last updated")
     private String lastUpdated;
 
-    @CCD(label = "Number of pages")
-    private Integer pages;
-
-    @CCD(label = "Documents missing from the bundle")
-    private List<ListValue<MissingBundleDocument>> missingDocuments;
-
     @CCD(label = "Previous versions")
     private List<ListValue<BundleVersion>> previousVersions;
 

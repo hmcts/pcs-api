@@ -33,15 +33,11 @@ class BundleTabTest {
             .bundle(Document.builder().url("url").binaryUrl("url/binary").filename("bundle.pdf")
                         .categoryId("bundles").build())
             .lastUpdated("29 October 2026 at 9:00am")
-            .pages(12)
-            .missingDocuments(List.of(ListValue.<MissingBundleDocument>builder().id("1")
-                                          .value(new MissingBundleDocument("Witness.pdf", "Evidence", 3, "Gone"))
-                                          .build()))
             .previousVersions(List.of(ListValue.<BundleVersion>builder().id("2")
                                           .value(new BundleVersion(
                                               Document.builder().url("old").binaryUrl("old/binary")
                                                   .filename("bundle.pdf").categoryId("bundles").build(),
-                                              "28 October 2026 at 4:00pm", 10))
+                                              "28 October 2026 at 4:00pm"))
                                           .build()))
             .build();
 

@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleVersion;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.MissingBundleDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
@@ -50,14 +49,11 @@ public class BundleTabView {
             return;
         }
         CaseBundleEntity current = versions.getFirst();
-        List<ListValue<MissingBundleDocument>> missing = missingDocuments(current);
         pcsCase.setBundleTab(BundleTab.builder()
             .status(LATEST)
             .documentId(current.getDocumentId())
             .bundle(document(current))
             .lastUpdated(lastUpdated(current.getCreatedAt()))
-            .pages(current.getPageCount())
-            .missingDocuments(missing.isEmpty() ? null : missing)
             .previousVersions(previous(versions))
             .build());
     }
@@ -83,22 +79,9 @@ public class BundleTabView {
         List<ListValue<BundleVersion>> previous = new ArrayList<>();
         for (CaseBundleEntity version : versions.subList(1, versions.size())) {
             previous.add(ListValue.<BundleVersion>builder().id(version.getId().toString())
-                .value(new BundleVersion(document(version), lastUpdated(version.getCreatedAt()),
-                                         version.getPageCount()))
+                .value(new BundleVersion(document(version), lastUpdated(version.getCreatedAt())))
                 .build());
         }
         return previous;
-    }
-
-    private static List<ListValue<MissingBundleDocument>> missingDocuments(CaseBundleEntity version) {
-        List<ListValue<MissingBundleDocument>> missing = new ArrayList<>();
-        for (CaseBundleEntity.MissingDocument document : version.getMissingDocuments()) {
-            missing.add(ListValue.<MissingBundleDocument>builder()
-                .id(document.id() != null ? document.id() : String.valueOf(missing.size() + 1))
-                .value(new MissingBundleDocument(document.title(), document.folder(), document.page(),
-                                                 document.reason()))
-                .build());
-        }
-        return missing;
     }
 }

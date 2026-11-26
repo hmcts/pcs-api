@@ -12,11 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -55,19 +52,8 @@ public class CaseBundleEntity {
     @Column(nullable = false)
     private String fileName;
 
-    @Column(nullable = false)
-    private int pageCount;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(nullable = false)
-    private List<MissingDocument> missingDocuments;
-
     // Set here rather than by the database: Hibernate cannot read a generated value back into an immutable entity.
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
-
-    /** A document the bundle could not include: its id, title, folder, page in the bundle and why. */
-    public record MissingDocument(String id, String title, String folder, Integer page, String reason) {
-    }
 }

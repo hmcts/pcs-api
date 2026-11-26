@@ -223,8 +223,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("bundleTab_Status")
             .field("bundleTab_Bundle")
             .field("bundleTab_LastUpdated")
-            .field("bundleTab_Pages")
-            .field("bundleTab_MissingDocuments")
             .field("bundleTab_PreviousVersions");
     }
 

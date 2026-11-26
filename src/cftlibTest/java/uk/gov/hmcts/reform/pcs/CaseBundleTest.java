@@ -105,10 +105,9 @@ class CaseBundleTest extends CftlibTest {
             HttpResponse.BodyHandlers.ofByteArray());
         assertThat(download.statusCode()).isEqualTo(200);
         try (PDDocument pdf = Loader.loadPDF(download.body())) {
-            assertThat(pdf.getNumberOfPages()).isEqualTo(bundle.getPageCount());
             String text = new PDFTextStripper().getText(pdf);
             assertThat(text).contains("Case bundle", "Index", "Statements of case", "Evidence",
-                                      "Uncategorised documents", "of " + bundle.getPageCount());
+                                      "Uncategorised documents", "of " + pdf.getNumberOfPages());
         }
     }
 

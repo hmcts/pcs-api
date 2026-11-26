@@ -10,9 +10,6 @@ CREATE TABLE case_bundles (
     url               TEXT NOT NULL,
     binary_url        TEXT NOT NULL,
     file_name         TEXT NOT NULL,
-    page_count        INTEGER NOT NULL,
-    -- The documents that could not be included, each with its folder, page and reason.
-    missing_documents JSONB NOT NULL,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (case_id, case_revision)
 );

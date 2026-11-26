@@ -218,8 +218,8 @@ class CaseTypeTest {
         assertThat(bundleTab.getForRoles()).isEmpty();
         assertThat(bundleTab.getShowCondition()).isEqualTo("bundleTab_Status=\"*\"");
         assertThat(bundleTab.getFields()).extracting(TabField::getId).containsExactly(
-            "bundleTab_Status", "bundleTab_Bundle", "bundleTab_LastUpdated", "bundleTab_Pages",
-            "bundleTab_MissingDocuments", "bundleTab_PreviousVersions");
+            "bundleTab_Status", "bundleTab_Bundle", "bundleTab_LastUpdated",
+            "bundleTab_PreviousVersions");
 
         assertThat(supportTab.getFields()).hasSize(2);
         assertThat(supportTab.getFields()).extracting(TabField::getDisplayContextParameter)

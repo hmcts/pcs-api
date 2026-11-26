@@ -19,7 +19,4 @@ public class BundleVersion {
 
     @CCD(label = "Made")
     private String made;
-
-    @CCD(label = "Number of pages")
-    private Integer pages;
 }

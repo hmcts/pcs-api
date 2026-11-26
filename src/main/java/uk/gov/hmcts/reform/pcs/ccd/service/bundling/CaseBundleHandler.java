@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.doctoolkit.DocFailure;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJob;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.DocJobHandler;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.UploadedDoc;
@@ -10,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,18 +33,6 @@ public class CaseBundleHandler implements DocJobHandler {
             .url(url)
             .binaryUrl(uploaded.document().getBinaryUrl())
             .fileName(uploaded.document().getFilename())
-            .pageCount(uploaded.pageCount())
-            .missingDocuments(missing(uploaded.failures()))
             .build());
-    }
-
-    /** As the Bundle tab lists them: the folder is the section path below the bundle's own title. */
-    static List<CaseBundleEntity.MissingDocument> missing(List<DocFailure> failures) {
-        return failures.stream().map(failure -> new CaseBundleEntity.MissingDocument(
-            failure.id().orElse(null),
-            failure.title(),
-            String.join(" / ", failure.sectionPath().stream().skip(1).toList()),
-            failure.page().isPresent() ? failure.page().getAsInt() : null,
-            failure.reason().message())).toList();
     }
 }

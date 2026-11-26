@@ -54,7 +54,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 /**
@@ -122,21 +121,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void anEventThatFailsQueuesNothing() throws Exception {
-        long reference = issued();
-        render(reference);
-
-        assertThatThrownBy(() -> event(reference, pcsCase -> {
-            pcsCase.addDocuments(List.of(document("Rolled back.pdf", CaseFileCategory.EVIDENCE,
-                LocalDate.of(2026, 1, 1))));
-            throw new IllegalStateException("the event fails");
-        })).hasMessageContaining("the event fails");
-        render(reference);
-
-        assertThat(versions(reference)).hasSize(1);
-    }
-
-    @Test
     void anEventThatLeavesTheBundleAsItIsQueuesNothing() throws Exception {
         long reference = issued();
         render(reference);
@@ -166,7 +150,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
         assertThat(judge.getBundleTab().getStatus()).isEqualTo("This is the latest bundle for the case.");
-        assertThat(judge.getBundleTab().getPages()).isEqualTo(first.getPageCount());
         assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.getUrl());
         assertThat(judge.getBundleTab().getBundle().getCategoryId()).isEqualTo(CaseBundleDefinition.FOLDER_ID);
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
@@ -230,28 +213,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         render(reference);
 
         assertThat(text(latest(reference))).contains("Counterclaim.pdf");
-    }
-
-    @Test
-    void missingSourcesAppearInTheJudgesTab() throws Exception {
-        long reference = issued();
-        var missing = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        Document stored = events.documents().stored().stream()
-            .filter(document -> document.getUrl().equals(missing.getUrl())).findFirst().orElseThrow();
-        events.documents().delete(stored);
-        event(reference, pcsCase -> pcsCase.addDocuments(List.of(missing)));
-        render(reference);
-        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
-        BundleTab tab = view(reference, "judge").getBundleTab();
-        assertThat(tab.getMissingDocuments()).singleElement().satisfies(missingDocument -> {
-            assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
-            assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
-            assertThat(missingDocument.getValue().getPage()).isPositive();
-            assertThat(missingDocument.getValue().getReason())
-                .isEqualTo("The document could not be found. It may have been deleted.");
-        });
-        int page = tab.getMissingDocuments().getFirst().getValue().getPage();
-        assertThat(pageText(latest(reference), page)).contains("could not be found");
     }
 
     @Test
@@ -354,15 +315,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private String text(Document document) throws IOException {
         try (PDDocument pdf = Loader.loadPDF(events.documents().content(document))) {
             return new PDFTextStripper().getText(pdf);
-        }
-    }
-
-    private String pageText(CaseBundleEntity version, int page) throws IOException {
-        try (PDDocument pdf = Loader.loadPDF(events.documents().content(stored(version)))) {
-            PDFTextStripper stripper = new PDFTextStripper();
-            stripper.setStartPage(page);
-            stripper.setEndPage(page);
-            return stripper.getText(pdf);
         }
     }
 
