@@ -1240,7 +1240,7 @@ class DocumentServiceTest {
         UUID partyId = UUID.randomUUID();
         when(party.getId()).thenReturn(partyId);
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         UUID storeId = UUID.randomUUID();
         when(documentIdExtractor.extractDocumentId("cc-url")).thenReturn(storeId);
@@ -1259,7 +1259,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.createCounterClaimUploadedDocuments(uploadedDocs, counterClaim, pcsCase, party);
+        underTest.createCounterClaimUploadedDocuments(uploadedDocs, counterClaim, pcsCaseEntity, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
