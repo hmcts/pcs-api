@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.atLeast;
@@ -205,6 +207,25 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(claimFormScheduler).scheduleClaimFormGeneration(anyLong());
+    }
+
+    @Test
+    void shouldIssueClaimAsSystemEventWhenPendingCaseIssued() {
+        when(pcsCaseService.retrieveClaimEntity(TEST_CASE_REFERENCE)).thenReturn(new ClaimEntity());
+
+        SystemEventResult result = paymentEvent.issue(TEST_CASE_REFERENCE, State.PENDING_CASE_ISSUED.name());
+
+        assertThat(result).isEqualTo(SystemEventResult.withStateTransition(
+            "claimIssuePayment", "Payment Confirmation", State.CASE_ISSUED));
+        verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldRejectSystemEventIssueOutsidePermittedStates() {
+        assertThatThrownBy(() -> paymentEvent.issue(TEST_CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS.name()))
+            .isInstanceOf(IllegalStateException.class);
+
+        verify(pcsCaseService, never()).setCaseIssuedDate(TEST_CASE_REFERENCE);
     }
 
     private PcsCaseEntity pcsCaseWithClaimFeePayment() {

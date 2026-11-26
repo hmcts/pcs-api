@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -23,7 +24,8 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     private final GenAppFormScheduler genAppFormScheduler;
 
     @Override
-    public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
+    public SystemEventResult handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity,
+                                    String currentState) {
         UUID genAppId = feePaymentEntity.getRelatedEntityId();
 
         log.info("Handling callback for gen app payment for gen app ID {}", genAppId);
@@ -37,10 +39,13 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }
+            return SystemEventResult.withoutStateTransition("genAppFeePaid", "Application fee paid",
+                                                     "Application " + genAppId);
         } else {
             log.warn("The payment was not successful [{}] for gen app {} on case {}",
                      feePaymentEntity.getPaymentStatus(), genAppId, paymentStatusCallback.getCcdCaseNumber());
         }
+        return null;
     }
 
     private GenAppEntity findGenAppEntity(UUID genAppId) {
