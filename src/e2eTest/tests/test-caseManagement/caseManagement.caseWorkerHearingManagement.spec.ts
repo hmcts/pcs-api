@@ -20,6 +20,7 @@ import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import { waitForClaimIssueDocuments } from '@utils/actions/custom-actions/fetchPINsAndValidateAccessCodeAPI.action';
 
 test.use({ storageState: undefined })
 
@@ -35,6 +36,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('submitCaseAPI', { data: submitPayload });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
+  await waitForClaimIssueDocuments();
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
     defendant1NameKnown: submitPayload.defendant1.nameKnown,

@@ -10,6 +10,7 @@ import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, upd
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 import { getDefendantAddress, getDefendantAddressByName } from '@utils/common/userData.utils';
+import { waitForClaimIssueDocuments } from '@utils/actions/custom-actions/fetchPINsAndValidateAccessCodeAPI.action';
 
 test.use({ storageState: undefined })
 let createPayload: Record<string, any>;
@@ -32,6 +33,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitPayload });
     await performAction('getAddressInfo', { data: createPayload });
     await performAction('updatePaymentAPI');
+    await waitForClaimIssueDocuments();
     await performAction('getAllPartyDetails', {
       defendant1NameKnown: submitPayload.defendant1.nameKnown,
       additionalDefendants: submitPayload.addAnotherDefendant,
