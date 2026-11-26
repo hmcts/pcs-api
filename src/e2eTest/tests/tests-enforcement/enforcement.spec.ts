@@ -39,8 +39,11 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  defendantInBreathingSpace, missedPayments, statementOfTruth
+  statementOfTruth, defendantInBreathingSpace, missedPayments,
+  cannotApplyForWarrantInfo
 } from '@data/index.selector.enforcement';
+import { confirm } from '@data/page-data-figma/page-data-enforcement-figma/confirm.page.data';
+import { serviceRequest } from '@data/page-data';
 
 let sotWarrant: ReturnType<typeof statementOfTruth>;
 
@@ -532,6 +535,30 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       input2: sotWarrant.nameOfFirmHiddenTextInput,
       continueButton: sotWarrant.continueButton,
       nextPage: checkYourAnswers.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswers.saveAndContinueButton);
+    await performAction('payEnforcementFee', {
+      headerName: confirm.mainHeader,
+      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
+      feePayText: confirm.pay152ApplicationFeeParagraph,
+      payLink: confirm.payYourApplicationFeeLink,
+      serviceTab: caseSummary.serviceRequestTab
+    });
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.enforcementWarrantFeeAmount152,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
+    await performAction('verifyFeeStatusInServiceTab', {
+      applicationType: enforcementApplication.warrantOfPossessionRadioOption,
+      status: serviceRequest.paidStatus
     });
   });
 

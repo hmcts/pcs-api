@@ -12,9 +12,9 @@ import {
   paymentApiData,
   submitCaseApiData
 } from '@data/api-data';
-import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
+import {actionRetries, LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
-import { caseSummary, home } from '@data/page-data';
+import { caseSummary, enterPaymentDetails, home, serviceRequest } from '@data/page-data';
 import { reviewSupport } from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {
   propertyAccessDetails,
@@ -40,6 +40,8 @@ import {
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
 import Axios from "axios";
+import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { actionData } from '../custom-actions-caseManagement/caseManagementUtils.action';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -90,7 +92,12 @@ export class EnforcementAction implements IAction{
       ['resumeDraftApplication', () => this.resumeDraftApplication(page)],
 
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
-      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)], 
+      ['payEnforcementFee', () => this.payEnforcementFee(fieldName as actionRecord, page)],
+      ['selectPaymentTypePBA', () => this.selectPaymentTypePBA(fieldName as actionRecord, page)],
+      ['verifyFeeStatusInServiceTab', () => this.verifyFeeStatusInServiceTab(fieldName as actionRecord, page)], 
+      ['selectPaymentByCard', () => this.selectPaymentByCard(fieldName as actionRecord, page)],
+      ['enterPaymentDetails', () => this.enterPaymentDetails(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -706,5 +713,111 @@ export class EnforcementAction implements IAction{
     setIfKeyExists(fields.question as string, fields.option as string);
     setIfKeyExists(fields.label as string, fields.input as string);
     setIfKeyExists(fields.confirm as string, fields.peopleOption as string);
+  }
+
+  private getApplicationFee(applicationType: actionData): number {
+    const feeType =
+      applicationType === enforcementApplication.warrantOfPossessionRadioOption
+        ? enforcementApplication.typeofFee.warrantOfPossessionFee
+        : enforcementApplication.typeofFee.writOfPossessionFee;
+    const appFee = moneyMap.get(feeType);
+    if (appFee === undefined) throw new Error(`Fee not found in moneyMap for application type: ${applicationType}`);
+    return appFee;
+  }
+  
+  private async payEnforcementFee(feeDetails: actionRecord, page: Page) {
+    await performValidation('mainHeader', feeDetails.headerName);
+    await performValidation('text', { elementType: 'paragraph', text: feeDetails.feePayText });
+    await performAction('clickButton', feeDetails.payLink);
+    const serviceRequestTab = page.getByRole('tab', { name: caseSummary.serviceRequestTab, exact: true });
+    const summaryTab = page.getByRole('tab', { name: home.caseSummary, exact: true });
+    await expect(serviceRequestTab).toBeVisible();
+    const appFee = this.getApplicationFee(feeDetails.applicationType);
+    const fee = EnforcementCommonUtils.convertCurrencyToString(appFee);
+    const feeCell = page.locator('td.govuk-table__cell').filter({ hasText: new RegExp(`^${fee.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.00$`) });
+    const row = feeCell.locator('xpath=..');
+    let rowFound = false;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        await expect(feeCell).toBeVisible({ timeout: SHORT_TIMEOUT });
+        rowFound = true;
+        console.log(`Fee row found on attempt ${attempt}`);
+        break;
+      } catch {
+        console.log(`Fee row not found on attempt ${attempt}`);
+        if (attempt < 5) {
+          await summaryTab.click();
+          await expect(summaryTab).toHaveAttribute('aria-selected', 'true');
+          await serviceRequestTab.click();
+          await expect(serviceRequestTab).toHaveAttribute('aria-selected', 'true');
+        }
+      }
+    }
+
+    if (!rowFound) throw new Error(`Fee row with amount ${fee}.00 not found after 5 attempts`);
+    const status = row.locator('td').nth(0);
+    await expect(status).toHaveText(serviceRequest.notPaidStatus);
+    const reviewLink = row.getByRole('link', { name: serviceRequest.reviewLink });
+    await expect(reviewLink).toBeVisible();
+    await row.getByRole('link', { name: serviceRequest.payNowLink }).click();
+  }
+
+  private async selectPaymentTypePBA(paymentOptions: actionRecord, page: Page) {
+    const amountLabel = paymentOptions.amountLabel;
+    if (typeof amountLabel === 'string' && amountLabel !== '') {
+      await performValidation('elementToBeVisible', amountLabel);
+    }
+    const expectedAmount = paymentOptions.expectedAmount;
+    if (typeof expectedAmount === 'string' && expectedAmount !== '') {
+      await expect(page.getByText(expectedAmount, { exact: true })).toBeVisible();
+    }
+    await performAction('clickRadioButton', { option: paymentOptions.payByOption });
+    await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaValue);
+    const locator = page.locator('button', { hasText: 'Confirm payment' });
+    await expect(locator).toBeDisabled();
+    await performAction('inputText', paymentOptions.referenceLabel, paymentOptions.referenceText);
+    await page.click('body');
+    await expect(locator).toBeEnabled();
+    await performAction('clickButton', paymentOptions.confirmButton);
+  }
+
+  private async verifyFeeStatusInServiceTab(statusDetails: actionRecord, page: Page) {
+    const appFee = this.getApplicationFee(statusDetails.applicationType);
+    const fee = EnforcementCommonUtils.convertCurrencyToString(appFee);
+    const feeCell = page.locator('td.govuk-table__cell').filter({ hasText: new RegExp(`^${fee.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.00$`) });
+    const row = feeCell.locator('xpath=..');
+    const status = row.locator('td').nth(0);
+    await expect(status).toHaveText(String(statusDetails.status));
+  }
+
+  private async selectPaymentByCard(paymentOptions: actionRecord, page: Page) {
+    const amountLabel = paymentOptions.amountLabel;
+    if (typeof amountLabel === 'string' && amountLabel !== '') {
+      await performValidation('elementToBeVisible', amountLabel);
+    }
+    const expectedAmount = paymentOptions.expectedAmount;
+    if (typeof expectedAmount === 'string' && expectedAmount !== '') {
+      await expect(page.getByText(expectedAmount, { exact: true })).toBeVisible();
+    }
+    await performAction('clickRadioButton', { option: paymentOptions.payByOption });
+    await performAction('clickButton', paymentOptions.continueButton);
+  }
+
+  private async enterPaymentDetails(payDetails: actionRecord) {
+    await performActions(
+      'Enter details'
+      , ['inputText', enterPaymentDetails.cardNoLabel, payDetails.cardInput]
+      , ['inputText', enterPaymentDetails.monthTextLabel, payDetails.monthInput]
+      , ['inputText', enterPaymentDetails.yearTextLabel, payDetails.yearInput]
+      , ['inputText', enterPaymentDetails.nameOnCardLabel, payDetails.nameInput]
+      , ['inputText', enterPaymentDetails.cardSecurityCodeLabel, payDetails.cardSecInput]
+      , ['inputText', enterPaymentDetails.addressLine1TextLabel, payDetails.address1Input]
+      , ['inputText', enterPaymentDetails.addressLine2TextLabel, payDetails.address2Input]
+      , ['inputText', enterPaymentDetails.townOrCityTextLabel, payDetails.townInput]
+      , ['inputText', enterPaymentDetails.countryLabel, payDetails.countryInput]
+      , ['inputText', enterPaymentDetails.postcodeTextLabel, payDetails.postCodeInput]
+      , ['inputText', enterPaymentDetails.emailLabel, payDetails.emailInput]
+    );
+    await performAction('clickButton', enterPaymentDetails.continueButton);
   }
 }
