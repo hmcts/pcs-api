@@ -7,6 +7,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -349,6 +350,17 @@ public class NotificationService {
         }
     }
 
+    public void sendEnforcementSubmittedEmail(PartyEntity claimant, EmailTemplate template, LanguageUsed languageUsed) {
+
+        sendEmail(
+            partyRecipient(claimant),
+            template,
+            NotificationClaimType.ENFORCEMENT,
+            notificationPersonalisationFactory.forParty(claimant, claimant.getPcsCase()),
+            languageUsed
+        );
+    }
+
     private static OrganisationEntity activeLegalRep(PartyEntity party) {
         return party.getClaimPartyOrganisationList().stream()
             .filter(link -> YesOrNo.YES.equals(link.getActive()))
@@ -614,6 +626,16 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
+        return sendEmail(recipient, template, claimType, personalisation, null);
+    }
+
+    public EmailNotificationResponse sendEmail(
+        NotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType,
+        TemplatePersonalisation personalisation,
+        LanguageUsed languageUsed
+    ) {
         if (recipient.email() == null || recipient.email().isBlank()) {
             log.info("Skipping email notification because recipient email is blank");
             return null;
@@ -627,9 +649,13 @@ public class NotificationService {
             return null;
         }
 
+        String templateId = languageUsed == null
+            ? templateConfiguration.getTemplateId(template)
+            : templateConfiguration.getTemplateId(template, languageUsed);
+
         return scheduleEmailNotification(
             buildRequest(
-                templateConfiguration.getTemplateId(template),
+                templateId,
                 recipient.email(),
                 claimType,
                 personalisation

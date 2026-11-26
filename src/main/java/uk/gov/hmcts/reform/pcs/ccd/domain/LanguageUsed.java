@@ -14,4 +14,7 @@ public enum LanguageUsed implements HasLabel {
 
     private final String label;
 
+    public boolean isWelsh() {
+        return this == WELSH || this == ENGLISH_AND_WELSH;
+    }
 }

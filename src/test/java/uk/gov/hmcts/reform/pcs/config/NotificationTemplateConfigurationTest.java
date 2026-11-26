@@ -2,6 +2,10 @@ package uk.gov.hmcts.reform.pcs.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -17,6 +21,7 @@ import static org.mockito.Mockito.when;
 public class NotificationTemplateConfigurationTest {
     private static final String LEGACY_TEMPLATE_ID = "8ecf44d2-860f-44e3-a891-c82745f79645";
     private static final String RELEASE_TEMPLATE_ID = "new-template-123";
+    private static final String WELSH_TEMPLATE_ID = "welsh-template-123";
     private static final EmailTemplate TEST_EMAIL_TEMPLATE = EmailTemplate.RESPONSE_NO_COUNTERCLAIM;
 
     private NotificationTemplateConfiguration config;
@@ -125,5 +130,67 @@ public class NotificationTemplateConfigurationTest {
         );
 
         assertTrue(exception.getMessage().contains("Missing legacy template"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    void givenWelshTemplateConfigured_whenWelshRecipient_thenUseWelshTemplate(LanguageUsed languageUsed) {
+        config.setTemplates(Map.of(
+            "response-no-counterclaim", RELEASE_TEMPLATE_ID,
+            "response-no-counterclaim-cy", WELSH_TEMPLATE_ID
+        ));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        String result = config.getTemplateId(TEST_EMAIL_TEMPLATE, languageUsed);
+
+        assertEquals(WELSH_TEMPLATE_ID, result);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = LanguageUsed.class, names = "ENGLISH")
+    void givenWelshTemplateConfigured_whenEnglishOrNoLanguage_thenUseEnglishTemplate(LanguageUsed languageUsed) {
+        config.setTemplates(Map.of(
+            "response-no-counterclaim", RELEASE_TEMPLATE_ID,
+            "response-no-counterclaim-cy", WELSH_TEMPLATE_ID
+        ));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        String result = config.getTemplateId(TEST_EMAIL_TEMPLATE, languageUsed);
+
+        assertEquals(RELEASE_TEMPLATE_ID, result);
+    }
+
+    @Test
+    void givenWelshTemplateNotConfigured_whenWelshRecipient_thenUseEnglishTemplate() {
+        config.setTemplates(Map.of("response-no-counterclaim", RELEASE_TEMPLATE_ID));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        String result = config.getTemplateId(TEST_EMAIL_TEMPLATE, LanguageUsed.WELSH);
+
+        assertEquals(RELEASE_TEMPLATE_ID, result);
+    }
+
+    @Test
+    void givenWelshTemplateBlank_whenWelshRecipient_thenUseEnglishTemplate() {
+        config.setTemplates(Map.of(
+            "response-no-counterclaim", RELEASE_TEMPLATE_ID,
+            "response-no-counterclaim-cy", ""
+        ));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        String result = config.getTemplateId(TEST_EMAIL_TEMPLATE, LanguageUsed.WELSH);
+
+        assertEquals(RELEASE_TEMPLATE_ID, result);
+    }
+
+    @Test
+    void givenReleaseFlagDisabled_whenWelshRecipient_thenUseLegacyTemplate() {
+        config.setTemplates(Map.of("response-no-counterclaim-cy", WELSH_TEMPLATE_ID));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+        String result = config.getTemplateId(TEST_EMAIL_TEMPLATE, LanguageUsed.WELSH);
+
+        assertEquals(LEGACY_TEMPLATE_ID, result);
     }
 }

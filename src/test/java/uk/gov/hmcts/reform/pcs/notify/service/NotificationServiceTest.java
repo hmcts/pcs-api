@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -978,6 +979,51 @@ class NotificationServiceTest {
 
             // Then
             verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send warrant of possession submitted email to the claimant")
+        void givenWarrantOfPossessionIsSubmitted_whenSendEnforcementSubmittedEmail_thenScheduleEmail() {
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+            PartyEntity claimant = mock(PartyEntity.class);
+            when(claimant.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(claimant.getEmailAddress()).thenReturn(TEST_EMAIL);
+            when(partyService.getPartyRole(claimant)).thenReturn(PartyRole.CLAIMANT);
+            when(partyService.canSendEmailNotification(claimant, PartyRole.CLAIMANT)).thenReturn(true);
+            Map<String, Object> expectedPersonalisation = Map.of("caseNumber", "1234-5678-9012-3456");
+            BasePersonalisation personalisation = mock(BasePersonalisation.class);
+
+            when(personalisation.toMap())
+                .thenReturn(expectedPersonalisation);
+
+            when(notificationPersonalisationFactory.forParty(claimant, pcsCaseEntity))
+                .thenReturn(personalisation);
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED,
+                LanguageUsed.WELSH))
+                .thenReturn(TEMPLATE_ID);
+
+            when(notificationRepository.save(any()))
+                .thenReturn(mock(CaseNotification.class));
+
+            notificationService.sendEnforcementSubmittedEmail(
+                claimant, EmailTemplate.WARRANT_OF_POSSESSION_SUBMITTED,
+                LanguageUsed.WELSH);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData actualTaskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+
+            assertThat(actualTaskData.getEmailAddress()).isEqualTo(TEST_EMAIL);
+            assertThat(actualTaskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+            assertThat(actualTaskData.getPersonalisation()).isEqualTo(expectedPersonalisation);
+
+            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, atLeastOnce()).save(notificationCaptor.capture());
+            assertThat(notificationCaptor.getAllValues().getFirst().getClaimType())
+                .isEqualTo(NotificationClaimType.ENFORCEMENT);
         }
 
         @Test

@@ -23,6 +23,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -107,6 +108,13 @@ public class EnforcementOrderEntity {
             document.setEnfApplication(this);
             this.documents.add(document);
         }
+    }
+
+    public LanguageUsed languageUsed() {
+        if (warrantDetails != null) {
+            return warrantDetails.getLanguageUsed();
+        }
+        return writDetails != null ? writDetails.getLanguageUsed() : null;
     }
 
     public void addSelectedDefendants(List<SelectedDefendantEntity> selectedDefendants) {
