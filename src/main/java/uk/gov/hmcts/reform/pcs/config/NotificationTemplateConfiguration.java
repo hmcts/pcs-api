@@ -5,11 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Map;
+import java.util.Optional;
+
+import static java.util.function.Predicate.not;
 
 @Getter
 @Setter
@@ -17,6 +21,8 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "notify")
 @RequiredArgsConstructor
 public class NotificationTemplateConfiguration {
+
+    private static final String WELSH_KEY_SUFFIX = "-cy";
 
     private final FeatureToggleService featureToggleService;
 
@@ -33,6 +39,18 @@ public class NotificationTemplateConfiguration {
         }
 
         return getLegacyTemplateId(template);
+    }
+
+    public String getTemplateId(EmailTemplate template, LanguageUsed languageUsed) {
+        if (!isRelease14Enabled()) {
+            return getTemplateId(template);
+        }
+
+        return Optional.ofNullable(languageUsed)
+            .filter(LanguageUsed::isWelsh)
+            .map(language -> templates.get(template.getTemplateKey() + WELSH_KEY_SUFFIX))
+            .filter(not(String::isBlank))
+            .orElseGet(() -> getTemplateId(template));
     }
 
     private String getRelease14TemplateId(EmailTemplate template) {
