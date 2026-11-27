@@ -89,6 +89,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         populateDefendantSelectionList(pcsCase);
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
+        applyGAFeeAmount(pcsCase);
         setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
         return pcsCase;
     }
@@ -118,6 +119,13 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         feeApplier.applyFeeAmount(pcsCase,
             FeeType.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
+        );
+    }
+
+    private void applyGAFeeAmount(PCSCase pcsCase) {
+        feeApplier.applyFeeAmount(pcsCase,
+                                  FeeType.GEN_APP_STANDARD_FEE,
+                                  (caseData, fee) -> caseData.getEnforcementOrder().setGaFeeAmount(fee)
         );
     }
 
