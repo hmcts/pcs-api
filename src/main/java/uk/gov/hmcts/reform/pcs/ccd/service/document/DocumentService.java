@@ -9,11 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -39,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +87,13 @@ public class DocumentService {
      * remains for tests and callers that need persisted entities in one step.
      */
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
+        List<DocumentEntity> documents = buildDocumentEntitiesForCase(pcsCase);
+
+        if (documents.isEmpty()) {
+            return List.of();
+        }
+
+        return documentRepository.saveAll(documents);
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
@@ -95,7 +105,7 @@ public class DocumentService {
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = new ArrayList<>();
 
-        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
@@ -159,21 +169,63 @@ public class DocumentService {
                 .toList();
     }
 
-    private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            List<ListValue<AdditionalDocument>> documents) {
-
-        if (CollectionUtils.isEmpty(documents)) {
+    private List<DocumentHolder> mapAdditionalDocumentsWithType(PCSCase pcsCase) {
+        if (CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
             return Collections.emptyList();
         }
 
-        return ListValueUtils.unwrapListItems(documents).stream()
+        return ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments()).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
-                .type(documentTypeMapper.mapToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
+                .type(getAdditionalDocumentType(doc, pcsCase.getLegislativeCountry()))
                 .description(doc.getDescription())
                 .build())
             .toList();
+    }
+
+    private DocumentType getAdditionalDocumentType(AdditionalDocument document,
+                                                     LegislativeCountry legislativeCountry) {
+        
+        DocumentType countryDocumentType = getDocumentTypeForCountry(document, legislativeCountry);
+
+        if (countryDocumentType != null) {
+            return countryDocumentType;
+        }
+
+        if (document.getDocumentType() == null || document.getDocumentType().getValue() == null) {
+            return null;
+        }
+
+        return getLegacyDocumentType(document);
+
+    }
+
+    private DocumentType getDocumentTypeForCountry(AdditionalDocument document, LegislativeCountry legislativeCountry) {
+        if (legislativeCountry == LegislativeCountry.WALES) {
+            AdditionalDocumentTypeWales documentType = document.getDocumentTypeWales();
+            document.setDocumentTypeWales(null);
+
+            return documentType == null ? null : DocumentType.valueOf(documentType.name());
+        } 
+
+        AdditionalDocumentTypeEngland documentType = document.getDocumentTypeEngland();
+        document.setDocumentTypeEngland(null);
+
+        return documentType == null ? null : DocumentType.valueOf(documentType.name());
+        
+    }
+
+    private DocumentType getLegacyDocumentType(AdditionalDocument document) {
+        DynamicList documentType = document.getDocumentType();
+
+        if (documentType == null || documentType.getValue() == null) {
+            return null;
+        }
+
+        AdditionalDocumentType legacyDocumentType = AdditionalDocumentType.getValueFromLabel(
+            documentType.getValueLabel()
+        );
+        return documentTypeMapper.mapToDocumentType(legacyDocumentType);
     }
 
     private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
@@ -217,6 +269,7 @@ public class DocumentService {
 
     }
 
+    
     public List<DocumentEntity> linkAdditionalDocumentsToCase(
         List<ListValue<UploadedDocument>> uploadedDocuments,
         PcsCaseEntity pcsCase,

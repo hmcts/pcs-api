@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,12 +10,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -44,9 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.hmcts.reform.pcs.feesandpay.endpoint.PaymentCallBackController.PAYMENT_UPDATE_PATH;
 import static uk.gov.hmcts.reform.pcs.feesandpay.endpoint.PaymentCallBackController.SERVICE_AUTHORIZATION;
 
-@SpringBootTest
+@PcsCcdEventTest
 @AutoConfigureMockMvc
-@ActiveProfiles("integration")
 @DisplayName("PaymentCallBackController Integration Tests")
 public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
@@ -73,6 +74,8 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     @Mock
     private PaymentCallbackStrategy pretendStrategy;
+    @Autowired
+    private CcdEventTestSupport<PCSCase, State> events;
 
     private String serviceCaseReference;
     private FeesAndPayTaskData feesAndPayTaskData;
@@ -96,25 +99,28 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
             .build();
 
         Mockito.when(paymentCallbackStrategyFactory.getStrategy(any())).thenReturn(pretendStrategy);
+        events.caseType().seed(CASE_REFERENCE, State.PENDING_CASE_ISSUED, PCSCase.builder().build());
         establishFeePayment(serviceCaseReference);
     }
 
     @Test
-    @Transactional
     void shouldProcessPaymentCallback() throws Exception {
         // Given
+        Mockito.when(pretendStrategy.handle(any(), any(), any()))
+            .thenReturn(SystemEventResult.withoutStateTransition("testFeePaid", "Test fee paid"));
         PaymentStatusCallback paymentStatusCallback = Instancio.create(PaymentStatusCallback.class);
         paymentStatusCallback.setCcdCaseNumber(String.valueOf(CASE_REFERENCE));
         paymentStatusCallback.setServiceRequestReference(serviceCaseReference);
         paymentStatusCallback.setServiceRequestStatus(PaymentStatus.PAID.getValue());
 
+        var request = put(PAYMENT_UPDATE_PATH)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(paymentStatusCallback));
+
         // When
-        mockMvc.perform(put(PAYMENT_UPDATE_PATH)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(paymentStatusCallback)))
-            .andExpect(status().isNoContent());
+        mockMvc.perform(request).andExpect(status().isNoContent());
 
         // Then
         Optional<FeePaymentEntity> byRequestReference = feePaymentRepository
@@ -122,6 +128,22 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         assertThat(byRequestReference.isPresent()).isTrue();
         FeePaymentEntity feePaymentEntity = byRequestReference.get();
         assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(events.history(CASE_REFERENCE).getLast().eventId()).isEqualTo("testFeePaid");
+
+        // A redelivered identical callback is replayed rather than recorded again
+        int historySize = events.history(CASE_REFERENCE).size();
+        mockMvc.perform(request).andExpect(status().isNoContent());
+        assertThat(events.history(CASE_REFERENCE)).hasSize(historySize);
+
+        // A later non-paid status followed by the identical paid callback is re-applied
+        paymentStatusCallback.setServiceRequestStatus(PaymentStatus.NOT_PAID.getValue());
+        mockMvc.perform(request.content(objectMapper.writeValueAsString(paymentStatusCallback)))
+            .andExpect(status().isNoContent());
+        paymentStatusCallback.setServiceRequestStatus(PaymentStatus.PAID.getValue());
+        mockMvc.perform(request.content(objectMapper.writeValueAsString(paymentStatusCallback)))
+            .andExpect(status().isNoContent());
+        assertThat(feePaymentRepository.findByServiceRequestReference(serviceCaseReference).orElseThrow()
+                       .getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
     PcsCaseEntity establishTestCase() {
