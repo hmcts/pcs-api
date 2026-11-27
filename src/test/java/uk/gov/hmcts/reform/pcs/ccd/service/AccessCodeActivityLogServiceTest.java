@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.LetterRepository;
 
 import java.util.UUID;
 
@@ -32,6 +33,8 @@ class AccessCodeActivityLogServiceTest {
 
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
+    @Mock
+    private LetterRepository letterRepository;
 
     private AccessCodeActivityLogService underTest;
 
@@ -40,7 +43,7 @@ class AccessCodeActivityLogServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeActivityLogService(claimActivityLogRepository,
+        underTest = new AccessCodeActivityLogService(claimActivityLogRepository, letterRepository,
                                                      new com.fasterxml.jackson.databind.ObjectMapper());
     }
 
@@ -77,7 +80,7 @@ class AccessCodeActivityLogServiceTest {
         ObjectMapper failingMapper = mock(ObjectMapper.class);
         when(failingMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("boom") { });
         AccessCodeActivityLogService service =
-            new AccessCodeActivityLogService(claimActivityLogRepository, failingMapper);
+            new AccessCodeActivityLogService(claimActivityLogRepository, letterRepository, failingMapper);
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
 

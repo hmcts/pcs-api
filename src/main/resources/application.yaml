@@ -325,6 +325,11 @@ bulk-print:
     counterclaim-form-welsh: classpath:forms/ONC-003-counterclaim-welsh.pdf
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
+  status-sync:
+    # Printer reports reach Send Letter about once a day, so twice a day is enough outside test envs.
+    schedule: ${LETTER_STATUS_SYNC_SCHEDULE:DAILY|07:00,19:00}
+    batch-size: ${LETTER_STATUS_SYNC_BATCH_SIZE:1000}
+    max-age-days: ${LETTER_STATUS_SYNC_MAX_AGE_DAYS:90}
 
 respond-to-claim-draft-deletion:
   schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:DAILY|01:00}
