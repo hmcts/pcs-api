@@ -83,8 +83,9 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
 
     /**
      * Open means issued: nothing yet closes a counterclaim. The applications are every one the order can decide,
-     * in the order they were made. The hearings are the case's that have not been cancelled, earliest first, any of
-     * which a judge can choose to make the order at.
+     * in the order they were made. The drafts are the orders the parties' solicitors have filed, newest first. The
+     * hearings are the case's that have not been cancelled, earliest first, any of which a judge can choose to make the
+     * order at.
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
@@ -93,6 +94,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               List<Party> defendants,
                               boolean openCounterclaim,
                               List<Application> applications,
+                              List<SubmittedDraft> drafts,
                               CaseBundle caseBundle,
                               List<HearingOption> hearings,
                               String court) {
@@ -131,6 +133,13 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               String whatOrderWanted,
                               String draftOrderWording,
                               List<ApplicationDocument> documents) {
+    }
+
+    /**
+     * An order a party's solicitor filed as the one it proposes: the party by name and role on the claim, when it was
+     * filed, and its wording as rich text (HTML), cleaned when stored.
+     */
+    public record SubmittedDraft(UUID id, String party, Instant submittedAt, String wording) {
     }
 
     /** A document filed with an application; the id is the document's id in the document store. */

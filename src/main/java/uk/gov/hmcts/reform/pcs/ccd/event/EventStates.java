@@ -183,6 +183,18 @@ public class EventStates {
         return requestSupport();
     }
 
+    /** The states a judge can make an order in, and so a party can file the order it proposes. */
+    public static State[] makeOrder() {
+        return new State[] {
+            State.CASE_ISSUED,
+            State.CASE_PROGRESSION,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME
+        };
+    }
+
     public static State[] addJudicialNote() {
         return new State[] {
             State.CASE_ISSUED,

@@ -5,7 +5,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Safelist;
 
-final class DraftOrderWordingHtml {
+/** Draft order wording as rich text (HTML), cleaned for storage or for a PDF. */
+public final class DraftOrderWordingHtml {
 
     private static final Cleaner STORAGE_CLEANER = new Cleaner(Safelist.none()
         .addTags("b", "blockquote", "br", "em", "h1", "h2", "h3", "h4", "h5", "h6",
@@ -22,7 +23,7 @@ final class DraftOrderWordingHtml {
     private DraftOrderWordingHtml() {
     }
 
-    static String forStorage(String wording) {
+    public static String forStorage(String wording) {
         return clean(wording, STORAGE_CLEANER);
     }
 
