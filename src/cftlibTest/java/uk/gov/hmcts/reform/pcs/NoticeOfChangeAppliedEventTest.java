@@ -60,7 +60,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     @Test
     void appliesNoticeOfChangeAndRecordsOneAttributedSystemEventFromABackgroundThread() throws Exception {
         long caseReference = caseCreationService.createMinimalCase(
-            idamClient.getAccessToken("pcs-solicitor1@test.com", "password")
+            idamClient.getAccessToken("pcs-solicitor1@example.com", "password")
         );
         Map<String, Object> caseParameters = Map.of("caseReference", caseReference);
         UUID defendant1Id = getFirstDefendantPartyId(caseParameters);

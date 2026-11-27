@@ -67,7 +67,7 @@ public class DataTest extends CftlibTest {
     @BeforeAll
     void setUpAndPopulate() {
         try {
-            solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+            solicitorToken = idamClient.getAccessToken("pcs-solicitor1@example.com", "password");
             citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
 
             caseReference = caseCreationService.createMaximalCase(solicitorToken);

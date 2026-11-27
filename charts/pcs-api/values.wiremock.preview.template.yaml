@@ -59,7 +59,7 @@ wiremock:
           "urlPath": "/fees-register/fees/lookup"
         },
         "response": {
-          "proxyBaseUrl": "http://fees-register-api-aat.service.core-compute-aat.internal"
+          "proxyBaseUrl": "${AAT_FEES_URL}"
         }
       }
     fee-register-genapp-suspend.json: |
@@ -115,7 +115,7 @@ wiremock:
           "urlPathPattern": "/refdata/internal/v1/organisations/orgDetails/.*"
         },
         "response": {
-          "proxyBaseUrl": "http://rd-professional-api-aat.service.core-compute-aat.internal"
+          "proxyBaseUrl": "${AAT_PRD_URL}"
         }
       }
 

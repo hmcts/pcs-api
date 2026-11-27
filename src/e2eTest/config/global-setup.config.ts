@@ -12,25 +12,30 @@ const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 /** Matches Jenkins nightly `E2E_TARGET_ENV` and full slug URL templates. */
 const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
 
+/** Internal service URLs come from Jenkins (setE2eServiceUrls in Jenkinsfile_CNP / Jenkinsfile_nightly) or a local export. */
+const REQUIRED_SERVICE_URLS = ['S2S_URL', 'DM_STORE', 'CDAM_URL'];
+const REQUIRED_NIGHTLY_URLS = ['DATA_STORE_URL_BASE', 'CASE_API_URL'];
+
 function applyPlaywrightServiceUrls(): void {
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
+  const required = [...REQUIRED_SERVICE_URLS];
 
   if (NIGHTLY_ENV_SLUGS.has(e)) {
     process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
-    process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
     process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
     process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
-    process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
-    process.env.CASE_API_URL ||= `http://pcs-api-${e}.service.core-compute-${e}.internal`;
-    process.env.DM_STORE ||= `http://dm-store-${e}.service.core-compute-${e}.internal`;
-    process.env.CDAM_URL ||= `http://ccd-case-document-am-api-${e}.service.core-compute-${e}.internal`;
+    required.push(...REQUIRED_NIGHTLY_URLS);
   } else {
-    // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
+    // preview, empty ENVIRONMENT, etc.: AAT IdAM (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
     process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
     process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
-    process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
-    process.env.DM_STORE ||= `http://dm-store-aat.service.core-compute-aat.internal`;
-    process.env.CDAM_URL ||= `http://ccd-case-document-am-api-aat.service.core-compute-aat.internal`;
+  }
+
+  const missing = required.filter(name => !process.env[name]);
+  if (missing.length) {
+    throw new Error(
+      `E2E setup: ${missing.join(', ')} not set. Jenkins exports them (setE2eServiceUrls); locally, export them (see src/e2eTest/test-README.md).`
+    );
   }
 }
 

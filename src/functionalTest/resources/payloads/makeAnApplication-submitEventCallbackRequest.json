@@ -22,7 +22,7 @@
         {
           "value": {
             "orgName": "Possession Claims Solicitor Org",
-            "emailAddress": "pcs-solicitor1@test.com",
+            "emailAddress": "claimant-contact@example.com",
             "address": {
               "AddressLine1": "Ministry Of Justice",
               "AddressLine2": "Seventh Floor 102 Petty France",
@@ -58,7 +58,7 @@
         {
           "value": {
             "orgName": "Possession Claims Solicitor Org",
-            "emailAddress": "pcs-solicitor1@test.com",
+            "emailAddress": "claimant-contact@example.com",
             "address": {
               "AddressLine1": "Ministry Of Justice",
               "AddressLine2": "Seventh Floor 102 Petty France",
@@ -144,7 +144,7 @@
           {
             "value": {
               "Name": "Possession Claims Solicitor Org",
-              "EmailAddress": "pcs-solicitor1@test.com",
+              "EmailAddress": "claimant-contact@example.com",
               "AddressLine1": "Ministry Of Justice",
               "PostCode": "SW1H 9AJ"}
           },
@@ -181,7 +181,7 @@
           "PostTown": "London",
           "PostCode": "SW1H 9AJ",
           "Country": "United Kingdom"},
-        "emailAddress": "pcs-solicitor1@test.com"},
+        "emailAddress": "claimant-contact@example.com"},
       "casePartiesTab_DefendantOneDetails": {
         "firstName": "Jane",
         "lastName": "Doe",
@@ -268,7 +268,7 @@
         "PostCode": "SW1H 9AJ",
         "Country": "United Kingdom"},
       "detailsTab_ClaimantContactDetails": {
-        "emailAddress": "pcs-solicitor1@test.com",
+        "emailAddress": "claimant-contact@example.com",
         "phoneNumberProvided": "No"},
       "detailsTab_ClaimantCircumstances": {
         "claimantCircumstancesGiven": "No"},

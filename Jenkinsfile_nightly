@@ -117,6 +117,7 @@ def handleEnvironmentSetting() {
   env.E2E_TEST_SCOPE = (tag == '@release') ? '@nightly|@release' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
+  setE2eServiceUrls(env.ENVIRONMENT)
 }
 
 def getE2eMatrix() {
@@ -180,4 +181,20 @@ def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
+}
+
+// Internal service URLs are built here rather than written out in full (ITHC HDPI-8694).
+// The parameter is not called "env", which would shadow the pipeline's env global.
+String internalUrl(String svc, String envName, String path = '') {
+  "http://${svc}-${envName}.service.core-compute-${envName}.internal${path}"
+}
+
+// Service URLs the Playwright E2E setup needs; src/e2eTest/config/global-setup.config.ts no longer defaults them.
+def setE2eServiceUrls(String envName) {
+  env.DATA_STORE_URL_BASE = env.DATA_STORE_URL_BASE ?: internalUrl('ccd-data-store-api', envName)
+  env.CASE_API_URL = env.CASE_API_URL ?: internalUrl('pcs-api', envName)
+  env.S2S_URL = env.S2S_URL ?: internalUrl('rpe-service-auth-provider', envName, '/testing-support/lease')
+  env.DM_STORE = env.DM_STORE ?: internalUrl('dm-store', envName)
+  env.CDAM_URL = env.CDAM_URL ?: internalUrl('ccd-case-document-am-api', envName)
+  env.E2E_PAYMENT_API_URL = env.E2E_PAYMENT_API_URL ?: internalUrl('payment-api', envName)
 }

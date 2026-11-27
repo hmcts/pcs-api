@@ -45,7 +45,7 @@ class ManageCaseFlagsTest extends CftlibTest {
 
     @BeforeAll
     void setUp() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@example.com", "password");
         adminToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
     }
 

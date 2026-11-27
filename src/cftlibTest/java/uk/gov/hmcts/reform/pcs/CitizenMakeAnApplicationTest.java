@@ -54,7 +54,7 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
 
     @BeforeAll
     void setup() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@example.com", "password");
         citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
     }
 
