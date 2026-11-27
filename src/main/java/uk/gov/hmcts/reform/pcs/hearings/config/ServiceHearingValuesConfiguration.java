@@ -20,20 +20,20 @@ import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 @ConfigurationProperties("service-hearing-values")
 public class ServiceHearingValuesConfiguration {
 
-    static final String WALES_REGION_ID = "7";
-    static final String REGION_ID_CONDITION_KEY = "regionId";
-    static final String INCLUDE = "INCLUDE";
-    static final String NOT_INCLUDE = "NOT INCLUDE";
-    static final String HEARING_PANEL = "hearing-panel";
-    static final String HEARING_FACILITIES = "hearing-facilities";
-    static final String HEARING_STAGE = "hearing-stage";
-    static final String HEARING_ATTENDANCE = "hearing-attendance";
-    static final String HEARING_VENUE = "hearing-venue";
-    static final String HEARING_WELSH = "hearing-welsh";
-    static final String HEARING_JUDGE = "hearing-judge";
-    static final String HEARING_TIMING = "hearing-timing";
-    static final String HEARING_LINK = "hearing-link";
-    static final String HEARING_ADDITIONAL_INSTRUCTIONS = "hearing-additional-instructions";
+    static final String SCREEN_NAV_WALES_REGION_ID = "7";
+    static final String SCREEN_NAV_REGION_ID_CONDITION_KEY = "regionId";
+    static final String SCREEN_NAV_INCLUDE = "INCLUDE";
+    static final String SCREEN_NAV_NOT_INCLUDE = "NOT INCLUDE";
+    static final String SCREEN_NAV_HEARING_PANEL = "hearing-panel";
+    static final String SCREEN_NAV_HEARING_FACILITIES = "hearing-facilities";
+    static final String SCREEN_NAV_HEARING_STAGE = "hearing-stage";
+    static final String SCREEN_NAV_HEARING_ATTENDANCE = "hearing-attendance";
+    static final String SCREEN_NAV_HEARING_VENUE = "hearing-venue";
+    static final String SCREEN_NAV_HEARING_WELSH = "hearing-welsh";
+    static final String SCREEN_NAV_HEARING_JUDGE = "hearing-judge";
+    static final String SCREEN_NAV_HEARING_TIMING = "hearing-timing";
+    static final String SCREEN_NAV_HEARING_LINK = "hearing-link";
+    static final String SCREEN_NAV_HEARING_ADDITIONAL_INSTRUCTIONS = "hearing-additional-instructions";
 
     private String hmctsServiceId;
     private boolean caseAdditionalSecurityFlag;
@@ -86,30 +86,30 @@ public class ServiceHearingValuesConfiguration {
 
     private static List<ScreenNavigation> screenFlow() {
         return List.of(
-            nextScreen(HEARING_PANEL, HEARING_FACILITIES),
-            nextScreen(HEARING_FACILITIES, HEARING_STAGE),
-            nextScreen(HEARING_STAGE, HEARING_ATTENDANCE),
-            nextScreen(HEARING_ATTENDANCE, HEARING_VENUE),
+            nextScreen(SCREEN_NAV_HEARING_PANEL, SCREEN_NAV_HEARING_FACILITIES),
+            nextScreen(SCREEN_NAV_HEARING_FACILITIES, SCREEN_NAV_HEARING_STAGE),
+            nextScreen(SCREEN_NAV_HEARING_STAGE, SCREEN_NAV_HEARING_ATTENDANCE),
+            nextScreen(SCREEN_NAV_HEARING_ATTENDANCE, SCREEN_NAV_HEARING_VENUE),
             ScreenNavigation.builder()
-                .screenName(HEARING_VENUE)
-                .conditionKey(REGION_ID_CONDITION_KEY)
+                .screenName(SCREEN_NAV_HEARING_VENUE)
+                .conditionKey(SCREEN_NAV_REGION_ID_CONDITION_KEY)
                 .navigation(List.of(
                     Navigation.builder()
-                        .conditionOperator(INCLUDE)
-                        .conditionValue(WALES_REGION_ID)
-                        .resultValue(HEARING_WELSH)
+                        .conditionOperator(SCREEN_NAV_INCLUDE)
+                        .conditionValue(SCREEN_NAV_WALES_REGION_ID)
+                        .resultValue(SCREEN_NAV_HEARING_WELSH)
                         .build(),
                     Navigation.builder()
-                        .conditionOperator(NOT_INCLUDE)
-                        .conditionValue(WALES_REGION_ID)
-                        .resultValue(HEARING_JUDGE)
+                        .conditionOperator(SCREEN_NAV_NOT_INCLUDE)
+                        .conditionValue(SCREEN_NAV_WALES_REGION_ID)
+                        .resultValue(SCREEN_NAV_HEARING_JUDGE)
                         .build()))
                 .build(),
-            nextScreen(HEARING_WELSH, HEARING_JUDGE),
-            nextScreen(HEARING_JUDGE, HEARING_TIMING),
-            nextScreen(HEARING_TIMING, HEARING_LINK),
-            nextScreen(HEARING_LINK, HEARING_ADDITIONAL_INSTRUCTIONS),
-            ScreenNavigation.builder().screenName(HEARING_ADDITIONAL_INSTRUCTIONS).build()
+            nextScreen(SCREEN_NAV_HEARING_WELSH, SCREEN_NAV_HEARING_JUDGE),
+            nextScreen(SCREEN_NAV_HEARING_JUDGE, SCREEN_NAV_HEARING_TIMING),
+            nextScreen(SCREEN_NAV_HEARING_TIMING, SCREEN_NAV_HEARING_LINK),
+            nextScreen(SCREEN_NAV_HEARING_LINK, SCREEN_NAV_HEARING_ADDITIONAL_INSTRUCTIONS),
+            ScreenNavigation.builder().screenName(SCREEN_NAV_HEARING_ADDITIONAL_INSTRUCTIONS).build()
         );
     }
 
