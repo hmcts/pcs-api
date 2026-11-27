@@ -7,9 +7,7 @@ CREATE TABLE letter (
     status           VARCHAR NOT NULL,
     sent_to_print_at TIMESTAMP,
     printed_at       TIMESTAMP,
-    -- When Send Letter last answered for this letter, and when PCS last asked (answered or not).
-    last_checked_at  TIMESTAMP,
-    last_attempted_at TIMESTAMP
+    last_checked_at  TIMESTAMP
 );
 
 CREATE INDEX idx_letter_status ON letter (status);

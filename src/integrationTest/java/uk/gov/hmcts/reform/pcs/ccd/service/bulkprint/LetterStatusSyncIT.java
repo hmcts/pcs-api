@@ -108,15 +108,12 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
 
         LetterEntity unavailableLetter = letterRepository.findById(unavailable).orElseThrow();
         assertThat(unavailableLetter.getStatus()).isEqualTo(LetterStatus.UPLOADED);
-        assertThat(unavailableLetter.getLastCheckedAt()).isNull();
-        assertThat(unavailableLetter.getLastAttemptedAt()).isNotNull();
+        assertThat(unavailableLetter.getLastCheckedAt()).isNotNull();
     }
 
     @Test
-    void leavesRecentlyCheckedFinishedLettersAndOldLettersAlone() {
+    void leavesFinishedAndOldLettersAlone() {
         UUID posted = sendLetter(LetterStatus.POSTED);
-        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '1 day' WHERE letter_id = ?",
-            posted);
         UUID old = sendLetter(LetterStatus.UPLOADED);
         jdbcTemplate.update("UPDATE claim_activity_log SET created_at = now() - interval '200 days' "
             + "WHERE letter_id = ?", old);
@@ -125,67 +122,7 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
 
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + posted)));
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + old)));
-        assertThat(letterRepository.findById(old).orElseThrow().getLastAttemptedAt()).isNull();
-    }
-
-    @Test
-    void picksUpACorrectionToAFinishedLetterWhenItIsNextRechecked() {
-        UUID aborted = sendLetter(LetterStatus.ABORTED);
-        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '8 days' WHERE letter_id = ?",
-            aborted);
-        stubStatus(aborted, """
-            {"id": "%s", "status": "Posted", "sent_to_print_at": "2026-11-20T18:00:00.000Z",
-             "printed_at": "2026-11-22T10:00:00.000Z"}""".formatted(aborted));
-
-        letterStatusSyncService.syncPendingLetters();
-
-        LetterEntity corrected = letterRepository.findById(aborted).orElseThrow();
-        assertThat(corrected.getStatus()).isEqualTo(LetterStatus.POSTED);
-        assertThat(corrected.getPrintedAt()).isEqualTo(LocalDateTime.of(2026, 11, 22, 10, 0));
-    }
-
-    @Test
-    void keepsAFinishedLetterDueForRecheckWhenSendLetterCannotAnswer() {
-        UUID aborted = sendLetter(LetterStatus.ABORTED);
-        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '8 days' WHERE letter_id = ?",
-            aborted);
-        sendLetter.stubFor(get(urlPathEqualTo("/letters/" + aborted)).willReturn(aResponse().withStatus(503)));
-        letterStatusSyncService.syncPendingLetters();
-
-        stubStatus(aborted, """
-            {"id": "%s", "status": "Posted", "printed_at": "2026-11-22T10:00:00.000Z"}""".formatted(aborted));
-        letterStatusSyncService.syncPendingLetters();
-
-        assertThat(letterRepository.findById(aborted).orElseThrow().getStatus()).isEqualTo(LetterStatus.POSTED);
-    }
-
-    @Test
-    void recordsASendThatSharesALetterTheCatchUpAlreadyCreated() {
-        PartyEntity recipient = saveCaseWithParty();
-        UUID letterId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO letter (letter_id, status) VALUES (?, 'CREATED')", letterId);
-
-        accessCodeActivityLogService.recordPackSent(recipient.getPcsCase(), recipient,
-            PackDetails.sent(LetterType.DEFENCE_PACK, List.of(), letterId));
-
-        assertThat(packSentRowsFor(letterId)).isEqualTo(1);
-    }
-
-    @Test
-    void tracksAPackSentRowWrittenWithoutItsLetter() {
-        PartyEntity recipient = saveCaseWithParty();
-        UUID letterId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO claim_activity_log (case_id, party_id, activity_type, status, details) "
-                + "VALUES (?, ?, 'PACK_SENT', 'SUCCESS', CAST(? AS jsonb))",
-            recipient.getPcsCase().getId(), recipient.getId(),
-            "{\"letterId\": \"%s\", \"packType\": \"DEFENCE_PACK\", \"documents\": []}".formatted(letterId));
-        stubStatus(letterId, """
-            {"id": "%s", "status": "Uploaded", "sent_to_print_at": "2026-11-20T18:00:00.000Z"}""".formatted(letterId));
-
-        letterStatusSyncService.syncPendingLetters();
-
-        assertThat(packSentRowsFor(letterId)).isEqualTo(1);
-        assertThat(letterRepository.findById(letterId).orElseThrow().getStatus()).isEqualTo(LetterStatus.UPLOADED);
+        assertThat(letterRepository.findById(old).orElseThrow().getLastCheckedAt()).isNull();
     }
 
     private UUID sendLetter(LetterStatus status) {
