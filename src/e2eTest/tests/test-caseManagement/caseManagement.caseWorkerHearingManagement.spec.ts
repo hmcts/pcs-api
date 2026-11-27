@@ -115,7 +115,6 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     });
     await performAction('errorValidationCancelHearing', cancelHearing.errorValidation);
     await performAction('cancelHearing', {
-      label: cancelHearing.enterReasonForCancellationLabel,
       input: cancelHearing.reasonForCancellationTextInput,
       submitPayload: submitPayload,
       nextPage: manageHearing.mainHeader

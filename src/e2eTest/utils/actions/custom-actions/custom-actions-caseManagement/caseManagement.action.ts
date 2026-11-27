@@ -668,11 +668,16 @@ private formatDisplayDate(entered: string): string {
         text: validation.value,
       });
     }
-    const reason = page.getByRole('combobox', { name: cancelHearing.cancellationReasonDropdownLabel });
-    if (await reason.isVisible()) {
-      await reason.selectOption({ label: cancelHearing.cancellationReasonOption });
+    const { textLabel, hint, dropdownLabel, option } = cancelHearing.cancellationReason;
+    const dropdown = page.getByRole('combobox', { name: dropdownLabel });
+    const textbox = page.getByRole('textbox', { name: textLabel });
+    await expect(dropdown.or(textbox)).toHaveCount(1);
+    if (await dropdown.isVisible()) {
+      await dropdown.selectOption({ label: option });
+      await expect(dropdown.locator('option:checked')).toHaveText(option);
     } else {
-      await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+      await expect(page.getByText(hint, { exact: true })).toBeVisible();
+      await performAction('inputText', textLabel, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
     }
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
