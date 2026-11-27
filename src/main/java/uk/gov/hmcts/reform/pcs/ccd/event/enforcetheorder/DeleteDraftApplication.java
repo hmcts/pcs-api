@@ -36,6 +36,7 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 """;
 
     private final DraftCaseDataService draftCaseDataService;
+    private final EnforcementFlagGuard enforcementFlagGuard;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -59,6 +60,9 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        if (enforcementFlagGuard.isOff()) {
+            return enforcementFlagGuard.refused();
+        }
         if (eventPayload.caseData().getEnforcementOrder().getDeleteDraftApplication() != YesOrNo.YES) {
             return SubmitResponse.defaultResponse();
         }

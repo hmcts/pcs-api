@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
+import java.util.function.BooleanSupplier;
+
 @Component
 @AllArgsConstructor
 public class SavingPageBuilderFactory {
@@ -16,7 +18,12 @@ public class SavingPageBuilderFactory {
     private final DraftCaseDataService draftCaseDataService;
 
     public SavingPageBuilder create(EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
-        return new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
+        return new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId, () -> true);
+    }
+
+    public SavingPageBuilder create(EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId,
+                                    BooleanSupplier enabled) {
+        return new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId, enabled);
     }
 
 }

@@ -14,20 +14,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforcementFlagGuard;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class EnterBreathingSpaceTest extends BaseEventTest {
+
+    private static final String REFUSAL_EXPECTED_STRING = "This action is not available";
 
     @Mock
     private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
@@ -35,6 +40,8 @@ class EnterBreathingSpaceTest extends BaseEventTest {
     private BreathingSpaceService breathingSpaceService;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private EnforcementFlagGuard enforcementFlagGuard;
 
     @InjectMocks
     private EnterBreathingSpace enterBreathingSpace;
@@ -89,6 +96,30 @@ class EnterBreathingSpaceTest extends BaseEventTest {
             .contains("Case number #" + TEST_CASE_REFERENCE)
             .contains("1 Test Street, London")
             .contains("Claimant v Defendant");
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmit_thenReturnRefusalError() {
+        // Given
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+        List<String> expectedErrors = List.of(REFUSAL_EXPECTED_STRING);
+
+        // When
+        SubmitResponse<State> actualResponse = callSubmitHandler(PCSCase.builder().build());
+
+        // Then
+        assertThat(actualResponse.getErrors()).isEqualTo(expectedErrors);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmit_thenDoNotCallBreathingSpaceService() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+
+        callSubmitHandler(PCSCase.builder().build());
+
+        verifyNoInteractions(breathingSpaceService);
     }
 
 }

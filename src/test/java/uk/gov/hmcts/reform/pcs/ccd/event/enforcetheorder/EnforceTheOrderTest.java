@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
@@ -46,13 +47,18 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
@@ -62,6 +68,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 class EnforceTheOrderTest extends BaseEventTest {
 
     private static final int FEE_AMOUNT = 1000;
+    private static final String REFUSAL_EXPECTED_STRING = "This action is not available";
 
     @Mock
     private AddressFormatter addressFormatter;
@@ -81,6 +88,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
+    private EnforcementFlagGuard enforcementFlagGuard;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
     @Mock
@@ -95,7 +104,7 @@ class EnforceTheOrderTest extends BaseEventTest {
     void setUp() {
         mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
         mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(true);
-        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
+        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder), any()))
                 .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
     }
@@ -409,5 +418,37 @@ class EnforceTheOrderTest extends BaseEventTest {
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
             )
         );
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenStart_thenThrowCaseAccessException() {
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        doCallRealMethod().when(enforcementFlagGuard).requireOnStart();
+        PCSCase caseData = PCSCase.builder().build();
+
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage(REFUSAL_EXPECTED_STRING);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenStart_thenDoNotPrepareEnforcementData() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        doCallRealMethod().when(enforcementFlagGuard).requireOnStart();
+        PCSCase caseData = PCSCase.builder().build();
+
+        Throwable thrown = catchThrowable(() -> callStartHandler(caseData));
+
+        assertThat(thrown).isInstanceOf(CaseAccessException.class);
+        verifyNoInteractions(addressFormatter, defendantService, feeApplier, enforcementOrderService);
+    }
+
+    @Test
+    void shouldGuardMidEventsWithEnforcementFlag() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+
+        verify(savingPageBuilderFactory)
+            .create(any(), eq(EventId.enforceTheOrder), argThat(enabled -> !enabled.getAsBoolean()));
     }
 }

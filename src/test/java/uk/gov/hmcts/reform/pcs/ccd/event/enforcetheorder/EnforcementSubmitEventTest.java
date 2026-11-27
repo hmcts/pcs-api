@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -16,14 +17,19 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderServi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_ENFORCEMENT_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementSubmitEventTest {
+
+    private static final String REFUSAL_EXPECTED_STRING = "This action is not available";
 
     @Mock
     private EnforcementOrderService enforcementOrderService;
@@ -31,6 +37,8 @@ class EnforcementSubmitEventTest {
     private EventPayload<PCSCase, State> payload;
     @Mock
     private PCSCase caseData;
+    @Mock
+    private EnforcementFlagGuard enforcementFlagGuard;
 
     @InjectMocks
     private EnforcementSubmitEvent event;
@@ -81,6 +89,40 @@ class EnforcementSubmitEventTest {
         assertThatThrownBy(() -> event.submit(payload))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Unimplemented enforcement type: " + enforcementType);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmit_thenReturnRefusalError() {
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+        List<String> expectedErrors = List.of(REFUSAL_EXPECTED_STRING);
+
+        SubmitResponse<State> actualResponse = event.submit(payload);
+
+        assertThat(actualResponse.getErrors()).isEqualTo(expectedErrors);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmit_thenDoNotCallEnforcementOrderService() {
+
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+
+
+        event.submit(payload);
+
+        verifyNoInteractions(enforcementOrderService);
+    }
+
+    @Test
+    void givenEnforcementFlagOff_whenSubmit_thenLeaveStateUnchanged() {
+        when(enforcementFlagGuard.isOff()).thenReturn(true);
+        when(enforcementFlagGuard.refused()).thenCallRealMethod();
+
+        SubmitResponse<State> actualResponse = event.submit(payload);
+
+        assertThat(actualResponse.getState()).isNull();
     }
 
 }
