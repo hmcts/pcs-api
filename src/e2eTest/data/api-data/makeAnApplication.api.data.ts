@@ -1,5 +1,7 @@
 import { testDocument } from "@utils/common/uploadDocument.utils";
 
+export const GEN_APP_DRAFT_ORDER_WORDING = 'The court grants the application.';
+
 export const makeAnApplicationApiData = {
 
   makeAnApplicationEventName: 'makeAnApplication',
@@ -26,6 +28,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_HwfReference: 'EmHCkHbPkf',
       xui_genapp_OtherPartiesAgreed: 'YES',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {
@@ -97,6 +100,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_HwfReference: 'EmHCkHbPkf',
       xui_genapp_OtherPartiesAgreed: 'YES',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {
@@ -161,6 +165,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_WithoutNotice: 'YES',
       xui_genapp_WithoutNoticeReason: 'testing payload123',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {
@@ -224,6 +229,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_HwfReference: 'EmHCkHbPkf',
       xui_genapp_OtherPartiesAgreed: 'YES',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {
@@ -299,6 +305,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_OtherPartiesAgreed: 'NO',
       xui_genapp_WithoutNotice: 'NO',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {
@@ -374,6 +381,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_WithoutNotice: 'YES',
       xui_genapp_WithoutNoticeReason: 'testing payload123',
       xui_genapp_WhatOrderWanted: 'test user input',
+      xui_genapp_DraftOrderWording: `<p>${GEN_APP_DRAFT_ORDER_WORDING}</p>`,
       xui_genapp_HasSupportingDocuments: 'YES',
       xui_genapp_UploadedDocuments: [
         {

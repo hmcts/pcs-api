@@ -2,9 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.defenceform;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Generates the defence form and attaches it to the case, where it shows under "Statements of case".
@@ -21,13 +24,16 @@ public class DefenceFormService {
     private final DefenceFormPersistenceService persistenceService;
     private final DefenceFormDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
+    private final SystemEventExecutor systemEventExecutor;
 
     public DefenceFormService(DefenceFormPersistenceService persistenceService,
                               DefenceFormDocumentGenerator documentGenerator,
-                              DocumentImportService documentImportService) {
+                              DocumentImportService documentImportService,
+                              SystemEventExecutor systemEventExecutor) {
         this.persistenceService = persistenceService;
         this.documentGenerator = documentGenerator;
         this.documentImportService = documentImportService;
+        this.systemEventExecutor = systemEventExecutor;
     }
 
     public void generateAndAttach(Integer defendantResponseId) {
@@ -40,7 +46,11 @@ public class DefenceFormService {
         DefenceFormRenderContext renderContext = context.get();
         String dmStoreUrl = documentGenerator.generate(renderContext.payload(), renderContext.defendantNumber());
         try {
-            persistenceService.attach(defendantResponseId, dmStoreUrl);
+            long caseReference = persistenceService.caseReference(defendantResponseId);
+            systemEventExecutor.execute(caseReference, UUID.randomUUID(), eventContext -> {
+                persistenceService.attach(defendantResponseId, dmStoreUrl);
+                return SystemEventResult.withoutStateTransition("defenceFormGenerated", "Defence form generated");
+            });
         } catch (Exception e) {
             deleteOrphanedDocument(defendantResponseId, dmStoreUrl);
             throw e;

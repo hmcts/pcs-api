@@ -1,6 +1,8 @@
+import axios from 'axios';
+import { expect } from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import { test } from '@utils/test-fixtures';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, getCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { caseSummary, home } from '@data/page-data';
@@ -39,6 +41,11 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     });
   }
   await performAction('updatePaymentAPI');
+  const caseApi = axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+  await expect.poll(async () => {
+    const { data } = await caseApi.get(getCaseApiData.getCaseApiEndPoint());
+    return data.state;
+  }, { message: `Case ${caseInfo.id} should be issued after payment confirmation` }).toBe('CASE_ISSUED');
   await performAction('getCaseAPI', 'Link Solicitor');
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);

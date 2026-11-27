@@ -10,11 +10,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -32,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -41,8 +46,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.ImmediateSystemEventExecutor;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -81,6 +88,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_
 @ExtendWith(MockitoExtension.class)
 class GenAppServiceTest {
 
+    private static final TransactionTemplate NO_TRANSACTION = new TransactionTemplate() {
+        @Override
+        public <T> T execute(TransactionCallback<T> action) {
+            return action.doInTransaction(null);
+        }
+    };
+
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
@@ -98,6 +112,8 @@ class GenAppServiceTest {
     private DocumentIdExtractor documentIdExtractor;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private DocumentImportService documentImportService;
     @Mock
     private NotificationService notificationService;
     @Mock
@@ -127,7 +143,9 @@ class GenAppServiceTest {
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
                                       documentRepository, claimActivityLogService, documentIdExtractor,
                                       genAppDocumentGenerator,
-                                      notificationService, genAppWaTaskService, utcClock
+                                      notificationService, genAppWaTaskService,
+                                      new ImmediateSystemEventExecutor(), NO_TRANSACTION,
+                                      documentImportService, utcClock
         );
     }
 
@@ -345,6 +363,56 @@ class GenAppServiceTest {
             // Then
             verify(genAppRepository).save(genAppEntityCaptor.capture());
             assertThat(genAppEntityCaptor.getValue().getWhatOrderWanted()).isEqualTo(expectedOrder);
+        }
+
+        @Test
+        void shouldSaveSanitisedDraftOrderSeparateFromTheExplanation() {
+            String explanation = "Please adjourn because the claimant has a medical appointment.";
+            String formattedList = "<ol start=\"2\" type=\"a\" data-indent=\"1\">"
+                + "<li>The hearing is adjourned.</li><li><strong>Costs reserved.</strong></li></ol>";
+            String draft = "<h2 title=\"Draft\">Draft order</h2>" + formattedList
+                + "<img src=\"https://example.com/image.png\">";
+            String expectedDraft = "<h2>Draft order</h2>" + formattedList;
+            XuiGenAppRequest request = XuiGenAppRequest.builder()
+                .whatOrderWanted(explanation)
+                .draftOrderWording(draft)
+                .agreementClaimantLegalRep(List.of(
+                    AgreementClaimantLegalRep.AGREED))
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            GenAppEntity saved = getSavedGenAppEntity();
+            assertThat(saved.getWhatOrderWanted()).isEqualTo(explanation);
+            assertThat(saved.getDraftOrderWording()).isEqualTo(expectedDraft);
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {" ", "\t\n", "<p>&nbsp;</p>", "<img alt=\"No wording\">"})
+        void shouldLeaveDraftOrderNullWhenSolicitorDoesNotSupplyWording(String draft) {
+            XuiGenAppRequest request = XuiGenAppRequest.builder()
+                .whatOrderWanted("The explanation must not become the draft order")
+                .draftOrderWording(draft)
+                .agreementClaimantLegalRep(List.of(
+                    AgreementClaimantLegalRep.AGREED))
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            assertThat(getSavedGenAppEntity().getDraftOrderWording()).isNull();
+        }
+
+        @Test
+        void shouldLeaveDraftOrderNullForCitizenApplication() {
+            CitizenGenAppRequest request = CitizenGenAppRequest.builder()
+                .whatOrderWanted("Please adjourn the hearing")
+                .sotAccepted(VerticalYesNo.YES)
+                .build();
+
+            underTest.createGenAppEntity(request, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            assertThat(getSavedGenAppEntity().getDraftOrderWording()).isNull();
         }
 
         @ParameterizedTest
@@ -1160,6 +1228,7 @@ class GenAppServiceTest {
     class GenerateSubmissionDocumentTests {
 
         private static final long CASE_REFERENCE = 1234567812345678L;
+        private static final String DOCUMENT_URL = "http://dm-store/documents/genapp";
 
         @Test
         void shouldGenerateWhenNoSubmissionDocumentAttached() {
@@ -1170,12 +1239,14 @@ class GenAppServiceTest {
             when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+            when(genAppDocumentGenerator.renderSubmissionDocument(eq(CASE_REFERENCE), eq(genAppEntity), any()))
+                .thenReturn(DOCUMENT_URL);
 
             // When
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
-            verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            verify(genAppDocumentGenerator).attachSubmissionDocument(CASE_REFERENCE, genAppEntity, DOCUMENT_URL);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
             verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
@@ -1190,13 +1261,16 @@ class GenAppServiceTest {
             when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
             when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+            when(genAppDocumentGenerator.renderSubmissionDocument(eq(CASE_REFERENCE), eq(genAppEntity), any()))
+                .thenReturn(DOCUMENT_URL);
 
             // When
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
             InOrder inOrder = inOrder(genAppDocumentGenerator, genAppWaTaskService);
-            inOrder.verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            inOrder.verify(genAppDocumentGenerator)
+                .attachSubmissionDocument(CASE_REFERENCE, genAppEntity, DOCUMENT_URL);
             inOrder.verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
         }
 
