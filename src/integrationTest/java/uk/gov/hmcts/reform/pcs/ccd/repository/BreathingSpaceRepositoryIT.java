@@ -45,17 +45,14 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     void shouldReturnNewestBreathingSpaceFirst() {
         // Given
         PcsCaseEntity pcsCase = createPcsCase();
-        ClaimEntity claim = createClaim(pcsCase);
 
         insertBreathingSpace(
-            claim.getId(),
             pcsCase.getId(),
             "BS-OLD",
             LocalDateTime.of(2026, 10, 1, 10, 0)
         );
 
         insertBreathingSpace(
-            claim.getId(),
             pcsCase.getId(),
             "BS-NEW",
             LocalDateTime.of(2026, 11, 12, 10, 0)
@@ -78,18 +75,16 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
     void shouldPopulateCreatedAtWhenSavingNewBreathingSpace() {
 
         PcsCaseEntity pcsCase = createPcsCase();
-        ClaimEntity claim = createClaim(pcsCase);
         UUID id = UUID.randomUUID();
 
         // When
         jdbcTemplate.update(
             """
                 INSERT INTO breathing_space
-                    (id, claim_id, case_id, reference_number)
-                VALUES (?, ?, ?, ?)
+                    (id, case_id, reference_number)
+                VALUES (?, ?, ?)
                 """,
             id,
-            claim.getId(),
             pcsCase.getId(),
             "BS-DEFAULT"
         );
@@ -114,29 +109,19 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
 
 
     private void insertBreathingSpace(
-        UUID claimId,
         UUID pcsCaseId,
         String referenceNumber,
         LocalDateTime createdAt
     ) {
         jdbcTemplate.update("""
             INSERT INTO breathing_space
-                (id, claim_id, case_id, reference_number, created_at)
-            VALUES (?, ?, ?, ?, ?)
+                (id, case_id, reference_number, created_at)
+            VALUES (?, ?, ?, ?)
             """,
                             UUID.randomUUID(),
-                            claimId,
                             pcsCaseId,
                             referenceNumber,
                             createdAt
-        );
-    }
-
-    private ClaimEntity createClaim(PcsCaseEntity pcsCase) {
-        return claimRepository.saveAndFlush(
-            ClaimEntity.builder()
-                .pcsCase(pcsCase)
-                .build()
         );
     }
 }
