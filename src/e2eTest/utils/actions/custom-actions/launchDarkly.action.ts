@@ -106,14 +106,14 @@ export class LaunchDarklyAction implements IAction {
 
         const client = LaunchDarkly.init(sdkKey);
         try {
-          await client.waitForInitialization({ timeout: 10000 });
+          await client.waitForInitialization({ timeout: 10 });
         } catch (error) {
           client.close();
           throw error;
         }
         ldClient = client;
       }
-
+      
       const context: LaunchDarkly.LDContext = { kind: 'user', key: resolveLdEnvironment() ?? 'default', environment: resolveLdEnvironment() };
       const detail = await ldClient.variationDetail(flagKey, context, false);
       if (detail.reason?.kind === 'ERROR') {
