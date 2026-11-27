@@ -76,9 +76,9 @@ public class HmcHearingNotificationListener {
             return;
         }
 
-        HmcHearingResponse notification;
+        HmcHearingResponse hmcResponse;
         try {
-            notification = objectMapper.readValue(message.getBody().toBytes(), HmcHearingResponse.class);
+            hmcResponse = objectMapper.readValue(message.getBody().toBytes(), HmcHearingResponse.class);
         } catch (IOException e) {
             log.error("HMC message {} could not be read: {}", messageId, e.getClass().getSimpleName());
             deadLetter(context, messageId, deadLetterOptions(
@@ -86,7 +86,7 @@ public class HmcHearingNotificationListener {
             return;
         }
 
-        Optional<DeadLetterOptions> rejection = validate(notification);
+        Optional<DeadLetterOptions> rejection = validate(hmcResponse);
         if (rejection.isPresent()) {
             log.error("HMC message {} failed validation with reason {}", messageId,
                       rejection.get().getDeadLetterReason());
@@ -94,9 +94,9 @@ public class HmcHearingNotificationListener {
             return;
         }
 
-        log.info("HMC message {} validated for hearing {} and case {}", messageId, notification.getHearingID(),
-                 notification.getCaseRef());
-        process(context, message, notification);
+        log.info("HMC message {} validated for hearing {} and case {}", messageId, hmcResponse.getHearingID(),
+            hmcResponse.getCaseRef());
+        process(context, message, hmcResponse);
     }
 
     public void onError(ServiceBusErrorContext context) {
