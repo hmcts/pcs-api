@@ -21,7 +21,7 @@ import { generateRandomString, stringToCamelCase } from '@utils/common/string.ut
 import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
 import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selectParty.page.data';
 import { caseInfo } from '../createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import { createCaseApiData, GEN_APP_DRAFT_ORDER_WORDING } from '@data/api-data';
 import {performActions} from "@utils/controller";
 import {caseSummary, home} from "@data/page-data";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
@@ -45,7 +45,7 @@ export class GenAppsAction implements IAction {
       ['doYouNeedHelpPayingFee', () => this.doYouNeedHelpPayingFee(fieldName as actionRecord)],
       ['confirmYouHaveAppliedForFeeHelp', () => this.confirmYouHaveAppliedForFeeHelp(fieldName as actionRecord)],
       ['confirmOtherPartiesAgreed', () => this.confirmOtherPartiesAgreed(fieldName as actionRecord)],
-      ['confirmOrderDoYouWant', () => this.confirmOrderDoYouWant(fieldName as actionRecord)],
+      ['confirmOrderDoYouWant', () => this.confirmOrderDoYouWant(page, fieldName as actionRecord)],
       [
         'reasonsApplicationShouldNotBeShared',
         () => this.reasonsApplicationShouldNotBeShared(fieldName as actionRecord),
@@ -210,7 +210,7 @@ export class GenAppsAction implements IAction {
     await performAction('clickButton', areThereAnyReasonsThatThisApplicationShouldNotBeShared.continueButton);
   }
 
-  private async confirmOrderDoYouWant(confirmOrder: actionRecord) {
+  private async confirmOrderDoYouWant(page: Page, confirmOrder: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmOrder);
@@ -220,6 +220,15 @@ export class GenAppsAction implements IAction {
         : (confirmOrder.input as string);
     await performAction('inputText', confirmOrder.label, userInput);
     FieldsStore.update(confirmOrder.label as string, userInput);
+    if (typeof confirmOrder.draftOrderLabel === 'string') {
+      const editor = page.getByRole('textbox', { name: confirmOrder.draftOrderLabel, exact: true });
+      if (await editor.isVisible()) {
+        await editor.fill(GEN_APP_DRAFT_ORDER_WORDING);
+        FieldsStore.set(confirmOrder.draftOrderLabel, GEN_APP_DRAFT_ORDER_WORDING);
+      }
+    } else {
+      await expect(page.getByRole('textbox', { name: /^Detail the draft order / })).toBeHidden();
+    }
     await performAction('clickButton', whatOrderDoYouWantTheCourtToMakeAndWhy.continueButton);
   }
 
@@ -611,6 +620,7 @@ export class GenAppsAction implements IAction {
         await performAction('confirmOrderDoYouWant', {
           label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
           input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+          draftOrderLabel: whatOrderDoYouWantTheCourtToMakeAndWhy.draftOrderLabel,
         });
         await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
         break;

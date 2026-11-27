@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -19,5 +20,8 @@ public interface GenAppRepository extends JpaRepository<GenAppEntity, UUID> {
         UUID partyId,
         Collection<GenAppState> states
     );
+
+    @Query("select g.pcsCase.caseReference from GenAppEntity g where g.id = :id")
+    Long findCaseReferenceById(UUID id);
 
 }

@@ -13,9 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
+import uk.gov.hmcts.reform.pcs.functional.testutils.CcdCaseReferenceGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
     @Steps
     ApiSteps apiSteps;
 
-    private static final Long caseId = RandomNumberUtil.generateRandomNumber(16);
+    private static final Long caseId = CcdCaseReferenceGenerator.generateRandomCaseReference();
     private static final String caseType = CaseType.getCaseType();
 
     @Title("createPossessionClaim start event callback test - returns 200")

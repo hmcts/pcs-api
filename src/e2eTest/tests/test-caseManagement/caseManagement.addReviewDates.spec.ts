@@ -79,6 +79,7 @@ test.describe('Case management - Case Worker Add Review date @nightly', async ()
           date: date,
           question: addReviewDates.reasonHiddenLabel, option: reviewReason,
           label: addReviewDates.descriptionHiddenTextLabel, userInput: userInput,
+          submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
           nextPage: checkYourAnswersAddReviewDates.mainHeader
         });
       });
