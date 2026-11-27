@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.cdam.CdamSystemUserTokenProvider;
 
 /**
  * Creates one {@link IdamTokenProvider} bean per IDAM service identity. Inject a specific
@@ -19,6 +21,12 @@ public class IdamTokenProviderConfig {
         @Value("${idam.system-user.username}") String username,
         @Value("${idam.system-user.password}") String password) {
         return new IdamTokenProvider(authorizedClientManager, "system-user", username, password);
+    }
+
+    @Bean
+    public CdamSystemUserTokenProvider cdamSystemUserTokenProvider(
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUser) {
+        return systemUser::getAuthToken;
     }
 
     @Bean
