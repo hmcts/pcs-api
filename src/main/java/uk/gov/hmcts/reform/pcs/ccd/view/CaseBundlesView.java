@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BundleReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
@@ -21,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Judges alone receive the case's bundles; CCD field permissions also protect direct downloads. */
+/** Projects the bundle documents for authorised Case File View users. */
 @Component
 @RequiredArgsConstructor
 public class CaseBundlesView {
@@ -39,9 +40,7 @@ public class CaseBundlesView {
     private static final DateTimeFormatter MADE_AT = DateTimeFormatter.ofPattern("ddMMyyyy HHmm")
         .withZone(ZoneId.of("Europe/London"));
 
-    /** Whether the current user is given the case's bundles: judges targeted by case-bundle-view-enabled. */
-    public boolean shownToCurrentUser() {
-        // The judge roles are all organisational, so no case-level lookup is needed.
+    public boolean shownInMakeOrder() {
         var user = roles.getCurrentUserOrganisationalRoles();
         return JudicialReadAccess.isJudge(user.roles())
             && features.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, user.userId());
@@ -49,7 +48,9 @@ public class CaseBundlesView {
 
     /** The newest version, and any replaced within the last day, newest first. */
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
-        if (!shownToCurrentUser()) {
+        var user = roles.getCurrentUserOrganisationalRoles();
+        if (!BundleReadAccess.canRead(user.roles())
+            || !features.isEnabledFor(FeatureFlag.CASE_BUNDLE_VIEW, user.userId())) {
             return;
         }
         Instant replacedSince = Instant.now().minus(REPLACED_VERSION_READABLE_FOR);

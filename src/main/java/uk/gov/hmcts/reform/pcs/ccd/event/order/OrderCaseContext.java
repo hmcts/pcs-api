@@ -90,7 +90,7 @@ class OrderCaseContext {
 
     /** The case's current bundle, for those given the case's bundles. */
     private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
-        if (!bundleView.shownToCurrentUser()) {
+        if (!bundleView.shownInMakeOrder()) {
             return null;
         }
         return bundles.findFirstByCaseIdOrderByCaseRevisionDesc(pcsCase.getId())

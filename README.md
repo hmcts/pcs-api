@@ -395,9 +395,9 @@ behind Case File View, the case title's download link and the Make Order link) s
 background generation.
 It defaults to false, including when the flag is missing or LaunchDarkly is unavailable without a
 cached value. Keep it off in prod while enabling `CASE_BUNDLE_ENABLED` on API and worker pods.
-To preview it, target individual IDAM IDs as LaunchDarkly `user` context keys; the existing
-judicial permission check still applies. `isEnabledFor(flag, userId)` includes the environment
-attribute and sends no name or email. The separately flagged make-order journey is unaffected.
+To preview it, target individual IDAM IDs as LaunchDarkly `user` context keys. Judges, Hearing Centre Admins and
+Hearing Centre Team Leaders can access the bundle in Case File View. Only judges see it in Make Order.
+`isEnabledFor(flag, userId)` includes the environment attribute and sends no name or email. The separately flagged make-order journey is unaffected.
 
 ### Local Dev
 

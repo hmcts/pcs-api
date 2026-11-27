@@ -147,7 +147,17 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         });
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
             .doesNotContain(first.getUrl());
-        assertThat(view(reference, "hearing-centre-admin").getCaseBundles()).isNull();
+        for (String role : List.of("hearing-centre-admin", "hearing-centre-team-leader")) {
+            PCSCase staff = view(reference, role);
+            assertThat(staff.getCaseBundles()).singleElement()
+                .satisfies(bundle -> assertThat(bundle.getValue().getUrl()).isEqualTo(first.getUrl()));
+            assertThat(staff.getCaseTitleMarkdown()).contains("/documentsv2/" + first.getDocumentId() + "/binary");
+        }
+        for (String role : List.of("bailiff-admin", "caseworker-pcs-solicitor", "citizen", "ctsc")) {
+            PCSCase excluded = view(reference, role);
+            assertThat(excluded.getCaseBundles()).as(role).isNull();
+            assertThat(excluded.getCaseTitleMarkdown()).as(role).doesNotContain("/documentsv2/");
+        }
         // The judge making an order links it; nobody else is given it.
         assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
             first.getDocumentId(), first.getFileName(), first.getCreatedAt()));
@@ -214,7 +224,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void rendersInBackgroundButOnlyTargetedJudgesReceiveBundleFields() throws Exception {
+    void rendersInBackgroundButOnlyTargetedBundleReadersReceiveBundleFields() throws Exception {
         long reference = issued();
         event(reference, pcsCase -> pcsCase.addDocuments(List.of(
             document("Background.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1)))));
@@ -237,8 +247,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             .contains("Whole file download (opens in new tab)");
         assertThat(events.view(reference, other).getCaseBundles()).isNull();
         assertThat(events.view(reference, other).getCaseTitleMarkdown()).isEqualTo(originalTitle);
-        assertThat(events.view(reference, admin).getCaseBundles()).isNull();
-        assertThat(events.view(reference, admin).getCaseTitleMarkdown()).isEqualTo(originalTitle);
+        assertThat(events.view(reference, admin).getCaseBundles()).isNotEmpty();
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
         assertThat(events.view(reference, allowed).getCaseBundles()).isNull();

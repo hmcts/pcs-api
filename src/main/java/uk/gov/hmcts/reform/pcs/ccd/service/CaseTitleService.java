@@ -88,7 +88,7 @@ public class CaseTitleService {
     }
 
     private String caseBundleLink(PCSCase pcsCase) {
-        // CaseBundlesView supplies the bundles only to judges targeted by case-bundle-view-enabled.
+        // CaseBundlesView supplies the bundles only to permitted users targeted by case-bundle-view-enabled.
         var bundles = pcsCase.getCaseBundles();
         if (bundles == null || bundles.isEmpty()) {
             return "";

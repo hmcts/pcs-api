@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BundleReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -1032,7 +1033,7 @@ public class PCSCase {
      * Every version of the case bundle, newest first. In no tab: it is here so CDAM serves each version to whoever
      * can read it, and the case title links the newest.
      */
-    @CCD(label = "Case bundles", searchable = false, access = {JudicialReadAccess.class})
+    @CCD(label = "Case bundles", searchable = false, access = {BundleReadAccess.class})
     private List<ListValue<Document>> caseBundles;
 
     @CCD(

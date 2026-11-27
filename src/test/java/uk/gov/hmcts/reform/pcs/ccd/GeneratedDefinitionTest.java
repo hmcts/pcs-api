@@ -118,6 +118,12 @@ class GeneratedDefinitionTest {
     }
 
     @Test
+    void onlyJudiciaryAndHearingCentreStaffCanReadCaseBundles() {
+        assertThat(readers.get("caseBundles")).containsExactlyInAnyOrderElementsOf(
+            union(JUDICIAL_PROFILES, Set.of("hearing-centre-admin", "hearing-centre-team-leader")));
+    }
+
+    @Test
     void historyStaysInternal() {
         assertThat(readers.get("caseHistory")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
     }
