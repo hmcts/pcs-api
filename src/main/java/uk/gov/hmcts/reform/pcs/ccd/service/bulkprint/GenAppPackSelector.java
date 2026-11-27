@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,7 +32,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * contact preferences include post (or are unset), except the applicant and any LR-represented defendant,
  * who are served digitally through their legal rep, and except claimants when the release 1.4 flag is
  * enabled. Without-notice GAs, non-defendant-applicant GAs and caseworker-entered GAs (those with an
- * application received date) produce no candidates.
+ * application received date) produce no candidates. When bulk print 2 is on, the uploads from the application
+ * journey follow the generated form on that same send.
  */
 @Service
 public class GenAppPackSelector {
@@ -38,13 +41,16 @@ public class GenAppPackSelector {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
     private final PackSkipRules packSkipRules;
+    private final FeatureToggleService featureToggleService;
 
     public GenAppPackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                               SentPackDocuments sentPackDocuments,
-                              PackSkipRules packSkipRules) {
+                              PackSkipRules packSkipRules,
+                              FeatureToggleService featureToggleService) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
         this.packSkipRules = packSkipRules;
+        this.featureToggleService = featureToggleService;
     }
 
     public List<GenAppPackCandidate> findGenAppPackCandidates(PcsCaseEntity pcsCase) {
@@ -80,13 +86,19 @@ public class GenAppPackSelector {
             }
             DocumentEntity document = genApp.getSubmissionDocument();
             PartyEntity applicant = genApp.getParty();
+            List<DocumentEntity> evidence = supportingEvidence(genApp, document);
             for (PartyEntity party : candidateParties) {
                 if (isExcludedRecipient(party, applicant, roleByPartyId)
                     || !wantsPost(party) || sent.contains(key(party, document))) {
                     continue;
                 }
+                List<DocumentEntity> pack = new ArrayList<>();
+                pack.add(document);
+                evidence.stream()
+                    .filter(upload -> !sent.contains(key(party, upload)))
+                    .forEach(pack::add);
                 candidates.add(new GenAppPackCandidate(
-                    roleByPartyId.getOrDefault(party.getId(), PartyRole.DEFENDANT), party, List.of(document)));
+                    roleByPartyId.getOrDefault(party.getId(), PartyRole.DEFENDANT), party, pack));
             }
         }
         return candidates;
@@ -122,6 +134,18 @@ public class GenAppPackSelector {
     }
 
     
+    private List<DocumentEntity> supportingEvidence(GenAppEntity genApp, DocumentEntity form) {
+        if (!featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2) || genApp.getDocuments() == null) {
+            return List.of();
+        }
+        return genApp.getDocuments().stream()
+            .filter(upload -> form.getId() == null || !form.getId().equals(upload.getId()))
+            .filter(upload -> SupportingEvidence.savedWithSubmission(upload, form))
+            .sorted(Comparator.comparing(DocumentEntity::getSubmittedDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+    }
+
     private boolean isExcludedRecipient(PartyEntity party, PartyEntity applicant,
                                         Map<UUID, PartyRole> roleByPartyId) {
         if (applicant != null && party.getId().equals(applicant.getId())) {

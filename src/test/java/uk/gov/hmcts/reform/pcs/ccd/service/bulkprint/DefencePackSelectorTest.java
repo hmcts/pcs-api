@@ -71,6 +71,7 @@ class DefencePackSelectorTest {
     @BeforeEach
     void setUp() {
         lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(false);
         underTest = new DefencePackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
@@ -548,6 +549,148 @@ class DefencePackSelectorTest {
 
         assertThat(result).singleElement()
             .satisfies(candidate -> assertThat(candidate.recipient()).isEqualTo(formerlyRepresented));
+    }
+
+    @Test
+    @DisplayName("Puts defence and counterclaim uploads after their own forms")
+    void shouldPlaceUploadsAfterTheirForms() {
+        enableBulkPrint2();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        DocumentEntity laterDefence = defenceUpload(response, "2026-10-02T10:00:00Z");
+        DocumentEntity earlierDefence = defenceUpload(response, "2026-10-01T10:00:00Z");
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(UUID.randomUUID()).party(defendant).build();
+        DocumentEntity counterClaimForm = counterClaimForm(counterClaimEntity);
+        DocumentEntity counterClaimUpload = counterClaimUpload(counterClaimEntity, "2026-10-03T10:00:00Z");
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(caseWith(
+            List.of(laterDefence, form, counterClaimUpload, counterClaimForm, earlierDefence), claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(
+                form, earlierDefence, laterDefence, counterClaimForm, counterClaimUpload));
+    }
+
+    @Test
+    @DisplayName("Sends defence uploads without a counterclaim when only the defence form is present")
+    void shouldSendDefenceUploadsWhenThereIsNoCounterclaim() {
+        enableBulkPrint2();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        DocumentEntity upload = defenceUpload(response, "2026-10-01T10:00:00Z");
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(form, upload), claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(form, upload));
+    }
+
+    @Test
+    @DisplayName("Sends only the counterclaim and its uploads when the defence form was already sent")
+    void shouldSendCounterclaimUploadsWithoutTheDefenceOnceTheDefenceWasSent() {
+        enableBulkPrint2();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        DocumentEntity defenceUpload = defenceUpload(response, "2026-10-01T10:00:00Z");
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(UUID.randomUUID()).party(defendant).build();
+        DocumentEntity counterClaimForm = counterClaimForm(counterClaimEntity);
+        DocumentEntity counterClaimUpload = counterClaimUpload(counterClaimEntity, "2026-10-03T10:00:00Z");
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(sent(defendant, form)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(caseWith(
+            List.of(form, defenceUpload, counterClaimForm, counterClaimUpload), claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(counterClaimForm, counterClaimUpload));
+    }
+
+    @Test
+    @DisplayName("Leaves out uploads linked to the counterclaim after its form was generated")
+    void shouldLeaveOutUploadsLinkedToTheCounterclaimAfterTheFormWasGenerated() {
+        enableBulkPrint2();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(UUID.randomUUID()).party(defendant).build();
+        DocumentEntity counterClaimForm = counterClaimForm(counterClaimEntity);
+        counterClaimForm.setSubmittedDate(Instant.parse("2026-10-03T10:05:00Z"));
+        DocumentEntity journeyUpload = counterClaimUpload(counterClaimEntity, "2026-10-03T10:00:00Z");
+        DocumentEntity laterUpload = counterClaimUpload(counterClaimEntity, "2026-10-04T10:00:00Z");
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(sent(defendant, form)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(caseWith(
+            List.of(form, counterClaimForm, journeyUpload, laterUpload), claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(counterClaimForm, journeyUpload));
+    }
+
+    @Test
+    @DisplayName("Leaves defence and counterclaim uploads out when bulk print 2 is off")
+    void shouldLeaveUploadsOutWhenBulkPrint2IsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        DefendantResponseEntity response = DefendantResponseEntity.builder().id(1).party(defendant).build();
+        DocumentEntity form = responseForm(response);
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(UUID.randomUUID()).party(defendant).build();
+        DocumentEntity counterClaimForm = counterClaimForm(counterClaimEntity);
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(caseWith(List.of(
+            form, defenceUpload(response, "2026-10-01T10:00:00Z"),
+            counterClaimForm, counterClaimUpload(counterClaimEntity, "2026-10-02T10:00:00Z")),
+            claimant, defendant));
+
+        assertThat(result).singleElement().satisfies(candidate ->
+            assertThat(candidate.documents()).containsExactly(form, counterClaimForm));
+    }
+
+    private void enableBulkPrint2() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+    }
+
+    private DocumentEntity responseForm(DefendantResponseEntity response) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.DEFENDANT_RESPONSE)
+            .defendantResponse(response)
+            .build();
+    }
+
+    private DocumentEntity defenceUpload(DefendantResponseEntity response, String submittedAt) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantResponse(response)
+            .submittedDate(Instant.parse(submittedAt))
+            .build();
+    }
+
+    private DocumentEntity counterClaimForm(CounterClaimEntity counterClaimEntity) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .party(counterClaimEntity.getParty())
+            .counterClaim(counterClaimEntity)
+            .submittedDate(Instant.parse("2026-10-03T10:05:00Z"))
+            .build();
+    }
+
+    private DocumentEntity counterClaimUpload(CounterClaimEntity counterClaimEntity, String submittedAt) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+            .counterClaim(counterClaimEntity)
+            .submittedDate(Instant.parse(submittedAt))
+            .build();
     }
 
     private DefendantResponseEntity submittedDefence(PartyEntity party, LanguageUsed languageUsed) {

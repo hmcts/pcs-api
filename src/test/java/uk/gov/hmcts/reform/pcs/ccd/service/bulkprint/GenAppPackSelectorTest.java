@@ -73,11 +73,13 @@ class GenAppPackSelectorTest {
     @BeforeEach
     void setUp() {
         lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(false);
         underTest = new GenAppPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
             new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null),
-                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)));
+                Clock.fixed(Instant.parse("2026-10-29T12:00:00Z"), ZoneOffset.UTC), Duration.ofHours(24)),
+            featureToggleService);
     }
 
     private final PartyEntity claimant = party();
@@ -109,6 +111,69 @@ class GenAppPackSelectorTest {
         assertThat(candidateFor(result, claimant).documents()).containsExactly(withNoticePdf);
         assertThat(candidateFor(result, coDefendant).role()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(candidateFor(result, coDefendant).documents()).containsExactly(withNoticePdf);
+    }
+
+    @Test
+    @DisplayName("Puts application uploads after the generated form when bulk print 2 is on")
+    void shouldIncludeApplicationEvidenceAfterTheGeneratedForm() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        DocumentEntity later = upload(Instant.parse("2026-10-02T10:00:00Z"));
+        DocumentEntity earlier = upload(Instant.parse("2026-10-01T10:00:00Z"));
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
+        genApp.setDocuments(List.of(later, withNoticePdf, earlier));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(
+            caseWith(List.of(genApp), claimant, defendant, coDefendant));
+
+        assertThat(candidateFor(result, claimant).documents())
+            .containsExactly(withNoticePdf, earlier, later);
+        assertThat(candidateFor(result, coDefendant).documents())
+            .containsExactly(withNoticePdf, earlier, later);
+    }
+
+    @Test
+    @DisplayName("Leaves application uploads out when bulk print 2 is off")
+    void shouldLeaveApplicationEvidenceOutWhenBulkPrint2IsOff() {
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
+        genApp.setDocuments(List.of(upload(Instant.parse("2026-10-01T10:00:00Z"))));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(
+            caseWith(List.of(genApp), claimant, defendant));
+
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(withNoticePdf);
+    }
+
+    @Test
+    @DisplayName("Leaves out uploads linked to the application after its form was generated")
+    void shouldLeaveOutUploadsLinkedAfterTheFormWasGenerated() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        withNoticePdf.setSubmittedDate(Instant.parse("2026-10-01T10:00:05Z"));
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
+        DocumentEntity journeyUpload = upload(Instant.parse("2026-10-01T10:00:00Z"));
+        DocumentEntity laterUpload = upload(Instant.parse("2026-10-02T09:00:00Z"));
+        genApp.setDocuments(List.of(journeyUpload, laterUpload));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(
+            caseWith(List.of(genApp), claimant, defendant, coDefendant));
+
+        assertThat(result).isNotEmpty().allSatisfy(candidate ->
+            assertThat(candidate.documents()).containsExactly(withNoticePdf, journeyUpload));
+    }
+
+    @Test
+    @DisplayName("Does not send application uploads once the generated form has been sent")
+    void shouldNotSendApplicationEvidenceAfterTheFormWasSent() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        GenAppEntity genApp = defendantSelfServeWithNoticeGa(withNoticePdf, defendant);
+        genApp.setDocuments(List.of(upload(Instant.parse("2026-10-01T10:00:00Z"))));
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(
+            List.of(sent(claimant, withNoticePdf), sent(coDefendant, withNoticePdf)));
+
+        assertThat(underTest.findGenAppPackCandidates(
+            caseWith(List.of(genApp), claimant, defendant, coDefendant))).isEmpty();
     }
 
     @Test
@@ -575,10 +640,19 @@ class GenAppPackSelectorTest {
         }
     }
 
+    private DocumentEntity upload(Instant submittedDate) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.OTHER)
+            .submittedDate(submittedDate)
+            .build();
+    }
+
     private DocumentEntity gaDocument() {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .type(DocumentType.GENERAL_APPLICATION)
+            .submittedDate(Instant.parse("2026-10-02T10:00:05Z"))
             .build();
     }
 
