@@ -76,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -1028,12 +1029,9 @@ public class PCSCase {
     @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
-    /**
-     * Every version of the case bundle, newest first. In no tab: it is here so CDAM serves each version to whoever
-     * can read it, and the case title links the newest.
-     */
-    @CCD(label = "Case bundles", searchable = false, access = {JudicialReadAccess.class})
-    private List<ListValue<Document>> caseBundles;
+    @JsonUnwrapped(prefix = "bundleTab_")
+    @CCD(searchable = false, access = {JudicialReadAccess.class})
+    private BundleTab bundleTab;
 
     @CCD(
         label = NOTE_LABEL,

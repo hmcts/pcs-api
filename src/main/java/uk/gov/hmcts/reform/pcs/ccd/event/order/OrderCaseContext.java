@@ -2,11 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleDefinition;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -45,7 +47,7 @@ class OrderCaseContext {
     private final PartyService partyService;
     private final CaseNameFormatter caseNameFormatter;
     private final OrderTasks orderTasks;
-    private final CaseBundleRepository bundles;
+    private final ObjectProvider<CaseBundles> bundles;
     private final UserRoleService roles;
     private final CaseCourts caseCourts;
 
@@ -91,12 +93,13 @@ class OrderCaseContext {
 
     /** The case's current bundle, which only judges see, as the Bundle tab shows it to them. */
     private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
-        if (!JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+        CaseBundles managed = bundles.getIfAvailable();
+        if (managed == null || !JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
             return null;
         }
-        return bundles.findFirstByCaseIdOrderByCaseRevisionDesc(pcsCase.getId())
-            .map(bundle -> new OrderStart.CaseBundle(bundle.getDocumentId(), bundle.getFileName(),
-                                                     bundle.getCreatedAt()))
+        return managed.view(CaseBundleDefinition.NAME, pcsCase.getId().toString()).current()
+            .flatMap(bundle -> bundle.stored().map(stored ->
+                new OrderStart.CaseBundle(stored.id(), bundle.fileName(), bundle.recordedAt())))
             .orElse(null);
     }
 

@@ -99,6 +99,7 @@ class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> bundleTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
@@ -128,6 +129,7 @@ class CaseTypeTest {
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
+        when(builder.tab("bundle", "Bundle")).thenReturn(bundleTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
@@ -160,7 +162,9 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
         final Tab<PCSCase, AccessProfile> messagesTab = messagesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> bundleTab = bundleTabBuilder.build();
         final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
+
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
@@ -210,6 +214,12 @@ class CaseTypeTest {
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
+
+        assertThat(bundleTab.getForRoles()).isEmpty();
+        assertThat(bundleTab.getShowCondition()).isEqualTo("bundleTab_Status=\"*\"");
+        assertThat(bundleTab.getFields()).extracting(TabField::getId).containsExactly(
+            "bundleTab_Status", "bundleTab_Bundle", "bundleTab_LastUpdated", "bundleTab_Pages",
+            "bundleTab_MissingDocuments");
 
         assertThat(supportTab.getFields()).hasSize(2);
         assertThat(supportTab.getFields()).extracting(TabField::getDisplayContextParameter)
@@ -293,6 +303,7 @@ class CaseTypeTest {
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("bundle", "Bundle")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

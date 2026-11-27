@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 class DraftCaseJsonMergerTest {
 
     private ObjectMapper objectMapper;
@@ -95,7 +96,7 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab",
                             "caseDetailsTab",
                             "summaryTab",
-                            "caseBundles",
+                            "bundleTab",
                             "defendantPaperResponse")
             .isEqualTo(existingCaseData);
 

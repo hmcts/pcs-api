@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -36,7 +36,7 @@ class OrderCaseContextTest {
     @Mock
     private OrderTasks orderTasks;
     @Mock
-    private CaseBundleRepository bundles;
+    private ObjectProvider<CaseBundles> bundles;
     @Mock
     private UserRoleService roles;
     @Mock
@@ -54,7 +54,6 @@ class OrderCaseContextTest {
     void shouldSetCaseNameForOrderStartCaseContext() {
         // Given
         String expectedCaseName = "some case name";
-        when(roles.getCurrentUserOrganisationalRoles()).thenReturn(new UserRoles("user-id", List.of()));
         when(caseNameFormatter.formatCaseName(anyList(), anyList())).thenReturn(expectedCaseName);
 
         ClaimEntity mainClaim = ClaimEntity.builder()
