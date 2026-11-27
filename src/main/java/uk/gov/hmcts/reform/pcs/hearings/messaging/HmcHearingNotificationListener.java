@@ -115,20 +115,20 @@ public class HmcHearingNotificationListener {
                           notification.getHearingID(), messageId, e.status());
                 deadLetter(context, messageId, deadLetterOptions(HMC_REJECTED_REASON, "HMC responded " + e.status()));
             } else {
-                retryLater(context, message, notification, "HMC responded " + e.status());
+                leaveUnsettledOrDeadLetter(context, message, notification, "HMC responded " + e.status());
             }
             return;
         } catch (RuntimeException e) {
             log.error("Unexpected failure retrieving hearing {} for message {}", notification.getHearingID(),
                       messageId, e);
-            retryLater(context, message, notification, e.getClass().getSimpleName());
+            leaveUnsettledOrDeadLetter(context, message, notification, e.getClass().getSimpleName());
             return;
         }
 
         complete(context, messageId, notification);
     }
 
-    private void retryLater(ServiceBusReceivedMessageContext context, ServiceBusReceivedMessage message,
+    private void leaveUnsettledOrDeadLetter(ServiceBusReceivedMessageContext context, ServiceBusReceivedMessage message,
                             HmcHearingResponse notification, String failure) {
         String messageId = message.getMessageId();
         if (attempt(message) >= maxDeliveryCount) {
