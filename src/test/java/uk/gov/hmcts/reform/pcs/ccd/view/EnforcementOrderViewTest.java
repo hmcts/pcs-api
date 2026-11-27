@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.stream.Stream;
 
@@ -28,6 +29,9 @@ class EnforcementOrderViewTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private AddressFormatter addressFormatter;
 
     @InjectMocks
     private EnforcementOrderView underTest;

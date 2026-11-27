@@ -55,6 +55,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayloadNoJourney });
     }
   }
+
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -73,10 +74,8 @@ test.afterEach(async () => {
   }
     PageContentValidation.finaliseTest();
 });
-
-// Skipping this test case as the feature is not part of Release 1 to save execution time.
-test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data, upload more than one evidence @allYES @enforcement',
+test.describe('[Enforcement - Warrant of Restitution]', async () => {
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

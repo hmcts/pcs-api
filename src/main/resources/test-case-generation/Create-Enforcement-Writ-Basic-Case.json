@@ -149,7 +149,7 @@
   ],
   "suspensionOfRTB_Reason": "asdfasdf",
   "claimAgainstTrespassers": "NO",
-  "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",
+  "formattedDefendantNames": "<div class=\"govuk-!-margin-bottom-2\">TVR HN</div><div class=\"govuk-!-margin-bottom-2\">Test1 Testing1</div>",
   "formattedPropertyAddress": "1 Rse Way<br>London<br>SW11 1PD",
   "hasUnderlesseeOrMortgagee": "NO",
   "writCorrectNameAndAddress": "YES",

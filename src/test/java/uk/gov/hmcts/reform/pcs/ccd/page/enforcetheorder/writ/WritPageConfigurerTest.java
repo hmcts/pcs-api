@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -26,6 +27,8 @@ class WritPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WritPageConfigurer writPageConfigurer;
 
+    @Mock
+    private NameAndAddressForEvictionWritPage nameAndAddressForEvictionWritPage;
 
     @Test
     void shouldConfigurePagesInCorrectOrder() {
@@ -43,7 +46,7 @@ class WritPageConfigurerTest extends BasePageTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, CannotApplyForWritInfoPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, nameAndAddressForEvictionWritPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, BreathingSpaceWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MissedPaymentsWritPage.class, verificationCount);

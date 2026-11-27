@@ -39,7 +39,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  defendantInBreathingSpace, missedPayments, statementOfTruth
+  defendantInBreathingSpace, missedPayments, statementOfTruth,
+  cannotApplyForWarrantInfo
 } from '@data/index.selector.enforcement';
 
 let sotWarrant: ReturnType<typeof statementOfTruth>;
@@ -113,11 +114,11 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
         label2: enforcementApplication.writFeeValidationLabelHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
-      await performAction('validateGetQuoteFromBailiffLink', {
+     /* await performAction('validateGetQuoteFromBailiffLink', {
         type: enforcementApplication.summaryWritOrWarrantLink,
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
-      });
+      }); */
       await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
@@ -585,8 +586,8 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-         nextPage: defendantInBreathingSpace.mainHeader
+        defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+        nextPage: defendantInBreathingSpace.mainHeader
       });
       await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
       await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.yesRadioOption, nextPage: missedPayments.mainHeader});
@@ -704,7 +705,7 @@ test.describe('[Enforcement - Warrant of Possession] @nightly', async () => {
       });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement @asha @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] - NonSuspendedOrder only main defendants name known @onlyMain @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

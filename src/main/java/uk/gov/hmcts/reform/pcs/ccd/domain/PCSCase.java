@@ -717,6 +717,9 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
+    @CCD(searchable = false)
+    private YesOrNo hasUnknownDefendants;
+
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 

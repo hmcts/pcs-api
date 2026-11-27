@@ -19,8 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 public class NameAndAddressForEviction {
 
     @CCD(
-        label = "Is this the correct name and address for the eviction?",
-        hint = "You can choose the defendants you want to evict on the next page"
+        label = "Is this the correct name and address for the eviction?"
     )
     private VerticalYesNo correctNameAndAddress;
 
