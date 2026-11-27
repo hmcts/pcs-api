@@ -83,6 +83,13 @@ public class PackSkipRules {
         return skipIfPresent(pcsCase, "gen-app", genAppPackSkipReason(pcsCase, genApp));
     }
 
+    public boolean shouldSkipHearingNoticePack(PcsCaseEntity pcsCase, ClaimEntity claim) {
+        if (requiresTranslation(claim.getLanguageUsed()) || hasActiveTranslationFlag(pcsCase)) {
+            return skipIfPresent(pcsCase, "hearing notice", Optional.of(TRANSLATION_REQUIRED));
+        }
+        return false;
+    }
+
     public boolean shouldExcludeClaimant() {
         return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
     }

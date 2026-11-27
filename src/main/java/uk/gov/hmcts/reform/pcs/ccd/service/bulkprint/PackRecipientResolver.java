@@ -27,6 +27,7 @@ public class PackRecipientResolver {
     private final ClaimPackSelector claimPackSelector;
     private final DefencePackSelector defencePackSelector;
     private final GenAppPackSelector genAppPackSelector;
+    private final HearingNoticePackSelector hearingNoticePackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
@@ -35,6 +36,7 @@ public class PackRecipientResolver {
                                  ClaimPackSelector claimPackSelector,
                                  DefencePackSelector defencePackSelector,
                                  GenAppPackSelector genAppPackSelector,
+                                 HearingNoticePackSelector hearingNoticePackSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                  AddressMapper addressMapper) {
@@ -42,6 +44,7 @@ public class PackRecipientResolver {
         this.claimPackSelector = claimPackSelector;
         this.defencePackSelector = defencePackSelector;
         this.genAppPackSelector = genAppPackSelector;
+        this.hearingNoticePackSelector = hearingNoticePackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
@@ -70,6 +73,18 @@ public class PackRecipientResolver {
         return pcsCaseRepository.findById(caseId)
             .map(pcsCase -> genAppPackSelector.findGenAppPackCandidates(pcsCase).stream()
                 .map(candidate -> resolveGenAppRecipient(pcsCase, candidate))
+                .toList())
+            .orElseGet(List::of);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResolvedRecipient> resolveHearingNoticeRecipients(UUID caseId) {
+        return pcsCaseRepository.findById(caseId)
+            .map(pcsCase -> hearingNoticePackSelector.findHearingNoticePackCandidates(pcsCase).stream()
+                .map(candidate -> new ResolvedRecipient(pcsCase, candidate.recipient(),
+                    LetterType.HEARING_NOTICE_PACK, candidate.documents(),
+                    recipientAddressResolver.resolveDisplayName(candidate.recipient()),
+                    correspondenceAddress(candidate.recipient(), candidate.role(), pcsCase.getPropertyAddress())))
                 .toList())
             .orElseGet(List::of);
     }

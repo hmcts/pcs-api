@@ -16,7 +16,9 @@ public enum LetterType {
     DEFENDANT_CLAIM_PACK_WELSH("CPD-01-IN4", false),
     DEFENCE_PACK("DEF-01-IN0", true),
     DEFENCE_PACK_LEGAL_REP("DEF-01-IN1", true),
-    GEN_APP_PACK("GEN-00-IN0", true);
+    GEN_APP_PACK("GEN-00-IN0", true),
+    // Placeholder until the print team confirms the hearing notice code (HDPI-9626).
+    HEARING_NOTICE_PACK("HNO-01-IN0", false);
 
     @Getter
     private final String code;

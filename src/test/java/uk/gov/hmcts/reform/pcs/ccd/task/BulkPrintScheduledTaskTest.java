@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.HearingNoticePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -46,6 +47,9 @@ class BulkPrintScheduledTaskTest {
     @Mock
     private GenAppPackSender genAppPackSender;
 
+    @Mock
+    private HearingNoticePackSender hearingNoticePackSender;
+
     @Test
     @DisplayName("Builds the task with the nightly default schedule")
     void shouldBuildTaskWithNightlyDefaultSchedule() {
@@ -66,7 +70,8 @@ class BulkPrintScheduledTaskTest {
 
         runSweep(null);
 
-        verifyNoInteractions(claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender);
+        verifyNoInteractions(claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender,
+            hearingNoticePackSender);
     }
 
     @Test
@@ -165,6 +170,39 @@ class BulkPrintScheduledTaskTest {
         verify(genAppPackSender).sendGenAppPacks(failingCase);
     }
 
+    @Test
+    void shouldPostHearingNoticesOnlyWhenTheHearingsAndOrdersReleaseIsEnabled() {
+        UUID caseId = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseId));
+
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(false);
+        runSweep(null);
+        verify(hearingNoticePackSender, never()).sendHearingNoticePacks(any());
+
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
+        runSweep(null);
+        verify(hearingNoticePackSender).sendHearingNoticePacks(caseId);
+    }
+
+    @Test
+    void shouldIsolateFailingHearingNoticePhaseAndContinue() {
+        UUID failingCase = UUID.randomUUID();
+        UUID healthyCase = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS))
+            .thenReturn(List.of(failingCase, healthyCase));
+        doThrow(new RuntimeException("boom")).when(hearingNoticePackSender).sendHearingNoticePacks(failingCase);
+
+        assertThatCode(() -> runSweep(null)).doesNotThrowAnyException();
+
+        verify(hearingNoticePackSender).sendHearingNoticePacks(healthyCase);
+        verify(claimPackSender).sendClaimPacks(healthyCase);
+    }
+
     private void runSweep(Integer lookbackHours) {
         RecurringTask<Void> task = component("DAILY|02:00", lookbackHours).bulkPrintTask();
         task.execute(null, null);
@@ -173,6 +211,6 @@ class BulkPrintScheduledTaskTest {
     private BulkPrintScheduledTask component(String schedule, Integer lookbackHours) {
         return new BulkPrintScheduledTask(
             featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender,
-            schedule, lookbackHours);
+            hearingNoticePackSender, schedule, lookbackHours);
     }
 }
