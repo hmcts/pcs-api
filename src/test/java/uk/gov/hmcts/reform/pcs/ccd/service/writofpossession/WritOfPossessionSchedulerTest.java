@@ -41,7 +41,7 @@ class WritOfPossessionSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED)).thenReturn(true);
     }
 
     @Test
@@ -83,8 +83,8 @@ class WritOfPossessionSchedulerTest {
     }
 
     @Test
-    void shouldNotScheduleWhenRelease1bIsDisabled() {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
+    void shouldNotScheduleWhenBailiffManagementIsDisabled() {
+        when(featureToggleService.isEnabled(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED)).thenReturn(false);
 
         scheduler.scheduleWritOfPossessionGeneration(CASE_REFERENCE, ENFORCEMENT_ORDER_ID);
 

@@ -27,7 +27,7 @@ public class WarrantOfPossessionScheduler {
      * case still gets its own document.
      */
     public void scheduleWarrantOfPossessionGeneration(long caseReference, UUID enforcementOrderId) {
-        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
+        if (!featureToggleService.isEnabled(FeatureFlag.BAILIFF_MANAGEMENT_ENABLED)) {
             return;
         }
         EnforcementDocumentTaskData taskData = EnforcementDocumentTaskData.builder()
