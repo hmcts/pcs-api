@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,7 +18,8 @@ public class MissedPaymentsWritPage implements CcdPageConfiguration {
             .page("missedPaymentsWrit")
             .pageLabel("Missed payments")
             .label("missedPaymentsWrit-line-separator", "---")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WRIT_FLOW,
+                                              ShowConditionsEnforcementType.SUSPENDED_ORDER))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(WritDetails::getDefendantMissedPayments)

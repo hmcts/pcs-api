@@ -16,6 +16,7 @@ public class UploadStatementPage implements CcdPageConfiguration {
             .pageLabel("Upload statement of payments due and made under the judgment or order")
             .label("uploadStatementPage-line-separator", "---")
             .showCondition(ShowConditions.and(ShowConditionsEnforcementType.WARRANT_FLOW,
+                                              ShowConditionsEnforcementType.SUSPENDED_ORDER,
                                               "warrantDefendantMissedPayments=\"YES\""))
             .label("uploadStatementPage-save-and-return", SAVE_AND_RETURN);
     }

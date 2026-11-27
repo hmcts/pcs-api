@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 
 import java.util.List;
@@ -25,4 +26,14 @@ public interface OrderStepRepository extends JpaRepository<OrderStepEntity, Long
         where step.order.pcsCase.id = :caseId
         and step.id = (select max(latest.id) from OrderStepEntity latest where latest.order = step.order)""")
     List<OrderStepEntity> findLatestByCaseId(UUID caseId);
+
+    /**
+     * The step that issued the case's most recently issued order, if any order on it has been issued. An order is
+     * issued once, so its issuing step is when it was issued; drafts and reviews of later orders are ignored.
+     */
+    default Optional<OrderStepEntity> findLatestIssuedByCaseId(UUID caseId) {
+        return findFirstByOrderPcsCaseIdAndStateOrderByIdDesc(caseId, OrderState.ISSUED);
+    }
+
+    Optional<OrderStepEntity> findFirstByOrderPcsCaseIdAndStateOrderByIdDesc(UUID caseId, OrderState state);
 }

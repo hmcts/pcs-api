@@ -1229,4 +1229,8 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
 
+    /** Whether the case's most recently issued order is a suspended possession order, for enforcement's pages. */
+    @CCD(searchable = false)
+    private YesOrNo enforcementIsSuspendedOrder;
+
 }

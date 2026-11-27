@@ -40,7 +40,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             </ul>
                             </div>
                             """,
-                            "warrantIsSuspendedOrder=\"YES\""
+                            ShowConditionsEnforcementType.SUSPENDED_ORDER
                         )
                         .label("statementOfTruth-cert-not-suspended",
                             """
@@ -51,7 +51,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             </ul>
                             </div>
                             """,
-                            "warrantIsSuspendedOrder=\"NO\""
+                            ShowConditionsEnforcementType.NOT_SUSPENDED_ORDER
                         )
                     .done()
                     .complex(WarrantDetails::getRepaymentCosts)

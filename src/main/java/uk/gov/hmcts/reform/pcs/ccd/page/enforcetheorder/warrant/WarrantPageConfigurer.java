@@ -55,7 +55,6 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(landRegistryFeesPage)
             .add(new RepaymentsPage())
             .add(new LanguageUsedPage())
-            .add(new SuspendedOrderPage())
             .add(new StatementOfTruthPage());
     }
 }

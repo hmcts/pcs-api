@@ -113,7 +113,6 @@ class WarrantPageConfigurerTest extends BasePageTest {
 
         verifyAndCount(inOrder, pageBuilder, RepaymentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsedPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, SuspendedOrderPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, StatementOfTruthPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
