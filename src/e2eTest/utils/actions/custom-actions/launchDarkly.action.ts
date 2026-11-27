@@ -73,13 +73,14 @@ export function resolveLdEnvironment(): string | undefined {
   if (process.env.LAUNCHDARKLY_ENV) {
     return process.env.LAUNCHDARKLY_ENV;
   }
-  const testUrl = process.env.TEST_URL;
-  if (!testUrl) {
+ 
+  const manageURL = process.env.MANAGE_CASE_BASE_URL
+  if (!manageURL) {
     return undefined;
   }
-  try {
-    const hostname = new URL(testUrl).hostname;
-    const envMatch = /^pcs\.([^.]+)\.platform\.hmcts\.net$/.exec(hostname);
+  try {   
+    const hostname = new URL(manageURL).hostname   
+    const envMatch = /^xui-(pcs-api-pr-\d+)\.preview\.platform\.hmcts\.net$/.exec(hostname);
     return envMatch ? envMatch[1] : hostname;
   } catch {
     return undefined;
@@ -113,7 +114,7 @@ export class LaunchDarklyAction implements IAction {
         ldClient = client;
       }
 
-      const context: LaunchDarkly.LDContext = { kind: 'user', key: 'default', environment: resolveLdEnvironment() };
+      const context: LaunchDarkly.LDContext = { kind: 'user', key: resolveLdEnvironment() ?? 'default', environment: resolveLdEnvironment() };
       const detail = await ldClient.variationDetail(flagKey, context, false);
       if (detail.reason?.kind === 'ERROR') {
         console.error(`LaunchDarkly evaluation error for flag "${flagKey}": ${detail.reason.errorKind}`);
