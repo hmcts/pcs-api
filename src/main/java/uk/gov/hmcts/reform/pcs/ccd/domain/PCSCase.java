@@ -1074,27 +1074,16 @@ public class PCSCase {
     )
     private String judicialNotesMarkdownLabel;
 
-    @CCD(searchable = false, access = {RiskAssessmentInternalAccess.class})
-    private String riskAssessmentInternalMarkdown;
+    @CCD(searchable = false, access = {RiskAssessmentInternalAccess.class, RiskAssessmentClaimantAccess.class})
+    private String riskAssessmentMarkdown;
 
     @CCD(
-        label = "${riskAssessmentInternalMarkdown}",
+        label = "${riskAssessmentMarkdown}",
         typeOverride = Label,
         searchable = false,
-        access = {RiskAssessmentInternalAccess.class}
+        access = {RiskAssessmentInternalAccess.class, RiskAssessmentClaimantAccess.class}
     )
-    private String riskAssessmentInternalMarkdownLabel;
-
-    @CCD(searchable = false, access = {RiskAssessmentClaimantAccess.class})
-    private String riskAssessmentClaimantMarkdown;
-
-    @CCD(
-        label = "${riskAssessmentClaimantMarkdown}",
-        typeOverride = Label,
-        searchable = false,
-        access = {RiskAssessmentClaimantAccess.class}
-    )
-    private String riskAssessmentClaimantMarkdownLabel;
+    private String riskAssessmentMarkdownLabel;
 
     @CCD(searchable = false, access = {InternalTabAccess.class})
     private String caseReviewDatesMarkdown;

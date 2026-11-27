@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -30,6 +32,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.RiskAssessmentRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -42,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -52,18 +57,21 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
 
 class RiskAssessmentViewTest {
 
+    private final UserRoleService userRoleService = mock(UserRoleService.class);
     private final FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
     private final EnforcementOrderMediator enforcementOrderMediator =
         spy(new EnforcementOrderMediator(featureToggleService));
     private final RiskAssessmentView view = new RiskAssessmentView(
-        new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()), enforcementOrderMediator,
-        featureToggleService
+        new RiskAssessmentRenderer(new PebbleConfiguration().pebbleEngine()),
+        new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService),
+        userRoleService
     );
     private PCSCase pcsCase = PCSCase.builder().build();
 
     @BeforeEach
     void enableRiskAssessment() {
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(true);
+        setRoles(UserRole.BAILIFF.getRole());
     }
 
     @Test
@@ -71,28 +79,28 @@ class RiskAssessmentViewTest {
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
         EnforcementOrderMediator mediator = mock(EnforcementOrderMediator.class);
         RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
-        final RiskAssessmentView disabledView = new RiskAssessmentView(renderer, mediator, featureToggleService);
+        final RiskAssessmentView disabledView = new RiskAssessmentView(
+            renderer, new EnforcementShowConditionsView(mediator, featureToggleService), userRoleService);
 
         disabledView.setCaseFields(pcsCase,
-            PcsCaseEntity.builder().enforcementOrders(Set.of(application(SelectEnforcementType.WARRANT))).build());
+            PcsCaseEntity.builder().caseReference(1234L)
+                .enforcementOrders(Set.of(application(SelectEnforcementType.WARRANT))).build());
 
         assertNoAssessment();
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdownLabel()).isNull();
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdownLabel()).isNull();
-        verifyNoInteractions(mediator, renderer);
+        assertThat(pcsCase.getRiskAssessmentMarkdownLabel()).isNull();
+        verifyNoInteractions(mediator, renderer, userRoleService);
     }
 
     @Test
     void shouldHideAssessmentOnTheNextCaseReadWhenFlagIsTurnedOff() {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
-        PcsCaseEntity entity = PcsCaseEntity.builder()
+        PcsCaseEntity entity = PcsCaseEntity.builder().caseReference(1234L)
             .claims(List.of(ClaimEntity.builder().build())).enforcementOrders(Set.of(application)).build();
         EnforcementShowConditionsView conditions = new EnforcementShowConditionsView(
             enforcementOrderMediator, featureToggleService);
         conditions.setCaseFields(entity, pcsCase);
         view.setCaseFields(pcsCase, entity);
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNotBlank();
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).isNotBlank();
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
 
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
@@ -120,7 +128,7 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Bailiff note", "Risk assessment level", "Claimant risk assessment",
                       "not added yet", "not set yet", "select action", "govuk-section-break--visible",
                       "Information provided by the claimant on 10 October 2026",
@@ -128,7 +136,12 @@ class RiskAssessmentViewTest {
                       "Do you want to evict everyone at the property?", "Who do you want to evict?",
                       "Billy Wright", "Jane Wright", "Do you know the defendants’ dates of birth?")
             .doesNotContain("Unselected defendant");
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown())
+        final String internalHtml = pcsCase.getRiskAssessmentMarkdown();
+        pcsCase = PCSCase.builder().build();
+        setRoles(UserRole.CLAIMANT_SOLICITOR.getRole());
+        render(application);
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).isNotEqualTo(internalHtml);
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Your risk assessment", "Information provided by you on 10 October 2026",
                       "when you were applying for enforcement", "Billy Wright", "Jane Wright")
             .doesNotContain("Bailiff note", "Risk assessment level", "Risk level", "not added yet", "select action");
@@ -145,18 +158,14 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .containsSubsequence(category.getLabel(), description(category));
         for (RiskCategory other : RiskCategory.values()) {
             if (other != category) {
-                for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
-                                           pcsCase.getRiskAssessmentClaimantMarkdown())) {
-                    assertThat(html).doesNotContain(other.getLabel(), description(other));
-                }
+                String html = pcsCase.getRiskAssessmentMarkdown();
+                assertThat(html).doesNotContain(other.getLabel(), description(other));
             }
         }
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown())
-            .containsSubsequence(category.getLabel(), description(category));
     }
 
     @Test
@@ -169,10 +178,8 @@ class RiskAssessmentViewTest {
         render(application);
 
         for (RiskCategory category : RiskCategory.values()) {
-            for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
-                                       pcsCase.getRiskAssessmentClaimantMarkdown())) {
-                assertThat(html).containsSubsequence(category.getLabel(), description(category));
-            }
+            String html = pcsCase.getRiskAssessmentMarkdown();
+            assertThat(html).containsSubsequence(category.getLabel(), description(category));
         }
     }
 
@@ -192,12 +199,12 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Does anyone living at the property pose a risk to the bailiff?",
                       "Is anyone living at the property vulnerable?", answer.getLabel())
             .doesNotContain("Stale details", VulnerableCategory.VULNERABLE_ADULTS.getLabel());
         for (RiskCategory category : RiskCategory.values()) {
-            assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+            assertThat(pcsCase.getRiskAssessmentMarkdown())
                 .doesNotContain(category.getLabel(), description(category));
         }
     }
@@ -222,18 +229,16 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Is anyone living at the property vulnerable?", "Is it difficult to access the property?",
                       "Do you want to tell us anything else that could help with the eviction?", answer.getLabel());
-        for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
-                                   pcsCase.getRiskAssessmentClaimantMarkdown())) {
-            if (answer == VerticalYesNo.YES) {
-                assertThat(html).contains("Communal entrance", "Parking available", "Limited mobility",
-                                          "Vulnerable adults and children", "Billy: 1 February 1978");
-            } else {
-                assertThat(html).doesNotContain("Communal entrance", "Parking available", "Limited mobility",
-                                                "Vulnerable adults and children", "Billy: 1 February 1978");
-            }
+        String html = pcsCase.getRiskAssessmentMarkdown();
+        if (answer == VerticalYesNo.YES) {
+            assertThat(html).contains("Communal entrance", "Parking available", "Limited mobility",
+                                      "Vulnerable adults and children", "Billy: 1 February 1978");
+        } else {
+            assertThat(html).doesNotContain("Communal entrance", "Parking available", "Limited mobility",
+                                            "Vulnerable adults and children", "Billy: 1 February 1978");
         }
     }
 
@@ -251,7 +256,7 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Do you want to evict everyone at the property?")
             .doesNotContain("Who do you want to evict?", "Previously selected defendant", "Do you know the defendants",
                             "01/02/1978", "Prototype risk description", "Can you describe", "Not answered");
@@ -261,7 +266,7 @@ class RiskAssessmentViewTest {
     void shouldRenderAnAssessmentWithNoOptionalAnswers() {
         render(application(SelectEnforcementType.WARRANT));
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("Claimant risk assessment", "10 October 2026")
             .doesNotContain("Do you", "Does anyone", "Is anyone", "Not answered", "Print");
     }
@@ -304,7 +309,7 @@ class RiskAssessmentViewTest {
 
     @Test
     void shouldNotPopulateAssessmentWhenThereAreNoApplications() {
-        view.setCaseFields(pcsCase, PcsCaseEntity.builder().build());
+        view.setCaseFields(pcsCase, PcsCaseEntity.builder().caseReference(1234L).build());
 
         assertNoAssessment();
     }
@@ -323,7 +328,7 @@ class RiskAssessmentViewTest {
 
         view.setCaseFields(pcsCase, entity);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
+        assertThat(pcsCase.getRiskAssessmentMarkdown())
             .contains("12 October 2026").doesNotContain("13 October 2026", "14 October 2026");
     }
 
@@ -349,7 +354,7 @@ class RiskAssessmentViewTest {
 
         render(submitted);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains("No").doesNotContain("History of firearm");
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).contains("No").doesNotContain("History of firearm");
     }
 
     @Test
@@ -359,7 +364,7 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains("10 June 2026");
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).contains("10 June 2026");
     }
 
     @ParameterizedTest
@@ -382,7 +387,7 @@ class RiskAssessmentViewTest {
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment())
             .isEqualTo(type == SelectEnforcementType.WARRANT ? YesOrNo.YES : YesOrNo.NO);
         if (type == SelectEnforcementType.WARRANT) {
-            assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).contains("12 October 2026");
+            assertThat(pcsCase.getRiskAssessmentMarkdown()).contains("12 October 2026");
         } else {
             assertNoAssessment();
         }
@@ -398,7 +403,9 @@ class RiskAssessmentViewTest {
             default -> true;
         };
         RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
-        RiskAssessmentView underTest = new RiskAssessmentView(renderer, enforcementOrderMediator, featureToggleService);
+        RiskAssessmentView underTest = new RiskAssessmentView(
+            renderer, new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService),
+            userRoleService);
 
         PcsCaseEntity entity = caseWithApplications(application);
         new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService)
@@ -408,7 +415,6 @@ class RiskAssessmentViewTest {
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.from(eligible));
         if (eligible) {
             verify(renderer).render("10 October 2026", List.of(), false);
-            verify(renderer).render("10 October 2026", List.of(), true);
         } else {
             assertNoAssessment();
             verifyNoInteractions(renderer);
@@ -430,8 +436,7 @@ class RiskAssessmentViewTest {
             view.setCaseFields(pcsCase, entity);
         }
         if (enabled) {
-            assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
-            assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNotBlank();
+            assertThat(pcsCase.getRiskAssessmentMarkdown()).isNotBlank();
         } else {
             assertNoAssessment();
         }
@@ -459,10 +464,8 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
-                                   pcsCase.getRiskAssessmentClaimantMarkdown())) {
-            assertThat(html).containsSubsequence(category.getLabel(), "Support required");
-        }
+        String html = pcsCase.getRiskAssessmentMarkdown();
+        assertThat(html).containsSubsequence(category.getLabel(), "Support required");
     }
 
     @Test
@@ -476,11 +479,9 @@ class RiskAssessmentViewTest {
 
         render(application);
 
-        for (String html : List.of(pcsCase.getRiskAssessmentInternalMarkdown(),
-                                   pcsCase.getRiskAssessmentClaimantMarkdown())) {
-            assertThat(html).contains("&#60;script&#62;unsafe&#60;/script&#62;")
-                .doesNotContain("<script>", "null");
-        }
+        String html = pcsCase.getRiskAssessmentMarkdown();
+        assertThat(html).contains("&#60;script&#62;unsafe&#60;/script&#62;")
+            .doesNotContain("<script>", "null");
     }
 
     private RiskDetails allRiskDetails() {
@@ -498,9 +499,95 @@ class RiskAssessmentViewTest {
         return "Description for " + category.name().replace('_', ' ');
     }
 
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {
+        "JUDGE", "CIRCUIT_JUDGE", "FEE_PAID_JUDGE", "LEADERSHIP_JUDGE",
+        "HEARING_CENTRE_ADMIN", "HEARING_CENTRE_TEAM_LEADER", "CTSC_ADMIN", "CTSC_TEAM_LEADER",
+        "WLU_ADMIN", "WLU_TEAM_LEADER", "BAILIFF", "BAILIFF_ADMIN", "BAILIFF_MANAGER",
+        "CLAIMANT", "CLAIMANT_SOLICITOR", "GA_CLAIMANT_SOLICITOR"
+    })
+    void shouldRenderOnlyTheCurrentUsersAssessment(UserRole role) {
+        setRoles(role.getRole());
+        EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
+        WarrantDetails warrant = application.getEnforcementOrder().getWarrantDetails();
+        warrant.setAnyRiskToBailiff(YesNoNotSure.YES);
+        warrant.setRiskCategories(Set.of(RiskCategory.values()));
+        warrant.setRiskDetails(allRiskDetails());
+        warrant.setDefendantsDOBKnown(VerticalYesNo.YES);
+        warrant.setDefendantsDOB(DefendantsDOB.builder().defendantsDOBDetails("Billy: 1 February 1978").build());
+
+        render(application);
+
+        String html = pcsCase.getRiskAssessmentMarkdown();
+        assertThat(html).contains("10 October 2026", "Billy: 1 February 1978");
+        for (RiskCategory category : RiskCategory.values()) {
+            assertThat(html).containsSubsequence(category.getLabel(), description(category));
+        }
+        if (Set.of(UserRole.CLAIMANT, UserRole.CLAIMANT_SOLICITOR, UserRole.GA_CLAIMANT_SOLICITOR).contains(role)) {
+            assertThat(html).contains("Your risk assessment", "Information provided by you", "when you were")
+                .doesNotContain("Bailiff note", "Risk assessment level", "not added yet", "select action");
+        } else {
+            assertThat(html).contains("Bailiff note", "Risk assessment level", "Claimant risk assessment",
+                                      "Information provided by the claimant", "when they were");
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {
+        "CHALLENGED_ACCESS_ADMIN", "CHALLENGED_ACCESS_JUDICIARY", "SPECIFIC_ACCESS_ADMIN",
+        "SPECIFIC_ACCESS_LEGAL_OPS", "SPECIFIC_ACCESS_CTSC", "SPECIFIC_ACCESS_JUDICIARY"
+    })
+    void shouldResolveMappedInternalAccessProfiles(UserRole role) {
+        setRoles(role.getRole());
+
+        render(application(SelectEnforcementType.WARRANT));
+
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).contains("Bailiff note", "Risk assessment level");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"citizen", "caseworker-pcs-solicitor", "[DEFENDANT]", "defendant-solicitor",
+        "[DEFENDANTSOLICITOR]", "duty-advisor-request", "caseworker-caa", "unknown"})
+    void shouldNotRenderForUsersWithoutAssessmentAccess(String role) {
+        setRoles(role);
+        RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
+        RiskAssessmentView underTest = new RiskAssessmentView(
+            renderer, new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService),
+            userRoleService);
+
+        underTest.setCaseFields(pcsCase, caseWithApplications(application(SelectEnforcementType.WARRANT)));
+
+        assertNoAssessment();
+        verifyNoInteractions(renderer);
+    }
+
+    @Test
+    void shouldNotRenderWithoutAnyRoles() {
+        setRoles();
+
+        render(application(SelectEnforcementType.WARRANT));
+
+        assertNoAssessment();
+    }
+
+    @Test
+    void shouldKeepClaimantViewWhenUserAlsoHasAnInternalRole() {
+        setRoles(UserRole.CLAIMANT.getRole(), UserRole.BAILIFF_ADMIN.getRole());
+
+        render(application(SelectEnforcementType.WARRANT));
+
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).contains("Your risk assessment")
+            .doesNotContain("Bailiff note", "Risk assessment level");
+    }
+
+    private void setRoles(String... roles) {
+        when(userRoleService.getCurrentUserCaseRoles(anyLong()))
+            .thenReturn(new UserRoles("current-user", List.of(roles)));
+        when(userRoleService.isCurrentUserInternal()).thenReturn(UserRoleService.isInternalUser(List.of(roles)));
+    }
+
     private void assertNoAssessment() {
-        assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNull();
-        assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNull();
+        assertThat(pcsCase.getRiskAssessmentMarkdown()).isNull();
     }
 
     private void render(EnforcementOrderEntity application) {
@@ -508,7 +595,7 @@ class RiskAssessmentViewTest {
     }
 
     private PcsCaseEntity caseWithApplications(EnforcementOrderEntity... applications) {
-        return PcsCaseEntity.builder()
+        return PcsCaseEntity.builder().caseReference(1234L)
             .claims(List.of(ClaimEntity.builder().build()))
             .enforcementOrders(Set.of(applications))
             .build();

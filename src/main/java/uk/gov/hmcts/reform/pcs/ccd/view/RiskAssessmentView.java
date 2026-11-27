@@ -2,7 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
+import uk.gov.hmcts.ccd.sdk.api.HasRole;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RiskAssessmentClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -12,20 +16,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.riskassessment.RiskAssessmentRow;
-import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.RiskAssessmentRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails.DIFFICULT_ACCESS_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation.ADDITIONAL_INFORMATION_SELECT_LABEL;
@@ -42,23 +47,34 @@ public class RiskAssessmentView {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
     private final RiskAssessmentRenderer renderer;
-    private final EnforcementOrderMediator enforcementOrderMediator;
-    private final FeatureToggleService featureToggleService;
+    private final EnforcementShowConditionsView enforcementShowConditionsView;
+    private final UserRoleService userRoleService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
-        if (!featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)) {
-            return;
-        }
-        enforcementOrderMediator.getRiskAssessmentApplication(entity)
-            .ifPresent(application -> setRiskAssessment(pcsCase, application));
+        enforcementShowConditionsView.getRiskAssessmentApplication(entity)
+            .ifPresent(application -> {
+                Collection<String> roles = userRoleService.getCurrentUserCaseRoles(entity.getCaseReference()).roles();
+                boolean claimantView = hasReadAccess(new RiskAssessmentClaimantAccess(), roles);
+                if (claimantView || userRoleService.isCurrentUserInternal()) {
+                    setRiskAssessment(pcsCase, application, claimantView);
+                }
+            });
     }
 
-    private void setRiskAssessment(PCSCase pcsCase, EnforcementOrderEntity application) {
+    private void setRiskAssessment(PCSCase pcsCase, EnforcementOrderEntity application, boolean claimantView) {
         String submittedDate = application.getStatementOfTruth().getCompletedDate()
             .atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate().format(DATE_FORMAT);
         List<RiskAssessmentRow> rows = buildRows(application.getEnforcementOrder());
-        pcsCase.setRiskAssessmentInternalMarkdown(renderer.render(submittedDate, rows, false));
-        pcsCase.setRiskAssessmentClaimantMarkdown(renderer.render(submittedDate, rows, true));
+        pcsCase.setRiskAssessmentMarkdown(renderer.render(submittedDate, rows, claimantView));
+    }
+
+    private boolean hasReadAccess(HasAccessControl access, Collection<String> roles) {
+        Set<String> profiles = access.getGrants().keySet().stream()
+            .map(HasRole::getRole).collect(Collectors.toSet());
+        return Arrays.stream(UserRole.values())
+            .filter(role -> roles.contains(role.getRole()))
+            .flatMap(role -> Arrays.stream(role.getAccessProfiles()))
+            .anyMatch(profiles::contains);
     }
 
     private List<RiskAssessmentRow> buildRows(EnforcementOrder order) {

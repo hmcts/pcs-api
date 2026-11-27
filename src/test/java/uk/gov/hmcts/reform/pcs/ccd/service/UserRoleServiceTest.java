@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -12,6 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -246,6 +250,66 @@ class UserRoleServiceTest {
     private void stubAuth() {
         when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
         when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {
+        "JUDGE", "CIRCUIT_JUDGE", "FEE_PAID_JUDGE", "LEADERSHIP_JUDGE",
+        "HEARING_CENTRE_ADMIN", "HEARING_CENTRE_TEAM_LEADER", "CTSC_ADMIN", "CTSC_TEAM_LEADER",
+        "WLU_ADMIN", "WLU_TEAM_LEADER", "BAILIFF", "BAILIFF_ADMIN", "BAILIFF_MANAGER"
+    })
+    void shouldIdentifyCurrentInternalUsersFromTheirOrganisationalRoles(UserRole role) {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
+        stubRoleAssignmentRoles(role.getRole());
+
+        assertThat(underTest.isCurrentUserInternal()).isTrue();
+
+        verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @Test
+    void shouldIdentifyCurrentInternalUsersFromTheirIdamRoles() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("hearing-centre-admin"));
+
+        assertThat(underTest.isCurrentUserInternal()).isTrue();
+
+        verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {
+        "CHALLENGED_ACCESS_ADMIN", "CHALLENGED_ACCESS_JUDICIARY", "SPECIFIC_ACCESS_ADMIN",
+        "SPECIFIC_ACCESS_LEGAL_OPS", "SPECIFIC_ACCESS_CTSC", "SPECIFIC_ACCESS_JUDICIARY"
+    })
+    void shouldRecogniseInternalRolesByTheirAccessProfiles(UserRole role) {
+        assertThat(UserRoleService.isInternalUser(List.of(role.getRole()))).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]", "citizen",
+        "[DEFENDANT]", "defendant-solicitor", "[DEFENDANTSOLICITOR]", "caseworker-pcs-solicitor",
+        "caseworker", "unknown", "system"})
+    void shouldNotClassifyExternalOrGenericRolesAsInternal(String role) {
+        assertThat(UserRoleService.isInternalUser(List.of(role))).isFalse();
+    }
+
+    @Test
+    void shouldReturnFalseForACurrentUserWithoutInternalRoles() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("citizen"));
+        stubRoleAssignmentRoles("claimant");
+
+        assertThat(underTest.isCurrentUserInternal()).isFalse();
+
+        verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @Test
+    void shouldNotClassifyMissingRolesAsInternal() {
+        assertThat(UserRoleService.isInternalUser(null)).isFalse();
+        assertThat(UserRoleService.isInternalUser(List.of())).isFalse();
     }
 
     private void stubRasRoles(String... roles) {

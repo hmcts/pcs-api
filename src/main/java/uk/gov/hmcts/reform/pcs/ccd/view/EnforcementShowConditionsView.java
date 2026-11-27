@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -42,6 +41,13 @@ public class EnforcementShowConditionsView {
         setEnforcementShowConditions(pcsCaseEntity, pcsCase);
     }
 
+    public Optional<EnforcementOrderEntity> getRiskAssessmentApplication(PcsCaseEntity pcsCaseEntity) {
+        if (!featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)) {
+            return Optional.empty();
+        }
+        return enforcementOrderMediator.getRiskAssessmentApplication(pcsCaseEntity);
+    }
+
     private void setEnforcementShowConditions(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         Optional<EnforcementState> activeState = enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)
             .map(EnforcementOrderEntity::getState);
@@ -49,9 +55,7 @@ public class EnforcementShowConditionsView {
 
         pcsCase.setEnfShowConditions(EnforcementShowConditions.builder()
             .recordWarrantReturn(YesOrNo.from(canRecordWarrantReturn))
-            .canViewRiskAssessment(YesOrNo.from(
-                featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)
-                    && enforcementOrderMediator.getRiskAssessmentApplication(pcsCaseEntity).isPresent()))
+            .canViewRiskAssessment(YesOrNo.from(getRiskAssessmentApplication(pcsCaseEntity).isPresent()))
             .build());
     }
 }

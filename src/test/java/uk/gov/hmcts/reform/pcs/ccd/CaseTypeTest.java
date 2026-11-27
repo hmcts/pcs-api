@@ -202,8 +202,7 @@ class CaseTypeTest {
         assertThat(riskAssessmentTab.getShowCondition())
             .isEqualTo("enfShowConditions.canViewRiskAssessment=\"Yes\"");
         assertThat(riskAssessmentTab.getFields()).extracting(TabField::getId).containsExactly(
-            "riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown",
-            "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown"
+            "riskAssessmentMarkdownLabel", "riskAssessmentMarkdown"
         );
         assertThat(riskAssessmentTab.getFields())
             .filteredOn(field -> field.getId().endsWith("MarkdownLabel"))

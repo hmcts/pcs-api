@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,18 +39,13 @@ class RiskAssessmentAccessTest {
     }
 
     @Test
-    void shouldKeepInternalLabelsAndHtmlHiddenFromAllClaimantSideRoles() throws Exception {
-        for (String field : List.of("riskAssessmentInternalMarkdown", "riskAssessmentInternalMarkdownLabel")) {
-            assertThat(readers(field)).doesNotContain(
-                UserRole.CLAIMANT, UserRole.CITIZEN, UserRole.DEFENDANT, UserRole.DEFENDANT_SOLICITOR,
-                UserRole.GA_DEFENDANT_SOLICITOR, UserRole.PCS_SOLICITOR, UserRole.GA_CLAIMANT_SOLICITOR,
-                UserRole.CLAIMANT_SOLICITOR
-            );
-        }
-        for (String field : List.of("riskAssessmentClaimantMarkdown", "riskAssessmentClaimantMarkdownLabel")) {
-            assertThat(readers(field)).containsExactlyInAnyOrder(
-                UserRole.CLAIMANT, UserRole.GA_CLAIMANT_SOLICITOR, UserRole.CLAIMANT_SOLICITOR
-            );
+    void shouldGrantSharedMarkdownOnlyToConfirmedAssessmentReaders() throws Exception {
+        Set<HasRole> expected = new HashSet<>(new RiskAssessmentInternalAccess().getGrants().keySet());
+        expected.addAll(new RiskAssessmentClaimantAccess().getGrants().keySet());
+        for (String field : List.of("riskAssessmentMarkdown", "riskAssessmentMarkdownLabel")) {
+            assertThat(readers(field)).containsExactlyInAnyOrderElementsOf(expected);
+            assertThat(readers(field)).doesNotContain(UserRole.CITIZEN, UserRole.DEFENDANT,
+                UserRole.DEFENDANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR, UserRole.PCS_SOLICITOR);
         }
     }
 
@@ -67,7 +63,11 @@ class RiskAssessmentAccessTest {
     private Set<HasRole> readers(String fieldName) throws Exception {
         CCD annotation = PCSCase.class.getDeclaredField(fieldName).getAnnotation(CCD.class);
         Class<? extends HasAccessControl>[] access = annotation.access();
-        assertThat(access).hasSize(1);
-        return access[0].getDeclaredConstructor().newInstance().getGrants().keySet();
+        assertThat(access).hasSize(2);
+        Set<HasRole> roles = new HashSet<>();
+        for (Class<? extends HasAccessControl> policy : access) {
+            roles.addAll(policy.getDeclaredConstructor().newInstance().getGrants().keySet());
+        }
+        return roles;
     }
 }

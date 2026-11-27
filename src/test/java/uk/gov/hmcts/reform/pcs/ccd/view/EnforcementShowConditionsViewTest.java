@@ -126,6 +126,25 @@ class EnforcementShowConditionsViewTest {
         verify(enforcementOrderMediator, never()).getRiskAssessmentApplication(entity);
     }
 
+    @Test
+    void shouldNotFetchTheRiskAssessmentApplicationWhenTheFeatureFlagIsOff() {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+
+        assertThat(enforcementShowConditionsView.getRiskAssessmentApplication(entity)).isEmpty();
+
+        verify(enforcementOrderMediator, never()).getRiskAssessmentApplication(entity);
+    }
+
+    @Test
+    void shouldShareTheEligibleApplicationBetweenVisibilityAndContent() {
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        EnforcementOrderEntity application = EnforcementOrderEntity.builder().build();
+        when(enforcementOrderMediator.getRiskAssessmentApplication(entity)).thenReturn(Optional.of(application));
+
+        assertThat(enforcementShowConditionsView.getRiskAssessmentApplication(entity)).containsSame(application);
+    }
+
     private static Stream<Arguments> recordWarrantReturnScenarios() {
         return Stream.of(
             Arguments.of(EnforcementState.AWAITING_SUBMISSION_TO_HMCTS, YesOrNo.NO),
