@@ -29,6 +29,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RECORD_WARRANT_RETURN;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
@@ -47,7 +48,8 @@ class FeatureFlagViewTest {
         WALES_MAKE_A_CLAIM, FeatureFlags::getWalesMakeAClaimEnabled,
         CUI_RESPOND_TO_CLAIM_LR, FeatureFlags::getCuiRespondToClaimLrEnabled,
         MAKE_ORDER, FeatureFlags::getMakeOrderEnabled,
-        ENFORCEMENT, FeatureFlags::getEnforcementEnabled
+        ENFORCEMENT, FeatureFlags::getEnforcementEnabled,
+        RECORD_WARRANT_RETURN, FeatureFlags::getRecordWarrantReturnEnabled
     );
 
     @Mock
