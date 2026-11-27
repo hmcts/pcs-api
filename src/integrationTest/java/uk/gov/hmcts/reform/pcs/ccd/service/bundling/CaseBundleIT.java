@@ -23,6 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.spring.DocJobsAutoConfiguration;
+import uk.gov.hmcts.ccd.sdk.jobs.CaseMetadata;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -86,6 +87,8 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     private TransactionTemplate transaction;
     @Autowired
     private TestData flags;
+    @Autowired
+    private RedoCaseBundles redo;
 
     @TestConfiguration
     static class Flags {
@@ -233,6 +236,20 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
      * An issued case after its first event. The fixture seeds cases without an event, as no real case is made, so
      * nothing has built its bundle until an event runs.
      */
+    @Test
+    void redoingTheBundlesGivesACaseWithoutOneItsBundle() throws Exception {
+        long reference = issued();
+        // As if the case predated bundling.
+        jdbc.update("delete from bundling.doc_job where case_reference = ?", reference);
+
+        transaction.executeWithoutResult(status -> redo.apply(
+            new CaseMetadata(reference, "PCS", "CASE_ISSUED", caseRevision(reference))));
+        render(reference);
+
+        assertThat(versions(reference)).singleElement()
+            .satisfies(bundle -> assertThat(bundle.getCaseRevision()).isEqualTo(caseRevision(reference)));
+    }
+
     private long issued() {
         long reference = cases.issue();
         event(reference, pcsCase -> { });

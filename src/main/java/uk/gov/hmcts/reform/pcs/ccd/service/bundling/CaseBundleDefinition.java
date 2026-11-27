@@ -56,14 +56,24 @@ public class CaseBundleDefinition implements CaseEventHook {
     /** Runs in the event's transaction, so the bundle is submitted only if the event commits. */
     @Override
     public void afterCaseEvent(CaseEventContext event) {
+        submit(event.caseReference());
+    }
+
+    /**
+     * Submits the case's bundle as it now stands, in the caller's transaction with the case locked; false when bundles
+     * are off or there is no such case.
+     */
+    boolean submit(long caseReference) {
         DocJobs docJobs = jobs.getIfAvailable();
         if (docJobs == null) {
-            return;
+            return false;
         }
         // The documents are queried rather than read from the case's list: an event can save or delete a document
         // without touching a list it has already loaded.
-        cases.findByCaseReference(event.caseReference()).ifPresent(pcsCase -> docJobs.submit(
-            event.caseReference(), NAME, build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId()))));
+        return cases.findByCaseReference(caseReference).map(pcsCase -> {
+            docJobs.submit(caseReference, NAME, build(pcsCase, documents.findByPcsCase_Id(pcsCase.getId())));
+            return true;
+        }).orElse(false);
     }
 
     static PdfRequest build(PcsCaseEntity pcsCase, List<DocumentEntity> documents) {
