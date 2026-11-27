@@ -20,5 +20,5 @@ FROM (
 ccd.case_data cd
 WHERE pc.id = k.case_id
   AND cd.reference = pc.case_reference
-  AND cd.state IN ('PENDING_CASE_ISSUED', 'CASE_ISSUED')
+  AND cd.state NOT IN ('AWAITING_SUBMISSION_TO_HMCTS', 'AWAITING_RESUBMISSION_TO_HMCTS')
   AND pc.case_type_key IS NULL;
