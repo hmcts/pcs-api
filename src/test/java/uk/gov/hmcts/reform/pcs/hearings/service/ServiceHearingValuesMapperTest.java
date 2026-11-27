@@ -19,12 +19,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.EntityRoleCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.EntityRoleCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -32,10 +34,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -78,6 +82,8 @@ class ServiceHearingValuesMapperTest {
     private CaseNameFormatter caseNameFormatter;
     @Mock
     private IndividualDetailsFlagMapper individualDetailsFlagMapper;
+    @Mock
+    private EntityRoleCodeRepository entityRoleCodeRepository;
 
     private ServiceHearingValuesMapper underTest;
 
@@ -96,8 +102,8 @@ class ServiceHearingValuesMapperTest {
 
         underTest = new ServiceHearingValuesMapper(
             defaults, pcsCaseService, pcsCaseRepository, caseNameFormatter, 
-            individualDetailsFlagMapper, MANAGE_CASE_URL);
-        lenient().when(individualDetailsFlagMapper.map(any())).thenReturn(new IndividualDetails());
+            individualDetailsFlagMapper, entityRoleCodeRepository, MANAGE_CASE_URL);
+        lenient().when(individualDetailsFlagMapper.map(any())).thenAnswer(invocation -> new IndividualDetails());
     }
 
     @Test
@@ -508,6 +514,204 @@ class ServiceHearingValuesMapperTest {
     }
 
     @Test
+    void shouldMapActivePartyFlags() {
+        LocalDateTime created = LocalDateTime.of(2026, 11, 1, 9, 30);
+        CasePartyFlagEntity partyFlag = partyFlag("RA0026", "Support worker or carer with me", "Active");
+        partyFlag.setFlagComment("Brings a carer");
+        partyFlag.setDateTimeCreated(created);
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("John")
+            .lastName("Doe")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        CaseFlags caseFlags = values.getCaseFlags();
+        assertThat(caseFlags.getFlagAmendUrl()).isEqualTo("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags");
+        assertThat(caseFlags.getFlags()).containsExactly(
+            PartyFlags.builder()
+                .partyID(defendant.getId().toString())
+                .partyName("John Doe")
+                .flagId("RA0026")
+                .flagDescription("Support worker or carer with me")
+                .flagStatus("Active")
+                .flagComment("Brings a carer")
+                .dateTimeCreated(created)
+                .build());
+    }
+
+    @Test
+    void shouldAddRoleNameToPartyNameOfFlags() {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .entityRoleCodeKey("CLAIMANT-ROLE")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+        when(entityRoleCodeRepository.findAllById(List.of("CLAIMANT-ROLE")))
+            .thenReturn(List.of(EntityRoleCodeEntity.builder().key("CLAIMANT-ROLE").valueEn("Claimant").build()));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington - Claimant"));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    void shouldUseJustPartyNameWhenRoleHasNoEnglishName(String valueEn) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .entityRoleCodeKey("CLAIMANT-ROLE")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+        when(entityRoleCodeRepository.findAllById(List.of("CLAIMANT-ROLE")))
+            .thenReturn(List.of(EntityRoleCodeEntity.builder().key("CLAIMANT-ROLE").valueEn(valueEn).build()));
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington"));
+    }
+
+    @Test
+    void shouldNotLookUpRoleNamesWhenNoPartyHasRoleOrFlags() {
+        PartyEntity flaggedWithoutRole = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Bob")
+            .lastName("Bobbington")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        PartyEntity roleWithoutFlags = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .entityRoleCodeKey("DEFENDANT-ROLE")
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(flaggedWithoutRole, roleWithoutFlags))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Bob Bobbington"));
+        verifyNoInteractions(entityRoleCodeRepository);
+    }
+
+    @Test
+    void shouldNotMapCaseLevelFlagsIntoCaseFlags() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        givenCase(caseBuilder()
+                      .caseFlags(flags(flagWithCode("CF0002", "Active")))
+                      .parties(new HashSet<>(Set.of(defendant)))
+                      .build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags()).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Active", "Requested"})
+    void shouldIncludeActiveAndRequestedPartyFlags(String status) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", status))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getFlagStatus()).isEqualTo(status));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"Inactive", "Not approved"})
+    void shouldOmitCaseFlagsWhenNoPartyFlagIsActiveOrRequested(String status) {
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", status))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags()).isNull();
+    }
+
+    @Test
+    void shouldNotMapFlagsForRemovedParties() {
+        PartyEntity removed = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .removed(true)
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("RA0026", "Support worker", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(removed))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags()).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PF0015", "RA0042"})
+    void shouldUseLanguageAsDescriptionForInterpreterFlags(String flagCode) {
+        CasePartyFlagEntity interpreter = partyFlag(flagCode, "Language Interpreter", "Active");
+        interpreter.setSubTypeValue("Welsh");
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(interpreter)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getFlagDescription()).isEqualTo("Welsh"));
+    }
+
+    @Test
+    void shouldUseOtherDescriptionForOtherFlag() {
+        CasePartyFlagEntity other = partyFlag(ServiceHearingValuesMapper.OTHER_FLAG_CODE, "Other", "Active");
+        other.setOtherDescription("Needs frequent breaks");
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(other)))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(defendant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getFlagDescription()).isEqualTo("Needs frequent breaks"));
+    }
+
+    @Test
+    void shouldUseOrganisationNameAsPartyNameForOrganisationPartyFlags() {
+        PartyEntity claimant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .claimCreator(true)
+            .organisationId("ORG123")
+            .orgName("Acme Housing")
+            .defendantFlags(new ArrayList<>(List.of(partyFlag("PF0001", "Unaccompanied minor", "Active"))))
+            .build();
+        givenCase(caseBuilder().parties(new HashSet<>(Set.of(claimant))).build());
+
+        ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
+
+        assertThat(values.getCaseFlags().getFlags()).singleElement()
+            .satisfies(flag -> assertThat(flag.getPartyName()).isEqualTo("Acme Housing"));
+    }
+
+    @Test
     void shouldUsePersonsUnknownWhenNameIsNotKnown() {
         PartyEntity defendant = PartyEntity.builder()
             .id(UUID.randomUUID())
@@ -520,8 +724,8 @@ class ServiceHearingValuesMapperTest {
         ServiceHearingValues values = underTest.getServiceHearingValues(CASE_REFERENCE);
 
         assertThat(values.getParties()).singleElement().satisfies(party -> {
-            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Persons unknown");
-            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("Persons unknown");
+            assertThat(party.getIndividualDetails().getFirstName()).isEqualTo("Persons");
+            assertThat(party.getIndividualDetails().getLastName()).isEqualTo("unknown");
         });
     }
 
@@ -1053,6 +1257,13 @@ class ServiceHearingValuesMapperTest {
             .flagRefData(FlagRefDataEntity.builder().flagCode(flagCode).flagName("Flag " + flagCode).build())
             .defaultStatus(status)
             .build();
+    }
+
+    private static CasePartyFlagEntity partyFlag(String flagCode, String name, String status) {
+        CasePartyFlagEntity flag = new CasePartyFlagEntity();
+        flag.setFlagRefData(FlagRefDataEntity.builder().flagCode(flagCode).flagName(name).build());
+        flag.setDefaultStatus(status);
+        return flag;
     }
 
     private static PcsCaseEntity caseIssuedOn(LocalDateTime claimIssuedDate) {

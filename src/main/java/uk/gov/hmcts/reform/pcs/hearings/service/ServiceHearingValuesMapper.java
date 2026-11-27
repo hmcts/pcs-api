@@ -15,26 +15,32 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.EntityRoleCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingWindow;
 import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyFlags;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -50,6 +56,7 @@ public class ServiceHearingValuesMapper {
     static final int DUTY_SOLICITOR_ATTENDEES = 1;
     static final String CASE_FLAGS_PREFIX = "Case Flags: ";
     static final String ACTIVE_FLAG_STATUS = "Active";
+    static final Set<String> HEARING_FLAG_STATUSES = Set.of(ACTIVE_FLAG_STATUS, "Requested");
     static final String URGENT_CASE_FLAG_CODE = "CF0007";
     static final String PARTY_TYPE_INDIVIDUAL = "IND";
     static final String PARTY_TYPE_ORGANISATION = "ORG";
@@ -61,14 +68,18 @@ public class ServiceHearingValuesMapper {
     private static final String COMMENT_OPEN = " (Comments: ";
     private static final String COMMENT_CLOSE = ")";
     private static final String CASE_FILE_VIEW_PATH = "/cases/case-details/%d#Case%%20File%%20View";
+    static final String CASE_FLAGS_PATH = "/cases/case-details/%d#Case%%20flags";
+    private static final String PARTY_ROLE_SEPARATOR = " - ";
     private static final String HEARING_PRIORITY_URGENT = "Urgent";
-    private static final String PERSONS_UNKNOWN = "Persons unknown";
+    private static final String PERSONS_UNKNOWN_FIRST_NAME = "Persons";
+    private static final String PERSONS_UNKNOWN_LAST_NAME = "unknown";
 
     private final ServiceHearingValuesConfiguration defaults;
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
     private final CaseNameFormatter caseNameFormatter;
     private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
+    private final EntityRoleCodeRepository entityRoleCodeRepository;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
@@ -76,12 +87,14 @@ public class ServiceHearingValuesMapper {
                                       PcsCaseRepository pcsCaseRepository,
                                       CaseNameFormatter caseNameFormatter,
                                       IndividualDetailsFlagMapper individualDetailsFlagMapper,
+                                      EntityRoleCodeRepository entityRoleCodeRepository,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
         this.pcsCaseRepository = pcsCaseRepository;
         this.caseNameFormatter = caseNameFormatter;
         this.individualDetailsFlagMapper = individualDetailsFlagMapper;
+        this.entityRoleCodeRepository = entityRoleCodeRepository;
         this.manageCaseUrl = manageCaseUrl;
     }
 
@@ -108,7 +121,9 @@ public class ServiceHearingValuesMapper {
         List<PartyDetails> parties = parties(pcsCase);
         if (!parties.isEmpty()) {
             values.setParties(parties);
+            values.setCaseFlags(caseFlags(pcsCase, parties));
         }
+        
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -186,11 +201,15 @@ public class ServiceHearingValuesMapper {
     }
     
     private List<PartyDetails> parties(PcsCaseEntity pcsCase) {
-        return pcsCase.getParties().stream()
-            .filter(Objects::nonNull)
-            .filter(party -> !party.isRemoved())
+        return activeParties(pcsCase)
             .map(this::partyDetails)
             .toList();
+    }
+
+    private static Stream<PartyEntity> activeParties(PcsCaseEntity pcsCase) {
+        return pcsCase.getParties().stream()
+            .filter(Objects::nonNull)
+            .filter(party -> !party.isRemoved());
     }
 
     // defendantFlags is the historical name on PartyEntity for a person's flags, including claimants
@@ -215,8 +234,8 @@ public class ServiceHearingValuesMapper {
             details.setFirstName(party.getOrgName());
             details.setLastName(UNDERLESSEE_OR_MORTGAGEE_LAST_NAME);
         } else if (party.getNameKnown() == VerticalYesNo.NO) {
-            details.setFirstName(PERSONS_UNKNOWN);
-            details.setLastName(PERSONS_UNKNOWN);
+            details.setFirstName(PERSONS_UNKNOWN_FIRST_NAME);
+            details.setLastName(PERSONS_UNKNOWN_LAST_NAME);
         } else {
             details.setFirstName(party.getFirstName());
             details.setLastName(party.getLastName());
@@ -266,11 +285,93 @@ public class ServiceHearingValuesMapper {
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {
-        long activeParties = pcsCase.getParties().stream()
+        return Math.toIntExact(activeParties(pcsCase).count()) + DUTY_SOLICITOR_ATTENDEES;
+    }
+
+    private CaseFlags caseFlags(PcsCaseEntity pcsCase, List<PartyDetails> parties) {
+        List<PartyEntity> flaggedParties = activeParties(pcsCase)
+            .filter(party -> hearingFlags(party.getDefendantFlags()).findAny().isPresent())
+            .toList();
+        if (flaggedParties.isEmpty()) {
+            return null;
+        }
+
+        Map<String, PartyDetails> partiesById = new HashMap<>();
+        parties.forEach(party -> partiesById.put(party.getPartyID(), party));
+        Map<String, String> roleNames = roleNames(flaggedParties);
+
+        List<PartyFlags> flags = flaggedParties.stream()
+            .flatMap(party -> {
+                String partyId = party.getId().toString();
+                String partyName = partyName(partiesById.get(partyId), roleNames.get(party.getEntityRoleCodeKey()));
+                return hearingFlags(party.getDefendantFlags())
+                    .map(flag -> partyFlag(flag, partyId, partyName));
+            })
+            .toList();
+
+        return CaseFlags.builder()
+            .flags(flags)
+            .flagAmendUrl(String.format(CASE_FLAGS_PATH, pcsCase.getCaseReference()))
+            .build();
+    }
+
+    private static Stream<? extends BaseCaseFlag> hearingFlags(List<? extends BaseCaseFlag> flags) {
+        return flags.stream()
             .filter(Objects::nonNull)
-            .filter(party -> !party.isRemoved())
-            .count();
-        return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
+            .filter(flag -> flag.getDefaultStatus() != null && HEARING_FLAG_STATUSES.contains(flag.getDefaultStatus()))
+            .filter(flag -> flag.getFlagRefData() != null);
+    }
+
+    private static PartyFlags partyFlag(BaseCaseFlag flag, String partyId, String partyName) {
+        return PartyFlags.builder()
+            .partyID(partyId)
+            .partyName(partyName)
+            .flagId(flag.getFlagRefData().getFlagCode())
+            .flagDescription(flagDescription(flag))
+            .flagStatus(flag.getDefaultStatus())
+            .flagComment(flag.getFlagComment())
+            .dateTimeCreated(flag.getDateTimeCreated())
+            .dateTimeModified(flag.getDateTimeModified())
+            .build();
+    }
+
+    // ExUI shows the description under an interpreter flag's name, so it carries the language
+    private static String flagDescription(BaseCaseFlag flag) {
+        String flagCode = flag.getFlagRefData().getFlagCode();
+        boolean interpreter = IndividualDetailsFlagMapper.SPOKEN_LANGUAGE_INTERPRETER.equals(flagCode)
+            || IndividualDetailsFlagMapper.SIGN_LANGUAGE_INTERPRETER.equals(flagCode);
+        if (interpreter && flag.getSubTypeValue() != null && !flag.getSubTypeValue().isBlank()) {
+            return flag.getSubTypeValue();
+        }
+        return FlagText.name(flag);
+    }
+
+    // English role names from entity_role_code, keyed by entity_role_code key
+    private Map<String, String> roleNames(List<PartyEntity> parties) {
+        List<String> keys = parties.stream()
+            .map(PartyEntity::getEntityRoleCodeKey)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (keys.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<String, String> roleNames = new HashMap<>();
+        entityRoleCodeRepository.findAllById(keys).stream()
+            .filter(roleCode -> roleCode.getValueEn() != null && !roleCode.getValueEn().isBlank())
+            .forEach(roleCode -> roleNames.put(roleCode.getKey(), roleCode.getValueEn().strip()));
+        return roleNames;
+    }
+
+    // e.g. "Bob Bobbington - Claimant"; just the name until the party has a role with an English name
+    private static String partyName(PartyDetails party, String roleName) {
+        IndividualDetails individual = party.getIndividualDetails();
+        String name = individual == null
+            ? party.getOrganisationDetails().getName()
+            : Stream.of(individual.getFirstName(), individual.getLastName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "));
+        return roleName == null ? name : name + PARTY_ROLE_SEPARATOR + roleName;
     }
 
     private String listingComments(PcsCaseEntity pcsCase) {

@@ -479,21 +479,18 @@ docweave:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
 
 service-hearing-values:
-  hmcts-service-id: AAA3
-  case-additional-security-flag: false
-  case-restricted-flag: false
-  auto-list-flag: false
-  hearing-in-welsh-flag: false
-  private-hearing-required-flag: false
-  hearing-is-linked-flag: false
-  location-type: court
-  role-types:
-      - "24"
-      - "45"
-  preferred-hearing-channel: INTER
-  number-of-days-offset: 57
-  number-of-days-start-offset: 27
-  hearing-type: AAA3-FPH
-  hearing-channels:
-    - INTER
-  hearing-priority: Standard
+  hmcts-service-id: ${HEARINGS_HMCTS_SERVICE_ID:AAA3}
+  case-additional-security-flag: ${HEARINGS_CASE_ADDITIONAL_SECURITY_FLAG:false}
+  case-restricted-flag: ${HEARINGS_CASE_RESTRICTED_FLAG:false}
+  auto-list-flag: ${HEARINGS_AUTO_LIST_FLAG:false}
+  hearing-in-welsh-flag: ${HEARINGS_HEARING_IN_WELSH_FLAG:false}
+  private-hearing-required-flag: ${HEARINGS_PRIVATE_HEARING_REQUIRED_FLAG:false}
+  hearing-is-linked-flag: ${HEARINGS_HEARING_IS_LINKED_FLAG:false}
+  location-type: ${HEARINGS_LOCATION_TYPE:court}
+  role-types: ${HEARINGS_ROLE_TYPES:24,45}
+  preferred-hearing-channel: ${HEARINGS_PREFERRED_HEARING_CHANNEL:INTER}
+  number-of-days-offset: ${HEARINGS_NUMBER_OF_DAYS_OFFSET:57}
+  number-of-days-start-offset: ${HEARINGS_NUMBER_OF_DAYS_START_OFFSET:27}
+  hearing-type: ${HEARINGS_HEARING_TYPE:AAA3-FPH}
+  hearing-channels: ${HEARINGS_HEARING_CHANNELS:INTER}
+  hearing-priority: ${HEARINGS_HEARING_PRIORITY:Standard}

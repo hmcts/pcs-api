@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
@@ -55,6 +56,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -153,7 +155,36 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(jsonPath("$.hearingWindow.dateRangeEnd").value("2026-08-27"))
                 .andExpect(jsonPath("$.hearingWindow.firstDateTimeMustBe").doesNotExist())
                 .andExpect(jsonPath("$.panelRequirements.roleType", contains("24", "45")))
-                .andExpect(jsonPath("$.listingComments").doesNotExist());
+                .andExpect(jsonPath("$.listingComments").doesNotExist())
+                .andExpect(jsonPath("$.screenFlow[*].screenName", contains(
+                    "hearing-panel", "hearing-facilities", "hearing-stage", "hearing-attendance", "hearing-venue",
+                    "hearing-welsh", "hearing-judge", "hearing-timing", "hearing-link",
+                    "hearing-additional-instructions")))
+                .andExpect(jsonPath("$.screenFlow[0].conditionKey").doesNotExist())
+                .andExpect(jsonPath("$.screenFlow[0].navigation[0].resultValue").value("hearing-facilities"))
+                .andExpect(jsonPath("$.screenFlow[9].navigation").doesNotExist())
+                // Venues outside Wales skip the Welsh screen and go straight to the judge screen
+                .andExpect(jsonPath("$.screenFlow[4].conditionKey").value("regionId"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].conditionOperator").value("NOT INCLUDE"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].conditionValue").value("7"))
+                .andExpect(jsonPath("$.screenFlow[4].navigation[1].resultValue").value("hearing-judge"));
+        }
+
+        @Test
+        @DisplayName("sends ExUI to the Welsh hearing screen after the venue when the venue is in Wales")
+        void shouldRouteWalesVenueThroughWelshScreen() throws Exception {
+            persist(newCase(CASE_REFERENCE, null));
+
+            String venue = "$.screenFlow[?(@.screenName == 'hearing-venue')]";
+            String walesRoute = venue + ".navigation[?(@.conditionOperator == 'INCLUDE')]";
+            String welsh = "$.screenFlow[?(@.screenName == 'hearing-welsh')]";
+
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(venue + ".conditionKey", contains("regionId")))
+                .andExpect(jsonPath(walesRoute + ".conditionValue", contains("7")))
+                .andExpect(jsonPath(walesRoute + ".resultValue", contains("hearing-welsh")))
+                .andExpect(jsonPath(welsh + ".navigation[*].resultValue", contains("hearing-judge")));
         }
 
         @Test
@@ -371,6 +402,33 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.listingComments")
                     .value("Case Flags: Complex case, Urgent case (Comments: so urgent)"));
+        }
+
+        @Test
+        @DisplayName("returns active and requested party flags, not case-level flags, in caseFlags")
+        void shouldReturnActiveAndRequestedPartyFlags() throws Exception {
+            givenEntityRoleCode("TEST-DEFENDANT-ROLE", "Defendant");
+            PcsCaseEntity pcsCase = newCase(CASE_REFERENCE, null);
+            addCaseFlag(pcsCase, refData("CF0002", "Complex case"), "Active", null);
+            PartyEntity defendant = partyWithFirstName(pcsCase, "John");
+            defendant.setEntityRoleCodeKey("TEST-DEFENDANT-ROLE");
+            addPartyFlag(defendant, refData("RA0026", "Support worker or carer with me"), "Active", "brings a carer");
+            addPartyFlag(defendant, refData("PF0002", "Vulnerable user"), "Requested", null);
+            addPartyFlag(defendant, refData("PF0004", "Unaccompanied minor"), "Inactive", null);
+            persist(pcsCase);
+
+            String carerFlag = "$.caseFlags.flags[?(@.flagId == 'RA0026')]";
+            postFor(HEARING_VALUES_PATH, CASE_REFERENCE)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.caseFlags.flagAmendURL")
+                    .value("/cases/case-details/" + CASE_REFERENCE + "#Case%20flags"))
+                .andExpect(jsonPath("$.caseFlags.flags[*].flagId", containsInAnyOrder("RA0026", "PF0002")))
+                .andExpect(jsonPath("$.caseFlags.flags[?(@.flagId == 'PF0002')].flagStatus", contains("Requested")))
+                .andExpect(jsonPath(carerFlag + ".partyID", hasSize(1)))
+                .andExpect(jsonPath(carerFlag + ".partyName", contains("John Doe - Defendant")))
+                .andExpect(jsonPath(carerFlag + ".flagDescription", contains("Support worker or carer with me")))
+                .andExpect(jsonPath(carerFlag + ".flagStatus", contains("Active")))
+                .andExpect(jsonPath(carerFlag + ".flagComment", contains("brings a carer")));
         }
 
         @Test
@@ -615,8 +673,14 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
 
     // entity_role_code has no seed data, and party.entity_role_code_key references it
     private void givenEntityRoleCode(String key) {
-        entityManager.createNativeQuery("INSERT INTO entity_role_code (key, active) VALUES (:key, 'YES')")
+        givenEntityRoleCode(key, null);
+    }
+
+    private void givenEntityRoleCode(String key, String valueEn) {
+        entityManager.createNativeQuery(
+                "INSERT INTO entity_role_code (key, value_en, active) VALUES (:key, :valueEn, 'YES')")
             .setParameter("key", key)
+            .setParameter("valueEn", valueEn)
             .executeUpdate();
     }
 
@@ -638,6 +702,18 @@ class ServiceHearingControllerIT extends AbstractPostgresContainerIT {
         flag.setVisibility("Internal");
         flag.setPcsCase(pcsCase);
         pcsCase.getCaseFlags().add(flag);
+    }
+
+    private static void addPartyFlag(PartyEntity party, FlagRefDataEntity refData,
+                                     String status, String comment) {
+        CasePartyFlagEntity flag = new CasePartyFlagEntity();
+        flag.setFlagRefData(refData);
+        flag.setDefaultStatus(status);
+        flag.setFlagComment(comment);
+        flag.setPaths(":Party");
+        flag.setVisibility("Internal");
+        flag.setParty(party);
+        party.getDefendantFlags().add(flag);
     }
 
     /** Adds an application made by the case's first party; type, rank, case and party are the NOT NULL columns. */
