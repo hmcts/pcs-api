@@ -390,12 +390,14 @@ one, delete the constant and the compiler points you at every use.
 The SDK key comes from the key vault (`LAUNCHDARKLY_SDK_KEY`) and `LAUNCHDARKLY_ENV` sets the
 environment used for targeting.
 
-`case-bundle-view-enabled` controls Bundle tab fields separately from background generation.
+`case-bundle-view-enabled` controls who is given the case bundle (the hidden `caseBundles` field
+behind Case File View, the case title's download link and the Make Order link) separately from
+background generation.
 It defaults to false, including when the flag is missing or LaunchDarkly is unavailable without a
 cached value. Keep it off in prod while enabling `CASE_BUNDLE_ENABLED` on API and worker pods.
-To preview the tab, target individual IDAM IDs as LaunchDarkly `user` context keys; the existing
-judicial permission check still applies. `isEnabledFor(flag, userId)` includes the environment
-attribute and sends no name or email. The separately flagged make-order journey is unaffected.
+To preview it, target individual IDAM IDs as LaunchDarkly `user` context keys. Judges, Hearing Centre Admins and
+Hearing Centre Team Leaders can access the bundle in Case File View. Only judges see it in Make Order.
+`isEnabledFor(flag, userId)` includes the environment attribute and sends no name or email. The separately flagged make-order journey is unaffected.
 
 ### Local Dev
 
