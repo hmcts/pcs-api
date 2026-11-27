@@ -468,10 +468,6 @@ ccd:
       # no endpoint configured, such a document gets a page in the bundle saying it is not included.
       convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
       access-key: ${DOCMOSIS_ACCESS_KEY:}
-  jobs:
-    run:
-      # Set to a run id to submit every case's bundle again, once per run id (RedoCaseBundles).
-      redo-case-bundles: ${CASE_BUNDLE_REDO_RUN:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
