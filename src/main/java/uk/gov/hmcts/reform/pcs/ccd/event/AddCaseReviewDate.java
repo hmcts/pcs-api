@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -30,7 +30,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddCaseReviewDateConfigurer addCaseReviewDateConfigurer;
     private final CaseReviewDateService caseReviewDateService;
-    private final AddressFormatter addressFormatter;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -48,29 +48,25 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseId = eventPayload.caseReference();
+        long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        caseReviewDateService.addCaseReviewDates(caseId, caseData);
-        String address = addressFormatter
-            .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
+        caseReviewDateService.addCaseReviewDates(caseReference, caseData);
         return SubmitResponse.<State>builder()
-            .confirmationBody(getConfirmationBody(caseId, address, caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(getConfirmationBody(caseReference, caseData))
             .build();
     }
 
-    private String getConfirmationBody(Long caseId, String address, String caseName) {
+    private String getConfirmationBody(long caseReference, PCSCase caseData) {
+        String panel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel("Review dates added", caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Review dates added</span><br>
-            <span class="govuk-panel__body">Case number #%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            </div>
+            %s
 
             <h3>What happens next</h3>
 
             Work allocation tasks will be created for court staff to complete on the review dates.
-            """.formatted(caseId, address, caseName);
+            """.formatted(panel);
     }
 }

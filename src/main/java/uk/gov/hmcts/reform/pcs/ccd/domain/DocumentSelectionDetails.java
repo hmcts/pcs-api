@@ -6,8 +6,6 @@ public interface DocumentSelectionDetails {
 
     CaseFileCategory getSelectedFolder();
 
-    void setPropertyAddressSummary(String propertyAddressSummary);
-
     void setEmptyForCategory(CaseFileCategory category, YesOrNo empty);
 
     void setSelectedFolderId(String id);

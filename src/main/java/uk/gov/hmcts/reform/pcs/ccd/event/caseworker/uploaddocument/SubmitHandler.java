@@ -11,14 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 @Component("caseworkerUploadDocumentSubmitHandler")
 @RequiredArgsConstructor
 public class SubmitHandler implements Submit<PCSCase, State> {
 
     private final CaseworkerDocumentService caseworkerDocumentService;
-    private final AddressFormatter addressFormatter;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
@@ -29,30 +29,25 @@ public class SubmitHandler implements Submit<PCSCase, State> {
 
         String modifiedFilename = FilenameUtils.getBaseName(documentEntity.getFileName());
 
-        String address = addressFormatter
-            .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
-
         return SubmitResponse.<State>builder()
-            .confirmationBody(getConfirmationBody(modifiedFilename, caseReference,
-                                                  address, caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(getConfirmationBody(modifiedFilename, caseReference, caseData))
             .build();
 
     }
 
-    private String getConfirmationBody(String modifiedFilename, long caseReference, String address, String caseName) {
+    private String getConfirmationBody(String modifiedFilename, long caseReference, PCSCase caseData) {
+
+        String confirmationPanel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel("‘%s’ uploaded".formatted(modifiedFilename), caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-32">‘%s’ uploaded</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            </div>
+            %s
 
             <h3>What happens next</h3>
 
             The document is available to view in case file view.
-            """.formatted(modifiedFilename, caseReference, address, caseName);
+            """.formatted(confirmationPanel);
     }
 
 }

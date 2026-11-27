@@ -17,27 +17,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseStateOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class ChangeCaseStateTest extends BaseEventTest {
 
-    private static final String FORMATTED_ADDRESS = "1 Test Street, London, SW1A 1AA";
-
-    @Mock
-    private AddressFormatter addressFormatter;
-
     @Mock
     private CamundaService camundaService;
-
+    @Mock
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
     @InjectMocks
     private ChangeCaseState changeCaseState;
 
@@ -76,7 +69,6 @@ class ChangeCaseStateTest extends BaseEventTest {
     @ParameterizedTest
     @EnumSource(CaseStateOption.class)
     void shouldTransitionToSelectedTargetState(CaseStateOption targetStateOption) {
-        stubFormattedAddress();
         PCSCase pcsCase = PCSCase.builder()
             .targetState(targetStateOption)
             .build();
@@ -94,32 +86,23 @@ class ChangeCaseStateTest extends BaseEventTest {
     }
 
     @Test
-    void shouldIncludeCaseReferenceInConfirmationBody() {
-        stubFormattedAddress();
+    void shouldIncludeConfirmationPanelInConfirmationBody() {
+        // Given
         PCSCase pcsCase = PCSCase.builder()
             .targetState(CaseStateOption.JUDICIAL_REFERRAL)
             .build();
 
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel("Case state changed", pcsCase, TEST_CASE_REFERENCE))
+            .thenReturn(confirmationPanelMarkup);
+
+        // When
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
+        // Then
         assertThat(response.getConfirmationBody())
-            .contains(String.valueOf(TEST_CASE_REFERENCE));
+            .contains(confirmationPanelMarkup);
     }
 
-    @Test
-    void shouldIncludeFormattedAddressInConfirmationBody() {
-        stubFormattedAddress();
-        PCSCase pcsCase = PCSCase.builder()
-            .targetState(CaseStateOption.HEARING_READINESS)
-            .build();
-
-        SubmitResponse<State> response = callSubmitHandler(pcsCase);
-
-        assertThat(response.getConfirmationBody()).contains(FORMATTED_ADDRESS);
-    }
-
-    private void stubFormattedAddress() {
-        when(addressFormatter.formatShortAddress(isNull(), eq(COMMA_DELIMITER)))
-            .thenReturn(FORMATTED_ADDRESS);
-    }
 }

@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -53,14 +53,14 @@ class EnterGenAppTest extends BaseEventTest {
     @Mock
     private GenAppService genAppService;
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
     @Mock
     private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
         EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails,
-                                                  addressFormatter, featureToggleService);
+                                                  confirmationPanelBuilder, featureToggleService);
         setEventUnderTest(enterGenApp);
     }
 
@@ -218,8 +218,13 @@ class EnterGenAppTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(enterGenAppRequest)
             .partyRadioList(partyRadioList)
-            .caseNameHmctsInternal("Smith v Doe")
             .build();
+
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel("Application entered", caseData, TEST_CASE_REFERENCE))
+            .thenReturn(confirmationPanelMarkup);
+
 
         // When
         SubmitResponse<State> response = callSubmitHandler(caseData);
@@ -227,7 +232,7 @@ class EnterGenAppTest extends BaseEventTest {
         // Then
         verify(genAppService)
             .createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
-        assertThat(response.getConfirmationBody()).contains("Smith v Doe");
+        assertThat(response.getConfirmationBody()).contains(confirmationPanelMarkup);
     }
 
 }

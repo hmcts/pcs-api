@@ -16,11 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterBreathingSpace;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
@@ -28,9 +27,9 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 @AllArgsConstructor
 public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> {
 
-    private BreathingSpacePageConfigurer breathingSpacePageConfigurer;
-    private BreathingSpaceService breathingSpaceService;
-    private AddressFormatter addressFormatter;
+    private final BreathingSpacePageConfigurer breathingSpacePageConfigurer;
+    private final BreathingSpaceService breathingSpaceService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,24 +57,18 @@ public class EnterBreathingSpace implements CCDConfig<PCSCase, State, UserRole> 
     }
 
     private String getConfirmationBodyMarkdown(PCSCase caseData, long caseReference) {
-        String address = addressFormatter.formatMediumAddress(caseData.getPropertyAddress(), COMMA_DELIMITER);
+
+        String confirmationPanel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel("Breathing space has been entered", caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-32">Breathing space has been entered</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">If breathing space has been granted due to Mental Health
             Crisis Moratorium, you must add a review date for it to be referred to a judge after 6 months.</p>
-            """.formatted(
-                caseReference,
-                address,
-                caseData.getCaseNameHmctsInternal()
-            );
+            """.formatted(confirmationPanel);
     }
 
 }

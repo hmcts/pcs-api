@@ -12,19 +12,26 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addjudicialnote.AddJudicialNotePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.JudicialNoteService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
+
+import java.util.List;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AddJudicialNoteTest extends BaseEventTest {
 
     @Mock
     private AddJudicialNotePage addJudicialNotePage;
-
     @Mock
     private JudicialNoteService judicialNoteService;
+    @Mock
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @InjectMocks
     private AddJudicialNote addJudicialNote;
@@ -37,6 +44,8 @@ public class AddJudicialNoteTest extends BaseEventTest {
     @Test
     void shouldCallJudicialNoteServiceOnSubmit() {
         // Given
+        String confirmationPanelMarkup = stubConfirmationPanelBuilder();
+
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
@@ -44,12 +53,22 @@ public class AddJudicialNoteTest extends BaseEventTest {
 
         // Then
         verify(judicialNoteService).addJudicialNote(TEST_CASE_REFERENCE, pcsCase);
-        assertThat(response.getConfirmationBody()).contains("Judicial note added");
+        verify(confirmationPanelBuilder)
+            .buildConfirmationPanel("Judicial note added", List.of("You do not need to do anything else"));
+        assertThat(response.getConfirmationBody()).contains(confirmationPanelMarkup);
     }
 
     @Test
     void shouldShowEventWithAFeatureFlagCondition() {
         assertConfiguredShowConditions(ShowConditions.featureFlagsEnabled(FeatureFlag.CASE_MANAGEMENT_R2));
+    }
+
+    private String stubConfirmationPanelBuilder() {
+        String confirmationPanelMarkup = "confirmation panel markup";
+        when(confirmationPanelBuilder.buildConfirmationPanel(anyString(), anyList()))
+            .thenReturn(confirmationPanelMarkup);
+
+        return confirmationPanelMarkup;
     }
 
 }

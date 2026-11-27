@@ -13,13 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.DynamicListUtils.retainSelectedValue;
 
 @Service
@@ -31,19 +29,14 @@ public class DocumentSelectionService {
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
 
     private final PcsCaseService pcsCaseService;
-    private final AddressFormatter addressFormatter;
 
-    public DocumentSelectionService(PcsCaseService pcsCaseService,
-                                         AddressFormatter addressFormatter) {
+    public DocumentSelectionService(PcsCaseService pcsCaseService) {
         this.pcsCaseService = pcsCaseService;
-        this.addressFormatter = addressFormatter;
     }
 
     public void initialise(long caseReference, PCSCase caseData, DocumentSelectionDetails details) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
-        details.setPropertyAddressSummary(addressFormatter.formatShortAddress(caseData.getPropertyAddress(),
-                                                                              COMMA_DELIMITER));
         for (CaseFileCategory category : CaseFileCategory.values()) {
             setDocumentsForCategory(details, caseData, pcsCase, category);
         }

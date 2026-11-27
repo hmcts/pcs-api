@@ -36,7 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -46,7 +46,6 @@ import java.util.List;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterGenApp;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
@@ -58,7 +57,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     private final PartyService partyService;
     private final GenAppService genAppService;
     private final ApplicationDetails applicationDetails;
-    private final AddressFormatter addressFormatter;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
     private final FeatureToggleService featureToggleService;
 
     @Override
@@ -149,26 +148,23 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         genAppService.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GenAppState.GEN_APP_ISSUED);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildConfirmationMarkdown(
-                caseData, eventPayload.caseReference(), caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(buildConfirmationMarkdown(caseData, eventPayload.caseReference()))
             .build();
     }
 
-    private String buildConfirmationMarkdown(PCSCase pcsCase, long caseReference, String caseName) {
-        String address = addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
+    private String buildConfirmationMarkdown(PCSCase caseData, long caseReference) {
+
+        String confirmationPanel = confirmationPanelBuilder
+            .buildStandardConfirmationPanel("Application entered", caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Application entered</span><br>
-            <span class="govuk-panel__body">Case number: %s</span><br>
-            <span class="govuk-panel__body">%s</span>
-            <span class="govuk-panel__body">%s</span>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">If the application was made without notice, only the applicant
             will be informed. Otherwise, all parties will be informed.</p>
-            """.formatted(caseReference, address, caseName);
+            """.formatted(confirmationPanel);
     }
 
 }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentSelectionService documentSelectionService;
     private final DocumentRemovalService documentRemovalService;
+    private final ConfirmationPanelBuilder confirmationPanelBuilder;
     private final SelectDocumentToRemovePage selectDocumentToRemovePage;
 
     @Override
@@ -73,23 +75,21 @@ public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
         documentRemovalService.removeDocument(UUID.fromString(details.getSelectedDocumentId()), reason);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildConfirmationMarkdown(details, eventPayload.caseReference(),caseName))
+            .confirmationBody(buildConfirmationMarkdown(details, eventPayload.caseReference(), caseData))
             .build();
     }
 
-    private String buildConfirmationMarkdown(DocumentRemovalDetails details, long caseReference, String caseName) {
+    private String buildConfirmationMarkdown(DocumentRemovalDetails details, long caseReference, PCSCase caseData) {
+
+        String confirmationPanel = confirmationPanelBuilder.buildStandardConfirmationPanel(
+            "%s removed".formatted(details.getSelectedDocumentFileName()), caseData, caseReference);
+
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">%s removed </span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
-            <span class="govuk-panel__body govuk-!-font-size-24">Property address: %s</span>
-            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
-            </div>
+            %s
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">The document will no longer appear in case file view.</p>
-            """.formatted(details.getSelectedDocumentFileName(), caseReference,
-                          details.getPropertyAddressSummary(),caseName);
+            """.formatted(confirmationPanel);
     }
 }

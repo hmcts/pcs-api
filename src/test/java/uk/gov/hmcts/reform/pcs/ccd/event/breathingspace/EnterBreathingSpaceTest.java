@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.breathingspace.BreathingSpacePageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.breathingspace.BreathingSpaceService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ConfirmationPanelBuilder;
 
 import java.time.LocalDate;
 
@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class EnterBreathingSpaceTest extends BaseEventTest {
@@ -34,7 +33,7 @@ class EnterBreathingSpaceTest extends BaseEventTest {
     @Mock
     private BreathingSpaceService breathingSpaceService;
     @Mock
-    private AddressFormatter addressFormatter;
+    private ConfirmationPanelBuilder confirmationPanelBuilder;
 
     @InjectMocks
     private EnterBreathingSpace enterBreathingSpace;
@@ -73,22 +72,22 @@ class EnterBreathingSpaceTest extends BaseEventTest {
     void shouldReturnConfirmationBodyWithCaseDetails() {
         // Given
         AddressUK address = AddressUK.builder().build();
+        String caseName = "Claimant v Defendant";
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(address)
-            .caseNameHmctsInternal("Claimant v Defendant")
+            .caseNameHmctsInternal(caseName)
             .build();
 
-        when(addressFormatter.formatMediumAddress(address, COMMA_DELIMITER)).thenReturn("1 Test Street, London");
+        String confirmationPanelMarkup = "confirmation panel";
+        when(confirmationPanelBuilder
+                 .buildStandardConfirmationPanel("Breathing space has been entered", pcsCase, TEST_CASE_REFERENCE))
+            .thenReturn(confirmationPanelMarkup);
 
         // When
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         // Then
-        assertThat(response.getConfirmationBody())
-            .contains("Breathing space has been entered")
-            .contains("Case number #" + TEST_CASE_REFERENCE)
-            .contains("1 Test Street, London")
-            .contains("Claimant v Defendant");
+        assertThat(response.getConfirmationBody()).contains(confirmationPanelMarkup);
     }
 
 }

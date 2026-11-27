@@ -42,7 +42,6 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
             .label(PAGE_ID + "-separator", "---");
 
         page.complex(PCSCase::getDocumentRemovalDetails)
-                .readonly(DocumentRemovalDetails::getPropertyAddressSummary, NEVER_SHOW, true)
                 .mandatory(DocumentRemovalDetails::getSelectedFolder)
                 .label("emptyFolderDocumentError", "", NEVER_SHOW)
                 .label("selectedFolderEmptyErrorMessage", "", NEVER_SHOW)
