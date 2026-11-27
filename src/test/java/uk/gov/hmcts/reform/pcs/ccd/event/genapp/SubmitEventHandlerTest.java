@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -132,8 +133,10 @@ class SubmitEventHandlerTest {
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
         }
 
-        @Test
-        void shouldCreateGenAppWithCaseDataAndClaimantParty() {
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = "<ol><li>The hearing is adjourned.</li></ol>")
+        void shouldCreateGenAppWithCaseDataAndOptionalDraftWording(String wording) {
             // Given
             UUID claimantPartyId = UUID.randomUUID();
             PartyEntity claimantParty = mock(PartyEntity.class);
@@ -141,6 +144,7 @@ class SubmitEventHandlerTest {
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
                 .applicantPartyId(claimantPartyId.toString())
+                .draftOrderWording(wording)
                 .build();
 
             when(partyService.getPartyEntityById(claimantPartyId, TEST_CASE_REFERENCE))
@@ -159,6 +163,7 @@ class SubmitEventHandlerTest {
             underTest.submit(eventPayload(caseData));
 
             // Then
+            assertThat(genAppRequest.getDraftOrderWording()).isEqualTo(wording);
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, claimantParty, PENDING_GEN_APP_ISSUED);
         }

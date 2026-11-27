@@ -277,6 +277,14 @@ tasks.register('runE2eTests', Exec) {
     dependsOn yarnInstall
     workingDir = file("${project.projectDir}/src/e2eTest")
     def suite = System.getenv('E2E_SUITE') ?: 'pr'
+    if (System.getenv('BRANCH_NAME') == 'master' && System.getenv('ENVIRONMENT_NAME') == 'aat'
+        && System.getenv('CASE_TYPE_SUFFIX') == 'staging') {
+        def stagingUrl = System.getenv('TEST_URL')
+        if (!stagingUrl?.trim()) {
+            throw new GradleException('TEST_URL is required for the master AAT staging E2E suite')
+        }
+        environment 'CASE_API_URL', stagingUrl
+    }
     commandLine 'yarn', "test:${suite}"
 }
 
@@ -509,6 +517,7 @@ dependencies {
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
+  implementation group: 'org.jsoup', name: 'jsoup', version: '1.24.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.12.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion

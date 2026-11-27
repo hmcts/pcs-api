@@ -110,6 +110,9 @@ public class GenAppEntity {
 
     private String whatOrderWanted;
 
+    @Column(columnDefinition = "text")
+    private String draftOrderWording;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo documentsUploaded;

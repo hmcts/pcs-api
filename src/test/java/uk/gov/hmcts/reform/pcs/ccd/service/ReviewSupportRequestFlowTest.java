@@ -102,9 +102,9 @@ class ReviewSupportRequestFlowTest {
         PCSCase pcsCase = viewMappedCase();
         List<ListValue<PartySupport>> reviewFlags = supportReviewService.buildRequestedSupport(pcsCase);
 
-        assertThat(projectedParty(pcsCase, claimant).getPartyFlagsExternal().getDetails())
-            .as("the claimant's requested support stays on the shared Case Flags projection")
-            .hasSize(1);
+        assertThat(projectedParty(pcsCase, claimant).getPartyFlagsExternal())
+            .as("a claimant party cannot be flagged")
+            .isNull();
 
         assertThat(reviewFlags)
             .extracting(entry -> entry.getValue().getSupportFlags().getRoleOnCase())
