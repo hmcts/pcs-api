@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseEventContext;
 import uk.gov.hmcts.ccd.sdk.CaseEventHook;
@@ -23,10 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -59,27 +54,17 @@ public class CaseBundleDefinition implements CaseEventHook {
     private final PcsCaseRepository cases;
     private final DocumentRepository documents;
     private final ObjectProvider<DocJobs> jobs;
-    private final DataSource dataSource;
 
     /**
-     * Runs in the event's transaction, so the bundle is submitted only if the event commits. A failure is logged and
-     * rolled back to a savepoint rather than failing the event; the bundle catches up on the case's next event.
+     * Runs in the event's transaction, so the bundle is submitted only if the event commits. A failure is logged
+     * rather than failing the event; the bundle catches up on the case's next event.
      */
     @Override
     public void afterCaseEvent(CaseEventContext event) {
-        // The event's own connection; Spring's JPA transaction manager cannot nest a transaction for this.
-        Connection connection = DataSourceUtils.getConnection(dataSource);
         try {
-            Savepoint savepoint = connection.setSavepoint();
-            try {
-                submit(event.caseReference());
-                connection.releaseSavepoint(savepoint);
-            } catch (RuntimeException e) {
-                connection.rollback(savepoint);
-                log.error("Could not submit the case bundle for case {}", event.caseReference(), e);
-            }
-        } catch (SQLException e) {
-            throw new IllegalStateException("Could not set a savepoint for the case bundle", e);
+            submit(event.caseReference());
+        } catch (RuntimeException e) {
+            log.error("Could not submit the case bundle for case {}", event.caseReference(), e);
         }
     }
 
