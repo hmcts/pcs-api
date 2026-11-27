@@ -180,7 +180,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("caseName", "Jane Smith vs John Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Case%20Parties");
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/1234567890#Case%20Parties");
         }
 
         @Test
@@ -230,7 +230,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("caseName", "Jane Smith vs John Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps");
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/1234567890#Next%20steps");
         }
 
         @Test
@@ -551,7 +551,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
                 .containsEntry("caseName", "Jane Smith vs John Doe")
-                .containsEntry("paymentUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Service%20Request");
+                .containsEntry("paymentUrl", "manageCaseUrl/cases/case-details/1234567890#Service%20Request");
         }
 
         @Test

@@ -344,7 +344,7 @@ public class NotificationPersonalisationFactory {
     }
 
     private String manageCaseTabUrl(String caseReference, String tab) {
-        return String.format("%s/cases/case-details/PCS/PCS/%s#%s", manageCaseUrl, caseReference, tab);
+        return String.format("%s/cases/case-details/%s#%s", manageCaseUrl, caseReference, tab);
     }
 
     private boolean release14Enabled() {

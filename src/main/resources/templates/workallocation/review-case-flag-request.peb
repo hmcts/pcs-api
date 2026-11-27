@@ -8,6 +8,6 @@ The following case flags have been requested on the case:
   {% endfor %}
 </ul>
 
-Review the <a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20flags">case flag request</a>,
+Review the <a href="/cases/case-details/{{caseReference}}#Case%20flags">case flag request</a>,
 decide whether it should be approved or rejected, and record the decision. The task will close when the approval or
 rejection event is completed.
