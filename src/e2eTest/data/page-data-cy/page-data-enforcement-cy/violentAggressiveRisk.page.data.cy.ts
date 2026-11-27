@@ -8,10 +8,9 @@ export const violentAggressiveRisk = {
   previousButton: `Yn ôl`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,
-  thereIsAProblemErrorMessageHeader: `Mae yna broblem`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   errorValidation: `NO`,//set it to `NO` before raising a PR
-  errorValidationType: { one: `textField` },
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`,five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorTextField: [
       { type: `moreThanMax`, input: `MAXPLUS`, errMessage: `In ‘How have they been violent or aggressive?’, you have entered more than the maximum number of characters (6,800)` },

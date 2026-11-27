@@ -1,7 +1,6 @@
 export const repayments = {
   EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
   mainHeader: `Ad-daliadau`,
-  totalAmountCaption: `Faint ydych chi eisiau i’r diffynnydd ad-dalu?`,
   repaymentForTableHeader: `Repayment for`,
   amountTableHeader: `Amount`,
   arrearsAndOtherCostsTableHeader: `Arrears and other costs`,
@@ -33,7 +32,7 @@ export const repayments = {
       { type: `empty`, input: ``, errMessage: `The data entered is not valid for Enter the amount that you want the defendants to repay` },
     ],
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `How much do you want the defendants to repay? is required` }
+      { type: `none`, input: ``, errMessage: `Faint ydych chi eisiau i’r diffynnydd ad-dalu? yn ofynnol` }
     ]
   }
 }

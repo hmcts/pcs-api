@@ -15,7 +15,7 @@ export const vulnerableAdultsChildren = {
   vulnerableAdultsHiddenRadioOption: `Oedolion bregus`,
   vulnerableChildrenHiddenRadioOption: `Plant bregus`,
   vulnerableAdultsAndChildrenHiddenRadioOption: `Oedolion a phlant bregus`,
-  howAreTheyVulnerableHiddenTextLabel: `How are they vulnerable?`,
+  howAreTheyVulnerableHiddenTextLabel: `Sut maent yn agored i niwed?`,
   howAreTheyVulnerableHiddenTextInput: 1000,
   summarySaveApplicationLink: `Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach`,
   previousButton: `Yn ôl`,

@@ -35,7 +35,8 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   confirmHCEOfficer, defendantInBreathingSpace, missedPayments,
-  cannotApplyForWarrantInfo
+  cannotApplyForWarrantInfo,
+  violentAggressiveRisk
 } from '@data/index.selector.enforcement';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
@@ -139,7 +140,7 @@ export class EnforcementAction implements IAction{
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
-    const warrantJourney = summaryOption.journey === 'Warrant of possession';
+    const warrantJourney = summaryOption.journey === enforcementApplication.warrantOfPossessionRadioOption;
     const feeType = warrantJourney
       ? enforcementApplication.typeofFee.warrantOfPossessionFee
       : enforcementApplication.typeofFee.writOfPossessionFee;
@@ -355,7 +356,7 @@ export class EnforcementAction implements IAction{
     const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, provideRiskPosed.label as string, provideRiskPosed.input as number);
     await performAction('inputText', provideRiskPosed.label, testInput);
     fieldsMap.set(provideRiskPosed.label as string, testInput);
-    await performAction('reTryOnCallBackError', !provideRiskPosed?.button ? provideRiskPosed.button = 'Continue' : provideRiskPosed.button as string, provideRiskPosed.nextPage as string);
+    await performAction('reTryOnCallBackError', !provideRiskPosed?.button ? provideRiskPosed.button = violentAggressiveRisk.continueButton : provideRiskPosed.button as string, provideRiskPosed.nextPage as string);
   }
 
   private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord, page: Page) {
@@ -377,12 +378,12 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: userInput.question, option: userInput.option });
-    if (userInput.option === 'Yes') {
+    if (userInput.option === propertyAccessDetails.yesRadioOption) {
       const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, userInput.label as string, userInput.input as number);
       await performAction('inputText', userInput.label, testInput);
       fieldsMap.set(userInput.label as string, testInput);
     };
-    await performAction('reTryOnCallBackError', !userInput?.button ? userInput.button = 'Continue' : userInput.button as string, userInput.nextPage as string);
+    await performAction('reTryOnCallBackError', !userInput?.button ? userInput.button = propertyAccessDetails.continueButton : userInput.button as string, userInput.nextPage as string);
   }
 
   private async provideMoneyOwed(totalMoneyOwed: actionRecord, page: Page) {

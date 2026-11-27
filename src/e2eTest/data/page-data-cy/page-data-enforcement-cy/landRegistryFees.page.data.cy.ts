@@ -1,6 +1,6 @@
 export const landRegistryFees = {
   EnforceTheOrderCaption: `Gorfodi'r gorchymyn`,
-  mainHeader: `Ffioedd y Gofrestrfa Tir`,
+  mainHeader: `Ffioedd y Gofrestrfa Tir `,
   landRegistryFeeQuestion: `A ydych wedi talu unrhyw ffioedd Y Gofrestrfa Tir?`,
   forExampleHintText: `Er enghraifft, os gwnaethoch dalu ffi i'r Gofrestrfa Tir i weld ffin yr eiddo. Os ydych wedi talu ffi i'r Gofrestrfa Tir, ond nad ydych eisiau i'r diffynnydd ei ad-dalu, gallwch ddewis 'Na'.`,
   //Updated above hint text to be consistent with the application. Defect HDPI-5199 has been raised.
