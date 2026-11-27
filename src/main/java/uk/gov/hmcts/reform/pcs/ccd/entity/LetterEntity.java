@@ -43,6 +43,11 @@ public class LetterEntity {
     @Column(name = "printed_at")
     private LocalDateTime printedAt;
 
+    // When Send Letter last answered for this letter.
     @Column(name = "last_checked_at")
     private LocalDateTime lastCheckedAt;
+
+    // When PCS last asked, answered or not; orders the sync queue so a failing letter goes to the back.
+    @Column(name = "last_attempted_at")
+    private LocalDateTime lastAttemptedAt;
 }

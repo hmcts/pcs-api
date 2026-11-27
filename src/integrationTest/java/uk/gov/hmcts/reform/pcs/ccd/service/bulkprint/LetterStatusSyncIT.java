@@ -108,7 +108,8 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
 
         LetterEntity unavailableLetter = letterRepository.findById(unavailable).orElseThrow();
         assertThat(unavailableLetter.getStatus()).isEqualTo(LetterStatus.UPLOADED);
-        assertThat(unavailableLetter.getLastCheckedAt()).isNotNull();
+        assertThat(unavailableLetter.getLastCheckedAt()).isNull();
+        assertThat(unavailableLetter.getLastAttemptedAt()).isNotNull();
     }
 
     @Test
@@ -124,7 +125,7 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
 
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + posted)));
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + old)));
-        assertThat(letterRepository.findById(old).orElseThrow().getLastCheckedAt()).isNull();
+        assertThat(letterRepository.findById(old).orElseThrow().getLastAttemptedAt()).isNull();
     }
 
     @Test
@@ -141,6 +142,33 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
         LetterEntity corrected = letterRepository.findById(aborted).orElseThrow();
         assertThat(corrected.getStatus()).isEqualTo(LetterStatus.POSTED);
         assertThat(corrected.getPrintedAt()).isEqualTo(LocalDateTime.of(2026, 11, 22, 10, 0));
+    }
+
+    @Test
+    void keepsAFinishedLetterDueForRecheckWhenSendLetterCannotAnswer() {
+        UUID aborted = sendLetter(LetterStatus.ABORTED);
+        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '8 days' WHERE letter_id = ?",
+            aborted);
+        sendLetter.stubFor(get(urlPathEqualTo("/letters/" + aborted)).willReturn(aResponse().withStatus(503)));
+        letterStatusSyncService.syncPendingLetters();
+
+        stubStatus(aborted, """
+            {"id": "%s", "status": "Posted", "printed_at": "2026-11-22T10:00:00.000Z"}""".formatted(aborted));
+        letterStatusSyncService.syncPendingLetters();
+
+        assertThat(letterRepository.findById(aborted).orElseThrow().getStatus()).isEqualTo(LetterStatus.POSTED);
+    }
+
+    @Test
+    void recordsASendThatSharesALetterTheCatchUpAlreadyCreated() {
+        PartyEntity recipient = saveCaseWithParty();
+        UUID letterId = UUID.randomUUID();
+        jdbcTemplate.update("INSERT INTO letter (letter_id, status) VALUES (?, 'CREATED')", letterId);
+
+        accessCodeActivityLogService.recordPackSent(recipient.getPcsCase(), recipient,
+            PackDetails.sent(LetterType.DEFENCE_PACK, List.of(), letterId));
+
+        assertThat(packSentRowsFor(letterId)).isEqualTo(1);
     }
 
     @Test

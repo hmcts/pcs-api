@@ -60,22 +60,40 @@ public class LetterStatusSyncService {
         letters.forEach(this::syncLetter);
     }
 
+    // Catching up is best-effort: whatever it misses, the next run picks up, so it never stops the polling.
     private void linkUnlinkedPackSentRows(LocalDateTime sentAfter) {
-        int created = letterRepository.createLettersForUnlinkedPackSentRows(sentAfter);
-        int linked = letterRepository.linkUnlinkedPackSentRows(sentAfter);
-        if (linked > 0) {
-            log.warn("Linked {} PACK_SENT rows written without their letter ({} new letters)", linked, created);
+        try {
+            int created = letterRepository.createLettersForUnlinkedPackSentRows(sentAfter);
+            int linked = letterRepository.linkUnlinkedPackSentRows(sentAfter);
+            if (linked > 0) {
+                log.warn("Linked {} PACK_SENT rows written without their letter ({} new letters)",
+                    linked, created);
+            }
+        } catch (RuntimeException e) {
+            log.warn("Could not link PACK_SENT rows written without their letter; will retry next run", e);
         }
     }
 
     private void syncLetter(LetterEntity letter) {
         MDC.put(MDC_LETTER_ID, String.valueOf(letter.getLetterId()));
         try {
+            letter.setLastAttemptedAt(now());
+            askSendLetter(letter);
+            letterRepository.save(letter);
+        } finally {
+            MDC.remove(MDC_LETTER_ID);
+        }
+    }
+
+    // Only an answer Send Letter gives counts as a check; a failed attempt leaves the letter due.
+    private void askSendLetter(LetterEntity letter) {
+        try {
             LetterStatusResponse response =
                 sendLetterStatusApi.getLetterStatus(authTokenGenerator.generate(), letter.getLetterId());
             Optional<LetterStatus> status = LetterStatus.fromSendLetter(response.status());
             if (status.isPresent()) {
                 record(letter, status.get(), response);
+                letter.setLastCheckedAt(now());
             } else {
                 log.warn("Send Letter returned unknown status {} for letter {}", response.status(),
                     letter.getLetterId());
@@ -83,10 +101,6 @@ public class LetterStatusSyncService {
         } catch (FeignException e) {
             log.warn("Could not get the status of letter {} from Send Letter: {} {}", letter.getLetterId(),
                 e.status(), e.getMessage());
-        } finally {
-            letter.setLastCheckedAt(now());
-            letterRepository.save(letter);
-            MDC.remove(MDC_LETTER_ID);
         }
     }
 

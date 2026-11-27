@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.LetterRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterStatus;
 
 /**
  * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}, with
@@ -65,12 +64,8 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordPackSent(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
-        // Send Letter returns an earlier letter's id for an identical request, so the letter may already be here.
-        LetterEntity letter = letterRepository.findById(details.letterId())
-            .orElseGet(() -> letterRepository.save(LetterEntity.builder()
-                .letterId(details.letterId())
-                .status(LetterStatus.CREATED)
-                .build()));
+        letterRepository.createIfAbsent(details.letterId());
+        LetterEntity letter = letterRepository.getReferenceById(details.letterId());
         save(pcsCase, recipient, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details, letter);
     }
 
