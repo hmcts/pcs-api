@@ -112,8 +112,10 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void leavesFinishedAndOldLettersAlone() {
+    void leavesRecentlyCheckedFinishedLettersAndOldLettersAlone() {
         UUID posted = sendLetter(LetterStatus.POSTED);
+        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '1 day' WHERE letter_id = ?",
+            posted);
         UUID old = sendLetter(LetterStatus.UPLOADED);
         jdbcTemplate.update("UPDATE claim_activity_log SET created_at = now() - interval '200 days' "
             + "WHERE letter_id = ?", old);
@@ -123,6 +125,39 @@ class LetterStatusSyncIT extends AbstractPostgresContainerIT {
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + posted)));
         sendLetter.verify(0, getRequestedFor(urlPathEqualTo("/letters/" + old)));
         assertThat(letterRepository.findById(old).orElseThrow().getLastCheckedAt()).isNull();
+    }
+
+    @Test
+    void picksUpACorrectionToAFinishedLetterWhenItIsNextRechecked() {
+        UUID aborted = sendLetter(LetterStatus.ABORTED);
+        jdbcTemplate.update("UPDATE letter SET last_checked_at = now() - interval '8 days' WHERE letter_id = ?",
+            aborted);
+        stubStatus(aborted, """
+            {"id": "%s", "status": "Posted", "sent_to_print_at": "2026-11-20T18:00:00.000Z",
+             "printed_at": "2026-11-22T10:00:00.000Z"}""".formatted(aborted));
+
+        letterStatusSyncService.syncPendingLetters();
+
+        LetterEntity corrected = letterRepository.findById(aborted).orElseThrow();
+        assertThat(corrected.getStatus()).isEqualTo(LetterStatus.POSTED);
+        assertThat(corrected.getPrintedAt()).isEqualTo(LocalDateTime.of(2026, 11, 22, 10, 0));
+    }
+
+    @Test
+    void tracksAPackSentRowWrittenWithoutItsLetter() {
+        PartyEntity recipient = saveCaseWithParty();
+        UUID letterId = UUID.randomUUID();
+        jdbcTemplate.update("INSERT INTO claim_activity_log (case_id, party_id, activity_type, status, details) "
+                + "VALUES (?, ?, 'PACK_SENT', 'SUCCESS', CAST(? AS jsonb))",
+            recipient.getPcsCase().getId(), recipient.getId(),
+            "{\"letterId\": \"%s\", \"packType\": \"DEFENCE_PACK\", \"documents\": []}".formatted(letterId));
+        stubStatus(letterId, """
+            {"id": "%s", "status": "Uploaded", "sent_to_print_at": "2026-11-20T18:00:00.000Z"}""".formatted(letterId));
+
+        letterStatusSyncService.syncPendingLetters();
+
+        assertThat(packSentRowsFor(letterId)).isEqualTo(1);
+        assertThat(letterRepository.findById(letterId).orElseThrow().getStatus()).isEqualTo(LetterStatus.UPLOADED);
     }
 
     private UUID sendLetter(LetterStatus status) {
