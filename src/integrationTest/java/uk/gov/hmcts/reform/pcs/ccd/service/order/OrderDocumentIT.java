@@ -84,7 +84,7 @@ class OrderDocumentIT extends OrderEventIT {
     @DisplayName("renders the issued order's wording with the case, its parties and the judge, and adds it to the case")
     void rendersAndAttachesTheIssuedOrder() {
         long caseReference = cases.issue();
-        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs");
+        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs", "judiciary");
         Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
         ExternalEvent<OrderStart, MakeOrderRequest> asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
@@ -216,7 +216,7 @@ class OrderDocumentIT extends OrderEventIT {
 
     /** A judge's order sent for review, as the caseworker reviewing it has it. */
     private Review submittedForReview(long caseReference) {
-        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs");
+        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs", "judiciary");
         Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
         var asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW,

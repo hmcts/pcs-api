@@ -78,8 +78,8 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         caseReference = cases.issue();
         firstHearing = cases.hearing(caseReference, FIRST_HEARING, false);
         secondHearing = cases.hearing(caseReference, SECOND_HEARING, false);
-        firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
-        secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
+        firstJudge = events.registerActor("First", "Judge", "caseworker-pcs", "judiciary");
+        secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs", "judiciary");
     }
 
     @Test

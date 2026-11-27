@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.message.MessageService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -69,6 +70,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         ExternalEventId.of("ext:makeOrder", OrderStart.class, MakeOrderRequest.class);
 
     static final String NOT_AVAILABLE = "Making orders is not available";
+    static final String NOT_PERMITTED = "You do not have permission to make an order";
     static final String ALREADY_DECIDED =
         "Another order has decided this application";
     static final String NOT_OPEN = "The application is not open";
@@ -87,6 +89,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseRepository pcsCaseRepository;
     private final OrderCaseContext orderCaseContext;
     private final SecurityContextService securityContextService;
+    private final UserRoleService userRoleService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
     private final MessageService messageService;
@@ -120,6 +123,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         requireMakeOrder(featureToggleService);
+        if (!userRoleService.isJudge()) {
+            throw ExternalRejection.because(NOT_PERMITTED);
+        }
         long caseReference = start.caseReference();
         String judge = IdamUserIds.normalise(start.user().id());
         PcsCaseEntity pcsCase = findCase(caseReference);
