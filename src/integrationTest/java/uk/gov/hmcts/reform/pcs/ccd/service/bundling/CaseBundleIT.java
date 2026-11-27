@@ -23,6 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.doctoolkit.spring.DocJobsAutoConfiguration;
+import uk.gov.hmcts.ccd.sdk.jobs.CaseJobOutcome;
 import uk.gov.hmcts.ccd.sdk.jobs.CaseMetadata;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -254,11 +255,17 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         // As if the case predated bundling.
         jdbc.update("delete from bundling.doc_job where case_reference = ?", reference);
 
-        transaction.executeWithoutResult(status -> redo.apply(new CaseMetadata(reference, "PCS", "CASE_ISSUED")));
+        assertThat(redo(reference)).isEqualTo(CaseJobOutcome.applied());
         render(reference);
+        // Up to date now, so a second run skips the case.
+        assertThat(redo(reference)).isEqualTo(CaseJobOutcome.skipped());
 
         assertThat(versions(reference)).singleElement()
             .satisfies(bundle -> assertThat(bundle.getCaseRevision()).isEqualTo(caseRevision(reference)));
+    }
+
+    private CaseJobOutcome redo(long reference) {
+        return transaction.execute(status -> redo.apply(new CaseMetadata(reference, "PCS", "CASE_ISSUED")));
     }
 
     private long issued() {
