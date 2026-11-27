@@ -271,12 +271,20 @@ export class EnforcementAction implements IAction{
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       // HDPI-9502, Defendant name and address are not showing up on Welsh page
-      // await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
+      const defendantField = page.locator('#nameAndAddressForEviction-defendants-value');
+      for (const defendant of defendantDetails) {
+        await expect(defendantField).toContainText(defendant);
+      }
     }
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim() === 'Person unknown' ? 'Name not known' : fullName
     );
-    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
+
+    const addressField = page.locator('#nameAndAddressForEviction-address-value');
+    await expect(addressField).toContainText(addressInfo.buildingStreet);
+    await expect(addressField).toContainText(addressInfo.addressLine2);
+    await expect(addressField).toContainText(addressInfo.townCity);
+    await expect(addressField).toContainText(addressInfo.engOrWalPostcode);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
