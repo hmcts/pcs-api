@@ -277,6 +277,14 @@ tasks.register('runE2eTests', Exec) {
     dependsOn yarnInstall
     workingDir = file("${project.projectDir}/src/e2eTest")
     def suite = System.getenv('E2E_SUITE') ?: 'pr'
+    if (System.getenv('BRANCH_NAME') == 'master' && System.getenv('ENVIRONMENT_NAME') == 'aat'
+        && System.getenv('CASE_TYPE_SUFFIX') == 'staging') {
+        def stagingUrl = System.getenv('TEST_URL')
+        if (!stagingUrl?.trim()) {
+            throw new GradleException('TEST_URL is required for the master AAT staging E2E suite')
+        }
+        environment 'CASE_API_URL', stagingUrl
+    }
     commandLine 'yarn', "test:${suite}"
 }
 
