@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface SubmittedDraftOrderRepository extends JpaRepository<SubmittedDraftOrderEntity, UUID> {
 
     /** The case's filings, newest first. */
-    List<SubmittedDraftOrderEntity> findByPartyPcsCaseIdOrderBySubmittedAtDesc(UUID caseId);
+    List<SubmittedDraftOrderEntity> findByPartyPcsCaseIdOrderBySubmittedAtDescIdDesc(UUID caseId);
 }

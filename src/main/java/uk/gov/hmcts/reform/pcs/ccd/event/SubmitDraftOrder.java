@@ -23,10 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingHtml;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -97,12 +99,16 @@ public class SubmitDraftOrder implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> payload) {
         PCSCase caseData = payload.caseData();
         List<PartyEntity> parties = representedParties(payload.caseReference());
+        if (parties.isEmpty()) {
+            throw new PartyNotFoundException(NOT_REPRESENTED);
+        }
         caseData.setRepresentedPartyNames(DynamicList.builder()
             .listItems(parties.stream()
                 .map(party -> DynamicListElement.builder()
                     .code(party.getId())
                     .label(partyService.getPartyName(party))
                     .build())
+                .sorted(Comparator.comparing(DynamicListElement::getLabel))
                 .toList())
             .build());
         caseData.setMultipleRepresentedParties(VerticalYesNo.from(parties.size() > 1));
@@ -132,14 +138,16 @@ public class SubmitDraftOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /**
-     * The parties the user's organisation acts for on the case: a claimant organisation's own party, or a party it
-     * holds a current link to.
+     * The parties still on the case that the user's organisation acts for: a claimant organisation's own party, or a
+     * party it holds a current link to.
      */
     private List<PartyEntity> representedParties(long caseReference) {
         Set<PartyEntity> parties = pcsCaseService.loadCase(caseReference).getParties();
         Set<UUID> represented = partyOwnership.resolveRepresentedPartyIds(parties,
             securityContextService.getCurrentUserId());
-        return parties.stream().filter(party -> represented.contains(party.getId())).toList();
+        return parties.stream()
+            .filter(party -> !party.isRemoved() && represented.contains(party.getId()))
+            .toList();
     }
 
     /** The party the order is filed for: the one represented, or the one chosen of those represented. */

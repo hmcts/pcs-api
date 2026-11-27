@@ -42,7 +42,7 @@ public class SubmittedDraftOrderEntity {
     private PartyEntity party;
 
     /** Rich text (HTML), cleaned when stored. */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String wording;
 
     /** The IDAM id of the user who filed it. */

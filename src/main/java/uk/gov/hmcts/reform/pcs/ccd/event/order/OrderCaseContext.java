@@ -34,8 +34,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.toDomainParties;
 
 /**
- * The case as the order journeys show it: its property, its main claim's parties, its open applications, the
- * hearings an order can be made at and the court managing it.
+ * The case as the order journeys show it: its property, its main claim's parties, its open applications, the drafts
+ * the parties have filed, the hearings an order can be made at and the court managing it.
  */
 @Component
 @AllArgsConstructor
@@ -66,7 +66,7 @@ class OrderCaseContext {
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
                 .toList(),
-            submittedDraftOrders.findByPartyPcsCaseIdOrderBySubmittedAtDesc(pcsCase.getId()).stream()
+            submittedDraftOrders.findByPartyPcsCaseIdOrderBySubmittedAtDescIdDesc(pcsCase.getId()).stream()
                 .map(draft -> new OrderStart.SubmittedDraft(draft.getId(),
                     partyName(draft.getParty(), claim.orElse(null)), draft.getSubmittedAt(), draft.getWording()))
                 .toList(),

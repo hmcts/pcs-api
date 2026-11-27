@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.doReturn;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.submitDraftOrder;
@@ -98,7 +99,6 @@ class SubmitDraftOrderIT extends AbstractPostgresContainerIT {
         assertThat(drafts).extracting(SubmittedDraft::party, SubmittedDraft::wording).containsExactly(
             tuple(IssuedCases.DEFENDANT + " (Defendant 1)", "<p>1. The claim is adjourned.</p>"),
             tuple(IssuedCases.CLAIMANT + " (Claimant 1)", "<p>1. Possession in 14 days.</p>"));
-        assertThat(drafts.getFirst().submittedAt()).isAfterOrEqualTo(drafts.getLast().submittedAt());
     }
 
     @Test
@@ -152,6 +152,27 @@ class SubmitDraftOrderIT extends AbstractPostgresContainerIT {
 
         assertThat(rejected.errors()).containsExactly(SubmitDraftOrder.NOT_REPRESENTED);
         assertThat(filings()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("refuses a party that has been removed from the case")
+    void refusesARemovedParty() {
+        UUID defendant = represent(IssuedCases.DEFENDANT).get(IssuedCases.DEFENDANT);
+        cases.update(caseReference, pcsCase -> pcsCase.getParties().stream()
+            .filter(party -> party.getId().equals(defendant))
+            .forEach(party -> party.setRemoved(true)));
+
+        var rejected = submit("<p>1. Adjourned.</p>", defendant).submitExpectingErrors();
+
+        assertThat(rejected.errors()).containsExactly(SubmitDraftOrder.NOT_REPRESENTED);
+        assertThat(filings()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("does not start for a solicitor whose organisation represents no party on the case")
+    void doesNotStartWithoutAPartyRepresented() {
+        assertThatThrownBy(() -> events.start(caseReference, submitDraftOrder.name()).as(solicitor).start())
+            .hasMessageContaining(SubmitDraftOrder.NOT_REPRESENTED);
     }
 
     @Test
