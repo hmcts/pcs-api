@@ -23,6 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.BundleReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -76,7 +77,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.domain.maintenance.ReindexCasesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -1029,9 +1029,12 @@ public class PCSCase {
     @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
-    @JsonUnwrapped(prefix = "bundleTab_")
-    @CCD(searchable = false, access = {JudicialReadAccess.class})
-    private BundleTab bundleTab;
+    /**
+     * Every version of the case bundle, newest first. In no tab: it is here so CDAM serves each version to whoever
+     * can read it, and the case title links the newest.
+     */
+    @CCD(label = "Case bundles", searchable = false, access = {BundleReadAccess.class})
+    private List<ListValue<Document>> caseBundles;
 
     @CCD(
         label = NOTE_LABEL,
