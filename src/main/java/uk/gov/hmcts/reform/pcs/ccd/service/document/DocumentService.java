@@ -356,7 +356,6 @@ public class DocumentService {
             .generalApplication(selectedGenApp)
             .counterClaim(selectedCounterClaim)
             .url(uploaded.getDocument().getUrl())
-            .documentId(documentIdExtractor.extractDocumentId(uploaded.getDocument().getUrl()))
             .fileName(renamed)
             .binaryUrl(uploaded.getDocument().getBinaryUrl())
             .contentType(uploaded.getContentType())
@@ -402,7 +401,6 @@ public class DocumentService {
                     .party(party)
                     .defendantResponse(defendantResponse)
                     .url(defDoc.getDocument().getUrl())
-                    .documentId(documentIdExtractor.extractDocumentId(defDoc.getDocument().getUrl()))
                     .fileName(updatedFilename)
                     .binaryUrl(defDoc.getDocument().getBinaryUrl())
                     .contentType(defDoc.getContentType())
@@ -441,7 +439,6 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .documentId(documentIdExtractor.extractDocumentId(ccDoc.getDocument().getUrl()))
                 .fileName(documentNameService.appendCounterClaimPostfix(
                     ccDoc.getDocument().getFilename(), counterClaim, claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())

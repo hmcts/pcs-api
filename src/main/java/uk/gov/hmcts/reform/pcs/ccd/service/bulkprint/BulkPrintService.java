@@ -100,9 +100,10 @@ public class BulkPrintService {
         return sendLetterApi.sendLetter(authTokenGenerator.generate(), letter).letterId;
     }
 
-    // Some upload paths did not record the store ID, so older rows only have the URL, whose last segment is the ID.
+    // Defence, counterclaim and later-linked uploads are saved without the store ID, only the URL, whose last
+    // segment is the ID. They only go in a pack with bulk print 2 on; with it off, documents are fetched as before.
     private UUID storeDocumentId(DocumentEntity document) {
-        if (document.getDocumentId() != null) {
+        if (document.getDocumentId() != null || !featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)) {
             return document.getDocumentId();
         }
         if (StringUtils.isBlank(document.getUrl())) {

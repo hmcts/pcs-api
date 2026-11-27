@@ -372,6 +372,8 @@ class BulkPrintServiceTest {
     @Test
     @DisplayName("Fetches a document by the ID at the end of its URL when no store ID was recorded")
     void shouldFallBackToUrlWhenDocumentIdMissing() {
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         byte[] coversheetBytes = "coversheet".getBytes();
         stubSend(coversheetBytes);
         UUID storeId = UUID.randomUUID();
@@ -392,6 +394,8 @@ class BulkPrintServiceTest {
     @Test
     @DisplayName("Throws and sends nothing when a document has neither a store ID nor a URL")
     void shouldThrowWhenDocumentHasNoIdOrUrl() {
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         DocumentEntity upload = DocumentEntity.builder().id(UUID.randomUUID()).build();
 
         assertThatThrownBy(() -> underTest.sendPack(
@@ -400,6 +404,24 @@ class BulkPrintServiceTest {
             .hasMessageContaining(upload.getId().toString());
 
         verifyNoInteractions(letterDocumentFetcher, letterAssembler, sendLetterApi);
+    }
+
+    @Test
+    @DisplayName("Fetches by the recorded store ID only, not the URL, when bulk print 2 is off")
+    void shouldNotFallBackToUrlWhenBulkPrint2IsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        byte[] coversheetBytes = "coversheet".getBytes();
+        stubSend(coversheetBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn("merged-pdf".getBytes());
+        DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID())
+            .url("http://dm-store/documents/" + UUID.randomUUID()).fileName("form.pdf")
+            .contentType("application/pdf").build();
+
+        underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address(), List.of(document));
+
+        verify(letterDocumentFetcher).fetchBytes(null);
+        verifyNoInteractions(documentIdExtractor);
     }
 
     private void stubSend(byte[] coversheetBytes) {
