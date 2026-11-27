@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.riskassessment;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -29,7 +30,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 @AllArgsConstructor
 public class RiskAssessmentPayloadBuilder {
 
-    static final String APPLICATION_TYPE = "Warrant of Possession";
 
     private final PartyService partyService;
     private final CaseReferenceFormatter caseReferenceFormatter;
@@ -46,7 +46,7 @@ public class RiskAssessmentPayloadBuilder {
         return RiskAssessmentPayload.builder()
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
             .caseName(caseNameFormatter.formatCaseName(pcsCase))
-            .applicationType(APPLICATION_TYPE)
+            .applicationType(SelectEnforcementType.WARRANT.getLabel())
             .claimantName(partyService.getPartyName(claimant))
             .defendantNames(defendantsToEvict(enforcementOrder).stream()
                                 .map(partyService::getPartyName)

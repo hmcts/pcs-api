@@ -113,6 +113,7 @@ class WritOfPossessionPayloadBuilderTest {
         assertThat(payload.getClaimantAddress()).isEqualTo("2 Landlord Lane\nBristol");
         assertThat(payload.getClaimantTelephoneNumber()).isEqualTo("01234 567890");
         assertThat(payload.getClaimantEmailAddress()).isEqualTo("claims@acme.test");
+        assertThat(payload.getApplicationType()).isEqualTo("Writ of possession");
         assertThat(payload.getPropertyAddress()).isEqualTo("1 Rented Road\nCardiff");
         assertThat(payload.getBreathingSpaceAnswer()).isEqualTo("No");
         assertThat(payload.getHighCourtPermissionAnswer()).isEqualTo("Yes");

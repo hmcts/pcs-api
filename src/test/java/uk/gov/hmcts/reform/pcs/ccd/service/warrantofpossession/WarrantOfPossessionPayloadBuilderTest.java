@@ -102,7 +102,7 @@ class WarrantOfPossessionPayloadBuilderTest {
         assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-9012-3456");
         assertThat(payload.getCaseName()).isEqualTo("Acme Ltd v Bob Tenant");
         assertThat(payload.getClaimantName()).isEqualTo("Acme Ltd");
-        assertThat(payload.getApplicationType()).isEqualTo(WarrantOfPossessionPayloadBuilder.APPLICATION_TYPE);
+        assertThat(payload.getApplicationType()).isEqualTo("Warrant of possession");
         assertThat(payload.getPossessionOrderType()).isEqualTo(WarrantOfPossessionPayloadBuilder.SUSPENDED_ORDER);
         assertThat(payload.getBreathingSpaceAnswer()).isEqualTo("No");
         assertThat(payload.getMissedPaymentsAnswer()).isEqualTo("Yes");

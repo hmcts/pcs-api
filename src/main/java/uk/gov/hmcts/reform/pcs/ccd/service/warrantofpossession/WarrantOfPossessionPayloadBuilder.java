@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -32,7 +33,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 public class WarrantOfPossessionPayloadBuilder {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-    static final String APPLICATION_TYPE = "Warrant of Possession";
     static final String SUSPENDED_ORDER = "Suspended order";
     static final String OTHER_ORDER = "Other";
     static final String COMPLETED_BY_CLAIMANT = "Claimant";
@@ -60,7 +60,7 @@ public class WarrantOfPossessionPayloadBuilder {
             .claimantTelephoneNumber(claimant.getPhoneNumber())
             .claimantEmailAddress(claimant.getEmailAddress())
             .defendantNames(joinDefendantNames(enforcementOrder))
-            .applicationType(APPLICATION_TYPE)
+            .applicationType(SelectEnforcementType.WARRANT.getLabel())
             .possessionOrderType(warrant.getIsSuspendedOrder() == VerticalYesNo.YES ? SUSPENDED_ORDER : OTHER_ORDER)
             .breathingSpaceAnswer(warrant.getDefendantInBreathingSpace() == null
                                       ? null : warrant.getDefendantInBreathingSpace().getLabel())

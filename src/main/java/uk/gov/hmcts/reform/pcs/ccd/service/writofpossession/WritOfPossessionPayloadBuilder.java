@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.writofpossession;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -58,6 +59,7 @@ public class WritOfPossessionPayloadBuilder {
             .claimantTelephoneNumber(claimant.getPhoneNumber())
             .claimantEmailAddress(claimant.getEmailAddress())
             .defendantNames(joinDefendantNames(enforcementOrder))
+            .applicationType(SelectEnforcementType.WRIT.getLabel())
             .propertyAddress(propertyAddress)
             .breathingSpaceAnswer(writ.getDefendantInBreathingSpace() == null
                                       ? null : writ.getDefendantInBreathingSpace().getLabel())

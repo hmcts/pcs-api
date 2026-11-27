@@ -103,7 +103,7 @@ class RiskAssessmentPayloadBuilderTest {
 
         assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-9012-3456");
         assertThat(payload.getCaseName()).isEqualTo("Acme Ltd v Bob Tenant");
-        assertThat(payload.getApplicationType()).isEqualTo(RiskAssessmentPayloadBuilder.APPLICATION_TYPE);
+        assertThat(payload.getApplicationType()).isEqualTo("Warrant of possession");
         assertThat(payload.getClaimantName()).isEqualTo("Acme Ltd");
         assertThat(payload.getDefendantNames()).isEqualTo("Bob Tenant, Jo Tenant");
         assertThat(payload.getEvictionAddress()).isEqualTo("1 Rented Road\nCardiff");

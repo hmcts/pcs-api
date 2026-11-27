@@ -27,6 +27,7 @@ public class WritOfPossessionPayload implements FormPayload {
     private String propertyAddress;
 
     //Application details
+    private String applicationType;
     private String breathingSpaceAnswer;
     private String highCourtPermissionAnswer;
 
