@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -170,16 +171,27 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                         long caseReference,
                                                         FeeDetails feeDetails) {
 
-        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        String responsibleParty = getResponsiblePartyName();
 
         return FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsiblePartyName(currentUserDetails.getName())
+            .responsiblePartyName(responsibleParty)
             .paymentCallbackHandlerType(GEN_APP_ISSUE)
             .relatedEntityId(genAppEntity.getId())
             .build();
+    }
+
+    private String getResponsiblePartyName() {
+
+        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        if (StringUtils.isNotBlank(organisationName)) {
+            return organisationName;
+        }
+
+        UserInfo user = securityContextService.getCurrentUserDetails();
+        return user != null ? user.getName() : null;
     }
 
     private PartyEntity getApplicantParty(long caseReference, PCSCase caseData, GenAppRequest genAppRequest) {
