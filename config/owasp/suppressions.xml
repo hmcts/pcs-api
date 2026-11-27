@@ -3,6 +3,16 @@
   <!--Please add all the false positives under the below section-->
   <suppress until="2027-01-15">
     <notes><![CDATA[
+    CPE mismatch: the Elasticsearch Java client (co.elastic.clients, from ccd-runtime-indexing) is matched to
+    the Elasticsearch server's CPE, so it is reported with the server's CVEs. PCS ships no Elasticsearch server.
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/co\.elastic\.clients/.*$</packageUrl>
+    <cpe>cpe:/a:elastic:elasticsearch</cpe>
+    <cpe>cpe:/a:elasticsearch:elasticsearch</cpe>
+  </suppress>
+  <suppress until="2027-01-15">
+    <notes><![CDATA[
     CPE mismatch: PCS uses only the Java OTel client;
     these CVEs target the JS/Go clients which are absent from this codebase
     ]]></notes>

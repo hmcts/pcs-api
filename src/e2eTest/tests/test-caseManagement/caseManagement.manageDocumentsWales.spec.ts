@@ -18,19 +18,22 @@ test.use({ storageState: undefined })
 
 let genAppPayload: (id: string, name: string) => any;
 
+let submitPayload: Record<string, any>;
+
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
+  submitPayload = submitCaseApiDataWales.submitCasePayloadCaseFileView();
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
+  await performAction('submitCaseAPI', { data: submitPayload });
   await performAction('getAddressInfo', { data: createCaseApiWalesData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseFileView().defendant1.nameKnown,
-    additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseFileView().addAnotherDefendant,
-    payLoad: submitCaseApiDataWales.submitCasePayloadCaseFileView()
+    defendant1NameKnown: submitPayload.defendant1.nameKnown,
+    additionalDefendants: submitPayload.addAnotherDefendant,
+    payLoad: submitPayload
   });
 
   genAppPayload =
@@ -76,6 +79,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[0],
       question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
+      submitPayload: submitPayload,
       nextPage: amendDocumentDetails.mainHeader
     });
     await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
@@ -86,10 +90,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       date: date,
       question1: amendDocumentDetails.partyDocRelatedToQuestion,
       option1: party,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -113,6 +118,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[2],
       question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[2],
+      submitPayload: submitPayload,
       nextPage: amendDocumentDetails.mainHeader
     });
     await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
@@ -125,16 +131,17 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       option1: party,
       dropQn: amendDocumentDetails.whichTypeOfDocHiddenQuestion,
       selectOption: (amendDocumentDetails.whichTypeHiddenOption)[2],
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex,
       defendantIndex: partyIndex,
       partyType: partyType,
@@ -154,6 +161,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[1],
       question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[1],
+      submitPayload: submitPayload,
       nextPage: amendDocumentDetails.mainHeader
     });
     await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
@@ -166,16 +174,17 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       option1: party,
       dropQn: amendDocumentDetails.whichTypeOfDocHiddenQuestion,
       selectOption: (amendDocumentDetails.whichTypeHiddenOption)[3],
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView() });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: 1,
       defendantIndex : partyIndex,
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, '','',`${partyType} ${partyIndex}`)
@@ -191,7 +200,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName, submitPayload: submitPayload })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -199,10 +208,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       date: date,
       question1: uploadADocument.partyDocRelatedToQuestion,
       option1: party,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(), });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload, });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -226,7 +236,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
@@ -247,7 +257,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let fileName = uploadADocument.uploadDocHiddenOption[3];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName, submitPayload: submitPayload})
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -255,10 +265,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       date: date,
       question1: uploadADocument.partyDocRelatedToQuestion,
       option1: party,
+      submitPayload: submitPayload,
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(), });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -283,11 +294,11 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView(),
+      submitPayload: submitPayload,
       claimantIndex: claimantIndex,
       allowEmptyFolder: true
     });

@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.managed.SelectedCaseBundle;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +31,8 @@ import java.util.stream.Collectors;
 /**
  * The judges' case bundle. PCS selects the sources; the SDK owns the bundle lifecycle. One section
  * per case file category in display order, each document chronological within its folder, and a
- * placeholder page for an empty folder so a reader can see it was empty rather than left out.
+ * placeholder page for an empty folder so a reader can see it was empty rather than left out. An application's
+ * documents follow the rest of their folder, under a cover sheet giving its reference.
  * Presentation is the SDK's court default (contents page, folder cover sheets, "N of M" page numbers).
  */
 @Component
@@ -67,13 +70,7 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
         BundleSection.Builder root = BundleSection.builder(BUNDLE_TITLE);
         Arrays.stream(CaseFileCategory.values())
             .sorted(Comparator.comparingInt(CaseFileCategory::getDisplayOrder))
-            .forEach(category -> root.section(BundleSection.builder(category.getLabel())
-                .documents(byFolder.getOrDefault(category, List.of()).stream()
-                    .sorted(CHRONOLOGICAL)
-                    .map(CaseBundleDefinition::toBundleDocument)
-                    .toList())
-                .emptySectionPolicy(EmptySectionPolicy.INCLUDE_PLACEHOLDER)
-                .build()));
+            .forEach(category -> root.section(folderSection(category, byFolder.getOrDefault(category, List.of()))));
 
         return BundleRequest.builder()
             .title(BUNDLE_TITLE)
@@ -82,6 +79,42 @@ public class CaseBundleDefinition implements uk.gov.hmcts.ccd.sdk.bundling.manag
             // A document that cannot be included gets a page saying so, rather than no bundle.
             .missingDocuments(MissingDocumentPolicy.PLACEHOLDER)
             .build();
+    }
+
+    /**
+     * A folder's documents, those of an application in a section of their own after the rest, so the bundle gives
+     * each application a cover sheet with its reference (GA1, GA2...), in the order the applications were made.
+     */
+    private static BundleSection folderSection(CaseFileCategory category, List<DocumentEntity> documents) {
+        Map<Boolean, List<DocumentEntity>> ofApplication = documents.stream()
+            .collect(Collectors.partitioningBy(document -> document.getGeneralApplication() != null));
+        BundleSection.Builder folder = BundleSection.builder(category.getLabel())
+            .documents(bundleDocuments(ofApplication.get(false)))
+            .emptySectionPolicy(EmptySectionPolicy.INCLUDE_PLACEHOLDER);
+        // Grouped in date order (an entity is equal only to itself), so applications without a rank keep that order.
+        ofApplication.get(true).stream()
+            .sorted(CHRONOLOGICAL)
+            .collect(Collectors.groupingBy(DocumentEntity::getGeneralApplication, LinkedHashMap::new,
+                                           Collectors.toList()))
+            .entrySet().stream()
+            .sorted(Map.Entry.comparingByKey(BY_RANK))
+            .forEach(application -> folder.section(BundleSection.builder(applicationTitle(application.getKey()))
+                .documents(bundleDocuments(application.getValue()))
+                .build()));
+        return folder.build();
+    }
+
+    private static List<BundleDocument> bundleDocuments(List<DocumentEntity> documents) {
+        return documents.stream().sorted(CHRONOLOGICAL).map(CaseBundleDefinition::toBundleDocument).toList();
+    }
+
+    private static final Comparator<GenAppEntity> BY_RANK =
+        Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder()));
+
+    /** As the judges' pages refer to it: "GA1: Suspend enforcement". */
+    static String applicationTitle(GenAppEntity application) {
+        String reference = application.getRank() == null ? "Application" : "GA" + application.getRank();
+        return application.getType() == null ? reference : reference + ": " + application.getType().getShortName();
     }
 
     static CaseFileCategory folder(DocumentEntity document) {

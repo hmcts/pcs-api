@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -27,9 +29,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -50,6 +55,9 @@ class PartyAccessCodeLinkServiceTest {
     @Mock
     private CaseRoleAssignmentService caseRoleAssignmentService;
 
+    @Mock
+    private SystemEventExecutor systemEventExecutor;
+
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
     private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
@@ -59,6 +67,11 @@ class PartyAccessCodeLinkServiceTest {
     @BeforeEach
     void setUp() {
         testUser = createUser();
+        // Lenient: the rejection tests fail before the system event runs.
+        lenient().when(systemEventExecutor.execute(anyLong(), any(), any())).thenAnswer(invocation -> {
+            invocation.getArgument(2, SystemEventAction.class).execute(null);
+            return null;
+        });
     }
 
     private UserInfo createUser() {
@@ -135,6 +148,7 @@ class PartyAccessCodeLinkServiceTest {
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid access code");
+        verifyNoInteractions(systemEventExecutor);
     }
 
     @Test
@@ -149,6 +163,7 @@ class PartyAccessCodeLinkServiceTest {
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isSameAs(rejection);
         verifyNoInteractions(caseRoleAssignmentService);
+        verifyNoInteractions(systemEventExecutor);
     }
 
     @Test
@@ -162,6 +177,7 @@ class PartyAccessCodeLinkServiceTest {
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(caseRoleAssignmentService);
+        verifyNoInteractions(systemEventExecutor);
     }
 
     @Test

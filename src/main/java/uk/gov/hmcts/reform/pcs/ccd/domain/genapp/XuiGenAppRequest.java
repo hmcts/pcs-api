@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SolicitorAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -82,6 +83,20 @@ public class XuiGenAppRequest implements GenAppRequest {
         max = 6800
     )
     private String whatOrderWanted;
+
+    @CCD(
+        label = "Detail the draft order the defendant would like the judge to consider",
+        hint = "Set out the full text of the draft order you want the judge to approve for this application. "
+            + "Use the same format as when submitting a draft word order (for example, with numbered paragraphs "
+            + "and any standard wording).",
+        typeOverride = FieldType.RichTextArea,
+        access = {SolicitorAccess.class, DefendantSolicitorAccess.class},
+        inheritAccessFromParent = false
+    )
+    private String draftOrderWording;
+
+    @CCD(searchable = false)
+    private VerticalYesNo draftOrderWordingAllowed;
 
     @CCD(
         label = "Do you want to upload documents to support the defendant’s application?"
