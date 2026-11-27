@@ -43,7 +43,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '8.14.1'
+  id 'hmcts.ccd.sdk' version '8.15.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2474'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.6'
@@ -487,7 +487,8 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
-  implementation 'com.github.hmcts:document-bundling'
+  implementation 'com.github.hmcts:doc-toolkit'
+  implementation 'com.github.hmcts:job-utils'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
   implementation 'com.github.hmcts:bank-holidays'
 
@@ -787,6 +788,10 @@ cftlibTest {
 
   // Also use wiremock spun up by tests (9400) for doc generation so we can more easily stub dynamic PDF placeholders
   environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:9400/api/render'
+
+  // The judges' case bundle is rendered in the background through CDAM (CaseBundleTest)
+  environment 'CASE_BUNDLE_ENABLED', 'true'
+  environment 'CASE_BUNDLE_WORKER_ENABLED', 'true'
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'

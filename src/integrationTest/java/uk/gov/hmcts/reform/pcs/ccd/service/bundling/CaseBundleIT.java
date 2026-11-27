@@ -3,44 +3,48 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 import com.launchdarkly.sdk.server.LDClient;
 import com.launchdarkly.sdk.server.LDConfig;
 import com.launchdarkly.sdk.server.integrations.TestData;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobWorker;
-import uk.gov.hmcts.ccd.sdk.bundling.job.ManagedCaseBundles;
-import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
-import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
-import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
+import uk.gov.hmcts.ccd.sdk.doctoolkit.spring.DocJobsAutoConfiguration;
+import uk.gov.hmcts.ccd.sdk.jobs.CaseJobOutcome;
+import uk.gov.hmcts.ccd.sdk.jobs.CaseMetadata;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,16 +52,20 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-/** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
+/**
+ * Real PCS events, persistence and projection, the SDK's doc toolkit rendering for real, and the SDK's CDAM
+ * fixture. Every change to the case goes through an event; the bundle follows.
+ */
 @PcsCcdEventTest
 @Import(CaseBundleIT.Flags.class)
 @TestPropertySource(properties = {
-    "ccd.bundling.enabled=true", "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
-    "ccd.bundling.job.worker.enabled=true", "ccd.bundling.job.worker.poll-delay=1h"
+    "ccd.doc-toolkit.jobs.enabled=true", "ccd.doc-toolkit.jobs.worker.enabled=true",
+    "ccd.doc-toolkit.jobs.worker.poll-delay=1h"
 })
 class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
@@ -69,15 +77,19 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private DocumentRepository documents;
     @Autowired
-    private CaseBundles bundles;
+    private CaseBundleRepository versions;
     @Autowired
-    private OutboxBundleJobService jobs;
+    private JdbcTemplate jdbc;
     @Autowired
-    private BundleJobWorker worker;
+    private DocJobsAutoConfiguration.DocJobWorkerLifecycle worker;
+    @Autowired
+    private SystemEventExecutor systemEvents;
     @Autowired
     private TransactionTemplate transaction;
     @Autowired
     private TestData flags;
+    @Autowired
+    private RedoCaseBundles redo;
 
     @TestConfiguration
     static class Flags {
@@ -101,162 +113,219 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void documentHookQueuesOnlyCommittedCascadedWrites() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        var first = document("First.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        var second = document("Second.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
-        transaction.executeWithoutResult(status -> {
-            add(reference, first, second);
-            status.setRollbackOnly();
-        });
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.NONE);
-        transaction.executeWithoutResult(status -> add(reference, first, second));
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.PREPARING);
+    void anEventThatLeavesTheBundleAsItIsQueuesNothing() throws Exception {
+        long reference = issued();
+        render(reference);
+        long builtAt = caseRevision(reference);
+        assertThat(latest(reference).getCaseRevision()).isEqualTo(builtAt);
+
+        // A change the bundle does not read.
+        event(reference, pcsCase -> pcsCase.setPreActionProtocolCompleted(
+            !Boolean.TRUE.equals(pcsCase.getPreActionProtocolCompleted())));
+        render(reference);
+
+        // The bundle still shows the case as at the revision it was built at, which is still accurate.
+        assertThat(caseRevision(reference)).isGreaterThan(builtAt);
+        assertThat(versions(reference)).singleElement()
+            .satisfies(bundle -> assertThat(bundle.getCaseRevision()).isEqualTo(builtAt));
     }
 
     @Test
     void projectsTheJudgesBundleWithoutAddingItToTheDocumentTable() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        transaction.executeWithoutResult(status -> add(reference,
+        long reference = issued();
+        event(reference, pcsCase -> pcsCase.addDocuments(List.of(
             document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10)),
             document("Inspection.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 5)),
-            document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
-        run(key);
-        var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
+            document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2)))));
+        render(reference);
+        CaseBundleEntity first = latest(reference);
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
         PCSCase judge = view(reference, "judge");
-        assertThat(judge.getBundleTab().getPages()).isEqualTo(first.pageCount());
-        assertThat(judge.getBundleTab().getBundle().getUrl()).isEqualTo(first.stored().orElseThrow().url());
+        assertThat(judge.getCaseBundles()).singleElement().satisfies(bundle -> {
+            assertThat(bundle.getValue().getUrl()).isEqualTo(first.getUrl());
+            assertThat(bundle.getValue().getCategoryId()).isEqualTo(CaseBundleDefinition.FOLDER_ID);
+        });
         assertThat(judge.getAllDocuments()).extracting(document -> document.getValue().getUrl())
-            .doesNotContain(first.stored().orElseThrow().url());
-        assertThat(view(reference, "hearing-centre-admin").getBundleTab()).isIn(null, new BundleTab());
+            .doesNotContain(first.getUrl());
+        for (String role : List.of("hearing-centre-admin", "hearing-centre-team-leader")) {
+            PCSCase staff = view(reference, role);
+            assertThat(staff.getCaseBundles()).singleElement()
+                .satisfies(bundle -> assertThat(bundle.getValue().getUrl()).isEqualTo(first.getUrl()));
+            assertThat(staff.getCaseTitleMarkdown()).contains("/documentsv2/" + first.getDocumentId() + "/binary");
+        }
+        for (String role : List.of("bailiff-admin", "caseworker-pcs-solicitor", "citizen", "ctsc")) {
+            PCSCase excluded = view(reference, role);
+            assertThat(excluded.getCaseBundles()).as(role).isNull();
+            assertThat(excluded.getCaseTitleMarkdown()).as(role).doesNotContain("/documentsv2/");
+        }
         // The judge making an order links it; nobody else is given it.
         assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
-            first.stored().orElseThrow().id(), first.fileName(), first.recordedAt()));
+            first.getDocumentId(), first.getFileName(), first.getCreatedAt()));
         assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
     }
 
     @Test
-    void amendmentsAndSoftDeletionInvalidateTheBundleThroughTheSameDocumentHook() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        var source = document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        transaction.executeWithoutResult(status -> add(reference, source));
-        run(key);
-        UUID sourceId = documents.findByDocumentId(source.getDocumentId()).orElseThrow().getId();
-        transaction.executeWithoutResult(status -> documents.findById(sourceId).orElseThrow()
-            .setFileName("Amended witness.pdf"));
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
-        run(key);
-        transaction.executeWithoutResult(status -> documents.deleteById(sourceId));
-        run(key);
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .documents()).isEmpty();
+    void amendmentsAndRemovalUpdateTheBundleAndEarlierVersionsAreKept() throws Exception {
+        long reference = issued();
+        event(reference, pcsCase -> pcsCase.addDocuments(List.of(
+            document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1)))));
+        render(reference);
+        UUID sourceId = transaction.execute(status -> pcsCases.findByCaseReference(reference).orElseThrow()
+            .getDocuments().iterator().next().getId());
+
+        event(reference, pcsCase -> documents.findById(sourceId).orElseThrow().setFileName("Amended witness.pdf"));
+        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
+        render(reference);
+        assertThat(text(latest(reference))).contains("Amended witness.pdf");
+
+        event(reference, pcsCase -> documents.deleteById(sourceId));
+        render(reference);
+        assertThat(text(latest(reference))).doesNotContain("Amended witness.pdf").doesNotContain("Content of");
+
+        // Versions replaced within the last day stay in the case data, newest first, so CDAM keeps serving them.
+        assertThat(view(reference, "judge").getCaseBundles()).extracting(bundle -> bundle.getValue().getUrl())
+            .containsExactlyElementsOf(versions(reference).stream().map(CaseBundleEntity::getUrl).toList())
+            .allSatisfy(url -> assertThat(events.documents().stored()).extracting(Document::getUrl).contains(url));
+        // Named for Case File View by when each was made, the older ones marked as replaced.
+        List<String> names = view(reference, "judge").getCaseBundles().stream()
+            .map(bundle -> bundle.getValue().getFilename()).toList();
+        assertThat(names.getFirst()).matches("Case bundle \\d{8} \\d{4}\\.pdf");
+        assertThat(names.subList(1, names.size())).isNotEmpty()
+            .allSatisfy(name -> assertThat(name).matches("Case bundle \\d{8} \\d{4} \\(replaced\\)\\.pdf"));
+
+        // A day after being replaced, a version is no longer served, so pages removed from the case go with it.
+        jdbc.update("update case_bundles set created_at = created_at - interval '25 hours' where case_id = ?",
+                    pcsCases.findByCaseReference(reference).orElseThrow().getId());
+        assertThat(view(reference, "judge").getCaseBundles()).extracting(bundle -> bundle.getValue().getUrl())
+            .containsExactly(latest(reference).getUrl());
     }
 
     @Test
-    void issuingACounterclaimQueuesItsPreviouslyHiddenDocuments() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        UUID claimId = transaction.execute(status -> {
-            var pcsCase = pcsCases.findByCaseReference(reference).orElseThrow();
+    void issuingACounterclaimAddsItsPreviouslyHiddenDocuments() throws Exception {
+        long reference = issued();
+        event(reference, pcsCase -> {
             var counterclaim = CounterClaimEntity.builder().party(pcsCase.getParties().iterator().next())
                 .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build();
             pcsCase.addCounterClaim(counterclaim);
             var source = document("Counterclaim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 1));
             source.setCounterClaim(counterclaim);
             pcsCase.addDocuments(List.of(source));
-            return pcsCases.saveAndFlush(pcsCase).getCounterClaims().getFirst().getId();
         });
-        // A document outside the bundle does not queue a render.
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.NONE);
-        transaction.executeWithoutResult(status -> pcsCases.findByCaseReference(reference).orElseThrow()
-            .getCounterClaims().stream().filter(claim -> claim.getId().equals(claimId)).findFirst().orElseThrow()
+        render(reference);
+        assertThat(text(latest(reference))).doesNotContain("Counterclaim.pdf");
+
+        event(reference, pcsCase -> pcsCase.getCounterClaims().getFirst()
             .setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED));
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
-            .isEqualTo(CaseBundleView.Lifecycle.PREPARING);
-        run(key);
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .request().allDocuments()).extracting(source -> source.title())
-            .containsExactly("Counterclaim.pdf");
+        render(reference);
+
+        assertThat(text(latest(reference))).contains("Counterclaim.pdf");
     }
 
     @Test
-    void missingSourcesAppearInTheJudgesTab() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        var missing = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        Document stored = events.documents().stored().stream()
-            .filter(document -> document.getUrl().equals(missing.getUrl())).findFirst().orElseThrow();
-        events.documents().delete(stored);
-        transaction.executeWithoutResult(status -> add(reference, missing));
-        run(key);
-        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForAll(true));
-        var missingDetails = view(reference, "judge").getBundleTab().getMissingDocuments();
-        assertThat(missingDetails).singleElement().satisfies(missingDocument -> {
-            assertThat(missingDocument.getValue().getDocumentName()).isEqualTo("Deleted.pdf");
-            assertThat(missingDocument.getValue().getFolder()).isEqualTo("Evidence");
-            assertThat(missingDocument.getValue().getPage()).isPositive();
-        });
-    }
-
-    @Test
-    void rendersInBackgroundButOnlyTargetedJudgesReceiveBundleFields() throws Exception {
-        long reference = cases.issue();
-        UUID key = caseKey(reference);
-        transaction.executeWithoutResult(status -> add(reference,
-            document("Background.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
-        run(key);
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
+    void rendersInBackgroundButOnlyTargetedBundleReadersReceiveBundleFields() throws Exception {
+        long reference = issued();
+        event(reference, pcsCase -> pcsCase.addDocuments(List.of(
+            document("Background.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1)))));
+        render(reference);
 
         var allowed = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
         final var other = events.registerActor("Other", "Judge", "caseworker-pcs", "judge");
         var admin = events.registerActor("Selected", "Admin", "caseworker-pcs", "hearing-centre-admin");
-        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseBundles()).isNull();
         String originalTitle = events.view(reference, allowed).getCaseTitleMarkdown();
         assertThat(originalTitle).doesNotContain("/documentsv2/");
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false)
             .variationForUser(allowed.uid(), true).variationForUser(admin.uid(), true));
         PCSCase visible = events.view(reference, allowed);
-        assertThat(visible.getBundleTab().getBundle()).isNotNull();
-        UUID documentId = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
-            .stored().orElseThrow().id();
+        assertThat(visible.getCaseBundles()).isNotEmpty();
         assertThat(visible.getCaseTitleMarkdown())
-            .contains("href=\"/documentsv2/" + documentId + "/binary\"")
+            .contains("href=\"/documentsv2/" + latest(reference).getDocumentId() + "/binary\"")
             .contains("target=\"_blank\" rel=\"noopener noreferrer\"")
             .contains("Whole file download (opens in new tab)");
-        assertThat(events.view(reference, other).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, other).getCaseBundles()).isNull();
         assertThat(events.view(reference, other).getCaseTitleMarkdown()).isEqualTo(originalTitle);
-        assertThat(events.view(reference, admin).getBundleTab()).isIn(null, new BundleTab());
-        assertThat(events.view(reference, admin).getCaseTitleMarkdown()).isEqualTo(originalTitle);
+        assertThat(events.view(reference, admin).getCaseBundles()).isNotEmpty();
 
         flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).clearTargets().variationForAll(false));
-        assertThat(events.view(reference, allowed).getBundleTab()).isIn(null, new BundleTab());
+        assertThat(events.view(reference, allowed).getCaseBundles()).isNull();
         assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
-        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current()).isPresent();
     }
 
+    /**
+     * An issued case after its first event. The fixture seeds cases without an event, as no real case is made, so
+     * nothing has built its bundle until an event runs.
+     */
     @Test
-    void overviewHasNoDownloadUntilTheBundleIsPublished() throws Exception {
-        long reference = cases.issue();
-        var judge = events.registerActor("Selected", "Judge", "caseworker-pcs", "judge");
-        flags.update(flags.flag(FeatureFlag.CASE_BUNDLE_VIEW.key()).variationForUser(judge.uid(), true));
-        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
+    void redoingTheBundlesGivesACaseWithoutOneItsBundle() throws Exception {
+        long reference = issued();
+        // As if the case predated bundling.
+        jdbc.update("delete from bundling.doc_job where case_reference = ?", reference);
 
-        transaction.executeWithoutResult(status -> add(reference,
-            document("Preparing.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1))));
-        assertThat(events.view(reference, judge).getBundleTab().getStatus()).isEqualTo("The bundle is being prepared.");
-        assertThat(events.view(reference, judge).getCaseTitleMarkdown()).doesNotContain("/documentsv2/");
-        run(caseKey(reference));
+        assertThat(redo(reference)).isEqualTo(CaseJobOutcome.applied());
+        render(reference);
+        // Up to date now, so a second run skips the case.
+        assertThat(redo(reference)).isEqualTo(CaseJobOutcome.skipped());
+
+        assertThat(versions(reference)).singleElement()
+            .satisfies(bundle -> assertThat(bundle.getCaseRevision()).isEqualTo(caseRevision(reference)));
+    }
+
+    private CaseJobOutcome redo(long reference) {
+        return transaction.execute(status -> redo.apply(new CaseMetadata(reference, "PCS", "CASE_ISSUED")));
+    }
+
+    private long issued() {
+        long reference = cases.issue();
+        event(reference, pcsCase -> { });
+        return reference;
+    }
+
+    private void event(long reference, Consumer<PcsCaseEntity> change) {
+        systemEvents.execute(reference, UUID.randomUUID(), context -> {
+            change.accept(pcsCases.findByCaseReference(reference).orElseThrow());
+            return SystemEventResult.withoutStateTransition("bundleTestChange", "Bundle test change");
+        });
+    }
+
+    /** Runs the worker until the case's bundle has nothing left to render. */
+    private void render(long reference) {
+        await().atMost(Duration.ofSeconds(60)).pollInterval(Duration.ofMillis(50)).until(() -> {
+            worker.worker().poll();
+            return jdbc.queryForObject("select count(*) from bundling.doc_job where case_reference = ?",
+                Integer.class, reference) == 0;
+        });
+    }
+
+    private long caseRevision(long reference) {
+        return jdbc.queryForObject("select case_revision from ccd.case_data where reference = ?", Long.class,
+                                   reference);
+    }
+
+    private List<CaseBundleEntity> versions(long reference) {
+        return versions.findByCaseIdOrderByCaseRevisionDesc(
+            pcsCases.findByCaseReference(reference).orElseThrow().getId());
+    }
+
+    private CaseBundleEntity latest(long reference) {
+        return versions(reference).getFirst();
+    }
+
+    private Document stored(CaseBundleEntity version) {
+        return events.documents().stored().stream().filter(document -> document.getUrl().equals(version.getUrl()))
+            .findFirst().orElseThrow();
+    }
+
+    private String text(CaseBundleEntity version) throws IOException {
+        return text(stored(version));
+    }
+
+    private String text(Document document) throws IOException {
+        try (PDDocument pdf = Loader.loadPDF(events.documents().content(document))) {
+            return new PDFTextStripper().getText(pdf);
+        }
     }
 
     private OrderStart.CaseBundle orderBundle(long reference, String role) {
@@ -266,24 +335,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
 
     private PCSCase view(long reference, String role) {
         return events.view(reference, events.registerActor("Bundle", "Reader", "caseworker-pcs", role));
-    }
-
-    private void run(UUID key) {
-        UUID id = jobs.findLatest(ManagedCaseBundles.key(CaseBundleDefinition.NAME, key.toString()))
-            .orElseThrow().externalId();
-        worker.poll();
-        await().atMost(Duration.ofSeconds(30)).until(() -> jobs.find(id).orElseThrow().state().terminal());
-        assertThat(jobs.find(id).orElseThrow().failure()).isEmpty();
-    }
-
-    private UUID caseKey(long reference) {
-        return pcsCases.findByCaseReference(reference).orElseThrow().getId();
-    }
-
-    private void add(long reference, DocumentEntity... sources) {
-        PcsCaseEntity pcsCase = pcsCases.findByCaseReference(reference).orElseThrow();
-        pcsCase.addDocuments(List.of(sources));
-        pcsCases.save(pcsCase);
     }
 
     @lombok.SneakyThrows
@@ -310,5 +361,4 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             return out.toByteArray();
         }
     }
-
 }
