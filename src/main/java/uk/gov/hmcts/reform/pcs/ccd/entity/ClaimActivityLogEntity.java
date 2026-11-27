@@ -60,6 +60,11 @@ public class ClaimActivityLogEntity {
     @Column(name = "details")
     private String details;
 
+    // The letter Send Letter accepted for a PACK_SENT row. Two identical sends can share one letter.
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "letter_id")
+    private LetterEntity letter;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

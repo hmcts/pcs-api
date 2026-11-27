@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.LetterEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.LetterRepository;
 
 /**
  * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}, with
@@ -29,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 public class AccessCodeActivityLogService {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
+    private final LetterRepository letterRepository;
     private final ObjectMapper objectMapper;
 
     public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
@@ -56,11 +59,14 @@ public class AccessCodeActivityLogService {
     /**
      * One pack dispatch to a recipient succeeded; {@link PackDetails} records the pack type and contents
      * and is the bulk-print dedup source, so it commits in its own transaction: the post is irreversible,
-     * and the send runs outside any caller transaction.
+     * and the send runs outside any caller transaction. The letter Send Letter accepted is recorded in the
+     * same transaction, so the status sync can follow it.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordPackSent(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
-        save(pcsCase, recipient, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details);
+        letterRepository.createIfAbsent(details.letterId());
+        LetterEntity letter = letterRepository.getReferenceById(details.letterId());
+        save(pcsCase, recipient, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details, letter);
     }
 
     /**
@@ -77,6 +83,15 @@ public class AccessCodeActivityLogService {
                       ClaimActivityType activityType,
                       ClaimActivityStatus status,
                       ActivityDetails details) {
+        save(pcsCase, party, activityType, status, details, null);
+    }
+
+    private void save(PcsCaseEntity pcsCase,
+                      PartyEntity party,
+                      ClaimActivityType activityType,
+                      ClaimActivityStatus status,
+                      ActivityDetails details,
+                      LetterEntity letter) {
 
         claimActivityLogRepository.save(
             ClaimActivityLogEntity.builder()
@@ -85,6 +100,7 @@ public class AccessCodeActivityLogService {
                 .activityType(activityType)
                 .status(status)
                 .details(toJson(details))
+                .letter(letter)
                 .build()
         );
 

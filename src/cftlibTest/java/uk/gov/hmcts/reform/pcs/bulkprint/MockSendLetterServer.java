@@ -111,15 +111,17 @@ public class MockSendLetterServer {
     private void stubSendLetterEndpoints() {
         wireMockServer
             .stubFor(WireMock.get(urlPathMatching("/letters/.+"))
-                         .willReturn(WireMock.ok().withJsonBody(emptyResponse())));
+                         .willReturn(WireMock.ok().withJsonBody(uploadedLetterResponse())));
 
         wireMockServer
             .stubFor(WireMock.post(urlPathEqualTo("/letters"))
                          .willReturn(WireMock.created().withJsonBody(createdLetterResponse())));
     }
 
-    private static ObjectNode emptyResponse() {
-        return JsonNodeFactory.instance.objectNode();
+    private static ObjectNode uploadedLetterResponse() {
+        ObjectNode jsonBody = JsonNodeFactory.instance.objectNode();
+        jsonBody.set("status", TextNode.valueOf("Uploaded"));
+        return jsonBody;
     }
 
     private static ObjectNode createdLetterResponse() {
