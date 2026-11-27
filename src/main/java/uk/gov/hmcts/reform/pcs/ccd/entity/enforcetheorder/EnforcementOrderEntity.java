@@ -69,6 +69,9 @@ public class EnforcementOrderEntity {
     @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 
+    @OneToOne(mappedBy = "enforcementOrder", cascade = ALL)
+    private WritOfRestitutionEntity writOfRestitutionDetails;
+
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "sot_id", nullable = false)
     @JsonBackReference

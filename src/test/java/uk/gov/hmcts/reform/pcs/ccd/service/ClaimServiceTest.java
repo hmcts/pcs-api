@@ -56,6 +56,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
 
+    private static final long CASE_REFERENCE = 1234L;
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
@@ -457,21 +458,19 @@ class ClaimServiceTest {
 
     @Test
     void shouldLoadClaimWhenExists() {
-        long caseReference = 12345L;
         ClaimEntity expectedClaim = new ClaimEntity();
-        when(claimRepository.findClaimByCaseReference(caseReference)).thenReturn(Optional.of(expectedClaim));
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(expectedClaim));
 
-        ClaimEntity actualClaim = claimService.loadClaim(caseReference);
+        ClaimEntity actualClaim = claimService.loadClaim(CASE_REFERENCE);
 
         assertThat(actualClaim).isSameAs(expectedClaim);
     }
 
     @Test
     void shouldThrowClaimNotFoundExceptionWhenClaimDoesNotExist() {
-        long caseReference = 12345L;
-        when(claimRepository.findClaimByCaseReference(caseReference)).thenReturn(Optional.empty());
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> claimService.loadClaim(caseReference))
+        assertThatThrownBy(() -> claimService.loadClaim(CASE_REFERENCE))
             .isInstanceOf(ClaimNotFoundException.class);
     }
 

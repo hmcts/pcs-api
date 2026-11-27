@@ -100,6 +100,10 @@ public class ClaimService {
         claimRepository.save(claimEntity);
     }
 
+    public ClaimEntity loadClaim(long caseReference) {
+        return claimRepository.findClaimByCaseReference(caseReference)
+            .orElseThrow(() -> new ClaimNotFoundException(caseReference));
+    }
 
     private ClaimEntity buildClaimEntity(PCSCase pcsCase) {
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
@@ -138,8 +142,4 @@ public class ClaimService {
             .build();
     }
 
-    public ClaimEntity loadClaim(long caseReference) {
-        return claimRepository.findClaimByCaseReference(caseReference)
-            .orElseThrow(() -> new ClaimNotFoundException(caseReference));
-    }
 }
