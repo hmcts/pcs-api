@@ -572,11 +572,11 @@ public class CaseFlagService {
             ));
     }
 
-    private static boolean isCaseFlagRequested(FlagDetail flagDetail) {
+    static boolean isCaseFlagRequested(FlagDetail flagDetail) {
         return Objects.equals(flagDetail.getStatus(), REQUESTED_STATUS);
     }
 
-    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+    static boolean isCaseFlagActive(FlagDetail flagDetail) {
         return Objects.equals(flagDetail.getStatus(), ACTIVE_STATUS);
     }
 

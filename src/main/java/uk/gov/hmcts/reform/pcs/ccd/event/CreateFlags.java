@@ -16,7 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.LanguageFlagDuplicateValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -34,6 +37,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED);
 
     private  final PcsCaseService pcsCaseService;
+    private final LanguageFlagDuplicateValidator languageFlagDuplicateValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -49,7 +53,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                        UserRole.HEARING_CENTRE_ADMIN,
                        UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
-                .page("caseworkerCaseFlag")
+                .page("caseworkerCaseFlag", languageFlagDuplicateValidator::validateFlagsPage)
                 .pageLabel("Create case flags")
                 .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
@@ -69,6 +73,11 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
 
         log.debug("Caseworker created case flag for {}", caseReference);
+
+        List<String> errors = languageFlagDuplicateValidator.validatePartyLanguageFlags(pcsCase.getParties());
+        if (!errors.isEmpty()) {
+            return SubmitResponse.<State>builder().errors(errors).build();
+        }
 
         pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 

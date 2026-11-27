@@ -4,12 +4,15 @@ import com.google.common.collect.ImmutableSet;
 import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
 import uk.gov.hmcts.ccd.sdk.ResolvedCCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Field.FieldBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -76,6 +79,20 @@ public abstract class BaseEventTest {
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
         Submit<PCSCase, State> submitHandler = getConfiguredEvent().getSubmitHandler();
         return submitHandler.submit(eventPayload);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected AboutToStartOrSubmitResponse<PCSCase, State> callMidEventHandler(String pageId, PCSCase caseData) {
+        MidEvent<PCSCase, State> midEvent = getConfiguredEvent().getFields().getPagesToMidEvent().get(pageId);
+        assertThat(midEvent)
+            .withFailMessage("No mid event handler configured for page " + pageId)
+            .isNotNull();
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .id(TEST_CASE_REFERENCE)
+            .data(caseData)
+            .build();
+        return midEvent.handle(caseDetails, null);
     }
 
     protected void assertConfiguredShowConditions(String expectedShowCondition) {
