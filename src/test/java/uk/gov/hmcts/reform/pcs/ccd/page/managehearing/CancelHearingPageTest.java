@@ -27,8 +27,7 @@ class CancelHearingPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        CancelHearingPage cancelHearingPage = new CancelHearingPage(textAreaValidationService, mock(HearingService.class));
-        setPageUnderTest(cancelHearingPage);
+        setPageUnderTest(new CancelHearingPage(textAreaValidationService, mock(HearingService.class)));
     }
 
     @Test
