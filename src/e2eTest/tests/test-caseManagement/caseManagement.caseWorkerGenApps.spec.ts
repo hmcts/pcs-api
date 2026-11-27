@@ -113,7 +113,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
-    await performAction('verifyGenAppConfirm');
+    await performAction('verifyGenAppConfirm', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -198,7 +198,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
-    await performAction('verifyGenAppConfirm');
+    await performAction('verifyGenAppConfirm', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -249,7 +249,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
-    await performAction('verifyGenAppConfirm');
+    await performAction('verifyGenAppConfirm', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -300,7 +300,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
-    await performAction('verifyGenAppConfirm');
+    await performAction('verifyGenAppConfirm', { submitPayload: submitPayload });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -370,7 +370,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
       });
 
       await test.step(`Then the confirmation page displays the application details`, async () => {
-        await performAction('verifyGenAppConfirm');
+        await performAction('verifyGenAppConfirm', { submitPayload: submitPayload });
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
       });
 

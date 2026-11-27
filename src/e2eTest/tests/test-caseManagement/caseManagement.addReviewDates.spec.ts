@@ -89,7 +89,7 @@ test.describe('Case management - Case Worker Add Review date @nightly', async ()
       });
 
       await test.step(`Then the confirmation page displays the details of the new Review Date details`, async () => {
-        await performAction('confirmReviewDatesAdded');
+        await performAction('confirmReviewDatesAdded', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
         currentTime = getCurrentBSTTime();
         await performValidation('bannerAlert', 'Case #.* has been updated with event: Add review date');
       })

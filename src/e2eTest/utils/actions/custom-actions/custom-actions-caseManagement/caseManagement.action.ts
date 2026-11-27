@@ -1,13 +1,19 @@
 type BreathingSpaceDate = { day: string; month: string; year: string };
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
+import {
+  BAILIFF_MANAGEMENT_ENABLED,
+  resolveLdFlagged,
+  whenLdFlag,
+} from '@utils/actions/custom-actions/launchDarkly.action'
+
 import test, { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {formatDateTimeNonBST, generateRandomString} from "@utils/common/string.utils";
+import { formatDateTimeNonBST, generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -32,13 +38,13 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes,checkFullPartyDetails, enterBreathingSpace,enterBreathingSpacecheckYourAnswers
+  confirmCancelHearing, confirmJudicialNotes, addJudicialNotes, checkFullPartyDetails, enterBreathingSpace, enterBreathingSpacecheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
-import {manageHearingApiData} from "@data/api-data";
+import { manageHearingApiData } from "@data/api-data";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -52,9 +58,9 @@ export class CaseManagementAction implements IAction {
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
-      ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
+      ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded(fieldName as actionRecord)],
       ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
-      ['confirmCaseStateChange', () => this.confirmCaseStateChange()],
+      ['confirmCaseStateChange', () => this.confirmCaseStateChange(fieldName as actionRecord)],
       ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
@@ -69,7 +75,7 @@ export class CaseManagementAction implements IAction {
       ['editHearing', () => this.editHearing(fieldName as actionRecord)],
       ['confirmHearingEdited', () => this.confirmHearingEdited(fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
-      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm(fieldName as actionRecord)],
       ['updatePartyDetails', () => this.updatePartyDetails(page, fieldName as actionRecord)],
       ['selectParty', () => this.selectParty(fieldName as actionRecord)],
       ['confirmPartyDetailsUpdated', () => this.confirmPartyDetailsUpdated(fieldName as actionRecord)],
@@ -86,10 +92,10 @@ export class CaseManagementAction implements IAction {
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
-      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
-      ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
+      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes(fieldName as actionRecord)],
+      ['validateJudgeNotesTab', () => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
-      ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
+      ['confirmRemoveParty', () => this.confirmRemoveParty(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validateEnterBreathingSpacePage', () => this.validateEnterBreathingSpacePage()],
       ['selectBreathingSpaceType', () => this.selectBreathingSpaceType(fieldName as actionRecord)],
@@ -105,8 +111,8 @@ export class CaseManagementAction implements IAction {
       ['submitCheckYourAnswers', () => this.submitCheckYourAnswers()],
       ['clickPreviousAndValidateAnswersRetained', () => this.clickPreviousAndValidateAnswersRetained()],
       ['cancelCheckYourAnswersAndValidate', () => this.cancelCheckYourAnswersAndValidate(fieldName as any)],
-    ]); 
-    
+    ]);
+
 
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -115,147 +121,147 @@ export class CaseManagementAction implements IAction {
     await actionToPerform();
   }
 
-private async validateCheckYourAnswersPage(data: {
-  referenceNumber: string;
-  startDateDisplay: string;
-  typeDisplayText: string;
-  expectedEndDateDisplay: string;
-}) {
-  const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
-  const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
-  enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = finalStartDate;
-  enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = finalEndDate;
-  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
-  await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-  await performValidation('text', {
-    elementType: 'paragraph',
-    text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-  });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.subHeader });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.checkInfoText });
-  await performValidation('text', { elementType: 'paragraph', text: data.referenceNumber });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.startDate });
-  
-  await performValidation('text', {
-    elementType: 'paragraph',
-    text: finalStartDate,
-  });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate });
-  await performValidation('text', {
-    elementType: 'paragraph',
-    text: finalEndDate,
-  });
-  await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.type });
-  console.log('typeDisplayText:', data.typeDisplayText);
-  await performValidation('text', { elementType: 'inlineText', text: data.typeDisplayText });
-}
+  private async validateCheckYourAnswersPage(data: {
+    referenceNumber: string;
+    startDateDisplay: string;
+    typeDisplayText: string;
+    expectedEndDateDisplay: string;
+  }) {
+    const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
+    const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = finalStartDate;
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = finalEndDate;
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.subHeader });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.checkInfoText });
+    await performValidation('text', { elementType: 'paragraph', text: data.referenceNumber });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.startDate });
 
-private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: finalStartDate,
+    });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: finalEndDate,
+    });
+    await performValidation('text', { elementType: 'paragraph', text: enterBreathingSpacecheckYourAnswers.answerLabels.type });
+    console.log('typeDisplayText:', data.typeDisplayText);
+    await performValidation('text', { elementType: 'inlineText', text: data.typeDisplayText });
+  }
+
+  private async completeBreathingSpaceFormHappyPath(data: { targetType: string; referenceNumber: string }) {
     await performValidation('mainHeader', enterBreathingSpace.mainHeader);
     await performAction('fillBreathingSpaceStartDateWithToday');
-    await performAction('selectBreathingSpaceType', { type: data.targetType }); 
+    await performAction('selectBreathingSpaceType', { type: data.targetType });
     await performAction('fillExpectedEndDateWithFutureDate');
     await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
     enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
     enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
     await performAction('clickButton', enterBreathingSpace.continueButton);
-}
+  }
 
-public async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
-  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.changeLink);
-  await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
-  await performValidation(
-    'validateInputTextValues',
-    { textLabel: enterBreathingSpace.referenceNumberTextLabel },
-    { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
-  );
-  await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.updatedReferenceNumber);
-  enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber = data.updatedReferenceNumber;
-  const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
-  const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
+  public async changeReferenceNumberAndValidate(data: { updatedReferenceNumber: string }) {
+    await performAction('clickButton', enterBreathingSpacecheckYourAnswers.changeLink);
+    await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.referenceNumberTextLabel });
+    await performValidation(
+      'validateInputTextValues',
+      { textLabel: enterBreathingSpace.referenceNumberTextLabel },
+      { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
+    );
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.updatedReferenceNumber);
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber = data.updatedReferenceNumber;
+    const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
+    const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
 
-  enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = finalStartDate;
-  enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = finalEndDate;
-  const storeInstance = CYAStore.getInstance();
-  storeInstance.clearStore();
-  storeInstance.captureAnswer('inputText', enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber, data.updatedReferenceNumber);
-  storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.startDate, CaseManagementAction.enteredStartDate);
-  storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate, CaseManagementAction.enteredExpectedEndDate);
-  storeInstance.captureAnswer('select', enterBreathingSpacecheckYourAnswers.answerLabels.type, enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText);
-  await performAction('clickButton', enterBreathingSpace.continueButton);
-  await this.validateCheckYourAnswersPage({
-    referenceNumber: data.updatedReferenceNumber,
-    typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
-    startDateDisplay: finalStartDate,
-    expectedEndDateDisplay: finalEndDate
-  });
-}
-public async submitCheckYourAnswers() {
-  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.submitButton);
-  await performValidation('text', { 
-    elementType: 'inlineText', 
-    text: enterBreathingSpacecheckYourAnswers.confirmationHeader 
-  });
-}
-private async clickPreviousAndValidateAnswersRetained() {
-  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.previousButton);
-  await performValidation('mainHeader', enterBreathingSpace.mainHeader);
-  await performValidation('validateInputTextValues', 
-    { textLabel: enterBreathingSpace.referenceNumberTextLabel },
-    { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
-  );
-  const updatedRef = enterBreathingSpacecheckYourAnswers.changeConfig.updatedReferenceNumber;
-  await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, updatedRef);
-  const storeInstance = CYAStore.getInstance();
-  storeInstance.clearStore();
-  storeInstance.captureAnswer('inputText', enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber, updatedRef);
-  storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.startDate, CaseManagementAction.enteredStartDate);
-  storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate, CaseManagementAction.enteredExpectedEndDate);
-  storeInstance.captureAnswer('select', enterBreathingSpacecheckYourAnswers.answerLabels.type, enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText);
-  await performAction('clickButton', enterBreathingSpace.continueButton);
-  const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
-  const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
-  await this.validateCheckYourAnswersPage({
-    referenceNumber: updatedRef,
-    typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
-    startDateDisplay: finalStartDate,
-    expectedEndDateDisplay: finalEndDate
-  });
-}
-
-private async cancelCheckYourAnswersAndValidate(data: { referenceNumber: string }) {
-  await performAction('clickButton', enterBreathingSpacecheckYourAnswers.cancelLink);
-  await performValidation('mainHeader', enterBreathingSpace.cancelReturnHeader);
-  await performValidation('elementNotToBeVisible', { elementType: 'text', text: data.referenceNumber });
-}
-private async validateReferenceNumberLengthError() {
-    await performAction('inputErrorValidation', {
-        validationType: enterBreathingSpace.errorValidationType.one,
-        inputArray: enterBreathingSpace.errorValidationField.errorTextField,
-        label: enterBreathingSpace.referenceNumberTextLabel,
-        question: enterBreathingSpace.referenceNumberTextLabel,
-        header: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
-        button: enterBreathingSpace.continueButton,
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.startDateDisplay = finalStartDate;
+    enterBreathingSpacecheckYourAnswers.happyPathConfig.expectedEndDateDisplay = finalEndDate;
+    const storeInstance = CYAStore.getInstance();
+    storeInstance.clearStore();
+    storeInstance.captureAnswer('inputText', enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber, data.updatedReferenceNumber);
+    storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.startDate, CaseManagementAction.enteredStartDate);
+    storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate, CaseManagementAction.enteredExpectedEndDate);
+    storeInstance.captureAnswer('select', enterBreathingSpacecheckYourAnswers.answerLabels.type, enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText);
+    await performAction('clickButton', enterBreathingSpace.continueButton);
+    await this.validateCheckYourAnswersPage({
+      referenceNumber: data.updatedReferenceNumber,
+      typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
+      startDateDisplay: finalStartDate,
+      expectedEndDateDisplay: finalEndDate
     });
-}
-private async validateFutureStartDateError() {
-    await performAction('inputErrorValidation', {
-        validationType: enterBreathingSpace.errorValidationType.five,
-        inputArray: enterBreathingSpace.errorValidationField.errorDateField,
-        label1: enterBreathingSpace.dayTextLabel,
-        label2: enterBreathingSpace.monthTextLabel,
-        label3: enterBreathingSpace.yearTextLabel,
-        question: enterBreathingSpace.whenDidBreathingSpaceStartQuestion,
-        header: enterBreathingSpace.eventCouldNotBeCreatedHeader,
-        header1: enterBreathingSpace.eventCouldNotBeCreatedHeader,
-        button: enterBreathingSpace.continueButton,
+  }
+  public async submitCheckYourAnswers() {
+    await performAction('clickButton', enterBreathingSpacecheckYourAnswers.submitButton);
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: enterBreathingSpacecheckYourAnswers.confirmationHeader
     });
-}
+  }
+  private async clickPreviousAndValidateAnswersRetained() {
+    await performAction('clickButton', enterBreathingSpacecheckYourAnswers.previousButton);
+    await performValidation('mainHeader', enterBreathingSpace.mainHeader);
+    await performValidation('validateInputTextValues',
+      { textLabel: enterBreathingSpace.referenceNumberTextLabel },
+      { expected: enterBreathingSpacecheckYourAnswers.happyPathConfig.referenceNumber }
+    );
+    const updatedRef = enterBreathingSpacecheckYourAnswers.changeConfig.updatedReferenceNumber;
+    await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, updatedRef);
+    const storeInstance = CYAStore.getInstance();
+    storeInstance.clearStore();
+    storeInstance.captureAnswer('inputText', enterBreathingSpacecheckYourAnswers.answerLabels.referenceNumber, updatedRef);
+    storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.startDate, CaseManagementAction.enteredStartDate);
+    storeInstance.captureAnswer('inputDate', enterBreathingSpacecheckYourAnswers.answerLabels.expectedEndDate, CaseManagementAction.enteredExpectedEndDate);
+    storeInstance.captureAnswer('select', enterBreathingSpacecheckYourAnswers.answerLabels.type, enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText);
+    await performAction('clickButton', enterBreathingSpace.continueButton);
+    const finalStartDate = this.formatDisplayDate(CaseManagementAction.enteredStartDate);
+    const finalEndDate = this.formatDisplayDate(CaseManagementAction.enteredExpectedEndDate);
+    await this.validateCheckYourAnswersPage({
+      referenceNumber: updatedRef,
+      typeDisplayText: enterBreathingSpacecheckYourAnswers.happyPathConfig.typeDisplayText,
+      startDateDisplay: finalStartDate,
+      expectedEndDateDisplay: finalEndDate
+    });
+  }
+
+  private async cancelCheckYourAnswersAndValidate(data: { referenceNumber: string }) {
+    await performAction('clickButton', enterBreathingSpacecheckYourAnswers.cancelLink);
+    await performValidation('mainHeader', enterBreathingSpace.cancelReturnHeader);
+    await performValidation('elementNotToBeVisible', { elementType: 'text', text: data.referenceNumber });
+  }
+  private async validateReferenceNumberLengthError() {
+    await performAction('inputErrorValidation', {
+      validationType: enterBreathingSpace.errorValidationType.one,
+      inputArray: enterBreathingSpace.errorValidationField.errorTextField,
+      label: enterBreathingSpace.referenceNumberTextLabel,
+      question: enterBreathingSpace.referenceNumberTextLabel,
+      header: enterBreathingSpace.eventCouldNotBeCreatedErrorMessageHeader,
+      button: enterBreathingSpace.continueButton,
+    });
+  }
+  private async validateFutureStartDateError() {
+    await performAction('inputErrorValidation', {
+      validationType: enterBreathingSpace.errorValidationType.five,
+      inputArray: enterBreathingSpace.errorValidationField.errorDateField,
+      label1: enterBreathingSpace.dayTextLabel,
+      label2: enterBreathingSpace.monthTextLabel,
+      label3: enterBreathingSpace.yearTextLabel,
+      question: enterBreathingSpace.whenDidBreathingSpaceStartQuestion,
+      header: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+      header1: enterBreathingSpace.eventCouldNotBeCreatedHeader,
+      button: enterBreathingSpace.continueButton,
+    });
+  }
   private async enterBreathingSpaceDetailsAndCancel(data: {
-  referenceNumber: string;
-  startDate: string;
-  targetType: string;
+    referenceNumber: string;
+    startDate: string;
+    targetType: string;
   }) {
     await performValidation('mainHeader', enterBreathingSpace.mainHeader);
     await performAction('inputText', enterBreathingSpace.referenceNumberTextLabel, data.referenceNumber);
@@ -273,7 +279,7 @@ private async validateFutureStartDateError() {
   private static enteredExpectedEndDate = '';
   private async fillBreathingSpaceStartDateWithToday(): Promise<void> {
     const today = CaseManagementCommonUtils.getRandomDate('today');
-    CaseManagementAction.enteredStartDate = String(today); 
+    CaseManagementAction.enteredStartDate = String(today);
     await performAction('inputDate', enterBreathingSpace.whenDidBreathingSpaceStartQuestion, today);
   }
   private async validateEnterBreathingSpacePage(): Promise<void> {
@@ -305,19 +311,19 @@ private async validateFutureStartDateError() {
     await performValidation('text', { elementType: 'inlineText', text: enterBreathingSpace.whenIsExpectedEndDateHiddenHintText });
 
     const futureDate = CaseManagementCommonUtils.getRandomDate(enterBreathingSpace.dateTypeHiddenUserInput);
-     CaseManagementAction.enteredExpectedEndDate = String(futureDate); 
+    CaseManagementAction.enteredExpectedEndDate = String(futureDate);
     await performAction(
       'inputDate',
       enterBreathingSpace.whenIsExpectedEndDateHiddenTextLabel,
       futureDate
     );
   }
-  
-private static readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-private formatDisplayDate(entered: string): string {
-  const [d, m, y] = entered.split(/[\/\-\s]/).map(Number);
-  return `${d} ${CaseManagementAction.months[m - 1]} ${y}`;
-}
+
+  private static readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  private formatDisplayDate(entered: string): string {
+    const [d, m, y] = entered.split(/[\/\-\s]/).map(Number);
+    return `${d} ${CaseManagementAction.months[m - 1]} ${y}`;
+  }
   private async navigateToSummaryPage(page: Page) {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await expect(async () => {
@@ -348,17 +354,9 @@ private formatDisplayDate(entered: string): string {
     await performAction('reTryOnCallBackError', changeCaseState.continueButton, caseState.nextPage as string);
   }
 
-  private async confirmCaseStateChange(): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+  private async confirmCaseStateChange(confirmCaseState: actionRecord): Promise<void> {
+    await this.validateCaseDetails(confirmCaseState.submitPayload);
+    await this.confirmationPageValidation(confirmCaseState.submitPayload, confirmCaseStateChange.caseStateValidation);
     await performValidation('mainHeader', confirmCaseStateChange.mainHeader);
     await performAction('clickButton', confirmCaseStateChange.closeAndReturnToCaseOverviewButton);
   }
@@ -371,18 +369,9 @@ private formatDisplayDate(entered: string): string {
     await performAction('reTryOnCallBackError', addReviewDates.continueButton, reviewDateData.nextPage as string);
   }
 
-  private async confirmReviewDatesAdded(): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: confirmReviewDatesAdded.reviewDatesAdded });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+  private async confirmReviewDatesAdded(confirmDates: actionRecord): Promise<void> {
+    await this.validateCaseDetails(confirmDates.submitPayload);
+    await this.confirmationPageValidation(confirmDates.submitPayload, confirmReviewDatesAdded.reviewDatesAdded);
     await performValidation('mainHeader', confirmReviewDatesAdded.mainHeader);
     await performAction('clickButton', confirmReviewDatesAdded.closeAndReturnToCaseOverviewButton);
   }
@@ -424,9 +413,9 @@ private formatDisplayDate(entered: string): string {
   private async enterApplicationDetails(appDetails: actionRecord) {
     await this.validateCaseDetails(appDetails.submitPayload);
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
-    await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
+    await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);
-    await performAction('clickRadioButton', {question: appDetails.question2, option: appDetails.option2});
+    await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
     if (appDetails.option2 === 'Something else') {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
     }
@@ -518,7 +507,7 @@ private formatDisplayDate(entered: string): string {
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
     await this.validateCaseDetails(uploadEvidence.submitPayload);
     if (uploadEvidence.files) {
-      await performAction('uploadFile', {files: uploadEvidence.files, label: uploadEvidence.label});
+      await performAction('uploadFile', { files: uploadEvidence.files, label: uploadEvidence.label });
     }
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
   }
@@ -529,19 +518,11 @@ private formatDisplayDate(entered: string): string {
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
-  private async verifyGenAppConfirm(): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+  private async verifyGenAppConfirm(confirmGenApp: actionRecord): Promise<void> {
+
+    await this.validateCaseDetails(confirmGenApp.submitPayload);
+    await this.confirmationPageValidation(confirmGenApp.submitPayload, enterGenAppConfirmation.applicationEnteredText)
     await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
-    await performValidation('text', {elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText});
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
@@ -597,20 +578,9 @@ private formatDisplayDate(entered: string): string {
   private async confirmHearingEdited(confirmEdit: actionRecord): Promise<void> {
     let submitPayLoad = confirmEdit.submitPayload as Record<string, any>;
 
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('mainHeader',confirmEditHearing.mainHeader);
-    await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseDetails(submitPayLoad);
+    await this.confirmationPageValidation(submitPayLoad, confirmEditHearing.hearingEditedText);
+    await performValidation('mainHeader', confirmEditHearing.mainHeader);
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
@@ -660,25 +630,15 @@ private formatDisplayDate(entered: string): string {
 
   private async confirmHearingCancelled(confirmCancel: actionRecord) {
     let submitPayLoad = confirmCancel.submitPayload as Record<string, any>;
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: confirmCancelHearing.hearingCancelledText });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(submitPayLoad);
+    await this.confirmationPageValidation(submitPayLoad, confirmCancelHearing.hearingCancelledText)
     await performValidation('mainHeader', confirmCancelHearing.mainHeader);
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performAction('clickButton', confirmCancelHearing.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
     await this.validateCaseDetails(selectApp.submitPayload)
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -694,18 +654,14 @@ private formatDisplayDate(entered: string): string {
       await performAction('inputDate', selectApp.label as string, selectApp.date as string);
     }
 
-    await performAction('clickRadioButton', {question: selectApp.question1, option: selectApp.option1});
+    await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
     await performAction('reTryOnCallBackError', uploadADocument.continueButton, selectApp.nextPage as string);
   }
 
   private async confirmUpload(confirm: actionRecord): Promise<void> {
     let submitPayLoad = confirm.submitPayload as Record<string, any>;
     let formattedDate;
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(submitPayLoad);
     const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
     const gaNumber = String(confirm.app).match(/\b(GA|CC)\d+\b/i)?.[0] ?? '';
     if (confirm.fileDate) {
@@ -717,26 +673,14 @@ private formatDisplayDate(entered: string): string {
     const role = String(confirm.party).split(' - ')[1] ?? '';
 
     const uploadedFileName = `${baseName} ${formattedDate} ${gaNumber} - ${role}`;
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number #' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', {elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded`});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
-    });
+    await this.confirmationPageValidation(submitPayLoad, `‘${uploadedFileName}’ uploaded`)
     await performValidation('mainHeader', confirmUpload.mainHeader);
     await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
   }
 
   private async addAHearing(addAHearing: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+
+    await this.validateCaseDetails(addAHearing.submitPayload);
     await performAction('clickRadioButton', {
       question: addAHearing.hearingQuestion,
       option: addAHearing.option,
@@ -769,18 +713,8 @@ private formatDisplayDate(entered: string): string {
 
   private async confirmAddHearing(confirmAdd: actionRecord): Promise<void> {
     let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: confirmHearing.addHearingText });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseDetails(submitPayLoad);
+    await this.confirmationPageValidation(submitPayLoad, confirmHearing.addHearingText);
     await performValidation('mainHeader', confirmHearing.mainHeader);
     await performAction('clickButton', confirmHearing.closeAndReturnToCaseOverviewButton);
   }
@@ -825,28 +759,18 @@ private formatDisplayDate(entered: string): string {
 
   private async confirmAmend(confirm: actionRecord): Promise<void> {
     let formattedDate;
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await this.validateCaseDetails(confirm.submitPayload);
     const baseName = String(confirm.fileName);
+
     if (confirm.fileDate) {
       const [day, month, year] = String(confirm.fileDate).split('/');
       formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
     } else {
       formattedDate = '';
     }
-    const role = String(confirm.party).split(' - ')[0] ?? '';
 
     const amendedFileName = `${baseName} ${formattedDate}`;
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number #' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', {elementType: 'inlineText', text: `Document ${amendedFileName} amended`});
-    await performValidation('text', {elementType: 'inlineText', text: `${role}`});
+    await this.confirmationPageValidation(confirm.submitPayload, `Document ${amendedFileName} amended`)
     await performValidation('mainHeader', confirmAmend.mainHeader);
     await performAction('clickButton', confirmAmend.closeAndReturnToCaseOverviewButton);
   }
@@ -864,7 +788,7 @@ private formatDisplayDate(entered: string): string {
       return;
     }
 
-    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 === manageParty.removePartyRadioOption ) {
+    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 === manageParty.removePartyRadioOption) {
       await performAction('clickRadioButton', {
         question: partyData.question2,
         option: partyData.option2
@@ -881,10 +805,10 @@ private formatDisplayDate(entered: string): string {
 
   private async updatePartyDetails(page: Page, updatePartyData: actionRecord): Promise<void> {
     await this.validateCaseDetails(updatePartyData.submitPayload);
-    const addLoc = page.locator('button').filter({hasText: 'Find address'})
+    const addLoc = page.locator('button').filter({ hasText: 'Find address' })
     const count = await addLoc.count();
-    const dobField = page.locator('span').filter({hasText: 'Date of birth'}).first();
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    const dobField = page.locator('span').filter({ hasText: 'Date of birth' }).first();
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -962,41 +886,18 @@ private formatDisplayDate(entered: string): string {
 
   private async confirmPartyDetailsUpdated(confirmParty: actionRecord): Promise<void> {
     let submitPayLoad = confirmParty.submitPayload as Record<string, any>;
+    await this.validateCaseDetails(submitPayLoad);
     const newUser = `${confirmParty.userType}`
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', {elementType: 'inlineText', text: `${newUser} updated`});
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
-    });
+    await this.confirmationPageValidation(submitPayLoad, `${newUser} updated`)
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
   private async confirmAddParty(confirmAdd: actionRecord): Promise<void> {
     let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: `${newUser} added` });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.validateCaseDetails(submitPayLoad);
+    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`;
+    await this.confirmationPageValidation(submitPayLoad, `${newUser} added`)
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
@@ -1007,15 +908,11 @@ private formatDisplayDate(entered: string): string {
     await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
   }
 
-  private async confirmAddJudicialNotes(): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+  private async confirmAddJudicialNotes(confirmNotes: actionRecord): Promise<void> {
+    await this.validateCaseDetails(confirmNotes.submitPayload)
     await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
-    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph});
-    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedParagraph});
+    await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: confirmJudicialNotes.youDoNotNeedParagraph });
     await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
   }
 
@@ -1081,24 +978,17 @@ private formatDisplayDate(entered: string): string {
       }
 
       throw new Error(
-        `Judicial Notes validations failed for ${misMatchMap.size} ${
-          misMatchMap.size === 1 ? 'item' : 'items'}`
+        `Judicial Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`
       );
     }
     console.log(
       `✅ ${judicialNotes.table} validation passed`
     );
   }
-  private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+  private async confirmRemoveParty(page: Page, confirmAdd: actionRecord): Promise<void> {
     let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
     const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'inlineText', text: `${newUser} removed` });
-    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await this.confirmationPageValidation(submitPayLoad, `${newUser} removed`)
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
@@ -1149,8 +1039,8 @@ private formatDisplayDate(entered: string): string {
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
                 if (item.type === 'moreThanMax') {
-                  await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
-                   if (item.errDetailMessage) {
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                  if (item.errDetailMessage) {
                     const detail = item.errDetailMessage;
                     await expect(page.locator('li.ccd-error-summary-li').filter({ hasText: detail })).toBeVisible();
                     await expect(page.locator('#caseEditForm span.error-message').filter({ hasText: detail })).toBeVisible();
@@ -1166,10 +1056,10 @@ private formatDisplayDate(entered: string): string {
             break;
 
           case 'dateField':
-             const date: string =
-            item.day && item.month && item.year
-              ? `${item.day}/${item.month}/${item.year}`
-              : CaseManagementCommonUtils.getRandomDate(item.type as string);
+            const date: string =
+              item.day && item.month && item.year
+                ? `${item.day}/${item.month}/${item.year}`
+                : CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDate = () =>
               performActions(
                 'Enter Date',
@@ -1189,33 +1079,33 @@ private formatDisplayDate(entered: string): string {
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
               await enterDate();
-                if (validationArr.button) {
-                    await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => {});
-                }
-                await performAction('clickButton', validationArr.button);
-                await expect(async () => {
-                  await performValidation('errorMessage', {
-                      header: validationArr.header1 || validationArr.header,
-                      message: item.errMessage.trim(),
-                  });
-                }).toPass({
-                    intervals: [1_000, 2_000, 3_000],
-                    timeout: VERY_LONG_TIMEOUT,
+              if (validationArr.button) {
+                await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => { });
+              }
+              await performAction('clickButton', validationArr.button);
+              await expect(async () => {
+                await performValidation('errorMessage', {
+                  header: validationArr.header1 || validationArr.header,
+                  message: item.errMessage.trim(),
                 });
-             } else {
-            await enterDate();
-            if (validationArr.button) {
-                await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => {});
-            }
-            await performAction('clickButton', validationArr.button);
-            await expect(async () => {
-                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-            }).toPass({
+              }).toPass({
                 intervals: [1_000, 2_000, 3_000],
                 timeout: VERY_LONG_TIMEOUT,
-            });
-        }
-        break;
+              });
+            } else {
+              await enterDate();
+              if (validationArr.button) {
+                await page.getByRole('button', { name: String(validationArr.button), exact: false }).first().focus().catch(() => { });
+              }
+              await performAction('clickButton', validationArr.button);
+              await expect(async () => {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+              }).toPass({
+                intervals: [1_000, 2_000, 3_000],
+                timeout: VERY_LONG_TIMEOUT,
+              });
+            }
+            break;
 
           case 'dateRadioOption':
             let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
@@ -1285,7 +1175,7 @@ private formatDisplayDate(entered: string): string {
 
   private async getAddressInfo(address: actionRecord) {
     let createCasePayLoad = address.data as Record<string, any>;
-      addressInfo = {
+    addressInfo = {
       buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
       addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
       townCity: createCasePayLoad.propertyAddress.PostTown,
@@ -1483,8 +1373,8 @@ private formatDisplayDate(entered: string): string {
 
   private async caseTabReviewDateTableData(page: Page, mainTable: string, subTable?: string) {
 
-    
-    const summaryLocator =  `//h2[normalize-space()="${mainTable}"]
+
+    const summaryLocator = `//h2[normalize-space()="${mainTable}"]
                              /ancestor::div[@class="govuk-summary-card"]
                              //dl[@class="govuk-summary-list"]`;
 
@@ -1541,7 +1431,7 @@ private formatDisplayDate(entered: string): string {
       option: partyDetails.option,
     });
 
-    if(partyDetails.option === 'No'){
+    if (partyDetails.option === 'No') {
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
       await performAction('clickButton', checkFullPartyDetails.continueButton);
       await performValidation('errorMessage', { header: partyDetails.errorHeader, message: partyDetails.errorMessage });
@@ -1558,12 +1448,34 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async validateCaseDetails(payLoadInput: any) {
-    const payLoad = payLoadInput as Record<string, any>;
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+    
+      const payLoad = payLoadInput as Record<string, any>;
+      const featureFlag = await resolveLdFlagged(
+        whenLdFlag(BAILIFF_MANAGEMENT_ENABLED, {
+          on: true,
+          off: false,
+        })
+      );
+    await test.step(`Validate party details only when feature flag  ${BAILIFF_MANAGEMENT_ENABLED} is ON - It is ${featureFlag} for current run`, async () => {
+
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      });
+      if (featureFlag) {
+        await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+      }
+    })
+  }
+
+  private async confirmationPageValidation(submitPayLoad: any, validationText: string): Promise<void> {
+    const caseNumber = `Case number #${caseInfo.fid}`
+    const address = `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    const parties = `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
+    await performValidation('text', { elementType: 'inlineText', text: validationText });
+    await performValidation('text', { elementType: 'paragraph', text: caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: address });
+    await performValidation('text', { elementType: 'paragraph', text: parties });
   }
 }
