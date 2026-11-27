@@ -464,8 +464,9 @@ ccd:
         enabled: ${CASE_BUNDLE_WORKER_ENABLED:false}
         max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
     docmosis:
-      # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
-      # no endpoint configured, such a document gets a page in the bundle saying it is not included.
+      # Bulk print and the case bundle convert office documents (Word, Excel, ...) through the shared
+      # Docmosis service. With no endpoint configured, a bulk print pack holding one fails with
+      # MERGE_FAILED, and the case bundle gets a page saying it is not included.
       convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
       access-key: ${DOCMOSIS_ACCESS_KEY:}
 

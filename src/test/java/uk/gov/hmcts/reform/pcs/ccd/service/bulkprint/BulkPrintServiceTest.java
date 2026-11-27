@@ -35,7 +35,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,7 +49,7 @@ class BulkPrintServiceTest {
     @Mock
     private LetterDocumentFetcher letterDocumentFetcher;
     @Mock
-    private PdfMerger pdfMerger;
+    private BulkPrintLetterAssembler letterAssembler;
     @Mock
     private SendLetterApi sendLetterApi;
     @Mock
@@ -67,12 +66,14 @@ class BulkPrintServiceTest {
 
     @Captor
     private ArgumentCaptor<LetterV3> letterCaptor;
+    @Captor
+    private ArgumentCaptor<List<BulkPrintLetterAssembler.LetterDocument>> documentsCaptor;
 
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
 
     @Test
-    @DisplayName("Merges the coversheet and documents into one letter and returns the letter id")
+    @DisplayName("Assembles the coversheet and documents into one letter and returns the letter id")
     void shouldMergeCoversheetPlusDocumentsAndReturnLetterId() {
         byte[] coversheetBytes = "coversheet".getBytes();
         byte[] claimFormBytes = "claim-form".getBytes();
@@ -81,10 +82,12 @@ class BulkPrintServiceTest {
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
         when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(claimFormBytes);
-        when(pdfMerger.merge(List.of(coversheetBytes, claimFormBytes))).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(eq("CPC-01-IN0 1234-5678-9012-3456"), eq(coversheetBytes), any()))
+            .thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
-        DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
+        DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID())
+            .fileName("claim-form.docx").contentType("application/msword").build();
         AddressUK address = AddressUK.builder()
             .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
 
@@ -94,6 +97,12 @@ class BulkPrintServiceTest {
         assertThat(letterId).isEqualTo(LETTER_ID);
         verify(coversheetProvider).render("Jane Doe", address, "1234-5678-9012-3456");
         verify(letterDocumentFetcher).fetchBytes(claimForm.getDocumentId());
+        verify(letterAssembler).assemble(any(), any(), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).singleElement().satisfies(document -> {
+            assertThat(document.fileName()).isEqualTo("claim-form.docx");
+            assertThat(document.contentType()).isEqualTo("application/msword");
+            assertThat(document.content()).isEqualTo(claimFormBytes);
+        });
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         LetterV3 letter = letterCaptor.getValue();
         assertThat(letter.documents).singleElement()
@@ -107,7 +116,7 @@ class BulkPrintServiceTest {
     }
 
     @Test
-    @DisplayName("Merges coversheet, access code, claim form, blank response form, and blank counterclaim form"
+    @DisplayName("Assembles coversheet, access code, claim form, blank response form, and blank counterclaim form"
         + " for defendant claim pack")
     void shouldMergeAllFiveDocumentsForDefendantClaimPack() {
         byte[] coversheetBytes = "coversheet".getBytes();
@@ -126,15 +135,14 @@ class BulkPrintServiceTest {
         when(letterDocumentFetcher.fetchBytes(claimFormDocId)).thenReturn(claimFormBytes);
         when(blankClaimPackFormsProvider.getBlankResponseForm()).thenReturn(blankResponseBytes);
         when(blankClaimPackFormsProvider.getBlankCounterclaimForm()).thenReturn(blankCounterclaimBytes);
-        when(pdfMerger.merge(List.of(
-            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes)))
+        when(letterAssembler.assemble(eq("CPD-01-IN1 1234-5678-9012-3456"), eq(coversheetBytes), any()))
             .thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity accessCode = DocumentEntity.builder().id(UUID.randomUUID())
-            .documentId(accessCodeDocId).build();
+            .documentId(accessCodeDocId).fileName("access-code.pdf").contentType("application/pdf").build();
         DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID())
-            .documentId(claimFormDocId).build();
+            .documentId(claimFormDocId).fileName("claim-form.pdf").contentType("application/pdf").build();
         AddressUK address = AddressUK.builder()
             .addressLine1("2 High Street").postTown("London").postCode("W1 2BB").build();
 
@@ -148,17 +156,35 @@ class BulkPrintServiceTest {
         verify(letterDocumentFetcher).fetchBytes(claimFormDocId);
         verify(blankClaimPackFormsProvider).getBlankResponseForm();
         verify(blankClaimPackFormsProvider).getBlankCounterclaimForm();
-        verifyNoMoreInteractions(blankClaimPackFormsProvider);
-        verify(pdfMerger).merge(List.of(
-            coversheetBytes, accessCodeBytes, claimFormBytes, blankResponseBytes, blankCounterclaimBytes));
+        verify(letterAssembler).assemble(any(), any(), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> {
+                assertThat(document.fileName()).isEqualTo("access-code.pdf");
+                assertThat(document.content()).isEqualTo(accessCodeBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("claim-form.pdf");
+                assertThat(document.content()).isEqualTo(claimFormBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002R-defence-form.pdf");
+                assertThat(document.contentType()).isEqualTo("application/pdf");
+                assertThat(document.content()).isEqualTo(blankResponseBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim.pdf");
+                assertThat(document.contentType()).isEqualTo("application/pdf");
+                assertThat(document.content()).isEqualTo(blankCounterclaimBytes);
+            }
+        );
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN1");
     }
 
     @Test
-    @DisplayName("Merges coversheet, both access-code letters, claim form, then each English blank form followed by"
+    @DisplayName("Assembles both access-code letters, the claim form, then each English blank form followed by"
         + " its Welsh twin for the Welsh defendant claim pack")
-    void shouldMergeEightPartsInOrderForTheWelshDefendantClaimPack() {
+    void shouldAssembleWelshDefendantClaimPackInOrder() {
         final byte[] coversheetBytes = "coversheet".getBytes();
         final byte[] englishPinBytes = "english-pin".getBytes();
         final byte[] welshPinBytes = "welsh-pin".getBytes();
@@ -176,15 +202,35 @@ class BulkPrintServiceTest {
         when(letterDocumentFetcher.fetchBytes(welshPin.getDocumentId())).thenReturn(welshPinBytes);
         when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
         stubBlankForms(defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
-        List<byte[]> expectedParts = List.of(coversheetBytes, englishPinBytes, welshPinBytes, claimFormBytes,
-            defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
-        when(pdfMerger.merge(expectedParts)).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(eq("CPD-01-IN4 1234-5678-9012-3456"), eq(coversheetBytes), any()))
+            .thenReturn(mergedBytes);
 
         UUID letterId = underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK_WELSH, "John Doe",
             address(), List.of(englishPin, welshPin, claimForm));
 
         assertThat(letterId).isEqualTo(LETTER_ID);
-        verify(pdfMerger).merge(expectedParts);
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> assertThat(document.content()).isEqualTo(englishPinBytes),
+            document -> assertThat(document.content()).isEqualTo(welshPinBytes),
+            document -> assertThat(document.content()).isEqualTo(claimFormBytes),
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002R-defence-form.pdf");
+                assertThat(document.content()).isEqualTo(defenceEnglishBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-002RW-defence-form-welsh.pdf");
+                assertThat(document.content()).isEqualTo(defenceWelshBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim.pdf");
+                assertThat(document.content()).isEqualTo(counterclaimEnglishBytes);
+            },
+            document -> {
+                assertThat(document.fileName()).isEqualTo("ONC-003-counterclaim-welsh.pdf");
+                assertThat(document.content()).isEqualTo(counterclaimWelshBytes);
+            }
+        );
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo("CPD-01-IN4");
         assertThat(letterCaptor.getValue().documents).singleElement()
@@ -214,14 +260,22 @@ class BulkPrintServiceTest {
         when(letterDocumentFetcher.fetchBytes(claimForm.getDocumentId())).thenReturn(claimFormBytes);
         when(letterDocumentFetcher.fetchBytes(evidence.getDocumentId())).thenReturn(evidenceBytes);
         stubBlankForms(defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
-        List<byte[]> expectedParts = List.of(coversheetBytes, englishPinBytes, welshPinBytes, claimFormBytes,
-            evidenceBytes, defenceEnglishBytes, defenceWelshBytes, counterclaimEnglishBytes, counterclaimWelshBytes);
-        when(pdfMerger.merge(expectedParts)).thenReturn("merged-pdf".getBytes());
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn("merged-pdf".getBytes());
 
         underTest.sendPack(pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK_WELSH, "John Doe", address(),
             List.of(englishPin, welshPin, claimForm, evidence));
 
-        verify(pdfMerger).merge(expectedParts);
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).satisfiesExactly(
+            document -> assertThat(document.content()).isEqualTo(englishPinBytes),
+            document -> assertThat(document.content()).isEqualTo(welshPinBytes),
+            document -> assertThat(document.content()).isEqualTo(claimFormBytes),
+            document -> assertThat(document.content()).isEqualTo(evidenceBytes),
+            document -> assertThat(document.content()).isEqualTo(defenceEnglishBytes),
+            document -> assertThat(document.content()).isEqualTo(defenceWelshBytes),
+            document -> assertThat(document.content()).isEqualTo(counterclaimEnglishBytes),
+            document -> assertThat(document.content()).isEqualTo(counterclaimWelshBytes)
+        );
     }
 
     @ParameterizedTest(name = "{0} sends letter type {1}")
@@ -244,11 +298,8 @@ class BulkPrintServiceTest {
         }
         byte[] documentBytes = "document".getBytes();
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
-        List<byte[]> pdfs = letterType.includesCoveringLetter()
-            ? List.of(coversheetBytes, letterBytes, documentBytes)
-            : List.of(coversheetBytes, documentBytes);
         byte[] mergedBytes = "merged-pdf".getBytes();
-        when(pdfMerger.merge(pdfs)).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
@@ -259,7 +310,19 @@ class BulkPrintServiceTest {
 
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
-        verify(pdfMerger).merge(pdfs);
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        if (letterType.includesCoveringLetter()) {
+            assertThat(documentsCaptor.getValue()).satisfiesExactly(
+                coveringLetter -> {
+                    assertThat(coveringLetter.fileName()).isEqualTo("covering-letter.pdf");
+                    assertThat(coveringLetter.content()).isEqualTo(letterBytes);
+                },
+                packDocument -> assertThat(packDocument.content()).isEqualTo(documentBytes)
+            );
+        } else {
+            assertThat(documentsCaptor.getValue()).singleElement()
+                .satisfies(packDocument -> assertThat(packDocument.content()).isEqualTo(documentBytes));
+        }
         verifyNoInteractions(blankClaimPackFormsProvider);
     }
 
@@ -274,7 +337,7 @@ class BulkPrintServiceTest {
         byte[] documentBytes = "document".getBytes();
         when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
         byte[] mergedBytes = "merged-pdf".getBytes();
-        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
+        when(letterAssembler.assemble(any(), eq(coversheetBytes), any())).thenReturn(mergedBytes);
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
 
         DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
@@ -283,7 +346,9 @@ class BulkPrintServiceTest {
 
         underTest.sendPack(pcsCase, recipient, LetterType.DEFENCE_PACK, "Jane Doe", address, List.of(document));
 
-        verify(pdfMerger).merge(List.of(coversheetBytes, documentBytes));
+        verify(letterAssembler).assemble(any(), eq(coversheetBytes), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue()).singleElement()
+            .satisfies(packDocument -> assertThat(packDocument.content()).isEqualTo(documentBytes));
         verifyNoInteractions(coveringLetterProvider);
     }
 
@@ -296,7 +361,7 @@ class BulkPrintServiceTest {
             pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
             .isInstanceOf(MissingPostalAddressException.class);
 
-        verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, pdfMerger,
+        verifyNoInteractions(coversheetProvider, coveringLetterProvider, letterDocumentFetcher, letterAssembler,
             sendLetterApi);
     }
 

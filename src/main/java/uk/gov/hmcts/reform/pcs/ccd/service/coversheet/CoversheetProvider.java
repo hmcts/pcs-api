@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
 
 /**
  * Renders the address coversheet for a recipient and returns its PDF bytes: build the payload, generate the
- * PDF via Docmosis, then fetch its bytes from CDAM. The bytes are merged as the first page of the letter by
- * {@link PdfMerger}.
+ * PDF via Docmosis, then fetch its bytes from CDAM. The bytes become the first page of the letter, unchanged, in
+ * {@link uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintLetterAssembler}.
  */
 @Service
 public class CoversheetProvider {
