@@ -51,10 +51,10 @@ public class NotificationPersonalisationFactory {
     private final CaseNameFormatter caseNameFormatter;
     private final FeatureToggleService featureToggleService;
 
-    @Value("${frontend.url}")
+    @Value("${notify.links.frontend-url}")
     private String frontendUrl;
 
-    @Value("${manage_case.url}")
+    @Value("${notify.links.manage-case-url}")
     private String manageCaseUrl;
 
     public ClaimBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
