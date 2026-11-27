@@ -34,5 +34,6 @@ export const caseSummary = {
   deleteDraftApplicationEvent: 'Delete draft application',
   resumeDraftApplicationEvent: 'Resume draft application',
   deleteDraftResponse: 'Delete draft response',
-  addJudicialNote: 'Add a judicial note'
+  addJudicialNote: 'Add a judicial note',
+  decideEnforcement: 'Decide enforcement'
 }

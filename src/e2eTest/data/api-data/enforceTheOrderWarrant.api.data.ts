@@ -6,27 +6,15 @@ export const enforceWarrantApiData = {
         code: "WARRANT",
         label: "Warrant of possession"
       },
-      list_items: [
-        {
-          code: "WARRANT",
-          label: "Warrant of possession"
-        },
-        {
-          code: "WRIT",
-          label: "Writ of possession"
-        },
-        {
-          code: "WARRANT_OF_RESTITUTION",
-          label: "Warrant of restitution"
-        }
-      ],
       valueCode: "WARRANT"
     },
-    warrantFeeAmount: "£148",
-    writFeeAmount: "£80",
+    warrantFeeAmount: "£152",
+    writFeeAmount: "£82",
     warrantCorrectNameAndAddress: "YES",
+    warrantDefendantInBreathingSpace: "NO",
+    warrantDefendantMissedPayments: "YES",
     warrantDefendantsDOBKnown: "YES",
-    warrantDefendantsDOBDetails: "tewt",
+    warrantDefendantsDOBDetails: "test input", 
     warrantShowPeopleWhoWillBeEvictedPage: "Yes",
     warrantEvictEveryone: "YES",
     warrantAnyRiskToBailiff: "YES",

@@ -35,6 +35,8 @@ export class ActionCMRegistry {
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['updateCaseStateAPI', new CreateCaseAPIAction()],
+    ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
     ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
@@ -116,6 +118,9 @@ export class ActionCMRegistry {
     ['submitCheckYourAnswers', new CaseManagementAction()],
     ['clickPreviousAndValidateAnswersRetained', new CaseManagementAction()],
     ['cancelCheckYourAnswersAndValidate', new CaseManagementAction()],
+    ['decideEnforcementDecision', new CaseManagementAction()],
+    ['confirmEnforcementDecision', new CaseManagementAction()],
+    ['errorValidationDecideEnforcementPage', new ErrorValidationAction()],
       ]);
 
   static getAction(actionName: string): IAction {

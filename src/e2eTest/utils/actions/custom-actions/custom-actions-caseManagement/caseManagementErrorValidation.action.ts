@@ -5,7 +5,8 @@ import {
   addHearing, cancelHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
-  enterGenAppUploadGeneralApplication, addJudicialNotes
+  enterGenAppUploadGeneralApplication, addJudicialNotes,
+  decideEnforcement
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -28,6 +29,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
       ['errorValidationAddJudicialNotes', () => this.errorValidationAddJudicialNotes(errorFlag as string)],
+      ['errorValidationDecideEnforcementPage', () => this.errorValidationDecideEnforcementPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -55,7 +57,7 @@ export class ErrorValidationAction implements IAction {
 
   private async errorValidationAddReviewDatesPage(validationReq: string) {
     if (validationReq === 'YES') {
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.five,
         inputArray: addReviewDates.errorValidationField.errorDateField,
         question: addReviewDates.dateOfReviewHiddenLabel,
@@ -66,7 +68,7 @@ export class ErrorValidationAction implements IAction {
         button: addReviewDates.continueButton
       });
 
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.two,
         inputArray: addReviewDates.errorValidationField.errorRadioOption,
         question: addReviewDates.reasonHiddenLabel,
@@ -264,7 +266,7 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.two,
         inputArray: addHearing.errorValidationField.errorRadioOption1,
         question: addHearing.typeOfHearingQuestion,
-        option:  addHearing.typeOfHearingOption[0],
+        option: addHearing.typeOfHearingOption[0],
         button: addHearing.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -291,7 +293,7 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.two,
         inputArray: addHearing.errorValidationField.errorRadioOption2,
         question: addHearing.hearingNoticeQuestion,
-        option:  addHearing.hearingNoticeNoRadioOption,
+        option: addHearing.hearingNoticeNoRadioOption,
         button: addHearing.continueButton
       });
 
@@ -301,7 +303,7 @@ export class ErrorValidationAction implements IAction {
         // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
         label1: addHearing.daysTextLabel,
         label: addHearing.hoursTextLabel,
-        labelMulti :addHearing.minutesTextLabel,
+        labelMulti: addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });
     }
@@ -350,6 +352,49 @@ export class ErrorValidationAction implements IAction {
         label: addJudicialNotes.notesAboutThisCaseTextLabel,
         button: addJudicialNotes.continueButton
       });
+    }
+  }
+
+  private async errorValidationDecideEnforcementPage(validationReq: string) {
+
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: decideEnforcement.errorValidationType.two,
+        inputArray: decideEnforcement.errorValidationField.errorRadioOption,
+        question: decideEnforcement.acceptOrRejectQuestion,
+        option: decideEnforcement.rejectRadioOption,
+        button: decideEnforcement.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: decideEnforcement.errorValidationType.two,
+        inputArray: decideEnforcement.errorValidationField.errorRadioOption1,
+        question: decideEnforcement.selectReasonHiddenLabel,
+        option: decideEnforcement.rejectHiddenOptions[8],
+        button: decideEnforcement.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: decideEnforcement.errorValidationType.one,
+        inputArray: decideEnforcement.errorValidationField.errorTextField,
+        header: decideEnforcement.eventCouldNotBeCreatedErrorMessageHeader,
+        label: decideEnforcement.explainOtherHiddenTextLabel,
+        button: decideEnforcement.continueButton
+      });
+
+      await performAction('clickRadioButton', {
+        question: decideEnforcement.selectReasonHiddenLabel,
+        option: decideEnforcement.rejectHiddenOptions[0],
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: decideEnforcement.errorValidationType.one,
+        inputArray: decideEnforcement.errorValidationField.errorTextField1,
+        header: decideEnforcement.eventCouldNotBeCreatedErrorMessageHeader,
+        label: decideEnforcement.explainChangeHiddenTextLabel,
+        button: decideEnforcement.continueButton
+      });
+
     }
   }
 }

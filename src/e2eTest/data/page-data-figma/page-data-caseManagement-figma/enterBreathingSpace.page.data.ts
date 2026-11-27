@@ -16,7 +16,6 @@ export const enterBreathingSpace = {
   monthTextLabel: 'Month',
   yearTextLabel: 'Year',
   errorValidation: 'YES',
-  eventCouldNotBeCreatedHeader: 'The event could not be created',
   eventCouldNotBeCreatedErrorMessageHeader: 'The event could not be created',
   thereIsProbErrorMessageHeader: 'There is a problem',
   continueButton: 'Continue',
@@ -27,7 +26,7 @@ export const enterBreathingSpace = {
     startDate: '01/01/2024',
     targetType: 'standard',
   },
-  cancelReturnHeader: 'Summary',
+  cancelReturnHiddenHeader: 'Summary',
   invalidFutureDate: {
     day: '18',
     month: '06',
@@ -37,7 +36,7 @@ export const enterBreathingSpace = {
     referenceNumber: 'REF123',
     targetType: 'standard',
   },
-  
+
   errorValidationType: {
     one: 'textField',
     two: 'radioOptions',
@@ -48,19 +47,19 @@ export const enterBreathingSpace = {
     seven: 'moneyField',
   },
   errorValidationField: {
-  errorTextField: [
-    {
-      type: 'moreThanMax',
-      input: 15,
-      errMessage: 'Case data validation failed',
-      errDetailMessage: '(15 characters) exceeds the maximum length of 14',
-    },
-    { type: 'valid', input: 14 },
-  ],
+    errorTextField: [
+      {
+        type: 'moreThanMax',
+        input: 15,
+        errMessage: 'Case data validation failed',
+        errDetailMessage: '(15 characters) exceeds the maximum length of 14',
+      },
+      { type: 'valid', input: 14 },
+    ],
 
-   errorDateField: [
-  { type: 'future', day: '18', month: '06', year: '2050', errMessage: 'Date Breathing Space started must be today or in the past' },
-  { type: 'past', errMessage: '' },
-],
+    errorDateField: [
+      { type: 'future', day: '18', month: '06', year: '2050', errMessage: 'Date Breathing Space started must be today or in the past' },
+      { type: 'past', errMessage: '' },
+    ],
   },
 };

@@ -34,6 +34,9 @@ export default {
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
   'addJudicialNote/confirm': 'confirmJudicialNotes',
   'managePartiesremovePartyDetails': 'checkFullPartyDetails',
-  'enterBreathingSpacebreathingSpaceApplication': 'enterBreathingSpace'
+  'enterBreathingSpacebreathingSpaceApplication': 'enterBreathingSpace',
+  'decideEnforcementacceptOrReject' : 'decideEnforcement',
+  'decideEnforcement/submit/submit': 'checkYourAnswersDecideEnforcement',
+  'decideEnforcement/confirm': 'confirmEnforcementDecision'
   
 };
