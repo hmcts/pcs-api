@@ -245,6 +245,25 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(events.view(reference, allowed).getCaseTitleMarkdown()).isEqualTo(originalTitle);
     }
 
+    @Test
+    void anEventStillSavesWhenItsBundleCannotBeSubmitted() {
+        long reference = issued();
+        jdbc.execute("create function bundling.reject_doc_job() returns trigger language plpgsql as "
+            + "$$ begin raise exception 'doc jobs unavailable'; end $$");
+        jdbc.execute("create trigger reject_doc_job before insert or update on bundling.doc_job "
+            + "for each row execute function bundling.reject_doc_job()");
+        try {
+            event(reference, pcsCase -> pcsCase.addDocuments(List.of(
+                document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1)))));
+        } finally {
+            jdbc.execute("drop trigger reject_doc_job on bundling.doc_job");
+            jdbc.execute("drop function bundling.reject_doc_job()");
+        }
+
+        transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
+            .getDocuments()).extracting(DocumentEntity::getFileName).containsExactly("Witness.pdf"));
+    }
+
     /**
      * An issued case after its first event. The fixture seeds cases without an event, as no real case is made, so
      * nothing has built its bundle until an event runs.
