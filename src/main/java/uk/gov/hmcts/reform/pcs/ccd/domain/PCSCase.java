@@ -1270,6 +1270,6 @@ public class PCSCase {
         searchable = false,
         access = {BailiffAccess.class, RiskAssessmentInternalAccess.class, RiskAssessmentClaimantAccess.class}
     )
-    private EnforcementEventShowConditions enfShowConditions;
+    private EnforcementShowConditions enfShowConditions;
 
 }

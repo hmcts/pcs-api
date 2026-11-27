@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -87,8 +87,8 @@ class RiskAssessmentViewTest {
         EnforcementOrderEntity application = application(SelectEnforcementType.WARRANT);
         PcsCaseEntity entity = PcsCaseEntity.builder()
             .claims(List.of(ClaimEntity.builder().build())).enforcementOrders(Set.of(application)).build();
-        EnforcementEventShowConditionsView conditions = new EnforcementEventShowConditionsView(
-            enforcementOrderMediator);
+        EnforcementShowConditionsView conditions = new EnforcementShowConditionsView(
+            enforcementOrderMediator, featureToggleService);
         conditions.setCaseFields(entity, pcsCase);
         view.setCaseFields(pcsCase, entity);
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
@@ -122,7 +122,7 @@ class RiskAssessmentViewTest {
 
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown())
             .contains("Bailiff note", "Risk assessment level", "Claimant risk assessment",
-                      "not added yet", "not set yet", "select action",
+                      "not added yet", "not set yet", "select action", "govuk-section-break--visible",
                       "Information provided by the claimant on 10 October 2026",
                       "when they were applying for enforcement",
                       "Do you want to evict everyone at the property?", "Who do you want to evict?",
@@ -375,7 +375,8 @@ class RiskAssessmentViewTest {
         PcsCaseEntity entity = caseWithApplications(old, latest, draft);
         doReturn(Optional.of(latest)).when(enforcementOrderMediator).getEnforcementOrder(entity);
 
-        new EnforcementEventShowConditionsView(enforcementOrderMediator).setCaseFields(entity, pcsCase);
+        new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService)
+            .setCaseFields(entity, pcsCase);
         view.setCaseFields(pcsCase, entity);
 
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment())
@@ -399,7 +400,10 @@ class RiskAssessmentViewTest {
         RiskAssessmentRenderer renderer = mock(RiskAssessmentRenderer.class);
         RiskAssessmentView underTest = new RiskAssessmentView(renderer, enforcementOrderMediator, featureToggleService);
 
-        underTest.setCaseFields(pcsCase, caseWithApplications(application));
+        PcsCaseEntity entity = caseWithApplications(application);
+        new EnforcementShowConditionsView(enforcementOrderMediator, featureToggleService)
+            .setCaseFields(entity, pcsCase);
+        underTest.setCaseFields(pcsCase, entity);
 
         assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.from(eligible));
         if (eligible) {
@@ -412,13 +416,25 @@ class RiskAssessmentViewTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldSerializeNestedConditionsAndPreserveWarrantReturnForBothFlagStates(boolean enabled) {
+    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
+    void shouldPreserveEligibilityForBothFlagStatesRegardlessOfViewOrder(boolean enabled, boolean riskViewFirst) {
         when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(enabled);
         PcsCaseEntity entity = caseWithApplications(application(SelectEnforcementType.WARRANT));
-        new EnforcementEventShowConditionsView(enforcementOrderMediator).setCaseFields(entity, pcsCase);
-
-        view.setCaseFields(pcsCase, entity);
+        EnforcementShowConditionsView conditionsView = new EnforcementShowConditionsView(
+            enforcementOrderMediator, featureToggleService);
+        if (riskViewFirst) {
+            view.setCaseFields(pcsCase, entity);
+            conditionsView.setCaseFields(entity, pcsCase);
+        } else {
+            conditionsView.setCaseFields(entity, pcsCase);
+            view.setCaseFields(pcsCase, entity);
+        }
+        if (enabled) {
+            assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNotBlank();
+            assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNotBlank();
+        } else {
+            assertNoAssessment();
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode data = mapper.valueToTree(pcsCase);
@@ -427,7 +443,7 @@ class RiskAssessmentViewTest {
         assertThat(conditions.path("canViewRiskAssessment")).isEqualTo(mapper.valueToTree(YesOrNo.from(enabled)));
         assertThat(conditions.has("RecordWarrantReturn")).isFalse();
         assertThat(conditions.has("CanViewRiskAssessment")).isFalse();
-        assertThat(data.has("enforcementEventShowConditions")).isFalse();
+        assertThat(data.has("enforcementShowConditions")).isFalse();
         assertThat(data.has("enfShowConditions_RecordWarrantReturn")).isFalse();
         assertThat(data.has("enfShowConditions_CanViewRiskAssessment")).isFalse();
     }
@@ -485,7 +501,6 @@ class RiskAssessmentViewTest {
     private void assertNoAssessment() {
         assertThat(pcsCase.getRiskAssessmentInternalMarkdown()).isNull();
         assertThat(pcsCase.getRiskAssessmentClaimantMarkdown()).isNull();
-        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
     }
 
     private void render(EnforcementOrderEntity application) {

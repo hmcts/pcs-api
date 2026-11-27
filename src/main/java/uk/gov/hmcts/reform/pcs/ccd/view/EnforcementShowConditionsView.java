@@ -3,12 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EnforcementEventShowConditions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.EnforcementShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -16,9 +19,10 @@ import java.util.Set;
 
 @Component
 @AllArgsConstructor
-public class EnforcementEventShowConditionsView {
+public class EnforcementShowConditionsView {
 
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final FeatureToggleService featureToggleService;
 
     private static final Set<EnforcementState> RECORD_WARRANT_RETURN_STATES = EnumSet.of(
         EnforcementState.CASE_PROGRESSION,
@@ -35,16 +39,19 @@ public class EnforcementEventShowConditionsView {
     );
 
     public void setCaseFields(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
-        setEnforcementEventShowConditions(pcsCaseEntity, pcsCase);
+        setEnforcementShowConditions(pcsCaseEntity, pcsCase);
     }
 
-    private void setEnforcementEventShowConditions(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
+    private void setEnforcementShowConditions(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         Optional<EnforcementState> activeState = enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)
             .map(EnforcementOrderEntity::getState);
         boolean canRecordWarrantReturn = activeState.filter(RECORD_WARRANT_RETURN_STATES::contains).isPresent();
 
-        pcsCase.setEnfShowConditions(EnforcementEventShowConditions.builder()
+        pcsCase.setEnfShowConditions(EnforcementShowConditions.builder()
             .recordWarrantReturn(YesOrNo.from(canRecordWarrantReturn))
+            .canViewRiskAssessment(YesOrNo.from(
+                featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)
+                    && enforcementOrderMediator.getRiskAssessmentApplication(pcsCaseEntity).isPresent()))
             .build());
     }
 }

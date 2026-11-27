@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,21 +15,33 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ASSESS_RISK_LEVEL;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementEventShowConditionsViewTest {
+class EnforcementShowConditionsViewTest {
 
     @Mock
     private EnforcementOrderMediator enforcementOrderMediator;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
+    @BeforeEach
+    void enableRiskAssessment() {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(true);
+    }
+
     @InjectMocks
-    private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+    private EnforcementShowConditionsView enforcementShowConditionsView;
 
     @ParameterizedTest
     @MethodSource("recordWarrantReturnScenarios")
@@ -41,7 +54,7 @@ class EnforcementEventShowConditionsViewTest {
             .thenReturn(Optional.of(EnforcementOrderEntity.builder().state(enforcementState).build()));
 
         // When
-        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        enforcementShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(expected);
@@ -55,7 +68,7 @@ class EnforcementEventShowConditionsViewTest {
         when(enforcementOrderMediator.getEnforcementOrder(pcsCaseEntity)).thenReturn(Optional.empty());
 
         // When
-        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        enforcementShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
@@ -70,10 +83,47 @@ class EnforcementEventShowConditionsViewTest {
             .thenReturn(Optional.of(EnforcementOrderEntity.builder().build()));
 
         // When
-        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        enforcementShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
 
         // Then
         assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldSetRiskAssessmentEligibilityFromTheEligibleApplication() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getRiskAssessmentApplication(entity))
+            .thenReturn(Optional.of(EnforcementOrderEntity.builder().build()));
+
+        enforcementShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldDisableRiskAssessmentEligibilityWithoutAnEligibleApplication() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+
+        enforcementShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldPreserveWarrantReturnAndSkipRiskEligibilityWhenFlagIsOff() {
+        when(featureToggleService.isEnabled(ASSESS_RISK_LEVEL)).thenReturn(false);
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity entity = PcsCaseEntity.builder().build();
+        when(enforcementOrderMediator.getEnforcementOrder(entity)).thenReturn(Optional.of(
+            EnforcementOrderEntity.builder().state(EnforcementState.AWAITING_BAILIFF_ALLOCATION).build()));
+
+        enforcementShowConditionsView.setCaseFields(entity, pcsCase);
+
+        assertThat(pcsCase.getEnfShowConditions().getCanViewRiskAssessment()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getEnfShowConditions().getRecordWarrantReturn()).isEqualTo(YesOrNo.YES);
+        verify(enforcementOrderMediator, never()).getRiskAssessmentApplication(entity);
     }
 
     private static Stream<Arguments> recordWarrantReturnScenarios() {

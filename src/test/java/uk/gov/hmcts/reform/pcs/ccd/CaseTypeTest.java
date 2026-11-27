@@ -205,6 +205,9 @@ class CaseTypeTest {
             "riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown",
             "riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown"
         );
+        assertThat(riskAssessmentTab.getFields())
+            .filteredOn(field -> field.getId().endsWith("MarkdownLabel"))
+            .allSatisfy(field -> assertThat(field.getShowCondition()).isNull());
         // One tab per topic: field permissions decide who sees it, so no tab but Support names roles.
         for (Tab<PCSCase, AccessProfile> tab : List.of(nextStepsTab, summaryTab, caseHistoryTab, hiddenTab,
             serviceRequestTab, paymentHistoryTab, caseLinksTab, casePartiesTab, caseFileViewTab, caseDetailsTab,

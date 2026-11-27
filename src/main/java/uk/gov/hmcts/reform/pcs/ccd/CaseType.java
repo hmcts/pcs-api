@@ -322,9 +322,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("riskAssessment", "Risk assessment")
             .showCondition("enfShowConditions.canViewRiskAssessment=\"Yes\"")
-            .field("riskAssessmentInternalMarkdownLabel", "riskAssessmentInternalMarkdown!=\"\"")
+            .field("riskAssessmentInternalMarkdownLabel")
             .field("riskAssessmentInternalMarkdown", NEVER_SHOW)
-            .field("riskAssessmentClaimantMarkdownLabel", "riskAssessmentClaimantMarkdown!=\"\"")
+            .field("riskAssessmentClaimantMarkdownLabel")
             .field("riskAssessmentClaimantMarkdown", NEVER_SHOW);
     }
 

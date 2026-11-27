@@ -230,9 +230,9 @@ class GeneratedDefinitionTest {
         assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
             .filteredOn(row -> visibilityField.equals(row.path("ID").asText()))
             .singleElement().satisfies(row ->
-                assertThat(row.path("FieldType").asText()).isEqualTo("EnforcementEventShowConditions"));
+                assertThat(row.path("FieldType").asText()).isEqualTo("EnforcementShowConditions"));
         assertThat(rows(DEFINITION_DIR.resolve("ComplexTypes")))
-            .filteredOn(row -> "EnforcementEventShowConditions".equals(row.path("ID").asText()))
+            .filteredOn(row -> "EnforcementShowConditions".equals(row.path("ID").asText()))
             .extracting(row -> row.path("ListElementCode").asText())
             .containsExactlyInAnyOrder("recordWarrantReturn", "canViewRiskAssessment");
         assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
@@ -245,6 +245,14 @@ class GeneratedDefinitionTest {
             .filteredOn(row -> row.has("TabShowCondition"))
             .extracting(row -> row.path("TabShowCondition").asText())
             .containsExactly(ShowConditions.NEVER_SHOW);
+    }
+
+    @Test
+    void riskAssessmentMarkdownLabelsHaveNoAdditionalShowConditions() {
+        assertThat(tabs.get("riskAssessment"))
+            .filteredOn(row -> row.path("CaseFieldID").asText().endsWith("MarkdownLabel"))
+            .hasSize(2)
+            .allSatisfy(row -> assertThat(row.path("FieldShowCondition").asText()).isEmpty());
     }
 
     @Test

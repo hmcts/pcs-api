@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
-import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementEventShowConditionsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementShowConditionsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -174,7 +174,7 @@ class PCSCaseViewTest {
     private BreathingSpaceSummaryView breathingSpaceSummaryView;
 
     @Mock
-    private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+    private EnforcementShowConditionsView enforcementShowConditionsView;
 
     @Mock
     private RiskAssessmentView riskAssessmentView;
@@ -198,7 +198,7 @@ class PCSCaseViewTest {
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
                                     messagesView, judicialNoteView, enforcementOrderView,
-                                    breathingSpaceSummaryView, enforcementEventShowConditionsView, riskAssessmentView
+                                    breathingSpaceSummaryView, enforcementShowConditionsView, riskAssessmentView
         );
     }
 
@@ -443,9 +443,8 @@ class PCSCaseViewTest {
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
-        var viewOrder = org.mockito.Mockito.inOrder(enforcementEventShowConditionsView, riskAssessmentView);
-        viewOrder.verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
-        viewOrder.verify(riskAssessmentView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(enforcementShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
+        verify(riskAssessmentView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test

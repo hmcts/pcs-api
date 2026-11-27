@@ -3,13 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EnforcementEventShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
@@ -27,10 +24,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails.DIFFICULT_ACCESS_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation.ADDITIONAL_INFORMATION_SELECT_LABEL;
@@ -46,38 +41,19 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class RiskAssessmentView {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-    private static final Set<EnforcementState> RISK_ASSESSMENT_STATES = EnumSet.of(
-        EnforcementState.CASE_PROGRESSION,
-        EnforcementState.BREATHING_SPACE,
-        EnforcementState.AWAITING_ENFORCEMENT_OUTCOME,
-        EnforcementState.AWAITING_PROPERTY_VISIT,
-        EnforcementState.AWAITING_SCHEDULING,
-        EnforcementState.AWAITING_BAILIFF_ALLOCATION,
-        EnforcementState.JUDICIAL_REFERRAL,
-        EnforcementState.HEARING_READINESS,
-        EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING,
-        EnforcementState.CLOSED,
-        EnforcementState.CASE_STAYED
-    );
     private final RiskAssessmentRenderer renderer;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final FeatureToggleService featureToggleService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity entity) {
-        if (pcsCase.getEnfShowConditions() == null) {
-            pcsCase.setEnfShowConditions(EnforcementEventShowConditions.builder().build());
-        }
-        pcsCase.getEnfShowConditions().setCanViewRiskAssessment(YesOrNo.NO);
         if (!featureToggleService.isEnabled(FeatureFlag.ASSESS_RISK_LEVEL)) {
             return;
         }
-        enforcementOrderMediator.getSubmittedWarrantApplication(entity)
-            .filter(application -> RISK_ASSESSMENT_STATES.contains(application.getState()))
+        enforcementOrderMediator.getRiskAssessmentApplication(entity)
             .ifPresent(application -> setRiskAssessment(pcsCase, application));
     }
 
     private void setRiskAssessment(PCSCase pcsCase, EnforcementOrderEntity application) {
-        pcsCase.getEnfShowConditions().setCanViewRiskAssessment(YesOrNo.YES);
         String submittedDate = application.getStatementOfTruth().getCompletedDate()
             .atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate().format(DATE_FORMAT);
         List<RiskAssessmentRow> rows = buildRows(application.getEnforcementOrder());
