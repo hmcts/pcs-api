@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.ScheduledTasksService;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -418,6 +419,19 @@ public class TestingSupportController {
             log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @Operation(summary = "Whether a LaunchDarkly flag is on for this pcs-api, e.g. case-management-r-2-enabled")
+    @GetMapping("/feature-flags/{key}")
+    public ResponseEntity<Boolean> getFeatureFlag(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable String key
+    ) {
+        return Arrays.stream(FeatureFlag.values())
+            .filter(flag -> flag.key().equals(key))
+            .findFirst()
+            .map(flag -> ResponseEntity.ok(featureToggleService.isEnabled(flag)))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(

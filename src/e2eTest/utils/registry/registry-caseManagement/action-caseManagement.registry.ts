@@ -1,6 +1,7 @@
 import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction, CreateCaseAction } from "@utils/actions/custom-actions";
 import { CaseManagementAction } from "@utils/actions/custom-actions/custom-actions-caseManagement";
 import { ErrorValidationAction } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementErrorValidation.action";
+import { FeatureFlagAction } from "@utils/actions/custom-actions/featureFlag.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputDateAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
@@ -116,6 +117,8 @@ export class ActionCMRegistry {
     ['submitCheckYourAnswers', new CaseManagementAction()],
     ['clickPreviousAndValidateAnswersRetained', new CaseManagementAction()],
     ['cancelCheckYourAnswersAndValidate', new CaseManagementAction()],
+    ['skipTestIfFeatureFlagDisabled', new FeatureFlagAction()],
+    ['skipTestIfFeatureFlagEnabled', new FeatureFlagAction()],
       ]);
 
   static getAction(actionName: string): IAction {

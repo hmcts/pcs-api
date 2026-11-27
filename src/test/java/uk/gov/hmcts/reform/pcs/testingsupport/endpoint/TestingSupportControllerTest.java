@@ -325,6 +325,23 @@ class TestingSupportControllerTest {
     }
 
     @Test
+    void getFeatureFlagReturnsPcsApiValue() {
+        when(featureToggleService.isEnabled(FeatureFlag.CASE_MANAGEMENT_R2)).thenReturn(true);
+
+        ResponseEntity<Boolean> response = underTest.getFeatureFlag("testS2S", "case-management-r-2-enabled");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isTrue();
+    }
+
+    @Test
+    void getFeatureFlagReturnsNotFoundForUnknownKey() {
+        ResponseEntity<Boolean> response = underTest.getFeatureFlag("testS2S", "no-such-flag");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void linkDefendantSolicitorToPartyReleaseFeatureFlagNotSet() {
         // given
         long caseReference = 111111111111L;
