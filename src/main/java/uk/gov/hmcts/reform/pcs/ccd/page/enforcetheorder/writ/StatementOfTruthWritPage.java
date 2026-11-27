@@ -56,13 +56,22 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                 """,
                 ShowConditionsEnforcementType.NOT_SUSPENDED_ORDER
             )
-            // TODO HDPI-10110: replace the placeholder with the suspended writ wording from the Writ Figma.
             .label(
                 "statementOfTruthWrit-certification-details-suspended",
                 """
                 <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
                     <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-0">
-                        <li>[Suspended order certification wording to be confirmed from Figma]</li>
+                        <li>
+                            the defendant has not vacated the land as ordered and has failed to
+                            comply with the terms upon which the order was suspended.
+                        </li>
+                        <li>
+                            a statement of the payments due and made under the judgement or order
+                            is attached to this request.
+                        </li>
+                        <li>
+                            I believe that the facts stated in this form are true
+                        </li>
                     </ul>
                 </div>
                 """,
