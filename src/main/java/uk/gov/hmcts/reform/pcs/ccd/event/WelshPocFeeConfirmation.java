@@ -47,7 +47,8 @@ public class WelshPocFeeConfirmation implements CCDConfig<PCSCase, State, UserRo
             configBuilder
                 .decentralisedEvent(welshPocFeeConfirmation.name(), this::submit, this::start)
                 .forAllStates()
-                .name("TEST- Welsh fee confirmation PoC")
+                // Definition store caps event names at 30 characters.
+                .name("TEST- Welsh fee PoC")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR, UserRole.GA_CLAIMANT_SOLICITOR, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .endButtonLabel("Submit");

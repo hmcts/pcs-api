@@ -45,5 +45,7 @@ class WelshPocFeeConfirmationTest extends BaseEventTest {
         // forAllStates() leaves the pre-states empty, which the definition writes as "*".
         assertThat(configuredEvent.getPreState()).isEmpty();
         assertGrants(UserRole.PCS_SOLICITOR, Permission.CRUD);
+        // Definition store rejects an event name longer than 30 characters.
+        assertThat(configuredEvent.getName()).hasSizeLessThanOrEqualTo(30);
     }
 }
