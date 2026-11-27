@@ -19,6 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HmcHearingResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -292,62 +295,30 @@ class HmcHearingNotificationListenerTest {
         verify(context, never()).abandon();
     }
 
-    @Test
-    void shouldDeadLetterNotificationWithEmptyBody() {
+    @ParameterizedTest
+    @MethodSource("unusableNotificationBodies")
+    void shouldDeadLetterNotificationWithUnusableBody(String body, String reason) {
         // given
-        givenMessage("", deploymentProperties(DEPLOYMENT_ID));
+        givenMessage(body, deploymentProperties(DEPLOYMENT_ID));
 
         // when
         listener.onMessage(context);
 
         // then
-        assertThat(captureDeadLetter().getDeadLetterReason()).isEqualTo("UnreadableHmcNotification");
+        assertThat(captureDeadLetter().getDeadLetterReason()).isEqualTo(reason);
         verifyNoInteractions(handler);
         verify(context, never()).complete();
     }
 
-    @Test
-    void shouldDeadLetterNotificationWithNullJsonBody() {
-        // given
-        givenMessage("null", deploymentProperties(DEPLOYMENT_ID));
-
-        // when
-        listener.onMessage(context);
-
-        // then
-        assertThat(captureDeadLetter().getDeadLetterReason()).isEqualTo("UnreadableHmcNotification");
-        verifyNoInteractions(handler);
-        verify(context, never()).complete();
-    }
-
-    @Test
-    void shouldDeadLetterNotificationWithoutHearingId() {
-        // given
-        givenMessage("{\"hmctsServiceCode\": \"AAA3\", \"caseRef\": \"1234567890123456\"}",
-                     deploymentProperties(DEPLOYMENT_ID));
-
-        // when
-        listener.onMessage(context);
-
-        // then
-        assertThat(captureDeadLetter().getDeadLetterReason()).isEqualTo("InvalidHmcNotification");
-        verifyNoInteractions(handler);
-        verify(context, never()).complete();
-    }
-
-    @Test
-    void shouldDeadLetterNotificationWithoutCaseReference() {
-        // given
-        givenMessage("{\"hmctsServiceCode\": \"AAA3\", \"hearingID\": \"2000000001\"}",
-                     deploymentProperties(DEPLOYMENT_ID));
-
-        // when
-        listener.onMessage(context);
-
-        // then
-        assertThat(captureDeadLetter().getDeadLetterReason()).isEqualTo("InvalidHmcNotification");
-        verifyNoInteractions(handler);
-        verify(context, never()).complete();
+    private static Stream<Arguments> unusableNotificationBodies() {
+        return Stream.of(
+            Arguments.of("", "UnreadableHmcNotification"),
+            Arguments.of("null", "UnreadableHmcNotification"),
+            Arguments.of("{\"hmctsServiceCode\": \"AAA3\", \"caseRef\": \"1234567890123456\"}",
+                        "InvalidHmcNotification"),
+            Arguments.of("{\"hmctsServiceCode\": \"AAA3\", \"hearingID\": \"2000000001\"}",
+                        "InvalidHmcNotification")
+        );
     }
 
     @ParameterizedTest

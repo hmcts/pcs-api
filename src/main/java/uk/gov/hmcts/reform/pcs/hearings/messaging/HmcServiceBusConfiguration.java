@@ -21,7 +21,7 @@ public class HmcServiceBusConfiguration {
 
     static final String PCS_PRODUCT = "pcs";
 
-    private static final Pattern SERVICE_SUBSCRIPTION = Pattern.compile("^hmc-to-(.+)-subscription-.+$");
+    private static final Pattern SERVICE_SUBSCRIPTION = Pattern.compile("^hmc-to-((?:(?!-subscription-).)+)-subscription-.+$");
 
     @Bean(destroyMethod = "close")
     public ServiceBusProcessorClient hmcHearingsProcessorClient(
