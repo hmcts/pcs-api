@@ -66,6 +66,7 @@ class DecideApplicationIT extends OrderEventIT {
     private static final ClaimOutcome NO_ORDER = ClaimOutcome.of(ClaimOutcome.Kind.NO_ORDER);
 
     private static final String WHAT_ORDER_WANTED = "The hearing on 14 October is adjourned to the first open date.";
+    private static final String DRAFT_ORDER_WORDING = "<ol><li>The hearing is <strong>adjourned</strong>.</li></ol>";
     private static final UUID FORM_ID = UUID.randomUUID();
     private static final UUID WITNESS_STATEMENT_ID = UUID.randomUUID();
 
@@ -88,6 +89,7 @@ class DecideApplicationIT extends OrderEventIT {
             GenAppEntity genApp = GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
                 .within14Days(VerticalYesNo.YES).otherPartiesAgreed(VerticalYesNo.NO)
                 .withoutNotice(VerticalYesNo.NO).whatOrderWanted(WHAT_ORDER_WANTED)
+                .draftOrderWording(DRAFT_ORDER_WORDING)
                 .applicationSubmittedDate(LocalDateTime.of(2026, 10, 1, 9, 30)).build();
             // The application form is the submission document and filed with the application.
             DocumentEntity form = document(pcsCase, genApp, FORM_ID, "application-form.pdf");
@@ -135,6 +137,8 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
         assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
         assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
+        assertThat(application.draftOrderWording()).isEqualTo(DRAFT_ORDER_WORDING);
+        assertThat(start.caseContext().applications().get(1).draftOrderWording()).isNull();
         assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
             .containsExactly(
                 tuple(FORM_ID, "application-form.pdf"),
