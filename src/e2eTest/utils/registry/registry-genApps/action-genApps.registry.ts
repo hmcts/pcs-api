@@ -1,4 +1,3 @@
-import { FeatureFlagAction } from '@utils/actions/custom-actions/featureFlag.action';
 import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction, CreateCaseAction } from "@utils/actions/custom-actions";
 import { GenAppsAction } from "@utils/actions/custom-actions/custom-actions-genApps/genApps.action";
 import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
@@ -62,8 +61,6 @@ export class ActionGenAppsRegistry {
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['getAllPartyDetails', new CreateCaseAction()],
-    ['skipTestIfFeatureFlagDisabled', new FeatureFlagAction()],
-    ['skipTestIfFeatureFlagEnabled', new FeatureFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {

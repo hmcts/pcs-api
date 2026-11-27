@@ -1,4 +1,3 @@
-import { FeatureFlagAction } from '@utils/actions/custom-actions/featureFlag.action';
 import {IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
@@ -234,8 +233,6 @@ export class ActionRegistry {
     ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['removeFile', new RemoveFileAction()],
     ['getAllPartyDetails', new CreateCaseAction()],
-    ['skipTestIfFeatureFlagDisabled', new FeatureFlagAction()],
-    ['skipTestIfFeatureFlagEnabled', new FeatureFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {

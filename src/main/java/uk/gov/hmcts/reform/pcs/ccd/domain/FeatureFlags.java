@@ -17,6 +17,5 @@ public class FeatureFlags {
     private VerticalYesNo makeOrderEnabled;
     private VerticalYesNo enforcementEnabled;
     private VerticalYesNo caseManagementR2Enabled;
-    private VerticalYesNo bailiffManagementEnabled;
 
 }
