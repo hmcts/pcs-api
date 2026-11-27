@@ -88,12 +88,16 @@ public class GenAppDocumentGenerator {
 
         PartyEntity applicantParty = genAppEntity.getParty();
 
-        String documentUrl = generateSubmissionDocument(
+        String documentUrl = renderSubmissionDocument(
             caseReference,
             genAppEntity,
             applicantParty
         );
 
+        attachSubmissionDocument(caseReference, genAppEntity, documentUrl);
+    }
+
+    public void attachSubmissionDocument(long caseReference, GenAppEntity genAppEntity, String documentUrl) {
         DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
             caseReference,
             documentUrl,
@@ -103,12 +107,12 @@ public class GenAppDocumentGenerator {
         importedDocumentEntity.setType(DocumentType.GENERAL_APPLICATION);
         importedDocumentEntity.setGeneralApplication(genAppEntity);
         genAppEntity.setSubmissionDocument(importedDocumentEntity);
-        claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), applicantParty);
+        claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), genAppEntity.getParty());
     }
 
-    private String generateSubmissionDocument(long caseReference,
-                                              GenAppEntity genAppEntity,
-                                              PartyEntity applicantParty) {
+    public String renderSubmissionDocument(long caseReference,
+                                           GenAppEntity genAppEntity,
+                                           PartyEntity applicantParty) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
@@ -157,6 +161,7 @@ public class GenAppDocumentGenerator {
             .applicationType(genAppEntity.getType())
             .within14Days(genAppEntity.getWithin14Days())
             .whatOrderWanted(genAppEntity.getWhatOrderWanted())
+            .draftOrderWording(DraftOrderWordingHtml.forPdf(genAppEntity.getDraftOrderWording()))
             .otherPartiesAgreed(genAppEntity.getOtherPartiesAgreed())
             .withoutNotice(genAppEntity.getWithoutNotice())
             .withoutNoticeReason(genAppEntity.getWithoutNoticeReason())

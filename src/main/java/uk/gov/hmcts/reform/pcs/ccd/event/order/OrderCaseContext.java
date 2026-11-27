@@ -121,6 +121,7 @@ class OrderCaseContext {
             genApp.getWithoutNotice(),
             genApp.getWithoutNoticeReason(),
             genApp.getWhatOrderWanted(),
+            genApp.getDraftOrderWording(),
             applicationDocuments(genApp)
         );
     }

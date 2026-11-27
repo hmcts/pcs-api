@@ -16,6 +16,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.SystemEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutionContext;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -59,6 +63,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -106,6 +111,10 @@ class PaymentServiceTest {
     @Mock
     private OrganisationService organisationService;
     @Mock
+    private SystemEventExecutor systemEventExecutor;
+    @Mock
+    private TransactionTemplate transactionTemplate;
+    @Mock
     private User user;
     @Mock
     private UserInfo userDetails;
@@ -125,6 +134,17 @@ class PaymentServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_BEARER);
+        lenient().when(feePaymentRepository.findCaseReference(anyString())).thenReturn(Optional.of(1234L));
+        lenient().when(systemEventExecutor.execute(anyLong(), any(UUID.class), any(SystemEventAction.class)))
+            .thenAnswer(invocation -> {
+                invocation.getArgument(2, SystemEventAction.class).execute(
+                    new SystemEventExecutionContext(1234L, UUID.randomUUID(), "PCS", "PENDING_CASE_ISSUED"));
+                return null;
+            });
+        lenient().doAnswer(invocation -> {
+            invocation.<Consumer<Object>>getArgument(0).accept(null);
+            return null;
+        }).when(transactionTemplate).executeWithoutResult(any());
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -258,14 +278,13 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
-                .thenReturn(Optional.empty());
+            when(feePaymentRepository.findCaseReference(requestReference)).thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
+            verify(systemEventExecutor, never()).execute(anyLong(), any(UUID.class), any(SystemEventAction.class));
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -293,7 +312,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
+            verify(strategy).handle(paymentStatusCallback, feePaymentEntity, "PENDING_CASE_ISSUED");
             verify(feePaymentRepository).save(feePaymentEntity);
         }
 

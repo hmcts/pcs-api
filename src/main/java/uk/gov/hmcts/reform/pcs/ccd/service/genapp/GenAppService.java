@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -15,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -27,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -40,6 +45,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
+@Slf4j
 @Service
 public class GenAppService {
 
@@ -54,6 +60,9 @@ public class GenAppService {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
+    private final SystemEventExecutor systemEventExecutor;
+    private final TransactionTemplate transactionTemplate;
+    private final DocumentImportService documentImportService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
@@ -65,6 +74,9 @@ public class GenAppService {
                          GenAppDocumentGenerator genAppDocumentGenerator,
                          NotificationService notificationService,
                          GenAppWaTaskService genAppWaTaskService,
+                         SystemEventExecutor systemEventExecutor,
+                         TransactionTemplate transactionTemplate,
+                         DocumentImportService documentImportService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
@@ -76,6 +88,9 @@ public class GenAppService {
         this.genAppDocumentGenerator = genAppDocumentGenerator;
         this.notificationService = notificationService;
         this.genAppWaTaskService = genAppWaTaskService;
+        this.systemEventExecutor = systemEventExecutor;
+        this.transactionTemplate = transactionTemplate;
+        this.documentImportService = documentImportService;
         this.utcClock = utcClock;
     }
 
@@ -118,6 +133,10 @@ public class GenAppService {
         }
 
         genAppEntity.setWhatOrderWanted(genAppRequest.getWhatOrderWanted());
+        if (genAppRequest instanceof XuiGenAppRequest xuiGenAppRequest) {
+            String draftOrderWording = DraftOrderWordingHtml.forStorage(xuiGenAppRequest.getDraftOrderWording());
+            genAppEntity.setDraftOrderWording(draftOrderWording);
+        }
 
         genAppEntity.setDocumentsUploaded(genAppRequest.getHasSupportingDocuments());
         if (genAppRequest.getHasSupportingDocuments() == VerticalYesNo.YES) {
@@ -209,8 +228,39 @@ public class GenAppService {
             .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
     }
 
-    @Transactional
     public void generateSubmissionDocument(UUID genAppId) {
+        Long caseReference = genAppRepository.findCaseReferenceById(genAppId);
+        if (caseReference == null) {
+            throw new GenAppNotFoundException("No gen app found with ID " + genAppId);
+        }
+        String documentUrl = transactionTemplate.execute(status -> renderSubmissionDocument(genAppId));
+        if (documentUrl == null) {
+            return;
+        }
+        try {
+            systemEventExecutor.execute(caseReference, UUID.randomUUID(), context -> {
+                attachSubmissionDocument(genAppId, documentUrl);
+                return SystemEventResult.withoutStateTransition("genAppDocumentGenerated",
+                    "Application form generated");
+            });
+        } catch (Exception e) {
+            deleteOrphanedDocument(genAppId, documentUrl);
+            throw e;
+        }
+    }
+
+    private String renderSubmissionDocument(UUID genAppId) {
+        GenAppEntity genAppEntity = loadGenApp(genAppId);
+
+        if (genAppEntity.getSubmissionDocument() != null) {
+            return null;
+        }
+
+        return genAppDocumentGenerator.renderSubmissionDocument(
+            genAppEntity.getPcsCase().getCaseReference(), genAppEntity, genAppEntity.getParty());
+    }
+
+    private void attachSubmissionDocument(UUID genAppId, String documentUrl) {
         GenAppEntity genAppEntity = loadGenApp(genAppId);
 
         if (genAppEntity.getSubmissionDocument() != null) {
@@ -218,10 +268,18 @@ public class GenAppService {
         }
 
         long caseReference = genAppEntity.getPcsCase().getCaseReference();
-        genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+        genAppDocumentGenerator.attachSubmissionDocument(caseReference, genAppEntity, documentUrl);
         notificationService.sendGenAppReceivedEmail(genAppEntity);
         genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
         genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+    }
+
+    private void deleteOrphanedDocument(UUID genAppId, String documentUrl) {
+        try {
+            documentImportService.deleteDocument(documentUrl);
+        } catch (Exception e) {
+            log.error("Failed to delete orphaned gen app document for gen app {}: {}", genAppId, documentUrl, e);
+        }
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,
