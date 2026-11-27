@@ -40,4 +40,5 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBrea
 export * from '@data/page-data-figma/page-data-enforcement-figma/cannotApplyForWarrantInfo.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/enforceTheOrderstatementOfTruth.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/enforceTheOrderstatementOfTruthWrit.page.data';
-
+export * from 'data/page-data-figma/page-data-enforcement-figma/payTheClaimFeeConfirm.page.data';
+export * from 'data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data';

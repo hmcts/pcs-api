@@ -23,5 +23,12 @@ export const cyaIgnoreQuestions = [
   'Add document',
   'Review date',
   'Select an address',
-  'Next step'
+  'I certify that:',
+  'What is the total amount that the defendants owe you?',
+  'How much do you want to reclaim?',
+  'How much did you spend on Land Registry fees?',
+  'Enter the amount that you want the defendants to repay',
+  'Next step',
+  'TEMPORARY TEST ONLY - Has the claim been transferred to the High Court?',
+  'TEMPORARY TEST ONLY - Was the general application to transfer to the High Court successful?',
 ];

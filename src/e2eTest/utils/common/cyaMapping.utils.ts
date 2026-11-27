@@ -13,7 +13,9 @@ export const skipNormalization = new Set([
   'Defendant’s first name',
   'Defendant’s last name',
   'Do you want to use this email address for notifications?',
-  'Enter email address'
+  'Enter email address',
+  'Do you want to tell us anything else that could help with the eviction?',
+  'Tell us anything else that could help with the eviction'
 
 ]);
 

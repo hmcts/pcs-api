@@ -41,4 +41,5 @@ export const statementOfTruthWrit = (testTitle: string) => ({
   fullNameHiddenTextInput: `John Doe`,
   nameOfFirmHiddenTextInput: `Doe & Co Solicitors`,
   positionOrOfficeHeldHiddenTextInput: `Solicitor`,
+  cancelLink: `Cancel`
 });

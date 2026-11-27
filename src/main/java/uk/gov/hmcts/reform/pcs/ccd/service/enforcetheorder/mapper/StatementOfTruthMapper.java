@@ -2,8 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
 import java.time.Clock;
@@ -18,7 +18,7 @@ public class StatementOfTruthMapper {
         this.utcClock = utcClock;
     }
 
-    public StatementOfTruthEntity toEntity(StatementOfTruthDetailsEnforcement data) {
+    public StatementOfTruthEntity toEntity(StatementOfTruthDetails data) {
         StatementOfTruthEntity.StatementOfTruthEntityBuilder sotBuilder = StatementOfTruthEntity.builder();
 
         if (data.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {

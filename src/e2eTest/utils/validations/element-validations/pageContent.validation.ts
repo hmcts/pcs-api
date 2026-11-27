@@ -81,7 +81,8 @@ export class PageContentValidation implements IValidation {
     TextLabel: (page: Page, value: string) => page.locator(`
                     label:text-is("${value}"),
                     .label:text-is("${value}"),
-                    span:text-is("${value}")`),
+                    span:text-is("${value}"),
+                    div:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.getByText(value, {exact: true})
       .or(page.getByText(exactTextWithOptionalWhitespaceRegex(value)))
       .or(page.locator(`p:text-is("${value}"),
@@ -194,7 +195,7 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("claimantMakeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
       }
-      else if (page.url().includes("legalRepDocumentUpload")  || page.url().includes("deleteDraftResponse")) {
+      else if(page.url().includes("legalRepDocumentUpload")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else if(
@@ -271,6 +272,9 @@ export class PageContentValidation implements IValidation {
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.${suffix}`);
     }else if (page.url().includes("claimantMakeAnApplication")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.page.data.ts`);
+    } else if (page.url().includes("legalRepDocumentUpload")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.${suffix}`);
     } else if (page.url().includes("legalRepDocumentUpload")  || page.url().includes("deleteDraftResponse")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.${suffix}`);
@@ -429,7 +433,7 @@ export class PageContentValidation implements IValidation {
         )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
-      else if (url.includes('legalRepDocumentUpload') || url.includes('deleteDraftResponse')) {
+      else if (url.includes("legalRepDocumentUpload")) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else {

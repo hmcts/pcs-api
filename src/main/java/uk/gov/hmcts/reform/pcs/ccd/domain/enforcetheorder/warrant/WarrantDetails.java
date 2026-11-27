@@ -23,7 +23,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessD
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -127,9 +129,19 @@ public class WarrantDetails {
     )
     private VerticalYesNo isSuspendedOrder;
 
+    @Deprecated
     @JsonUnwrapped
     @CCD
+    /**
+     * @deprecated This field is retained only for backwards compatibility.
+     */
     private StatementOfTruthDetailsEnforcement statementOfTruth;
+
+    @CCD(
+            typeOverride = FieldType.MultiSelectList,
+            typeParameterOverride = "StatementOfTruthAgreement"
+    )
+    private List<StatementOfTruthAgreement> certification;
 
     @CCD
     @JsonUnwrapped
