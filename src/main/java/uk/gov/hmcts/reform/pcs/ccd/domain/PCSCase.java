@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.HearingTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
@@ -422,6 +423,17 @@ public class PCSCase {
         access = {InternalTabAccess.class}
     )
     private String orderListMarkdownLabel;
+
+    @CCD(searchable = false, access = {HearingTabAccess.class})
+    private String hearingListMarkdown;
+
+    @CCD(
+        label = "${hearingListMarkdown}",
+        typeOverride = Label,
+        searchable = false,
+        access = {HearingTabAccess.class}
+    )
+    private String hearingListMarkdownLabel;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -1184,8 +1196,16 @@ public class PCSCase {
     @CCD(searchable = false)
     private String selectedHearingId;
 
+    @CCD(label = "Which hearing do you want to manage?", searchable = false,
+        typeOverride = FieldType.DynamicList)
+    private DynamicStringList hearingSelection;
+
     @CCD(searchable = false)
     private String hearingLocation;
+
+    // CCD assigns each event field to one page, so the selection page retains its own copy.
+    @CCD(searchable = false)
+    private String hearingSummaryLocation;
 
     @CCD(
         label = "Which defendant submitted this response?",
@@ -1229,4 +1249,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
 
+    public boolean makeOrderEnabled() {
+        return featureFlags != null && featureFlags.getMakeOrderEnabled() == VerticalYesNo.YES;
+    }
 }

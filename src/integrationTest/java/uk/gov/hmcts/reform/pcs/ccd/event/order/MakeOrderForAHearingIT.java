@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
@@ -330,7 +332,15 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         forHearing(firstJudge, firstHearing).submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(null, 0, OrderType.ADJOURNMENT, Map.of("notes", "kept"), WORDING), null,
             new HearingChange(firstHearing, null, null, null)));
-        jdbcTemplate.update("UPDATE hearing SET cancelled = true WHERE id = ?", firstHearing);
+        var staff = events.registerActor("Hearing", "Administrator", "caseworker-pcs");
+        var cancellation = PCSCase.builder()
+            .showManageHearingPage(VerticalYesNo.YES)
+            .manageHearingOption(ManageHearingOption.CANCEL)
+            .selectedHearingId(Integer.toString(firstHearing))
+            .hearing(uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.builder()
+                .cancellationReason("No longer required").build())
+            .build();
+        events.event(caseReference, "manageHearing", cancellation).as(staff).submitExpectingSuccess();
 
         var atCancelledHearing = events.external(caseReference, MAKE_ORDER).as(firstJudge);
         OrderStart reopened = atCancelledHearing.start();

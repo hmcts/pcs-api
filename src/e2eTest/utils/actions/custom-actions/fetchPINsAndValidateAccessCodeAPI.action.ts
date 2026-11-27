@@ -1,6 +1,6 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import Axios from 'axios';
-import { actionRetries, SHORT_TIMEOUT, VERY_SHORT_TIMEOUT } from 'playwright.config';
+import { actionRetries, SHORT_TIMEOUT, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT } from 'playwright.config';
 import {
   createCaseEventTokenApiData,
   fetchPINsApiData,
@@ -18,6 +18,27 @@ async function waitUntilCaseIssued(): Promise<void> {
     if (attempt === actionRetries) throw new Error(`Case is not ISSUED. Last observed status: ${response.data?.state ?? 'UNKNOWN'}`);
     await new Promise(resolve => setTimeout(resolve, SHORT_TIMEOUT));
   }
+}
+
+export async function waitForClaimIssueDocuments(): Promise<void> {
+  const caseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+  const pinsApi = Axios.create(fetchPINsApiData.fetchPINSApiInstance());
+
+  await expect.poll(async () => {
+    const { data: caseDetails } = await caseApi.get(getCaseApiData.getCaseApiEndPoint());
+    const defendants = caseDetails.data?.allDefendants ?? [];
+    const documents: { value?: { document_filename?: string } }[] = caseDetails.data?.allDocuments ?? [];
+    if (caseDetails.state !== 'CASE_ISSUED' || defendants.length === 0
+      || !documents.some(({ value }) => value?.document_filename === 'Claim - Claimant 1.pdf')) {
+      return false;
+    }
+
+    const { data: pins } = await pinsApi.get(fetchPINsApiData.fetchPINsApiEndPoint());
+    return Object.keys(pins ?? {}).length === defendants.length;
+  }, {
+    message: 'Wait for the issued claim form and every defendant access code before starting a case event',
+    timeout: VERY_LONG_TIMEOUT,
+  }).toBe(true);
 }
 
 export class FetchPINsAndValidateAccessCodeAPIAction implements IAction {

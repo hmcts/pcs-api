@@ -1,11 +1,11 @@
 type BreathingSpaceDate = { day: string; month: string; year: string };
 import { CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
-import test, { expect, Page } from '@playwright/test';
+import test, { errors, expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import {formatDateTimeNonBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -79,10 +79,10 @@ export class CaseManagementAction implements IAction {
       ['confirmAddParty', () => this.confirmAddParty(fieldName as actionRecord)],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
-      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
+      ['selectManageHearing', () => this.selectManageHearing(page, fieldName as actionRecord)],
       ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
-      ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
+      ['cancelHearing', () => this.cancelHearing(page, fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
@@ -336,14 +336,14 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
-    await this.validateCaseDetails(selectDoc.submitPayload);
+    await this.validateCaseDetails();
     await performAction('select', selectDoc.question, selectDoc.option);
     await performAction('clickRadioButton', { question: selectDoc.question1, option: selectDoc.option1 });
     await performAction('reTryOnCallBackError', selectDocument.continueButton, selectDoc.nextPage as string);
   }
 
   private async changeCaseState(caseState: actionRecord) {
-    await this.validateCaseDetails(caseState.submitPayload);
+    await this.validateCaseDetails();
     await performAction('select', caseState.question, caseState.option);
     await performAction('reTryOnCallBackError', changeCaseState.continueButton, caseState.nextPage as string);
   }
@@ -364,7 +364,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addReviewDates(reviewDateData: actionRecord) {
-    await this.validateCaseDetails(reviewDateData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('inputDate', reviewDateData.reviewDateLabel as string, reviewDateData.date);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
@@ -422,7 +422,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationDetails(appDetails: actionRecord) {
-    await this.validateCaseDetails(appDetails.submitPayload);
+    await this.validateCaseDetails();
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);
@@ -434,7 +434,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
-    await this.validateCaseDetails(courtHearing.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: courtHearing.question,
       option: courtHearing.option,
@@ -443,7 +443,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
-    await this.validateCaseDetails(fee.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: fee.question1,
       option: fee.option1,
@@ -476,7 +476,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await this.validateCaseDetails(confirmApplicationConsent.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
@@ -491,7 +491,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
-    await this.validateCaseDetails(upload.submitPayload);
+    await this.validateCaseDetails();
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
@@ -516,7 +516,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
-    await this.validateCaseDetails(uploadEvidence.submitPayload);
+    await this.validateCaseDetails();
     if (uploadEvidence.files) {
       await performAction('uploadFile', {files: uploadEvidence.files, label: uploadEvidence.label});
     }
@@ -525,7 +525,7 @@ private formatDisplayDate(entered: string): string {
 
   private async verifyReferToJudge(referToJudgeData: actionRecord) {
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
-    await this.validateCaseDetails(referToJudgeData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
@@ -545,17 +545,31 @@ private formatDisplayDate(entered: string): string {
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
-  private async selectManageHearing(manageHearingOption: actionRecord) {
-    await this.validateCaseDetails(manageHearingOption.submitPayload);
+  private async selectManageHearing(page: Page, manageHearingOption: actionRecord) {
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: manageHearingOption.question,
       option: manageHearingOption.option,
     });
+    if (manageHearingOption.option === manageHearing.editAHearingRadioOption
+      || manageHearingOption.option === manageHearing.cancelAHearingRadioOption) {
+      const hearingPicker = page.getByRole('combobox', { name: 'Which hearing do you want to manage?' });
+      // The flag-off journey has no picker. Allow the flag-on field time to render after the radio changes.
+      const pickerVisible = await hearingPicker.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
+        .then(() => true, error => {
+          if (error instanceof errors.TimeoutError) return false;
+          throw error;
+        });
+      if (pickerVisible) {
+        const seededHearing = hearingPicker.getByRole('option', { name: /^Application hearing — / });
+        await hearingPicker.selectOption(await seededHearing.evaluate((option: HTMLOptionElement) => option.value));
+      }
+    }
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
   private async editHearing(editHearingData: actionRecord) {
-    await this.validateCaseDetails(editHearingData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: editHearingData.typeOfHearingQuestion,
       option: editHearingData.option
@@ -614,12 +628,12 @@ private formatDisplayDate(entered: string): string {
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
-  private async cancelHearing(cancelHearingData: actionRecord) {
+  private async cancelHearing(page: Page, cancelHearingData: actionRecord) {
     const hearingInfo = manageHearingApiData.AddHearingPayload;
     const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
       .replace(':00:00AM', ':00am')
       .replace(':00:00PM', ':00pm');
-    await this.validateCaseDetails(cancelHearingData.submitPayload);
+    await this.validateCaseDetails();
     const validations = [
       {
         heading: cancelHearing.hearingLocationHeader,
@@ -654,7 +668,17 @@ private formatDisplayDate(entered: string): string {
         text: validation.value,
       });
     }
-    await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+    const { textLabel, hint, dropdownLabel, option } = cancelHearing.cancellationReason;
+    const dropdown = page.getByRole('combobox', { name: dropdownLabel });
+    const textbox = page.getByRole('textbox', { name: textLabel });
+    await expect(dropdown.or(textbox)).toHaveCount(1);
+    if (await dropdown.isVisible()) {
+      await dropdown.selectOption({ label: option });
+      await expect(dropdown.locator('option:checked')).toHaveText(option);
+    } else {
+      await expect(page.getByText(hint, { exact: true })).toBeVisible();
+      await performAction('inputText', textLabel, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+    }
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
 
@@ -677,7 +701,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
-    await this.validateCaseDetails(selectApp.submitPayload)
+    await this.validateCaseDetails()
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -852,7 +876,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectParty(partyData: actionRecord): Promise<void> {
-    await this.validateCaseDetails(partyData.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: partyData.question1,
       option: partyData.option1
@@ -880,7 +904,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async updatePartyDetails(page: Page, updatePartyData: actionRecord): Promise<void> {
-    await this.validateCaseDetails(updatePartyData.submitPayload);
+    await this.validateCaseDetails();
     const addLoc = page.locator('button').filter({hasText: 'Find address'})
     const count = await addLoc.count();
     const dobField = page.locator('span').filter({hasText: 'Date of birth'}).first();
@@ -912,7 +936,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async selectManageParty(manageParties: actionRecord) {
-    await this.validateCaseDetails(manageParties.submitPayload);
+    await this.validateCaseDetails();
     await performAction('clickRadioButton', {
       question: manageParties.partyToChangeQn,
       option: manageParties.option,
@@ -925,7 +949,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addNewParty(partyDetail: actionRecord) {
-    await this.validateCaseDetails(partyDetail.submitPayload);
+    await this.validateCaseDetails();
     if (partyDetail.orgLabel) {
       await performAction('inputText', partyDetail.orgLabel, partyDetail.orgInput);
       await performAction('inputText', partyDetail.label1, partyDetail.input1);
@@ -1002,7 +1026,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
-    await this.validateCaseDetails(judicialNotes.submitPayload)
+    await this.validateCaseDetails()
     await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
     await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
   }
@@ -1020,7 +1044,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
-    await this.validateCaseDetails(judicialNotes.submitPayload)
+    await this.validateCaseDetails()
     const judicialNote = new Map<string, string>();
 
     judicialNote.set('Note', judicialNotes.userInput as string);
@@ -1297,7 +1321,7 @@ private formatDisplayDate(entered: string): string {
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
     if (defendantsDetails.submitPayload) {
-      await this.validateCaseDetails(defendantsDetails.submitPayload);
+      await this.validateCaseDetails();
     }
     const defendant = new Map<string, string>();
     let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
@@ -1351,7 +1375,7 @@ private formatDisplayDate(entered: string): string {
   }
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
-    await this.validateCaseDetails(claimantDetails.submitPayload);
+    await this.validateCaseDetails();
     const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
@@ -1557,13 +1581,11 @@ private formatDisplayDate(entered: string): string {
       .innerText();
   }
 
-  private async validateCaseDetails(payLoadInput: any) {
-    const payLoad = payLoadInput as Record<string, any>;
+  private async validateCaseDetails() {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
   }
 }

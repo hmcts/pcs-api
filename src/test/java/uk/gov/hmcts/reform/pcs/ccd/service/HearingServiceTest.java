@@ -35,7 +35,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -1080,12 +1079,14 @@ public class HearingServiceTest {
             .hearingId(hearingId)
             .cancellationReason(expectedCancellationReason)
             .build();
-        HearingEntity hearingEntity = HearingEntity.builder().build();
-
-        when(hearingRepository.findById(hearingId)).thenReturn(Optional.of(hearingEntity));
+        HearingEntity hearingEntity = HearingEntity.builder().id(hearingId)
+            .hearingDate(LocalDateTime.of(2026, 8, 3, 10, 0)).build();
+        when(pcsCaseService.loadCase(12345L)).thenReturn(PcsCaseEntity.builder()
+            .hearings(List.of(hearingEntity)).build());
 
         // When
-        hearingService.cancelHearing(hearing);
+        hearingService.cancelHearing(12345L,
+            PCSCase.builder().selectedHearingId(String.valueOf(hearingId)).hearing(hearing).build());
 
         // Then
         assertThat(hearingEntity.getCancelled()).isTrue();
@@ -1101,15 +1102,16 @@ public class HearingServiceTest {
             .hearingId(hearingId)
             .build();
 
-        when(hearingRepository.findById(hearingId)).thenReturn(Optional.empty());
+        when(pcsCaseService.loadCase(12345L)).thenReturn(PcsCaseEntity.builder().build());
 
         // When
-        Throwable throwable = catchThrowable(() -> hearingService.cancelHearing(hearing));
+        Throwable throwable = catchThrowable(() -> hearingService.cancelHearing(12345L,
+            PCSCase.builder().selectedHearingId(String.valueOf(hearingId)).hearing(hearing).build()));
 
         // Then
         assertThat(throwable)
             .isInstanceOf(HearingNotFoundException.class)
-            .hasMessage("Hearing not found with ID " + hearingId);
+            .hasMessage("Select an available hearing on this case");
     }
 
     @Test
@@ -1274,5 +1276,22 @@ public class HearingServiceTest {
 
         // Then
         assertThat(editedHearing.getNoticeNumber()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldOfferOnlyFutureHearingsThatAreNotCancelled() {
+        HearingEntity past = HearingEntity.builder().id(1).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 8, 1, 9, 59)).build();
+        HearingEntity startingNow = HearingEntity.builder().id(2).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 8, 1, 10, 0)).build();
+        HearingEntity cancelledFuture = HearingEntity.builder().id(3).type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 9, 1, 10, 0)).cancelled(true).build();
+        HearingEntity undated = HearingEntity.builder().id(4).type(HearingType.POSSESSION).build();
+
+        var selection = hearingService.buildHearingSelection(PcsCaseEntity.builder()
+            .hearings(List.of(past, startingNow, cancelledFuture, undated)).build());
+
+        assertThat(selection.getListItems()).extracting(DynamicStringListElement::getCode).containsExactly("2");
+        assertThat(selection.getValueCode()).isEqualTo("2");
     }
 }

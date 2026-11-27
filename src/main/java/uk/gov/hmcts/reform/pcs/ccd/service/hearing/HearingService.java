@@ -22,10 +22,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -71,17 +75,8 @@ public class HearingService {
 
     public HearingEntity updateHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        Integer selectedHearingId = Integer.valueOf(Objects.requireNonNull(
-            pcsCase.getSelectedHearingId(),
-            "Selected hearing id must be populated before editing a hearing"
-        ));
-
-        HearingEntity hearingEntity = pcsCaseEntity.getHearings().stream()
-            .filter(hearing -> selectedHearingId.equals(hearing.getId()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Selected hearing %s was not found on case %s".formatted(selectedHearingId, caseReference)
-            ));
+        HearingEntity hearingEntity = requireAvailableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId(),
+            pcsCase.makeOrderEnabled());
 
         populateHearingEntity(hearingEntity, pcsCase);
         // Edits before the notice is generated keep the same notice number and later edits get the next number
@@ -104,14 +99,92 @@ public class HearingService {
         hearingEntity.setNoticeNumber(latestNoticeNumber + 1);
     }
 
-    public void cancelHearing(Hearing hearing) {
-        int hearingId = Objects.requireNonNull(hearing.getHearingId(), "Hearing ID must be set");
-
-        HearingEntity hearingEntity = hearingRepository.findById(hearingId)
-            .orElseThrow(() -> new HearingNotFoundException("Hearing not found with ID " + hearingId));
-
+    public void cancelHearing(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity entity = pcsCaseService.loadCase(caseReference);
+        String hearingId = pcsCase.getSelectedHearingId();
+        if (hearingId == null && pcsCase.getHearing() != null && pcsCase.getHearing().getHearingId() != null) {
+            // A cancellation opened with the previous definition carries only the hearing's ID.
+            hearingId = pcsCase.getHearing().getHearingId().toString();
+        }
+        HearingEntity hearingEntity = requireAvailableHearing(entity, hearingId, pcsCase.makeOrderEnabled());
+        Hearing form = pcsCase.getHearing();
+        if (pcsCase.makeOrderEnabled()) {
+            hearingEntity.setCaseManagementCancellationReasonKey(requireCancellationReason(form).getCode());
+        } else {
+            hearingEntity.setCancellationReason(form.getCancellationReason());
+        }
         hearingEntity.setCancelled(true);
-        hearingEntity.setCancellationReason(hearing.getCancellationReason());
+    }
+
+    public DynamicStringList buildCancellationReasonSelection() {
+        var options = hearingRepository.findActiveCancellationReasons().stream()
+            .map(reason -> new DynamicStringListElement(reason.getCode(), reason.getLabel()))
+            .toList();
+        return DynamicStringList.builder().listItems(options).build();
+    }
+
+    public HearingRepository.CancellationReason requireCancellationReason(Hearing form) {
+        var selection = form == null ? null : form.getCancellationReasonSelection();
+        String code = selection == null ? null : selection.getValueCode();
+        if (code != null) {
+            for (var reason : hearingRepository.findActiveCancellationReasons()) {
+                if (code.equals(reason.getCode())) {
+                    return reason;
+                }
+            }
+        }
+        throw new CaseDataValidationException("Select a valid reason for cancellation");
+    }
+
+    public DynamicStringList buildHearingSelection(PcsCaseEntity pcsCaseEntity) {
+        var formatter = DateTimeFormatter.ofPattern("d MMMM yyyy 'at' h:mma", Locale.UK);
+        LocalDateTime now = LocalDateTime.now(ukClock);
+        var options = pcsCaseEntity.getHearings().stream()
+            .filter(hearing -> hearing != null && hearing.getId() != null)
+            .filter(hearing -> isLiveFutureHearing(hearing, now))
+            .sorted(Comparator.comparing(HearingEntity::getHearingDate).thenComparing(HearingEntity::getId))
+            .map(hearing -> DynamicStringListElement.builder()
+                .code(hearing.getId().toString())
+                .label("%s — %s".formatted(
+                    hearing.getType() == HearingType.OTHER
+                        ? hearing.getOtherHearingType() : hearing.getType().getLabel(),
+                    formatter.format(hearing.getHearingDate())))
+                .build())
+            .toList();
+        return DynamicStringList.builder().listItems(options)
+            .value(options.size() == 1 ? options.getFirst() : null).build();
+    }
+
+    public HearingEntity resolveHearingSelection(long caseReference, PCSCase form) {
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        if (!form.makeOrderEnabled()) {
+            return findEditableHearing(pcsCase).orElseThrow(HearingService::unavailableHearing);
+        }
+        String selectedId = form.getHearingSelection() == null ? null : form.getHearingSelection().getValueCode();
+        return requireAvailableHearing(pcsCase, selectedId, true);
+    }
+
+    // Staff who pick a hearing may only change one that has not happened yet. With the flag off staff are shown the
+    // next hearing, which can be the latest past hearing, so only a cancelled or another case's hearing is refused.
+    private HearingEntity requireAvailableHearing(PcsCaseEntity pcsCaseEntity, String hearingId, boolean futureOnly) {
+        LocalDateTime now = LocalDateTime.now(ukClock);
+        return pcsCaseEntity.getHearings().stream()
+            .filter(hearing -> hearing != null && hearing.getId() != null)
+            .filter(hearing -> hearing.getId().toString().equals(hearingId))
+            .filter(hearing -> futureOnly ? isLiveFutureHearing(hearing, now)
+                : !Boolean.TRUE.equals(hearing.getCancelled()))
+            .findFirst()
+            .orElseThrow(HearingService::unavailableHearing);
+    }
+
+    private static boolean isLiveFutureHearing(HearingEntity hearing, LocalDateTime now) {
+        return !Boolean.TRUE.equals(hearing.getCancelled())
+            && hearing.getHearingDate() != null
+            && !hearing.getHearingDate().isBefore(now);
+    }
+
+    private static HearingNotFoundException unavailableHearing() {
+        return new HearingNotFoundException("Select an available hearing on this case");
     }
 
     public void clearHearingForm(PCSCase pcsCase) {
@@ -140,11 +213,15 @@ public class HearingService {
     public void initialiseEditableHearing(long caseReference, PCSCase pcsCase, String previouslySelectedHearingId) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
+        if (pcsCase.getSelectedHearingId() == null) {
+            setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
+        }
         if (Objects.equals(previouslySelectedHearingId, pcsCase.getSelectedHearingId())
             && hasEditableHearingDetails(pcsCase.getManageHearingDraft())) {
             restoreDraftHearingForm(pcsCase);
         } else {
+            pcsCase.setManageHearingDraft(null);
+            pcsCase.setMhDraftPartyList(null);
             prepopulateEditableHearing(pcsCase, pcsCaseEntity);
         }
     }

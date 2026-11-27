@@ -26,7 +26,7 @@ import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 import { formatDateTimeBST } from '@utils/common/string.utils';
 import { IdamUtils } from '@hmcts/playwright-common';
-import { actionRetries, VERY_SHORT_TIMEOUT } from 'playwright.config';
+import { actionRetries, LONG_TIMEOUT, VERY_SHORT_TIMEOUT } from 'playwright.config';
 import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
@@ -554,10 +554,9 @@ export class CreateCaseAPIAction implements IAction {
     if (!caseNumber) {
       throw new Error('Cannot update payment because CASE_NUMBER is not set.');
     }
-    // Fee payment records are created asynchronously after case submission.
-    // Enforcement journeys can take longer than the standard action retry window.
-    const maxRetries = actionRetries + actionRetries;
+    // A request can wait a full scheduler polling interval before payment setup starts.
     const delayMs = VERY_SHORT_TIMEOUT;
+    const maxRetries = LONG_TIMEOUT / delayMs;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());

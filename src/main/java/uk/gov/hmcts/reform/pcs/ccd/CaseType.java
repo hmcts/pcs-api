@@ -174,6 +174,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("orderListMarkdownLabel")
             .field("orderListMarkdown", NEVER_SHOW);
 
+        builder.tab("caseHearings", "Case hearings")
+            .showCondition(ShowConditions.and(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS),
+                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER)))
+            .field("hearingListMarkdownLabel")
+            .field("hearingListMarkdown", NEVER_SHOW);
+
         buildJudicialNotesTab(builder);
 
         builder.tab("paymentHistory", "Payment History")
