@@ -11,8 +11,11 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EnforcementEventShowConditions {
+public class EnforcementShowConditions {
 
     @CCD
     private YesOrNo recordWarrantReturn;
+
+    @CCD
+    private YesOrNo canViewRiskAssessment;
 }

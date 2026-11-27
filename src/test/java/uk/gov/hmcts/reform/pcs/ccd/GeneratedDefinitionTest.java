@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -84,7 +86,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(19);
+        assertThat(roleByTab).hasSize(20);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -163,6 +165,130 @@ class GeneratedDefinitionTest {
         assertThat(readers.get("caseReviewDatesMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdownLabel")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
         assertThat(readers.get("orderListMarkdown")).containsExactlyInAnyOrderElementsOf(INTERNAL_PROFILES);
+    }
+
+    @Test
+    void bailiffPersonasHaveRegisteredAmMappingsAndCaseTypePermissions() {
+        List<JsonNode> mappings = rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json"));
+        List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json"));
+        for (String role : List.of("bailiff", "bailiff-admin", "bailiff-manager")) {
+            assertThat(mappings).filteredOn(row -> role.equals(row.path("RoleName").asText()))
+                .singleElement().satisfies(row -> {
+                    assertThat(row.path("AccessProfiles").asText()).isEqualTo(role);
+                    assertThat(row.path("Disabled").asText()).isEqualTo("N");
+                });
+            assertThat(permissions).filteredOn(row -> role.equals(row.path("UserRole").asText()))
+                .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("CRU"));
+        }
+        // Team Leader is the Manager persona, not a fourth AM role.
+        assertThat(mappings).noneMatch(row -> "bailiff-team-leader".equals(row.path("RoleName").asText()));
+    }
+
+    @Test
+    void basicEnforcementRoleHasOnlyTheExistingGlobalSearchAccessProfile() {
+        assertThat(rows(DEFINITION_DIR.resolve("RoleToAccessProfiles.json")))
+            .filteredOn(row -> "hmcts-enforcement".equals(row.path("RoleName").asText()))
+            .singleElement().satisfies(row -> assertThat(row.path("AccessProfiles").asText()).isEqualTo("GS_profile"));
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseType.json")))
+            .filteredOn(row -> "GS_profile".equals(row.path("UserRole").asText()))
+            .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
+    }
+
+    @Test
+    void riskAssessmentDoesNotAddBailiffEventPermissions() {
+        Set<String> roles = Set.of("bailiff", "bailiff-manager", "hmcts-enforcement");
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseEvent")))
+            .noneMatch(row -> roles.contains(row.path("UserRole").asText()));
+        assertThat(rows(DEFINITION_DIR.resolve("AuthorisationCaseEvent")))
+            .filteredOn(row -> "bailiff-admin".equals(row.path("UserRole").asText()))
+            .extracting(row -> row.path("CaseEventID").asText())
+            .containsExactly("ext:recordWarrantReturn");
+    }
+
+    @Test
+    void riskAssessmentSharedFieldsAreReadableOnlyByConfirmedPersonas() {
+        Set<String> internal = union(INTERNAL_PROFILES, Set.of(
+            "bailiff", "bailiff-admin", "bailiff-manager",
+            "hearing-centre-team-leader", "ctsc-team-leader", "wlu-team-leader"
+        ));
+        Set<String> profiles = union(internal, Set.of("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"));
+        for (String field : List.of("riskAssessmentMarkdown", "riskAssessmentMarkdownLabel")) {
+            assertThat(readers.get(field)).containsExactlyInAnyOrderElementsOf(profiles);
+        }
+        assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
+            .noneMatch(row -> row.path("ID").asText().startsWith("riskAssessmentInternal")
+                || row.path("ID").asText().startsWith("riskAssessmentClaimant"));
+        assertThat(tabs.get("riskAssessment"))
+            .filteredOn(row -> row.has("TabShowCondition"))
+            .extracting(row -> row.get("TabShowCondition").asText())
+            .containsExactly("enfShowConditions.canViewRiskAssessment=\"Yes\"");
+    }
+
+    @Test
+    void riskAssessmentTabConditionFieldIsRegisteredOnAHiddenTabForCcdImport() {
+        String visibilityField = "enfShowConditions";
+        assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
+            .filteredOn(row -> visibilityField.equals(row.path("ID").asText()))
+            .singleElement().satisfies(row ->
+                assertThat(row.path("FieldType").asText()).isEqualTo("EnforcementShowConditions"));
+        assertThat(rows(DEFINITION_DIR.resolve("ComplexTypes")))
+            .filteredOn(row -> "EnforcementShowConditions".equals(row.path("ID").asText()))
+            .extracting(row -> row.path("ListElementCode").asText())
+            .containsExactlyInAnyOrder("recordWarrantReturn", "canViewRiskAssessment");
+        assertThat(rows(DEFINITION_DIR.resolve("CaseField.json")))
+            .noneMatch(row -> row.path("ID").asText().startsWith("enfShowConditions_"));
+        assertThat(tabs.get("hidden"))
+            .filteredOn(row -> visibilityField.equals(row.path("CaseFieldID").asText()))
+            .singleElement().satisfies(row ->
+                assertThat(row.path("FieldShowCondition").asText()).isEqualTo(ShowConditions.NEVER_SHOW));
+        assertThat(tabs.get("hidden"))
+            .filteredOn(row -> row.has("TabShowCondition"))
+            .extracting(row -> row.path("TabShowCondition").asText())
+            .containsExactly(ShowConditions.NEVER_SHOW);
+    }
+
+    @Test
+    void riskAssessmentMarkdownLabelsHaveNoAdditionalShowConditions() {
+        assertThat(tabs.get("riskAssessment"))
+            .filteredOn(row -> row.path("CaseFieldID").asText().endsWith("MarkdownLabel"))
+            .hasSize(1)
+            .allSatisfy(row -> assertThat(row.path("FieldShowCondition").asText()).isEmpty());
+    }
+
+    @Test
+    void riskAssessmentRolesDoNotWidenExistingInternalUserFieldAccess() {
+        for (String field : List.of("allClaimants", "allDefendants", "propertyAddress", "caseNameHmctsInternal")) {
+            assertThat(readers.get(field)).as(field).isNotNull().doesNotContain("bailiff", "bailiff-manager");
+        }
+    }
+
+    @Test
+    void riskAssessmentShowConditionIsReadableByTheSameUsersAsTheTab() {
+        Set<String> profiles = union(readers.get("riskAssessmentMarkdownLabel"),
+                                     Set.of("claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"));
+        assertThat(readers.get("enfShowConditions"))
+            .containsExactlyInAnyOrderElementsOf(profiles);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"claimant", "claimant-solicitor", "[CLAIMANTSOLICITOR]"})
+    void claimantSideProfilesHaveOnlyReadAccessToTheirAssessment(String profile) {
+        assertThat(visible(tabs.get("riskAssessment"), Set.of(profile))).isTrue();
+        List<JsonNode> permissions = rows(DEFINITION_DIR.resolve("AuthorisationCaseField"));
+        for (String field : List.of("riskAssessmentMarkdown", "riskAssessmentMarkdownLabel",
+                                    "enfShowConditions")) {
+            assertThat(permissions).filteredOn(row -> field.equals(row.path("CaseFieldID").asText())
+                && profile.equals(row.path("UserRole").asText()))
+                .singleElement().satisfies(row -> assertThat(row.path("CRUD").asText()).isEqualTo("R"));
+        }
+        assertThat(readers.get("enfShowConditions")).contains(profile);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"citizen", "caseworker-pcs-solicitor", "[DEFENDANT]", "defendant-solicitor",
+        "[DEFENDANTSOLICITOR]", "duty-advisor-request", "caseworker-caa"})
+    void genericAndDefendantProfilesCannotSeeTheRiskAssessmentTab(String profile) {
+        assertThat(visible(tabs.get("riskAssessment"), Set.of(profile))).isFalse();
     }
 
     @Test

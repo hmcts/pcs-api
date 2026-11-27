@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation.ADDITIONAL_INFORMATION_SELECT_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
@@ -40,7 +41,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
             .complex(WarrantDetails::getAdditionalInformation)
             .mandatoryWithLabel(
                 AdditionalInformation::getAdditionalInformationSelect,
-                "Do you want to tell us anything else that could help with the eviction?"
+                ADDITIONAL_INFORMATION_SELECT_LABEL
             )
             .mandatory(AdditionalInformation::getAdditionalInformationDetails, SHOW_CONDITION)
             .done()

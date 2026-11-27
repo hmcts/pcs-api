@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
-import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementEventShowConditionsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementShowConditionsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RiskAssessmentView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
@@ -113,7 +114,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final JudicialNoteView judicialNoteView;
     private final EnforcementOrderView enforcementOrderView;
     private final BreathingSpaceSummaryView breathingSpaceSummaryView;
-    private final EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+    private final EnforcementShowConditionsView enforcementShowConditionsView;
+    private final RiskAssessmentView riskAssessmentView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -149,7 +151,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
-        enforcementEventShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        enforcementShowConditionsView.setCaseFields(pcsCaseEntity, pcsCase);
+        riskAssessmentView.setCaseFields(pcsCase, pcsCaseEntity);
         setDraftUploads(pcsCase, caseReference);
 
         caseFieldsView.setCaseFields(pcsCase);

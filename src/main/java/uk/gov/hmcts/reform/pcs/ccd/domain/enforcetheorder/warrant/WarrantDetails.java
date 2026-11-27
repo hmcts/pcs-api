@@ -34,6 +34,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class WarrantDetails {
 
+    public static final String DEFENDANTS_DOB_KNOWN_LABEL = "Do you know the defendants’ dates of birth?";
+
+    public static final String RISK_TO_BAILIFF_LABEL = "Does anyone living at the property pose a risk to the bailiff?";
+
     @JsonUnwrapped
     @CCD
     private AdditionalInformation additionalInformation;
@@ -59,7 +63,7 @@ public class WarrantDetails {
     private PeopleToEvict peopleToEvict;
 
     @CCD(
-        label = "Does anyone living at the property pose a risk to the bailiff?"
+        label = RISK_TO_BAILIFF_LABEL
     )
     private YesNoNotSure anyRiskToBailiff;
 
@@ -81,7 +85,7 @@ public class WarrantDetails {
     @CCD(searchable = false)
     private YesOrNo showPeopleYouWantToEvictPage;
 
-    @CCD(label = "Do you know the defendants’ dates of birth?")
+    @CCD(label = DEFENDANTS_DOB_KNOWN_LABEL)
     private VerticalYesNo defendantsDOBKnown;
 
     @JsonUnwrapped

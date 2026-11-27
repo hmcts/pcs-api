@@ -38,6 +38,7 @@ public enum UserRole implements HasRole {
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
+    HMCTS_ENFORCEMENT("hmcts-enforcement", Set.of(R), RAS, GS_PROFILE),
     HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
 
     CHALLENGED_ACCESS_ADMIN("challenged-access-admin", Set.of(R), RAS, AccessProfile.HEARING_CENTRE_ADMIN),
@@ -63,7 +64,10 @@ public enum UserRole implements HasRole {
     SUPER_USER("caseworker-pcs-superuser", CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM),
-    BAILIFF_ADMIN("bailiff-admin", Permission.CRU, RAS, AccessProfile.BAILIFF_ADMIN);
+
+    BAILIFF("bailiff", Permission.CRU, RAS, AccessProfile.BAILIFF),
+    BAILIFF_ADMIN("bailiff-admin", Permission.CRU, RAS, AccessProfile.BAILIFF_ADMIN),
+    BAILIFF_MANAGER("bailiff-manager", Permission.CRU, RAS, AccessProfile.BAILIFF_MANAGER);
 
     @JsonValue
     private final String role;

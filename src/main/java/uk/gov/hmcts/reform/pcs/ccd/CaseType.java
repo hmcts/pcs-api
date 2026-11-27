@@ -144,7 +144,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal)
-            .field(PCSCase::getFeatureFlags);
+            .field(PCSCase::getFeatureFlags)
+            .field("enfShowConditions", NEVER_SHOW);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -175,6 +176,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("orderListMarkdown", NEVER_SHOW);
 
         buildJudicialNotesTab(builder);
+
+        buildRiskAssessmentTab(builder);
 
         builder.tab("paymentHistory", "Payment History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -314,6 +317,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildRiskAssessmentTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("riskAssessment", "Risk assessment")
+            .showCondition("enfShowConditions.canViewRiskAssessment=\"Yes\"")
+            .field("riskAssessmentMarkdownLabel")
+            .field("riskAssessmentMarkdown", NEVER_SHOW);
     }
 
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

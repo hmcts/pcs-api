@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
-import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementEventShowConditionsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementShowConditionsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.OrdersView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RiskAssessmentView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
@@ -173,7 +174,10 @@ class PCSCaseViewTest {
     private BreathingSpaceSummaryView breathingSpaceSummaryView;
 
     @Mock
-    private EnforcementEventShowConditionsView enforcementEventShowConditionsView;
+    private EnforcementShowConditionsView enforcementShowConditionsView;
+
+    @Mock
+    private RiskAssessmentView riskAssessmentView;
 
     private PCSCaseView underTest;
 
@@ -194,8 +198,15 @@ class PCSCaseViewTest {
                                     caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService,
                                     messagesView, judicialNoteView, enforcementOrderView,
-                                    breathingSpaceSummaryView, enforcementEventShowConditionsView
+                                    breathingSpaceSummaryView, enforcementShowConditionsView, riskAssessmentView
         );
+    }
+
+    @Test
+    void shouldPopulateRiskAssessmentFromSubmittedCase() {
+        underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        verify(riskAssessmentView).setCaseFields(any(PCSCase.class), org.mockito.ArgumentMatchers.eq(pcsCaseEntity));
     }
 
     @Test
@@ -432,7 +443,8 @@ class PCSCaseViewTest {
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
         verify(breathingSpaceSummaryView).setCaseFields(pcsCase, CASE_REFERENCE);
-        verify(enforcementEventShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
+        verify(enforcementShowConditionsView).setCaseFields(pcsCaseEntity, pcsCase);
+        verify(riskAssessmentView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test

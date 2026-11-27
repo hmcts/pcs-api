@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -12,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,6 +29,51 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 public class EnforcementOrderMediator {
 
     private final FeatureToggleService featureToggleService;
+
+    private static final Set<EnforcementState> RISK_ASSESSMENT_STATES = EnumSet.of(
+        EnforcementState.CASE_PROGRESSION,
+        EnforcementState.BREATHING_SPACE,
+        EnforcementState.AWAITING_ENFORCEMENT_OUTCOME,
+        EnforcementState.AWAITING_PROPERTY_VISIT,
+        EnforcementState.AWAITING_SCHEDULING,
+        EnforcementState.AWAITING_BAILIFF_ALLOCATION,
+        EnforcementState.JUDICIAL_REFERRAL,
+        EnforcementState.HEARING_READINESS,
+        EnforcementState.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+        EnforcementState.CLOSED,
+        EnforcementState.CASE_STAYED
+    );
+
+    private static final Set<EnforcementState> UNSUBMITTED_STATES = Set.of(
+        EnforcementState.AWAITING_SUBMISSION_TO_HMCTS,
+        EnforcementState.REQUESTED_FOR_DELETION,
+        EnforcementState.DRAFT_DISCARDED
+    );
+
+    public Optional<EnforcementOrderEntity> getRiskAssessmentApplication(PcsCaseEntity pcsCaseEntity) {
+        return getSubmittedWarrantApplication(pcsCaseEntity)
+            .filter(application -> RISK_ASSESSMENT_STATES.contains(application.getState()));
+    }
+
+    public Optional<EnforcementOrderEntity> getSubmittedWarrantApplication(PcsCaseEntity pcsCaseEntity) {
+        return getEnforcementOrder(pcsCaseEntity)
+            .filter(this::isSubmitted)
+            .filter(this::isWarrant);
+    }
+
+    private boolean isSubmitted(EnforcementOrderEntity application) {
+        return application.getState() != null && !UNSUBMITTED_STATES.contains(application.getState())
+            && application.getStatementOfTruth() != null
+            && application.getStatementOfTruth().getAccepted() == YesOrNo.YES
+            && application.getStatementOfTruth().getCompletedDate() != null;
+    }
+
+    private boolean isWarrant(EnforcementOrderEntity application) {
+        EnforcementOrder order = application.getEnforcementOrder();
+        return order != null && order.getChooseEnforcementType() != null
+            && SelectEnforcementType.WARRANT.name().equals(order.getChooseEnforcementType().getValueCode())
+            && order.getWarrantDetails() != null;
+    }
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)

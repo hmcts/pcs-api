@@ -20,8 +20,10 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class PropertyAccessDetails {
 
+    public static final String DIFFICULT_ACCESS_LABEL = "Is it difficult to access the property?";
+
     @CCD(
-            label = "Is it difficult to access the property?",
+            label = DIFFICULT_ACCESS_LABEL,
             hint =  "For example, explain if there is a communal entrance to "
                     + "the property and include the entry code. If the property has a car park or a designated "
                     + "parking space, tell the bailiff where they can park their car"

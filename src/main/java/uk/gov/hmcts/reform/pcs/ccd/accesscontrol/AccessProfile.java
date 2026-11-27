@@ -49,7 +49,9 @@ public enum AccessProfile implements HasRole {
     SUPERUSER("caseworker-pcs-superuser", CRU),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", CRU),
-    BAILIFF_ADMIN("bailiff-admin", CRU);
+    BAILIFF("bailiff", CRU),
+    BAILIFF_ADMIN("bailiff-admin", CRU),
+    BAILIFF_MANAGER("bailiff-manager", CRU);
 
 
     @JsonValue

@@ -22,8 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class PeopleToEvict {
 
+    public static final String EVICT_EVERYONE_LABEL = "Do you want to evict everyone at the property?";
+
     @CCD(
-        label = "Do you want to evict everyone at the property?",
+        label = EVICT_EVERYONE_LABEL,
         hint = "This includes all of the defendants and anyone else living at the property"
     )
     private VerticalYesNo evictEveryone;

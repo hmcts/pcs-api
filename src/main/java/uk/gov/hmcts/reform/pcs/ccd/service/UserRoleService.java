@@ -9,22 +9,33 @@ import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Service
 public class UserRoleService {
+
+    private static final Set<String> INTERNAL_ROLES = Stream.of(
+        CASEWORKER_ROLES,
+        JUDICIAL_HISTORY_ROLES,
+        new UserRole[] {UserRole.BAILIFF, UserRole.BAILIFF_ADMIN, UserRole.BAILIFF_MANAGER}
+    ).flatMap(Arrays::stream).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
 
     private static final Duration RAS_ROLE_CACHE_TTL = Duration.ofMinutes(1);
 
@@ -86,6 +97,20 @@ public class UserRoleService {
         }
 
         return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
+    }
+
+    public boolean isCurrentUserInternal() {
+        return isInternalUser(getCurrentUserOrganisationalRoles().roles());
+    }
+
+    public static boolean isInternalUser(Collection<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return false;
+        }
+        return Arrays.stream(UserRole.values())
+            .filter(role -> roles.contains(role.getRole()))
+            .flatMap(role -> Arrays.stream(role.getAccessProfiles()))
+            .anyMatch(INTERNAL_ROLES::contains);
     }
 
     public boolean isJudge() {
