@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -98,14 +99,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .externalEvent(MAKE_ORDER, this::submit)
-            .forStates(
-                State.CASE_ISSUED,
-                State.CASE_PROGRESSION,
-                State.JUDICIAL_REFERRAL,
-                State.HEARING_READINESS,
-                State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
-                State.DECISION_OUTCOME
-            )
+            .forStates(EventStates.makeOrder())
             .name("Make an order")
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .grant(Permission.CRUD,

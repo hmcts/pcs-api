@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.SubmittedDraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -40,13 +41,15 @@ class OrderCaseContextTest {
     private CaseBundlesView bundleView;
     @Mock
     private CaseCourts caseCourts;
+    @Mock
+    private SubmittedDraftOrderRepository submittedDraftOrders;
 
     private OrderCaseContext underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter, orderTasks,
-                                         bundles, bundleView, caseCourts);
+                                         bundles, bundleView, caseCourts, submittedDraftOrders);
     }
 
     @Test

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.SubmittedDraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -33,8 +34,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.toDomainParties;
 
 /**
- * The case as the order journeys show it: its property, its main claim's parties, its open applications, the
- * hearings an order can be made at and the court managing it.
+ * The case as the order journeys show it: its property, its main claim's parties, its open applications, the drafts
+ * the parties have filed, the hearings an order can be made at and the court managing it.
  */
 @Component
 @AllArgsConstructor
@@ -47,6 +48,7 @@ class OrderCaseContext {
     private final CaseBundleRepository bundles;
     private final CaseBundlesView bundleView;
     private final CaseCourts caseCourts;
+    private final SubmittedDraftOrderRepository submittedDraftOrders;
 
     /** The case for the order, which offers the applications no issued order has decided. */
     public OrderStart.CaseContext of(PcsCaseEntity pcsCase) {
@@ -63,6 +65,10 @@ class OrderCaseContext {
                 .filter(orderTasks::canDecide)
                 .sorted(Comparator.comparing(GenAppEntity::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(genApp -> application(genApp, claim.orElse(null)))
+                .toList(),
+            submittedDraftOrders.findByPartyPcsCaseIdOrderBySubmittedAtDescIdDesc(pcsCase.getId()).stream()
+                .map(draft -> new OrderStart.SubmittedDraft(draft.getId(),
+                    partyName(draft.getParty(), claim.orElse(null)), draft.getSubmittedAt(), draft.getWording()))
                 .toList(),
             caseBundle(pcsCase),
             pcsCase.getHearings().stream()
@@ -108,7 +114,7 @@ class OrderCaseContext {
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
-            applicant(genApp, claim),
+            partyName(genApp.getParty(), claim),
             // A paper application court staff entered is dated when the court received it, not when they entered it.
             genApp.getApplicationReceivedDate() != null
                 ? genApp.getApplicationReceivedDate() : genApp.getApplicationSubmittedDate().toLocalDate(),
@@ -122,12 +128,12 @@ class OrderCaseContext {
         );
     }
 
-    /** The applicant by name, with their role on the claim: "Jane Doe (Defendant 1)". */
-    private String applicant(GenAppEntity genApp, ClaimEntity claim) {
-        String name = partyService.getPartyName(genApp.getParty());
+    /** The party by name, with their role on the claim: "Jane Doe (Defendant 1)". */
+    private String partyName(PartyEntity party, ClaimEntity claim) {
+        String name = partyService.getPartyName(party);
         return Optional.ofNullable(claim).stream()
             .flatMap(c -> c.getClaimParties().stream())
-            .filter(claimParty -> claimParty.getParty().getId().equals(genApp.getParty().getId()))
+            .filter(claimParty -> claimParty.getParty().getId().equals(party.getId()))
             .findFirst()
             .map(claimParty -> "%s (%s %d)".formatted(name,
                 StringUtils.capitalize(claimParty.getRole().name().toLowerCase()), claimParty.getRank()))

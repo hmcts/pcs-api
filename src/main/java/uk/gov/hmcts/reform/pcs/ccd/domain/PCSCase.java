@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftOrderAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftUploadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
@@ -1059,6 +1060,17 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {JudicialReadAccess.class})
     private String judicialNotesMarkdown;
+
+    @CCD(
+        label = "Draft order",
+        hint = "Set out the order you want the judge to make, as the numbered paragraphs that follow "
+            + "“It is ordered that”. You can paste it from a Word document.",
+        typeOverride = FieldType.RichTextArea,
+        access = DraftOrderAccess.class,
+        inheritAccessFromParent = false,
+        searchable = false
+    )
+    private String proposedOrderWording;
 
     @CCD(
         label = "${judicialNotesMarkdown}",
