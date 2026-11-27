@@ -347,6 +347,18 @@ class GenAppDocumentGeneratorTest {
         // Then
         GenAppFormPayload formPayload = getFormPayload();
         assertThat(formPayload.getWhatOrderWanted()).isEqualTo(expectedOrderWanted);
+        assertThat(formPayload.getDraftOrderWording()).isNull();
+    }
+
+    @Test
+    void sendsDraftOrderFormattingToDocmosisWithoutExternalImages() {
+        String draftOrder = "<ol><li><strong>Costs reserved.</strong></li><li><u>Hearing adjourned.</u></li></ol>";
+        when(genAppEntity.getDraftOrderWording()).thenReturn(
+            draftOrder + "<img src=\"https://example.com/image.png\">");
+
+        underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+
+        assertThat(getFormPayload().getDraftOrderWording()).isEqualTo(draftOrder);
     }
 
     @ParameterizedTest

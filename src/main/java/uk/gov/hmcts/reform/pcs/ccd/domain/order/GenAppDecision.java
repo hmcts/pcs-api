@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
-/** What an order decides about a general application. */
+/**
+ * What an order does with a general application it deals with. The order's wording says what was decided; this only
+ * says whether the application is closed or still to be decided at a hearing.
+ */
 public enum GenAppDecision {
 
-    GRANT,
-    DISMISS,
-    STRIKE_OUT,
-    /** Listed for a hearing on notice, which leaves the application to be decided. */
-    LIST,
-    /** The judge's own wording, which leaves the application open for another order to decide. */
-    OTHER
+    /** Dealt with, so closed: no other order decides it. */
+    DISPOSED,
+    /** Listed for a hearing, which leaves the application to be decided. */
+    LISTED
 }
