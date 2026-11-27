@@ -1,18 +1,20 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.breathingspace;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.breathingspace.BreathingSpaceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.breathingspace.BreathingSpaceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepository;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
+import java.time.Clock;
 
 @Service
 @AllArgsConstructor
@@ -21,11 +23,39 @@ public class BreathingSpaceService {
     private final PcsCaseService pcsCaseService;
     private final BreathingSpaceRepository breathingSpaceRepository;
     private final EnforcementOrderService enforcementOrderService;
+    @Qualifier("ukClock")
+    private final Clock ukClock;
 
     public void createBreathingSpace(long caseReference, BreathingSpaceDetails breathingSpaceDetails) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         BreathingSpaceEntity breathingSpaceEntity = createBreathingSpaceEntity(breathingSpaceDetails, pcsCaseEntity);
         breathingSpaceRepository.save(breathingSpaceEntity);
+    }
+
+    public Optional<BreathingSpaceDetails> getActiveBreathingSpace(long caseReference) {
+        return getActiveBreathingSpaceEntity(caseReference)
+            .map(entity -> BreathingSpaceDetails.builder()
+                .referenceNumber(entity.getReferenceNumber())
+                .startDate(entity.getStartDate())
+                .type(entity.getType())
+                .expectedEndDate(entity.getExpectedEndDate())
+                .build());
+    }
+
+    @Transactional
+    public void liftBreathingSpace(long caseReference) {
+        BreathingSpaceEntity activeBreathingSpace = getActiveBreathingSpaceEntity(caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No active breathing space found for case reference: " + caseReference
+            ));
+
+        activeBreathingSpace.setLiftedAt(Instant.now(ukClock));
+        breathingSpaceRepository.save(activeBreathingSpace);
+    }
+
+    private Optional<BreathingSpaceEntity> getActiveBreathingSpaceEntity(long caseReference) {
+        return breathingSpaceRepository
+            .findFirstByPcsCaseCaseReferenceAndLiftedAtIsNullOrderByStartDateDesc(caseReference);
     }
 
     private BreathingSpaceEntity createBreathingSpaceEntity(
@@ -41,31 +71,10 @@ public class BreathingSpaceService {
             .build();
     }
 
-    public List<BreathingSpaceDetails> getBreathingSpaces(long caseReference) {
-        return breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(caseReference)
-            .stream()
-            .map(entity -> BreathingSpaceDetails.builder()
-                .referenceNumber(entity.getReferenceNumber())
-                .startDate(entity.getStartDate())
-                .type(entity.getType())
-                .expectedEndDate(entity.getExpectedEndDate())
-                .build())
-            .toList();
-    }
-
-
-    public Optional<BreathingSpaceDetails> getLatestBreathingSpace(long caseReference) {
-        return getBreathingSpaces(caseReference)
-            .stream()
-            .findFirst();
-    }
-
     @Transactional
     public void enterBreathingSpace(long caseReference, BreathingSpaceDetails breathingSpaceDetails) {
         createBreathingSpace(caseReference, breathingSpaceDetails);
         enforcementOrderService.updateStatesForBreathingSpace(caseReference);
     }
-
-
 
 }

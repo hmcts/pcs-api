@@ -38,6 +38,9 @@ public class BreathingSpaceDetails {
     )
     private BreathingSpaceType type;
 
+    @CCD(label = "Type of breathing space")
+    private String typeDisplay;
+
     @CCD(
         label = "When is the expected end date?",
         hint = "For example, 17 11 2020"

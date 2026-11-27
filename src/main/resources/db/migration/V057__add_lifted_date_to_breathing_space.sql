@@ -1,0 +1,1 @@
+ALTER TABLE breathing_space ADD COLUMN lifted_at TIMESTAMP WITHOUT TIME ZONE;

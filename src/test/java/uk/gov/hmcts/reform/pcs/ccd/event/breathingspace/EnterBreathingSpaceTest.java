@@ -101,10 +101,4 @@ class EnterBreathingSpaceTest extends BaseEventTest {
         ));
     }
 
-    @Test
-    void shouldBeAvailableForCaseIssuedState() {
-        assertConfiguredForStates(State.CASE_ISSUED);
-    }
-
-
 }

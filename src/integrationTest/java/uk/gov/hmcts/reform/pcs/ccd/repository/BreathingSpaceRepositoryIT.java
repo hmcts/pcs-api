@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.breathingspace.BreathingSpaceRepos
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,39 +39,6 @@ class BreathingSpaceRepositoryIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private EntityManager entityManager;
-
-    @Test
-    void shouldReturnNewestBreathingSpaceFirst() {
-        // Given
-        PcsCaseEntity pcsCase = createPcsCase();
-        ClaimEntity claim = createClaim(pcsCase);
-
-        insertBreathingSpace(
-            claim.getId(),
-            pcsCase.getId(),
-            "BS-OLD",
-            LocalDateTime.of(2026, 10, 1, 10, 0)
-        );
-
-        insertBreathingSpace(
-            claim.getId(),
-            pcsCase.getId(),
-            "BS-NEW",
-            LocalDateTime.of(2026, 11, 12, 10, 0)
-        );
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // When
-        List<BreathingSpaceEntity> results =
-            breathingSpaceRepository.findByPcsCase_CaseReferenceOrderByCreatedAtDescIdDesc(CASE_REFERENCE);
-
-        // Then
-        assertThat(results)
-            .extracting(BreathingSpaceEntity::getReferenceNumber)
-            .containsExactly("BS-NEW", "BS-OLD");
-    }
 
     @Test
     void shouldPopulateCreatedAtWhenSavingNewBreathingSpace() {

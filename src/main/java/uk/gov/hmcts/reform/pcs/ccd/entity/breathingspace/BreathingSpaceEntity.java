@@ -57,4 +57,6 @@ public class BreathingSpaceEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "lifted_at")
+    private Instant liftedAt;
 }
