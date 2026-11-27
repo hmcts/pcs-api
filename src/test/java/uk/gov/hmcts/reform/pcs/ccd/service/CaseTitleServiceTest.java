@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -34,7 +35,8 @@ class CaseTitleServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseTitleService(addressFormatter, userRoleService, featureToggleService);
+        underTest = new CaseTitleService(addressFormatter, userRoleService, featureToggleService,
+                                         new DocumentIdExtractor());
     }
 
     @Test

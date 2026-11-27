@@ -84,7 +84,7 @@ class GeneratedDefinitionTest {
             .distinct()
             .toList()));
 
-        assertThat(roleByTab).hasSize(19);
+        assertThat(roleByTab).hasSize(18);
         roleByTab.forEach((tabId, roles) -> {
             if (tabId.startsWith("support")) {
                 assertThat(roles).as(tabId).hasSize(1);
@@ -115,6 +115,12 @@ class GeneratedDefinitionTest {
             }
         }
         assertThat(duplicates).isEmpty();
+    }
+
+    @Test
+    void onlyJudiciaryAndHearingCentreStaffCanReadCaseBundles() {
+        assertThat(readers.get("caseBundles")).containsExactlyInAnyOrderElementsOf(
+            union(JUDICIAL_PROFILES, Set.of("hearing-centre-admin", "hearing-centre-team-leader")));
     }
 
     @Test

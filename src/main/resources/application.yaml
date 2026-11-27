@@ -448,13 +448,14 @@ ccd:
       username: pcs-system-event
       first-name: PCS
       last-name: System
-  bundling:
-    enabled: ${CASE_BUNDLE_ENABLED:false}
-    managed:
-      enabled: ${CASE_BUNDLE_ENABLED:false}
-    job:
-      # Regenerates the case bundle whenever a document that belongs in it is added, removed or
-      # restored. Managed publication is provided by the CCD SDK.
+  doc-toolkit:
+    # The bundle's documents are fetched from CDAM, and the bundle stored there, as the system user.
+    system-user:
+      username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+      password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
+    jobs:
+      # Keeps the judges' case bundle up to date: after every case event the bundle's definition
+      # is built, and a render is queued when it changed.
       enabled: ${CASE_BUNDLE_ENABLED:false}
       worker:
         # Every pod queues bundle jobs; this decides whether it also renders them. Only the
@@ -464,7 +465,7 @@ ccd:
         max-concurrent-renders: ${CASE_BUNDLE_WORKER_MAX_CONCURRENT_RENDERS:2}
     docmosis:
       # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
-      # no endpoint configured, a case holding one fails to bundle with UNSUPPORTED_MEDIA_TYPE.
+      # no endpoint configured, such a document gets a page in the bundle saying it is not included.
       convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
       access-key: ${DOCMOSIS_ACCESS_KEY:}
 
