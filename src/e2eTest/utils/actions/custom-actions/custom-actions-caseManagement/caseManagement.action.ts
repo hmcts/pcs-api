@@ -82,7 +82,7 @@ export class CaseManagementAction implements IAction {
       ['selectManageHearing', () => this.selectManageHearing(page, fieldName as actionRecord)],
       ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
-      ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
+      ['cancelHearing', () => this.cancelHearing(page, fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
@@ -628,7 +628,7 @@ private formatDisplayDate(entered: string): string {
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
-  private async cancelHearing(cancelHearingData: actionRecord) {
+  private async cancelHearing(page: Page, cancelHearingData: actionRecord) {
     const hearingInfo = manageHearingApiData.AddHearingPayload;
     const formattedHearingDate = formatDateTimeNonBST(hearingInfo.hearing_Date)
       .replace(':00:00AM', ':00am')
@@ -668,7 +668,12 @@ private formatDisplayDate(entered: string): string {
         text: validation.value,
       });
     }
-    await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+    const reason = page.getByRole('combobox', { name: cancelHearing.cancellationReasonDropdownLabel });
+    if (await reason.isVisible()) {
+      await reason.selectOption({ label: cancelHearing.cancellationReasonOption });
+    } else {
+      await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+    }
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
 

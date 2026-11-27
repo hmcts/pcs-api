@@ -2,6 +2,8 @@ export const cancelHearing= {
   mainHeader: `Cancel a hearing`,
   enterReasonForCancellationLabel: `Enter reason for cancellation`,
   reasonForCancellationTextInput: 14,
+  cancellationReasonDropdownLabel: `Select a reason for cancellation`,
+  cancellationReasonOption: `Judicial direction`,
   thisOneIsRequiredHintText: `This will be included in the notice sent to parties, if one is required`,
   hearingLocationHeader: `Hearing location:`,
   hearingTypeHeader: `Which type of hearing is this?`,

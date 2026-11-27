@@ -84,6 +84,10 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
                 String previousId = caseData.getSelectedHearingId();
                 caseData.setSelectedHearingId(selected.getId().toString());
                 hearingService.initialiseEditableHearing(details.getId(), caseData, previousId);
+                if (caseData.makeOrderEnabled() && caseData.getManageHearingOption() == ManageHearingOption.CANCEL) {
+                    caseData.getHearing().setCancellationReasonSelection(
+                        hearingService.buildCancellationReasonSelection());
+                }
                 caseData.getHearing().setHearingSummaryMarkdown(
                     hearingSummaryRenderer.renderMarkdown(selected, caseData.getHearingSummaryLocation(),
                         caseData.makeOrderEnabled()));

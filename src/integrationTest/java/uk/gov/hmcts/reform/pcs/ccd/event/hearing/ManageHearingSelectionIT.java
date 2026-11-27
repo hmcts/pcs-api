@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -20,9 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.CancelHearingPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
@@ -34,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.doReturn;
 
 /** The existing manage-hearing page selects any hearing; persistence changes only that hearing. */
@@ -48,6 +52,8 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
     private PcsCaseService pcsCases;
     @Autowired
     private ManageHearingPage page;
+    @Autowired
+    private CancelHearingPage cancelPage;
     @Autowired
     private TransactionTemplate transaction;
     @Autowired
@@ -94,6 +100,8 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         form.getHearing().setCancellationReason("No longer required");
         events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
         assertThat(stored(earlier).getCancelled()).isTrue();
+        assertThat(stored(earlier).getCancellationReason()).isEqualTo("No longer required");
+        assertThat(stored(earlier).getCaseManagementCancellationReasonKey()).isNull();
         assertThat(stored(later).getCancelled()).isFalse();
     }
 
@@ -126,7 +134,9 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void cancellationOpenedWithThePreviousDefinitionCancelsOnlyALiveHearingOnTheCase() {
+    void cancellationOpenedWithThePreviousDefinitionCancelsOnlyAHearingOnTheCase() {
+        doReturn(false).when(featureToggleService).isEnabled(FeatureFlag.MAKE_ORDER);
+        form = events.start(reference, "manageHearing").as(staff).startExpectingSuccess().caseData();
         int foreign = cases.hearing(cases.issue(), LocalDateTime.of(2030, 1, 1, 10, 0), false);
         form.setManageHearingOption(ManageHearingOption.CANCEL);
         form.setHearingSelection(null);
@@ -204,16 +214,44 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
         assertThat(form.getHearing().getHearingSummaryMarkdown())
             .contains("Central London County Court", "3 February 2030",
                 "You’re viewing the selected hearing for this case.");
-        form.getHearing().setCancellationReason("No longer required");
+        var reasonSelection = form.getHearing().getCancellationReasonSelection();
+        assertThat(reasonSelection.getValue()).isNull();
+        assertThat(reasonSelection.getListItems())
+            .extracting(DynamicStringListElement::getCode, DynamicStringListElement::getLabel)
+            .contains(tuple("jodir", "Judicial direction"), tuple("settled", "Settled"));
+        reasonSelection.setValue(new DynamicStringListElement("settled", "untrusted label"));
+        assertThat(continueCancellationPage().getErrors()).isNullOrEmpty();
+        assertThat(reasonSelection.getValue().getLabel()).isEqualTo("Settled");
+
         var cancelledEvent = events.event(reference, "manageHearing", form).as(staff).submitExpectingSuccess();
-        assertThat(cancelledEvent.changes("hearing")).singleElement()
-            .satisfies(change -> assertThat(change.newValues().get("id").asInt()).isEqualTo(later));
+        assertThat(cancelledEvent.changes("hearing")).singleElement().satisfies(change -> {
+            assertThat(change.newValues().get("id").asInt()).isEqualTo(later);
+            assertThat(change.newValues().get("case_management_cancellation_reason_key").asText())
+                .isEqualTo("settled");
+        });
 
         assertThat(stored(later).getCancelled()).isTrue();
-        assertThat(stored(later).getCancellationReason()).isEqualTo("No longer required");
+        assertThat(stored(later).getCaseManagementCancellationReasonKey()).isEqualTo("settled");
         assertThat(stored(earlier).getCancelled()).isFalse();
         assertThat(events.start(reference, "manageHearing").as(staff).startExpectingSuccess()
             .caseData().getHearingSelection().getValueCode()).isEqualTo(String.valueOf(earlier));
+    }
+
+    @Test
+    void rejectsMissingAndUnknownCancellationReasons() {
+        select(later, ManageHearingOption.CANCEL);
+        var selection = form.getHearing().getCancellationReasonSelection();
+
+        for (String code : new String[] {null, "not-a-cancellation-reason"}) {
+            selection.setValue(code == null ? null : new DynamicStringListElement(code, "Settled"));
+            assertThat(continueCancellationPage().getErrors())
+                .containsExactly("Select a valid reason for cancellation");
+            assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
+                .containsExactly("Select a valid reason for cancellation");
+        }
+
+        assertThat(stored(later).getCancelled()).isFalse();
+        assertThat(events.history(reference)).isEmpty();
     }
 
     @Test
@@ -278,7 +316,9 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
             .startExpectingSuccess().caseData();
         cancellation.setSelectedHearingId(String.valueOf(later));
         cancellation.setManageHearingOption(ManageHearingOption.CANCEL);
-        cancellation.setHearing(Hearing.builder().cancellationReason("Cancelled by another user").build());
+        cancellation.setHearing(Hearing.builder().cancellationReasonSelection(
+            DynamicStringList.builder().value(new DynamicStringListElement("jodir", "Judicial direction")).build()
+        ).build());
         events.event(reference, "manageHearing", cancellation).as(staff).submitExpectingSuccess();
 
         assertThat(events.event(reference, "manageHearing", form).as(staff).submitExpectingErrors().errors())
@@ -297,14 +337,23 @@ class ManageHearingSelectionIT extends AbstractPostgresContainerIT {
             .filter(hearing -> hearing.getId() == id).findFirst().orElseThrow());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private AboutToStartOrSubmitResponse<PCSCase, State> continuePage() {
+        return handlePage(page, page.getPageKey());
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> continueCancellationPage() {
+        return handlePage(cancelPage, cancelPage.getPageKey());
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private AboutToStartOrSubmitResponse<PCSCase, State> handlePage(
+        CcdPageConfiguration pageConfiguration, String pageKey) {
         var config = new ConfigBuilderImpl<>(new ResolvedCCDConfig<>(
             PCSCase.class, State.class, UserRole.class, Map.of(), ImmutableSet.of()));
         var event = config.decentralisedEvent("manageHearing", null).forAllStates();
-        page.addTo(new PageBuilder(event));
+        pageConfiguration.addTo(new PageBuilder(event));
         MidEvent<PCSCase, State> callback = config.build().getEvents().get("manageHearing")
-            .getFields().getPagesToMidEvent().get(page.getPageKey());
+            .getFields().getPagesToMidEvent().get(pageKey);
         return transaction.execute(status -> callback.handle(
             CaseDetails.<PCSCase, State>builder().id(reference).data(form).build(), null));
     }

@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 
 import java.time.Clock;
@@ -106,8 +107,33 @@ public class HearingService {
             hearingId = pcsCase.getHearing().getHearingId().toString();
         }
         HearingEntity hearingEntity = requireAvailableHearing(entity, hearingId, pcsCase.makeOrderEnabled());
+        Hearing form = pcsCase.getHearing();
+        if (pcsCase.makeOrderEnabled()) {
+            hearingEntity.setCaseManagementCancellationReasonKey(requireCancellationReason(form).getCode());
+        } else {
+            hearingEntity.setCancellationReason(form.getCancellationReason());
+        }
         hearingEntity.setCancelled(true);
-        hearingEntity.setCancellationReason(pcsCase.getHearing().getCancellationReason());
+    }
+
+    public DynamicStringList buildCancellationReasonSelection() {
+        var options = hearingRepository.findActiveCancellationReasons().stream()
+            .map(reason -> new DynamicStringListElement(reason.getCode(), reason.getLabel()))
+            .toList();
+        return DynamicStringList.builder().listItems(options).build();
+    }
+
+    public HearingRepository.CancellationReason requireCancellationReason(Hearing form) {
+        var selection = form == null ? null : form.getCancellationReasonSelection();
+        String code = selection == null ? null : selection.getValueCode();
+        if (code != null) {
+            for (var reason : hearingRepository.findActiveCancellationReasons()) {
+                if (code.equals(reason.getCode())) {
+                    return reason;
+                }
+            }
+        }
+        throw new CaseDataValidationException("Select a valid reason for cancellation");
     }
 
     public DynamicStringList buildHearingSelection(PcsCaseEntity pcsCaseEntity) {

@@ -25,7 +25,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
-      ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
+      ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(page, errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
       ['errorValidationAddJudicialNotes', () => this.errorValidationAddJudicialNotes(errorFlag as string)],
     ]);
@@ -318,8 +318,9 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
-  private async errorValidationCancelHearing(validationReq: string) {
-    if (validationReq === 'YES') {
+  private async errorValidationCancelHearing(page: Page, validationReq: string) {
+    const legacyReason = page.getByLabel(cancelHearing.enterReasonForCancellationLabel);
+    if (validationReq === 'YES' && await legacyReason.isVisible()) {
       await performAction('inputErrorValidation', {
         validationType: cancelHearing.errorValidationType.one,
         inputArray: cancelHearing.errorValidationField.errorTextField,

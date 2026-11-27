@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -169,7 +170,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                     break;
                 }
             }
-        } catch (HearingNotFoundException e) {
+        } catch (HearingNotFoundException | CaseDataValidationException e) {
             return SubmitResponse.<State>builder().errors(List.of(e.getMessage())).build();
         }
 

@@ -9,9 +9,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.time.LocalDateTime;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -106,6 +108,9 @@ public class Hearing {
         typeOverride = TextArea
     )
     private String cancellationReason;
+
+    @CCD(label = "Select a reason for cancellation", typeOverride = DynamicList)
+    private DynamicStringList cancellationReasonSelection;
 
     private String hearingSummaryMarkdown;
 }

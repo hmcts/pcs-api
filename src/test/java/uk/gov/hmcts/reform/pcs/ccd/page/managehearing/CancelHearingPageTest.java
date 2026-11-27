@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ class CancelHearingPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        CancelHearingPage cancelHearingPage = new CancelHearingPage(textAreaValidationService);
+        CancelHearingPage cancelHearingPage = new CancelHearingPage(textAreaValidationService, mock(HearingService.class));
         setPageUnderTest(cancelHearingPage);
     }
 
