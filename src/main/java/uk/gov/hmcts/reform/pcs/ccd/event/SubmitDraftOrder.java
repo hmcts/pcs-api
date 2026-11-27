@@ -18,17 +18,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.SubmittedDraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.SubmittedDraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.DraftOrderWordingHtml;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -59,9 +60,9 @@ public class SubmitDraftOrder implements CCDConfig<PCSCase, State, UserRole> {
         """;
 
     private final SubmittedDraftOrderRepository submittedDraftOrders;
-    private final PartyRepository partyRepository;
+    private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
-    private final OrganisationService organisationService;
+    private final PartySupportOwnershipResolver partyOwnership;
     private final SecurityContextService securityContextService;
     private final FeatureToggleService featureToggleService;
 
@@ -130,11 +131,15 @@ public class SubmitDraftOrder implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().confirmationBody(CONFIRMATION_BODY).build();
     }
 
-    /** The parties the user's organisation represents on the case. */
+    /**
+     * The parties the user's organisation acts for on the case: a claimant organisation's own party, or a party it
+     * holds a current link to.
+     */
     private List<PartyEntity> representedParties(long caseReference) {
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-        return organisationId == null ? List.of()
-            : partyRepository.findAllPartiesByOrganisationIdAndCaseReference(organisationId, caseReference);
+        Set<PartyEntity> parties = pcsCaseService.loadCase(caseReference).getParties();
+        Set<UUID> represented = partyOwnership.resolveRepresentedPartyIds(parties,
+            securityContextService.getCurrentUserId());
+        return parties.stream().filter(party -> represented.contains(party.getId())).toList();
     }
 
     /** The party the order is filed for: the one represented, or the one chosen of those represented. */

@@ -177,7 +177,7 @@ class SubmitDraftOrderIT extends AbstractPostgresContainerIT {
         return events.event(caseReference, submitDraftOrder.name(), data.build()).as(solicitor);
     }
 
-    /** Links the case's parties of these names to the solicitor's organisation, giving each one's id by name. */
+    /** Makes the solicitor's organisation act for the case's parties of these names, giving each one's id by name. */
     private Map<String, UUID> represent(String... names) {
         Map<String, UUID> ids = new HashMap<>();
         cases.update(caseReference, pcsCase -> {
@@ -195,7 +195,12 @@ class SubmitDraftOrderIT extends AbstractPostgresContainerIT {
                         || name.equals(candidate.getFirstName() + " " + candidate.getLastName()))
                     .findFirst()
                     .orElseThrow();
-                organisation.addParty(party);
+                // A claimant's organisation is the party's own; a defendant's solicitors are linked to it.
+                if (IssuedCases.CLAIMANT.equals(name)) {
+                    party.setOrganisationId(organisationId);
+                } else {
+                    organisation.addParty(party);
+                }
                 ids.put(name, party.getId());
             }
             organisations.save(organisation);
