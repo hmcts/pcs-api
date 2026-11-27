@@ -88,6 +88,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
      */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
+                              String caseName,
                               List<Party> claimants,
                               List<Party> defendants,
                               boolean openCounterclaim,
@@ -111,8 +112,8 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
      * the make order form. An order can suspend enforcement on conditions on an application to suspend it, and adjourn
      * the hearing on an application to adjourn it. Listed
      * says an issued order has listed it for a hearing, where it is still to be decided. The draft
-     * order wording is the applicant's draft order as rich text (HTML); whatOrderWanted is their explanation, which
-     * held the order they asked for before they could give it as a draft.
+     * order wording is the applicant's draft order as rich text (HTML), cleaned when stored, or null if they gave none;
+     * whatOrderWanted is their explanation, which held the order they asked for before they could give it as a draft.
      */
     public record Application(UUID id,
                               boolean enforcementSuspension,
@@ -128,6 +129,7 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing, 
                               VerticalYesNo withoutNotice,
                               String withoutNoticeReason,
                               String whatOrderWanted,
+                              String draftOrderWording,
                               List<ApplicationDocument> documents) {
     }
 

@@ -27,6 +27,10 @@ public final class PartyDisplayMapper {
         return (hasFirst ? firstName : "") + (hasFirst && hasLast ? " " : "") + (hasLast ? lastName : "");
     }
 
+    public static List<Party> toDomainParties(List<PartyEntity> parties) {
+        return parties.stream().map(PartyDisplayMapper::toDomainParty).toList();
+    }
+
     public static Party toDomainParty(PartyEntity party) {
         return Party.builder()
             .firstName(party.getFirstName())

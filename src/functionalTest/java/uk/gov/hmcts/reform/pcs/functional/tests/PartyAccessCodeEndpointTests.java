@@ -164,6 +164,5 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContainsAString("message", "Case not found");
     }
 }

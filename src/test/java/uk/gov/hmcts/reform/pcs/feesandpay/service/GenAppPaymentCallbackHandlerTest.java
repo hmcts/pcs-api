@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -56,9 +57,10 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
-        underTest.handle(paymentStatusCallback, feePaymentEntity);
+        SystemEventResult result = underTest.handle(paymentStatusCallback, feePaymentEntity, null);
 
         // Then
+        assertThat(result.summary()).hasValue("Application " + genAppId);
         verify(genAppFormScheduler).scheduleGenAppDocumentGeneration(genAppId);
         verify(genAppEntity).setState(GenAppState.GEN_APP_ISSUED);
     }
@@ -78,7 +80,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
-        underTest.handle(paymentStatusCallback, feePaymentEntity);
+        underTest.handle(paymentStatusCallback, feePaymentEntity, null);
 
         // Then
         verifyNoInteractions(genAppFormScheduler);
@@ -95,7 +97,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(paymentStatusCallback, feePaymentEntity));
+        Throwable throwable = catchThrowable(() -> underTest.handle(paymentStatusCallback, feePaymentEntity, null));
 
         // Then
         assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
