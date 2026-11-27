@@ -59,4 +59,5 @@ public class SummaryTab {
     @CCD(label = "Notice details")
     private NoticeTabDetails noticeDetails;
 
+
 }

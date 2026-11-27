@@ -61,4 +61,12 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         """)
     int deleteByEventIdAndCutoff(@Param("eventId") EventId eventId, @Param("cutoff") Instant cutoff);
 
+    @Modifying
+    @Query("""
+        DELETE FROM DraftCaseDataEntity d
+        WHERE d.caseReference = :caseReference
+        AND d.eventId = :eventId
+        """)
+    int deleteByCaseReferenceAndEventId(@Param("caseReference") long caseReference,
+                                        @Param("eventId") EventId eventId);
 }

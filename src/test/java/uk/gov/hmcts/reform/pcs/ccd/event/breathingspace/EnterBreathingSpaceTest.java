@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class EnterBreathingSpaceTest extends BaseEventTest {
@@ -66,7 +68,7 @@ class EnterBreathingSpaceTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(breathingSpaceService).createBreathingSpace(TEST_CASE_REFERENCE, details);
+        verify(breathingSpaceService).enterBreathingSpace(TEST_CASE_REFERENCE, details);
     }
 
     @Test
@@ -90,5 +92,19 @@ class EnterBreathingSpaceTest extends BaseEventTest {
             .contains("1 Test Street, London")
             .contains("Claimant v Defendant");
     }
+
+    @Test
+    void shouldOnlyShowEnterBreathingSpaceWhenNotAlreadyEntered() {
+        assertConfiguredShowConditions(ShowConditions.and(
+            ShowConditions.featureFlagsEnabled(ENFORCEMENT),
+            "hasActiveBreathingSpace=\"No\""
+        ));
+    }
+
+    @Test
+    void shouldBeAvailableForCaseIssuedState() {
+        assertConfiguredForStates(State.CASE_ISSUED);
+    }
+
 
 }
