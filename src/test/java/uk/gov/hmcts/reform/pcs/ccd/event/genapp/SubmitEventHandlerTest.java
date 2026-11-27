@@ -219,7 +219,6 @@ class SubmitEventHandlerTest {
 
             if (feeApplies) {
                 expectedFeeDetails = stubApplicationFeeCalculation(genAppRequest);
-                when(partyService.getPartyName(representedParty)).thenReturn(CURRENT_USER_FULL_NAME);
             } else {
                 stubNoApplicationFee(genAppRequest);
                 expectedFeeDetails = null;
@@ -449,7 +448,6 @@ class SubmitEventHandlerTest {
             String currentUserId = UUID.randomUUID().toString();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
-            given(partyService.getPartyName(applicantParty)).willReturn(CURRENT_USER_FULL_NAME);
 
             stubApplicationFeeCalculation(genAppRequest);
             stubPaymentServiceResponse();
