@@ -62,5 +62,5 @@ export default {
     'confirmEvictionconfirmEvictionDetails': 'confirmEvictionDetails',
     'confirmEvictionevictionDate': 'evictionDate',
     'enforceTheOrderenforcementMissedPayments': 'missedPayments',
-    'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
+    'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo'
 };

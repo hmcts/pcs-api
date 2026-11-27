@@ -8,4 +8,14 @@ export const aggressiveAnimalsRisk = {
   previousButton: `Yn ôl`,
   continueButton: `Parhau`,
   cancelLink: `Canslo`,
+  thereIsAProblemErrorMessageHeader: `Mae yna broblem`,
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `textField` },
+  errorValidationField: {
+    errorTextField: [
+      { type: `moreThanMax`, input: `MAXPLUS`, errMessage: `In ‘What kind of animal do they have?’, you have entered more than the maximum number of characters (6,800)` },
+      { type: `empty`, input: `EMPTY`, errMessage: `Pa fath o anifail sydd ganddynt? yn ofynnol` },
+    ]
+  }
  }
