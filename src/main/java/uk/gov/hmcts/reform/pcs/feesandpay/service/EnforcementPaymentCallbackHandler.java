@@ -7,6 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.riskassessment.RiskAssessmentScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.warrantofpossession.WarrantOfPossessionScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.writofpossession.WritOfPossessionScheduler;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementApplicationNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
@@ -22,6 +25,9 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus.PAID;
 public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
+    private final WritOfPossessionScheduler writOfPossessionScheduler;
+    private final WarrantOfPossessionScheduler warrantOfPossessionScheduler;
+    private final RiskAssessmentScheduler riskAssessmentScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -36,6 +42,7 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
                 enforcementOrderEntity.setState(CASE_PROGRESSION);
                 enforcementOrderRepository.save(enforcementOrderEntity);
                 log.info("Enforcement app {} state updated to CASE_PROGRESSION", enfApplicationId);
+                scheduleEnforcementDocuments(enforcementOrderEntity);
             } else {
                 log.warn("Enforcement app {} state {} not valid for this callback", enfApplicationId,
                         enforcementState);
@@ -43,6 +50,20 @@ public class EnforcementPaymentCallbackHandler implements PaymentCallbackStrateg
         } else {
             log.warn("The payment was not successful [{}] for enforcement app {} on case {}",
                      feePaymentEntity.getPaymentStatus(), enfApplicationId, paymentStatusCallback.getCcdCaseNumber());
+        }
+    }
+
+    private void scheduleEnforcementDocuments(EnforcementOrderEntity enforcementOrderEntity) {
+        if (enforcementOrderEntity.getWritDetails() != null) {
+            writOfPossessionScheduler.scheduleWritOfPossessionGeneration(
+                enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
+        } else if (enforcementOrderEntity.getWarrantDetails() != null) {
+            warrantOfPossessionScheduler.scheduleWarrantOfPossessionGeneration(
+                enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
+            if (enforcementOrderEntity.getRiskProfileDetails() != null) {
+                riskAssessmentScheduler.scheduleRiskAssessmentGeneration(
+                    enforcementOrderEntity.getPcsCase().getCaseReference(), enforcementOrderEntity.getId());
+            }
         }
     }
 

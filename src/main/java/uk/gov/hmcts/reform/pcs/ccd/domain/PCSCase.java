@@ -582,6 +582,9 @@ public class PCSCase {
     private DynamicList correspondenceDocuments;
 
     @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList enforcementDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
     private DynamicList uncategorisedDocuments;
 
     @CCD(

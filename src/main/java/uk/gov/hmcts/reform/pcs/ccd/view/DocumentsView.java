@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDocumentVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -31,6 +32,7 @@ public class DocumentsView {
 
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final EnforcementDocumentVisibilityService enforcementDocumentVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
     private final SecurityContextService securityContextService;
     private final OrderRepository orderRepository;
@@ -88,7 +90,7 @@ public class DocumentsView {
                 .toList());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, pcsCaseEntity, userRoles,
                                                                    organisationId, recipients))
             .map(this::toListValue)
             .collect(Collectors.toList());
@@ -107,11 +109,17 @@ public class DocumentsView {
             .build();
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId,
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, PcsCaseEntity pcsCaseEntity,
+                                            UserRoles userRoles, String organisationId,
                                             Map<UUID, List<PartyEntity>> recipients) {
         // Access code letters are only for bulk print, which finds them in systemDocuments.
         if (documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE) {
             return false;
+        }
+
+        if (enforcementDocumentVisibilityService.isEnforcementDocument(documentEntity.getType())) {
+            return enforcementDocumentVisibilityService.isVisibleToUser(userRoles.roles(), pcsCaseEntity,
+                                                                        organisationId);
         }
 
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();

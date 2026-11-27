@@ -64,6 +64,13 @@ enum DocumentAmendCategoryField {
         PCSCase::getCorrespondenceDocuments,
         DocumentAmendDetails::getCorrespondenceEmpty
     ),
+    ENFORCEMENT(
+        CaseFileCategory.ENFORCEMENT,
+        "EnforcementDocuments",
+        "EnforcementEmpty",
+        PCSCase::getEnforcementDocuments,
+        DocumentAmendDetails::getEnforcementEmpty
+    ),
     UNCATEGORISED_DOCUMENTS(
         CaseFileCategory.UNCATEGORISED_DOCUMENTS,
         "UncategorisedDocuments",

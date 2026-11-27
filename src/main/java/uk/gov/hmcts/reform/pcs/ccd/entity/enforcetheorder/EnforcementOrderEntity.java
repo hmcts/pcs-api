@@ -84,6 +84,8 @@ public class EnforcementOrderEntity {
     @Column(name = "last_modified_at", nullable = false)
     private Instant lastModifiedAt;
 
+    private Integer rank;
+
     @OneToOne(mappedBy = "enfApplication", cascade = ALL)
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;
 

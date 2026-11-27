@@ -86,6 +86,7 @@ public class EnforcementOrderService {
         strategyFactory.getStrategy(SelectEnforcementType.valueOf(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(enfEntity, enforcementOrder);
+        enfEntity.setRank(nextRankForType(pcsCaseEntity, enfEntity));
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
 
@@ -107,5 +108,24 @@ public class EnforcementOrderService {
                 .orElseThrow(() -> new EnforcementApplicationNotFoundException(
                         "No enforcement order found for case reference " + pcsCaseEntity.getCaseReference()
                                 + " with state " + AWAITING_SUBMISSION_TO_HMCTS));
+    }
+
+    /**
+     * One more than the number of the case's existing applications of the same type, so writs and warrants are
+     * numbered separately.
+     */
+    private int nextRankForType(PcsCaseEntity pcsCaseEntity, EnforcementOrderEntity newApplication) {
+        String type = enforcementType(newApplication);
+        long sameType = pcsCaseEntity.getEnforcementOrders().stream()
+            .filter(existing -> existing != newApplication)
+            .filter(existing -> type.equals(enforcementType(existing)))
+            .count();
+        return (int) sameType + 1;
+    }
+
+    private String enforcementType(EnforcementOrderEntity application) {
+        EnforcementOrder enforcementOrder = application.getEnforcementOrder();
+        return enforcementOrder == null || enforcementOrder.getChooseEnforcementType() == null
+            ? null : enforcementOrder.getChooseEnforcementType().getValueCode();
     }
 }

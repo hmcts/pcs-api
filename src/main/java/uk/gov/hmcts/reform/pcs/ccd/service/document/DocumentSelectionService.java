@@ -155,6 +155,7 @@ public class DocumentSelectionService {
             case APPLICATIONS -> caseData.getApplicationsDocuments();
             case APPEALS -> caseData.getAppealsDocuments();
             case CORRESPONDENCE -> caseData.getCorrespondenceDocuments();
+            case ENFORCEMENT -> caseData.getEnforcementDocuments();
             case UNCATEGORISED_DOCUMENTS -> caseData.getUncategorisedDocuments();
         };
     }
@@ -170,6 +171,7 @@ public class DocumentSelectionService {
             case APPLICATIONS -> caseData.setApplicationsDocuments(documents);
             case APPEALS -> caseData.setAppealsDocuments(documents);
             case CORRESPONDENCE -> caseData.setCorrespondenceDocuments(documents);
+            case ENFORCEMENT -> caseData.setEnforcementDocuments(documents);
             case UNCATEGORISED_DOCUMENTS -> caseData.setUncategorisedDocuments(documents);
         }
     }

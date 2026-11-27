@@ -18,7 +18,8 @@ public enum CaseFileCategory implements HasLabel {
     APPLICATIONS("applications", "Applications", 6),
     APPEALS("appeals", "Appeals", 7),
     CORRESPONDENCE("correspondence", "Correspondence", 8),
-    UNCATEGORISED_DOCUMENTS("uncategorisedDocuments", "Uncategorised documents", 9);
+    ENFORCEMENT("enforcement", "Enforcement", 9),
+    UNCATEGORISED_DOCUMENTS("uncategorisedDocuments", "Uncategorised documents", 10);
 
     private final String id;
     private final String label;

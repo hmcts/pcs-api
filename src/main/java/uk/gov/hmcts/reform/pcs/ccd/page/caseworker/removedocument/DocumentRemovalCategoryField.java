@@ -72,6 +72,14 @@ enum DocumentRemovalCategoryField {
         DocumentRemovalDetails::getCorrespondenceEmpty,
         DocumentRemovalDetails::getCorrespondenceReason
     ),
+    ENFORCEMENT(
+        CaseFileCategory.ENFORCEMENT,
+        "EnforcementDocuments",
+        "EnforcementEmpty",
+        PCSCase::getEnforcementDocuments,
+        DocumentRemovalDetails::getEnforcementEmpty,
+        DocumentRemovalDetails::getEnforcementReason
+    ),
     UNCATEGORISED_DOCUMENTS(
         CaseFileCategory.UNCATEGORISED_DOCUMENTS,
         "UncategorisedDocuments",
