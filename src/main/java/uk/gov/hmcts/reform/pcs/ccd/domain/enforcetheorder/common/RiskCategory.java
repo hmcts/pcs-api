@@ -23,8 +23,8 @@ public enum RiskCategory implements HasLabel {
     PROTEST_GROUP_MEMBER("Member of a group that protests evictions",
             "Which group are they a member of and how have they protested?"),
 
-    AGENCY_VISITS("Police or social services visits to the property",
-            "Why did the police or social services visit the property?"),
+    AGENCY_VISITS("Police visits to the property",
+            "Why did the police visit the property?"),
 
     AGGRESSIVE_ANIMALS("Aggressive dogs or other animals",
             "What kind of animal do they have?");

@@ -18,7 +18,7 @@ export class CheckAction implements IAction {
 
       if (Array.isArray(params.option)) {
         for (const opt of params.option) {
-          const checkbox = fieldset.getByRole('checkbox', { name: opt, exact: true });
+          const checkbox = fieldset.getByRole('checkbox', { name: opt, exact: true }).filter({visible : true}).first();
           action === 'uncheck'
             ? await checkbox.uncheck()
             : await checkbox.check();

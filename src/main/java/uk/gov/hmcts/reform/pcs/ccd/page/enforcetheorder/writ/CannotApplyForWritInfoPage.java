@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import java.util.List;
-
 public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
     static final String ERROR_MESSAGE =
@@ -48,7 +46,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
         // Always return an error to block progression
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of(ERROR_MESSAGE))
+                .errorMessageOverride(ERROR_MESSAGE)
                 .build();
     }
 }
