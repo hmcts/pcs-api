@@ -87,7 +87,6 @@ public class CaseBundleDefinition implements CaseEventHook {
             .tableOfContents()
             .sectionCoverSheets()
             .pageNumbers(PageNumbers.BOTTOM_CENTRE_N_OF_M)
-            .confidentialMarking()
             // A document that cannot be included gets a page saying so, rather than no bundle.
             .missingDocuments(MissingDocuments.PLACEHOLDER)
             .category(FOLDER_ID);

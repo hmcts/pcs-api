@@ -173,10 +173,22 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         render(reference);
         assertThat(text(latest(reference))).doesNotContain("Amended witness.pdf").doesNotContain("Content of");
 
-        // Every version stays in the case data, newest first, so CDAM keeps serving each of them.
+        // Versions replaced within the last day stay in the case data, newest first, so CDAM keeps serving them.
         assertThat(view(reference, "judge").getCaseBundles()).extracting(bundle -> bundle.getValue().getUrl())
             .containsExactlyElementsOf(versions(reference).stream().map(CaseBundleEntity::getUrl).toList())
             .allSatisfy(url -> assertThat(events.documents().stored()).extracting(Document::getUrl).contains(url));
+        // Named for Case File View by when each was made, the older ones marked as replaced.
+        List<String> names = view(reference, "judge").getCaseBundles().stream()
+            .map(bundle -> bundle.getValue().getFilename()).toList();
+        assertThat(names.getFirst()).matches("Case bundle \\d{8} \\d{4}\\.pdf");
+        assertThat(names.subList(1, names.size())).isNotEmpty()
+            .allSatisfy(name -> assertThat(name).matches("Case bundle \\d{8} \\d{4} \\(replaced\\)\\.pdf"));
+
+        // A day after being replaced, a version is no longer served, so pages removed from the case go with it.
+        jdbc.update("update case_bundles set created_at = created_at - interval '25 hours' where case_id = ?",
+                    pcsCases.findByCaseReference(reference).orElseThrow().getId());
+        assertThat(view(reference, "judge").getCaseBundles()).extracting(bundle -> bundle.getValue().getUrl())
+            .containsExactly(latest(reference).getUrl());
     }
 
     @Test

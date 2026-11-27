@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
@@ -17,9 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseBundlesView;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -46,7 +45,7 @@ class OrderCaseContext {
     private final CaseNameFormatter caseNameFormatter;
     private final OrderTasks orderTasks;
     private final CaseBundleRepository bundles;
-    private final UserRoleService roles;
+    private final CaseBundlesView bundleView;
     private final CaseCourts caseCourts;
 
     /** The case for the order, which offers the applications no issued order has decided. */
@@ -89,9 +88,9 @@ class OrderCaseContext {
             .orElse("[court]");
     }
 
-    /** The case's current bundle, which only judges are given. */
+    /** The case's current bundle, for those given the case's bundles. */
     private OrderStart.CaseBundle caseBundle(PcsCaseEntity pcsCase) {
-        if (!JudicialReadAccess.isJudge(roles.getCurrentUserOrganisationalRoles().roles())) {
+        if (!bundleView.shownToCurrentUser()) {
             return null;
         }
         return bundles.findFirstByCaseIdOrderByCaseRevisionDesc(pcsCase.getId())

@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -33,6 +35,7 @@ public class CaseTitleService {
     private final AddressFormatter addressFormatter;
     private final UserRoleService userRoleService;
     private final FeatureToggleService featureToggleService;
+    private final DocumentIdExtractor documentIds;
 
     /**
      * Builds a markdown string for the case title which appears near the top of every page in the case overview.
@@ -90,13 +93,13 @@ public class CaseTitleService {
         if (bundles == null || bundles.isEmpty()) {
             return "";
         }
-        String url = bundles.getFirst().getValue().getUrl();
+        UUID documentId = documentIds.extractDocumentId(bundles.getFirst().getValue().getUrl());
         return """
 
                 <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
                     <a class="govuk-link" href="/documentsv2/%s/binary" target="_blank" rel="noopener noreferrer">Whole \
                 file download (opens in new tab)</a>
-                </p>""".formatted(url.substring(url.lastIndexOf('/') + 1));
+                </p>""".formatted(documentId);
     }
 
 

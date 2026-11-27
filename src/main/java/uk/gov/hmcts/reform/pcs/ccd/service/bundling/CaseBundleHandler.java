@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.doctoolkit.UploadedDoc;
 import uk.gov.hmcts.reform.pcs.ccd.entity.bundle.CaseBundleEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class CaseBundleHandler implements DocJobHandler {
 
     private final PcsCaseRepository cases;
     private final CaseBundleRepository versions;
+    private final DocumentIdExtractor documentIds;
 
     @Override
     public void completed(DocJob job, UploadedDoc uploaded) {
@@ -29,7 +31,7 @@ public class CaseBundleHandler implements DocJobHandler {
         versions.save(CaseBundleEntity.builder()
             .caseId(caseId)
             .caseRevision(job.caseRevision())
-            .documentId(UUID.fromString(url.substring(url.lastIndexOf('/') + 1)))
+            .documentId(documentIds.extractDocumentId(url))
             .url(url)
             .binaryUrl(uploaded.document().getBinaryUrl())
             .fileName(uploaded.document().getFilename())

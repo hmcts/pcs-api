@@ -10,11 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.CaseCourts;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseBundlesView;
 
 import java.util.List;
 
@@ -38,7 +37,7 @@ class OrderCaseContextTest {
     @Mock
     private CaseBundleRepository bundles;
     @Mock
-    private UserRoleService roles;
+    private CaseBundlesView bundleView;
     @Mock
     private CaseCourts caseCourts;
 
@@ -47,7 +46,7 @@ class OrderCaseContextTest {
     @BeforeEach
     void setUp() {
         underTest = new OrderCaseContext(addressMapper, partyService, caseNameFormatter, orderTasks,
-                                         bundles, roles, caseCourts);
+                                         bundles, bundleView, caseCourts);
     }
 
     @Test
@@ -55,7 +54,6 @@ class OrderCaseContextTest {
         // Given
         String expectedCaseName = "some case name";
         when(caseNameFormatter.formatCaseName(anyList(), anyList())).thenReturn(expectedCaseName);
-        when(roles.getCurrentUserOrganisationalRoles()).thenReturn(new UserRoles("user", List.of()));
 
         ClaimEntity mainClaim = ClaimEntity.builder()
             .build();
