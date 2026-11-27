@@ -150,8 +150,9 @@ class GeneratedDefinitionTest {
         assertThat(everyoneReadable).containsExactlyInAnyOrder(
             "nextSteps/nextStepsMarkdown", "nextSteps/nextStepsMarkdownLabel",
             "hidden/caseTitleMarkdown", "hidden/featureFlags",
-            // Welsh case title proof of concept: not for merge.
-            "hidden/welshPocCaseTitleAddress"
+            // Welsh case title and Continue button proofs of concept: not for merge.
+            "hidden/welshPocCaseTitleAddress",
+            "nextSteps/welshPocContinueLabel", "nextSteps/welshPocShowContinueLabel"
         );
     }
 

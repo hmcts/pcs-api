@@ -168,6 +168,11 @@ class CaseTypeTest {
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
+        // Welsh Continue button proof of concept: not for merge.
+        assertThat(showCondition(nextStepsTab, "nextStepsMarkdownLabel"))
+            .isEqualTo("welshPocShowContinueLabel!=\"Yes\"");
+        assertThat(showCondition(nextStepsTab, "welshPocContinueLabel"))
+            .isEqualTo("welshPocShowContinueLabel=\"Yes\"");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
         // 5 rather than 4: the Welsh case title proof of concept adds welshPocCaseTitleAddress. Not for merge.

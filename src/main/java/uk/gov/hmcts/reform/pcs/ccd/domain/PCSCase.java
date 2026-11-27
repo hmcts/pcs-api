@@ -438,6 +438,11 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    // Welsh Continue button proof of concept: not for merge. Yes when the Next steps tab shows the definition Label
+    // version of "Provide more details about your claim" instead of nextStepsMarkdown.
+    @CCD(searchable = false)
+    private YesOrNo welshPocShowContinueLabel;
+
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class, PartyVisibleTabAccess.class})
     private String summaryLegalRepresentativeMarkdown;
 

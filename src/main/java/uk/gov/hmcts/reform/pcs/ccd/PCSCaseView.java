@@ -259,6 +259,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
         pcsCase.setWelshPocCaseTitleAddress(caseTitleService.buildWelshPocCaseTitleAddress(pcsCase));
+        // Welsh Continue button proof of concept: not for merge. nextStepsMarkdown is still built for both cases.
+        pcsCase.setWelshPocShowContinueLabel(YesOrNo.from(!hasUnsubmittedCaseData));
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

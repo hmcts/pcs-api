@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DraftUpload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -483,6 +484,18 @@ class PCSCaseViewTest {
             any(PcsCaseEntity.class));
         verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getWelshPocShowContinueLabel()).isEqualTo(YesOrNo.NO);
+    }
+
+    // Welsh Continue button proof of concept: not for merge.
+    @Test
+    void shouldShowTheWelshPocContinueLabelWhenThereIsNoUnsubmittedCaseData() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        assertThat(pcsCase.getWelshPocShowContinueLabel()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Provide more details about your claim");
     }
 
     @Test

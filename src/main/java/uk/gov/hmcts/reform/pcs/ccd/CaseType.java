@@ -49,6 +49,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
+    // Welsh Continue button proof of concept: not for merge. The "Provide more details about your claim" block moves
+    // from the Java-built nextStepsMarkdown value into a definition Label, so only the case number is a placeholder
+    // and ExUI can look up the template. Kept on one line so the dictionary key has no newlines.
+    static final String WELSH_POC_CONTINUE_LABEL = "TEST- <h2 class=\"govuk-heading-m\">Provide more details about"
+        + " your claim</h2> Your answers will be saved from this point so you can return to your draft later."
+        + " <br> <br> <a href=\"/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim\""
+        + " role=\"button\" class=\"govuk-button\">Continue</a> <p class=\"govuk-body govuk-!-font-size-19\">"
+        + "<span><a class=\"govuk-link--no-visited-state\" href=\"/cases\">Cancel</a></span></p>";
+
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
@@ -120,8 +129,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
-            .field("nextStepsMarkdown", NEVER_SHOW);
+            // Welsh Continue button proof of concept: not for merge. The flag swaps in the definition Label version.
+            .label("nextStepsMarkdownLabel", "welshPocShowContinueLabel!=\"Yes\"", "${nextStepsMarkdown}")
+            .label("welshPocContinueLabel", "welshPocShowContinueLabel=\"Yes\"", WELSH_POC_CONTINUE_LABEL)
+            .field("nextStepsMarkdown", NEVER_SHOW)
+            .field(PCSCase::getWelshPocShowContinueLabel, NEVER_SHOW);
 
         buildCasePartiesTab(builder);
 

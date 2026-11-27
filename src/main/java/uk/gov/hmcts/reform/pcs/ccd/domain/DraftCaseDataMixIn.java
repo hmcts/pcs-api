@@ -26,6 +26,8 @@ public abstract class DraftCaseDataMixIn {
     private DashboardData dashboardData;
     @JsonIgnore
     private String nextStepsMarkdown;
+    @JsonIgnore
+    private YesOrNo welshPocShowContinueLabel;
 
     @JsonIgnore
     private String claimantName;
