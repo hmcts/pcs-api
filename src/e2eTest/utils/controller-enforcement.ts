@@ -1,22 +1,23 @@
 import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
-import { ActionEnforcementRegistry } from './registry/registry-enforcement/action-enforcement.registry';
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
+import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
+import { CYA_CAPTURE_ACTIONS, CYA_EXCLUDED_ACTIONS, CYA_FLOW_EXCLUDED_ACTIONS } from './validations/custom-validations/CYA/cya-actions-constants';
+import {ActionEnforcementRegistry} from "@utils/registry/registry-enforcement";
 import { axe_Exclusions } from '@config/axe_exclusions.config';
 
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
-let captureDataForCYAPage = false;
+let errorValidationDepth = 0;
+
 
 export function initializeEnforcementExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
-  captureDataForCYAPage = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -48,7 +49,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases` || currentUrl === `https://www.hceoa.org.uk/choosing-a-hceo`){
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases` || currentUrl === `https://www.hceoa.org.uk/choosing-a-hceo`) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -74,11 +75,14 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'selectClaimantType') {
-    captureDataForCYAPage = true;
+
+  const isExcluded = errorValidationDepth > 0 || action.includes('errorValidation') || CYA_EXCLUDED_ACTIONS.has(action);
+
+  if (isExcluded) {
+    return;
   }
 
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+  if (CYA_CAPTURE_ACTIONS.has(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }
@@ -86,6 +90,15 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionEnforcementRegistry.getAction(action);
+  const isExcludedFlowAction = CYA_FLOW_EXCLUDED_ACTIONS.has(action) || action.includes('errorValidation');
+
+  if (isExcludedFlowAction) {
+
+    errorValidationDepth++;
+  }
+
+  captureDataForCYA(action, fieldName, value);
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 
@@ -94,6 +107,16 @@ export async function performAction(action: string, fieldName?: actionData | act
   } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
     const obj = fieldName as Record<string, any>;
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = Object.fromEntries(
+      Object.entries(obj).map(([key, value]) =>
+        key.includes('Payload')
+          ? [key, 'Payload is Input']
+          : [key, value]
+      )
+    );
     displayFieldName = displayValue;
   }
   let errorValidationRequired = false;
@@ -108,13 +131,22 @@ export async function performAction(action: string, fieldName?: actionData | act
     ).includes("validationReq: NO");
   }
 
-  if (!errorValidationRequired) {
-    const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
-    await test.step(stepText, async () => {
-      await actionInstance.execute(executor.page, action, fieldName, value);
-      await logToBrowser(executor.page, stepText);
-    });
-    await validatePageIfNavigated(action);
+  try {
+    if (!errorValidationRequired) {
+      const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+
+      await test.step(stepText, async () => {
+        await actionInstance.execute(executor.page, action, fieldName, value);
+        await logToBrowser(executor.page, stepText);
+      });
+
+      await validatePageIfNavigated(action);
+    }
+  } finally {
+    if (isExcludedFlowAction) {
+      //isErrorValidationFlow = false;
+      errorValidationDepth--;
+    }
   }
 }
 
