@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.util.LinkedHashMap;
@@ -23,6 +25,7 @@ public class HearingNoticeService {
     private final HearingNoticePersistenceService persistenceService;
     private final HearingNoticeDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
+    private final SystemEventExecutor systemEventExecutor;
 
     public void generateAndAttach(Integer hearingId) {
         List<HearingNoticeRenderContext> contexts = persistenceService.buildNoticeContexts(hearingId);
@@ -36,7 +39,10 @@ public class HearingNoticeService {
                 documentUrlsByPartyId.put(context.partyId(),
                     documentGenerator.generate(context.payload(), context.filename()));
             }
-            persistenceService.attachNoticesAndQueueEmails(hearingId, documentUrlsByPartyId);
+            systemEventExecutor.execute(persistenceService.caseReference(hearingId), UUID.randomUUID(), context -> {
+                persistenceService.attachNoticesAndQueueEmails(hearingId, documentUrlsByPartyId);
+                return SystemEventResult.withoutStateTransition("hearingNoticeGenerated", "Hearing notice generated");
+            });
         } catch (Exception e) {
             documentUrlsByPartyId.values().forEach(url -> deleteOrphanedDocument(hearingId, url));
             throw e;

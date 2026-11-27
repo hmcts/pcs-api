@@ -26,7 +26,7 @@ export default {
     'enforceTheOrderrepayments': 'repayments',
     'enforceTheOrderlanguageUsed': 'languageUsed',
     'enforceTheOrdersuspendedOrder': 'suspendedOrder',
-    'enforceTheOrderstatementOfTruth': 'enforceTheOrderstatementOfTruth',
+    'enforceTheOrderstatementOfTruth': 'statementOfTruth',
     'enforceTheOrderchangeNameAddressWrit': 'changeNameAddress',
     'enforceTheOrderconfirmDefendantsDOBWrit': 'confirmDefendantsDOB',
     'enforceTheOrderpeopleWhoWillBeEvictedWrit': 'peopleWhoWillBeEvicted',
@@ -50,7 +50,7 @@ export default {
     'enforceTheOrderlandRegistryFeesWrit': 'landRegistryFees',
     'enforceTheOrderlanguageUsedWrit': 'languageUsed',
     'enforceTheOrdersuspendedOrderWrit': 'suspendedOrder',
-    'enforceTheOrderstatementOfTruthWrit': 'enforceTheOrderstatementOfTruthWrit',
+    'enforceTheOrderstatementOfTruthWrit': 'statementOfTruthWrit',
     'enforceTheOrderamountDefendantOwes': 'amountDefendantOwes',
     'enforceTheOrderrepayments-writ': 'repaymentsWrit',
     'enforceTheOrdercannotApplyForWritInfo': 'cannotApplyForWritInfo',
@@ -63,4 +63,5 @@ export default {
     'confirmEvictionevictionDate': 'evictionDate',
     'enforceTheOrderenforcementMissedPayments': 'missedPayments',
     'enforceTheOrderenforcementCannotApplyforWarrantInfo': 'cannotApplyforWarrantInfo',
+    'enforceTheOrderenconfirm': 'confirm',
 };
