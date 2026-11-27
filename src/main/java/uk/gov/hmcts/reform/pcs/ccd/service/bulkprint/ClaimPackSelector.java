@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -12,8 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeLetterLanguage;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +29,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * Defendants also get their own access code once it exists (on a Wales case, both the English and the Welsh
  * letter). Only documents not covered by a {@code PACK_SENT}
  * success row are included, so a failed access-code letter self-heals without re-sending the claim form.
+ * When bulk print 2 is on, English defendants also receive the application uploads, after the claim
+ * form, on that same send.
  */
 @Service
 @Slf4j
@@ -36,13 +42,16 @@ public class ClaimPackSelector {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
     private final PackSkipRules packSkipRules;
+    private final FeatureToggleService featureToggleService;
 
     public ClaimPackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                              SentPackDocuments sentPackDocuments,
-                             PackSkipRules packSkipRules) {
+                             PackSkipRules packSkipRules,
+                             FeatureToggleService featureToggleService) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
         this.packSkipRules = packSkipRules;
+        this.featureToggleService = featureToggleService;
     }
 
     public List<ClaimPackCandidate> findClaimPackCandidates(PcsCaseEntity pcsCase) {
@@ -84,7 +93,7 @@ public class ClaimPackSelector {
                                         DocumentEntity claimForm, Set<String> sent) {
         boolean wales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
-            ClaimPackCandidate candidate = defendantCandidate(pcsCase, defendant, claimForm, sent, wales);
+            ClaimPackCandidate candidate = defendantCandidate(pcsCase, claim, defendant, claimForm, sent, wales);
             if (candidate != null) {
                 candidates.add(candidate);
             }
@@ -103,7 +112,7 @@ public class ClaimPackSelector {
         }
     }
 
-    private ClaimPackCandidate defendantCandidate(PcsCaseEntity pcsCase, PartyEntity defendant,
+    private ClaimPackCandidate defendantCandidate(PcsCaseEntity pcsCase, ClaimEntity claim, PartyEntity defendant,
                                                   DocumentEntity claimForm, Set<String> sent, boolean wales) {
         DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant, false);
         if (accessCode == null) {
@@ -124,6 +133,7 @@ public class ClaimPackSelector {
         }
         if (!sent.contains(key(defendant, claimForm))) {
             unsent.add(claimForm);
+            addUnsentEvidence(unsent, pcsCase, claim, defendant, sent);
         }
         if (unsent.isEmpty()) {
             return null;
@@ -134,6 +144,20 @@ public class ClaimPackSelector {
                 pcsCase.getCaseReference(), defendant.getId()));
         }
         return new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent, welshAccessCode != null);
+    }
+
+    private void addUnsentEvidence(List<DocumentEntity> unsent, PcsCaseEntity pcsCase, ClaimEntity claim,
+                                   PartyEntity defendant, Set<String> sent) {
+        if (!featureToggleService.isEnabled(FeatureFlag.BULK_PRINT_2)
+            || pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
+            return;
+        }
+        claim.getClaimDocuments().stream()
+            .map(ClaimDocumentEntity::getDocument)
+            .sorted(Comparator.comparing(DocumentEntity::getSubmittedDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .filter(evidence -> !sent.contains(key(defendant, evidence)))
+            .forEach(unsent::add);
     }
 
     private DocumentEntity accessCodeDocument(PcsCaseEntity pcsCase, PartyEntity defendant, boolean welsh) {
