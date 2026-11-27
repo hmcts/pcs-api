@@ -176,6 +176,10 @@ public class PCSCase {
     @CCD(label = "TEST- Welsh Placeholder submitted date", searchable = false)
     private LocalDate welshPocSubmittedDate;
 
+    // Welsh fee confirmation proof of concept: not for merge. A fee in pence for ${welshPocFeeAmount} to point at.
+    @CCD(label = "TEST- Welsh Placeholder fee amount", typeOverride = FieldType.MoneyGBP, searchable = false)
+    private String welshPocFeeAmount;
+
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
