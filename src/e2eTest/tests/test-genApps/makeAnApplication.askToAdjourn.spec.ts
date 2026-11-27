@@ -106,6 +106,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('confirmOrderDoYouWant', {
       label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
       input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+      draftOrderLabel: whatOrderDoYouWantTheCourtToMakeAndWhy.draftOrderLabel,
     });
     await performAction('confirmDocumentToUpload', {
       question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
@@ -180,6 +181,7 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
   await performAction('confirmOrderDoYouWant', {
     label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
     input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    draftOrderLabel: whatOrderDoYouWantTheCourtToMakeAndWhy.draftOrderLabel,
   });
   await performAction('confirmDocumentToUpload', {
     question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
