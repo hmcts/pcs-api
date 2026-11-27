@@ -6,7 +6,8 @@ server:
 management:
   endpoint:
     health:
-      show-details: "always"
+      show-details: "never"
+      show-components: "never"
       # group:
       #  readiness:
       #   include: "db"
@@ -16,6 +17,8 @@ management:
       exposure:
         include: health, info, prometheus
   health:
+    diskspace:
+      enabled: false
     elasticsearch:
       enabled: false
 
@@ -46,6 +49,9 @@ security:
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
+  http:
+    converters:
+      preferred-json-mapper: jackson2
   application:
     name: pcs api
   cloud:

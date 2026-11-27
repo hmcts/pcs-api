@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class PartyAccessCodeLinkService {
+
+    static final UUID UNKNOWN_CASE_ID = new UUID(0L, 0L);
 
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeLinkValidator validator;
@@ -36,6 +39,18 @@ public class PartyAccessCodeLinkService {
     ) {
         String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
+        // An unknown case goes through the same access code check as a known one, against an id with no
+        // codes, so the response and the time taken don't reveal whether the case exists. The system event
+        // would answer 404 for an unknown case, so this check runs before it.
+        PcsCaseEntity caseEntity = findCase(caseReference);
+        validator.validateAccessCode(
+            caseEntity != null ? caseEntity.getId() : UNKNOWN_CASE_ID,
+            accessCode
+        );
+        if (caseEntity == null) {
+            throw new IllegalStateException("Access code matched for an unknown case");
+        }
+
         systemEventExecutor.execute(
             caseReference,
             UUID.randomUUID(),
@@ -46,10 +61,7 @@ public class PartyAccessCodeLinkService {
     private SystemEventResult linkParty(long caseReference, String accessCode, String idamUserId) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        PartyAccessCodeEntity pac = validator.validateAccessCode(
-            caseEntity.getId(),
-            accessCode
-        );
+        PartyAccessCodeEntity pac = validator.validateAccessCode(caseEntity.getId(), accessCode);
 
         UUID partyId = pac.getPartyId();
 
@@ -77,4 +89,11 @@ public class PartyAccessCodeLinkService {
         return SystemEventResult.withoutStateTransition("defendantLinkedToCase", "Defendant linked to case");
     }
 
+    private PcsCaseEntity findCase(long caseReference) {
+        try {
+            return pcsCaseService.loadCase(caseReference);
+        } catch (CaseNotFoundException e) {
+            return null;
+        }
+    }
 }

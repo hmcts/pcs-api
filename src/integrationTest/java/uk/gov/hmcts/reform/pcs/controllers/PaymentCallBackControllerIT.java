@@ -6,10 +6,9 @@ import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -72,8 +71,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private FeePaymentRepository feePaymentRepository;
     @MockitoBean
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
-    @Mock
-    private PaymentCallbackStrategy pretendStrategy;
+    private final PaymentCallbackStrategy pretendStrategy = Mockito.mock(PaymentCallbackStrategy.class);
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
 
