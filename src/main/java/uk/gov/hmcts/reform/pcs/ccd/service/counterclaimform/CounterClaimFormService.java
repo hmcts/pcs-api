@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.util.Optional;
@@ -15,6 +17,7 @@ public class CounterClaimFormService {
     private final CounterClaimFormPersistenceService persistenceService;
     private final CounterClaimFormDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
+    private final SystemEventExecutor systemEventExecutor;
 
     public void generateAndAttach(UUID counterClaimId) {
         Optional<CounterClaimFormRenderContext> context =
@@ -30,7 +33,12 @@ public class CounterClaimFormService {
             renderContext.defendantNumber()
         );
         try {
-            persistenceService.attach(counterClaimId, dmStoreUrl);
+            long caseReference = persistenceService.caseReference(counterClaimId);
+            systemEventExecutor.execute(caseReference, UUID.randomUUID(), eventContext -> {
+                persistenceService.attach(counterClaimId, dmStoreUrl);
+                return SystemEventResult.withoutStateTransition("counterClaimFormGenerated",
+                    "Counterclaim form generated");
+            });
         } catch (RuntimeException e) {
             deleteOrphanedDocument(counterClaimId, dmStoreUrl);
             throw e;

@@ -71,6 +71,11 @@ public class DefenceFormPersistenceService {
         claimActivityLogService.logGenerationSuccess(pcsCase, response.getParty());
     }
 
+    @Transactional(readOnly = true)
+    public long caseReference(Integer defendantResponseId) {
+        return loadResponse(defendantResponseId).getPcsCase().getCaseReference();
+    }
+
     private DefendantResponseEntity loadResponse(Integer defendantResponseId) {
         return defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalStateException(

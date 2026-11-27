@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicatio
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseBundlesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
@@ -80,7 +80,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseTitleService caseTitleService;
     private final ClaimView claimView;
     private final DocumentsView documentsView;
-    private final BundleTabView bundleTabView;
+    private final CaseBundlesView caseBundlesView;
     private final TenancyLicenceView tenancyLicenceView;
     private final ClaimGroundsView claimGroundsView;
     private final RentDetailsView rentDetailsView;
@@ -139,7 +139,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
-        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setMarkdownFields(pcsCase, caseReference, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         enforcementOrderView.setCaseFields(pcsCase, caseReference, state);
@@ -186,7 +186,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
         documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
-        bundleTabView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseBundlesView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -256,8 +256,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
-        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+    private void setMarkdownFields(PCSCase pcsCase, long caseReference, boolean hasUnsubmittedCaseData) {
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase, caseReference));
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

@@ -25,6 +25,7 @@ public class GenAppFormPayload implements FormPayload {
     private GenAppType applicationType;
     private VerticalYesNo within14Days;
     private String whatOrderWanted;
+    private String draftOrderWording;
     private VerticalYesNo otherPartiesAgreed;
     private VerticalYesNo withoutNotice;
     private String withoutNoticeReason;

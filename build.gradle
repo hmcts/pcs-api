@@ -25,7 +25,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.26.0'
+  id 'hmcts.ccd.sdk' version '7.30.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2474'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.6'
@@ -277,6 +277,14 @@ tasks.register('runE2eTests', Exec) {
     dependsOn yarnInstall
     workingDir = file("${project.projectDir}/src/e2eTest")
     def suite = System.getenv('E2E_SUITE') ?: 'pr'
+    if (System.getenv('BRANCH_NAME') == 'master' && System.getenv('ENVIRONMENT_NAME') == 'aat'
+        && System.getenv('CASE_TYPE_SUFFIX') == 'staging') {
+        def stagingUrl = System.getenv('TEST_URL')
+        if (!stagingUrl?.trim()) {
+            throw new GradleException('TEST_URL is required for the master AAT staging E2E suite')
+        }
+        environment 'CASE_API_URL', stagingUrl
+    }
     commandLine 'yarn', "test:${suite}"
 }
 
@@ -450,8 +458,10 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
-  implementation 'com.github.hmcts:document-bundling'
+  implementation 'com.github.hmcts:doc-toolkit'
+  implementation 'com.github.hmcts:job-utils'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
+  implementation 'com.github.hmcts:bank-holidays'
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
@@ -505,6 +515,7 @@ dependencies {
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
+  implementation group: 'org.jsoup', name: 'jsoup', version: '1.24.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.12.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
@@ -734,6 +745,10 @@ cftlibTest {
 
   // Also use wiremock spun up by tests (9400) for doc generation so we can more easily stub dynamic PDF placeholders
   environment 'DOCMOSIS_RENDER_ENDPOINT', 'http://localhost:9400/api/render'
+
+  // The judges' case bundle is rendered in the background through CDAM (CaseBundleTest)
+  environment 'CASE_BUNDLE_ENABLED', 'true'
+  environment 'CASE_BUNDLE_WORKER_ENABLED', 'true'
 
   // Override feature flags for tests
   systemProperty 'feature.bulk-print-enabled', 'true'
