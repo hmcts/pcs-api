@@ -16,11 +16,12 @@ final class SupportingEvidence {
 
     /**
      * The generated form is saved after the journey has saved its uploads, and a later upload can only be
-     * linked once the submission exists. So an upload saved after the form came later and is left out.
+     * linked once the submission exists. So an upload saved after the form came later and is left out, and so is
+     * one whose order cannot be told because either date is missing.
      */
     static boolean savedWithSubmission(DocumentEntity upload, DocumentEntity form) {
         Instant formSaved = form.getSubmittedDate();
         Instant uploadSaved = upload.getSubmittedDate();
-        return formSaved == null || uploadSaved == null || !uploadSaved.isAfter(formSaved);
+        return formSaved != null && uploadSaved != null && !uploadSaved.isAfter(formSaved);
     }
 }

@@ -652,6 +652,7 @@ class GenAppPackSelectorTest {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .type(DocumentType.GENERAL_APPLICATION)
+            .submittedDate(Instant.parse("2026-10-02T10:00:05Z"))
             .build();
     }
 

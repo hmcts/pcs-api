@@ -680,6 +680,7 @@ class DefencePackSelectorTest {
             .type(DocumentType.COUNTERCLAIM)
             .party(counterClaimEntity.getParty())
             .counterClaim(counterClaimEntity)
+            .submittedDate(Instant.parse("2026-10-03T10:05:00Z"))
             .build();
     }
 
