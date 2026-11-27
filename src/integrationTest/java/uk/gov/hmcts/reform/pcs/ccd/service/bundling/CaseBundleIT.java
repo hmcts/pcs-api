@@ -254,8 +254,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         // As if the case predated bundling.
         jdbc.update("delete from bundling.doc_job where case_reference = ?", reference);
 
-        transaction.executeWithoutResult(status -> redo.apply(
-            new CaseMetadata(reference, "PCS", "CASE_ISSUED", caseRevision(reference))));
+        transaction.executeWithoutResult(status -> redo.apply(new CaseMetadata(reference, "PCS", "CASE_ISSUED")));
         render(reference);
 
         assertThat(versions(reference)).singleElement()
