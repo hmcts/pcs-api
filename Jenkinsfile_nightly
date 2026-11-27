@@ -85,6 +85,7 @@ def pcsE2eVaultSecrets = [
   secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
   secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
   secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
+  secret('launchdarkly-sdk-key', 'LAUNCHDARKLY_SDK_KEY'),
 ]
 
 withNightlyPipeline(type, product, component) {

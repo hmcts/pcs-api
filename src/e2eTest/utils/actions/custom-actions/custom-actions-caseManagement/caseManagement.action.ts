@@ -39,6 +39,7 @@ import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import {manageHearingApiData} from "@data/api-data";
+import { resolveLdFlagged, whenLdFlag, BAILIFF_MANAGEMENT_ENABLED } from '../launchDarkly.action';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -1559,11 +1560,22 @@ private formatDisplayDate(entered: string): string {
 
   private async validateCaseDetails(payLoadInput: any) {
     const payLoad = payLoadInput as Record<string, any>;
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+    const featureFlag = await resolveLdFlagged(
+      whenLdFlag(BAILIFF_MANAGEMENT_ENABLED, {
+        on: true,
+        off: false,
+      })
+    );
+    await test.step(`Validate party details only when feature flag  ${BAILIFF_MANAGEMENT_ENABLED} is ON - It is ${featureFlag} for current run`, async () => {
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      });
+      
+      if (featureFlag) {
+        await performValidation('text', { elementType: 'paragraph', text: `${payLoad.claimantName} vs ${await this.getDefendantClaimDetails(payLoad)}` });
+      }
+    })
   }
 }
