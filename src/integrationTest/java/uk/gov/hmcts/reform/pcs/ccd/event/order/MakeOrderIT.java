@@ -63,9 +63,9 @@ class MakeOrderIT extends OrderEventIT {
     @BeforeEach
     void setUp() {
         caseReference = cases.issue();
-        firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
+        firstJudge = events.registerActor("First", "Judge", "caseworker-pcs", "judge");
         asFirstJudge = events.external(caseReference, MAKE_ORDER).as(firstJudge);
-        secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
+        secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs", "judiciary");
         asSecondJudge = events.external(caseReference, MAKE_ORDER).as(secondJudge);
     }
 
@@ -78,6 +78,16 @@ class MakeOrderIT extends OrderEventIT {
         assertThat(events.external(caseReference, CONFIRM_ORDER_REVIEW)
             .as(events.registerActor("A", "Caseworker", "caseworker-pcs")).startExpectingRejection())
             .containsExactly(MakeOrder.NOT_AVAILABLE);
+    }
+
+    @Test
+    @DisplayName("refuses to start an order for a hearing centre administrator")
+    void refusesToStartForCourtStaff() {
+        var administrator = events.registerActor("Hearing Centre", "Administrator",
+            "caseworker-pcs", "hearing-centre-admin");
+
+        assertThat(events.external(caseReference, MAKE_ORDER).as(administrator).startExpectingRejection())
+            .containsExactly(MakeOrder.NOT_PERMITTED);
     }
 
     @Test

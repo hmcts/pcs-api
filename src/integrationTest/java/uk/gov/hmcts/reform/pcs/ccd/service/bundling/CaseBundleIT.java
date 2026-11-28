@@ -158,10 +158,9 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             assertThat(excluded.getCaseBundles()).as(role).isNull();
             assertThat(excluded.getCaseTitleMarkdown()).as(role).doesNotContain("/documentsv2/");
         }
-        // The judge making an order links it; nobody else is given it.
-        assertThat(orderBundle(reference, "judge")).isEqualTo(new OrderStart.CaseBundle(
+        // The bundle is available when the judge starts an order.
+        assertThat(orderBundle(reference)).isEqualTo(new OrderStart.CaseBundle(
             first.getDocumentId(), first.getFileName(), first.getCreatedAt()));
-        assertThat(orderBundle(reference, "hearing-centre-admin")).isNull();
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
     }
@@ -328,9 +327,9 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         }
     }
 
-    private OrderStart.CaseBundle orderBundle(long reference, String role) {
+    private OrderStart.CaseBundle orderBundle(long reference) {
         return events.external(reference, MakeOrder.MAKE_ORDER)
-            .as(events.registerActor("Bundle", "Reader", "caseworker-pcs", role)).start().caseContext().caseBundle();
+            .as(events.registerActor("Bundle", "Reader", "caseworker-pcs", "judge")).start().caseContext().caseBundle();
     }
 
     private PCSCase view(long reference, String role) {

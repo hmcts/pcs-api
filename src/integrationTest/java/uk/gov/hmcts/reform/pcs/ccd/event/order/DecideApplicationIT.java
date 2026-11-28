@@ -100,7 +100,7 @@ class DecideApplicationIT extends OrderEventIT {
         });
         genAppId = jdbcTemplate.queryForObject("SELECT ga.id FROM general_application ga JOIN pcs_case pc "
             + "ON pc.id = ga.case_id WHERE pc.case_reference = ?", UUID.class, caseReference);
-        judge = events.registerActor("A", "Judge", "caseworker-pcs");
+        judge = events.registerActor("A", "Judge", "caseworker-pcs", "judiciary");
         caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
     }
 
@@ -151,7 +151,7 @@ class DecideApplicationIT extends OrderEventIT {
     @DisplayName("refuses issuing a second order deciding the application, and offers it no more once one decides "
         + "it, though listing it for a hearing leaves it to decide")
     void refusesAnotherOrderOnADecidedApplication() {
-        Actor otherJudge = events.registerActor("Another", "Judge", "caseworker-pcs");
+        Actor otherJudge = events.registerActor("Another", "Judge", "caseworker-pcs", "judiciary");
         var asOtherJudge = events.external(caseReference, MAKE_ORDER).as(otherJudge)
             .withClientContext(Map.of("genAppId", genAppId.toString()));
         // The other judge sends theirs for review alongside the first judge's.
@@ -317,7 +317,7 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(asJudge.submitExpectingRejection(decision(SUBMIT_FOR_REVIEW, reopened.order(), "freeform", null))
             .errors()).containsExactly("Application GA1 is no longer open. " + MakeOrder.RELOAD_TO_DECIDE);
 
-        Actor otherJudge = events.registerActor("Other", "Judge", "caseworker-pcs");
+        Actor otherJudge = events.registerActor("Other", "Judge", "caseworker-pcs", "judiciary");
         assertThat(events.external(caseReference, MAKE_ORDER).as(otherJudge)
             .withClientContext(Map.of("genAppId", genAppId.toString())).startExpectingRejection())
             .containsExactly(MakeOrder.NOT_OPEN);

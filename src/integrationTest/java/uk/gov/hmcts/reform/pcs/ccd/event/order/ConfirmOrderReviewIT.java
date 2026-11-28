@@ -85,7 +85,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         caseReference = cases.issue();
         // Legacy IDAM accounts have numeric ids; review and return must work for them too.
         judge = events.registerActor(new ActorDetails(
-            "123456", "judge@example.com", "A", "Judge", List.of("caseworker-pcs")));
+            "123456", "judge@example.com", "A", "Judge", List.of("caseworker-pcs", "judiciary")));
         asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         caseworker = events.registerActor(new ActorDetails(
             "654321", "caseworker@example.com", "A", "Caseworker", List.of("caseworker-pcs")));
