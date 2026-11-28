@@ -9,10 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.IndividualDetails;
+import uk.gov.hmcts.reform.pcs.hearings.model.PartyDetails;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -52,17 +55,20 @@ public class ServiceHearingValuesMapper {
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
     private final CaseNameFormatter caseNameFormatter;
+    private final IndividualDetailsFlagMapper individualDetailsFlagMapper;
     private final String manageCaseUrl;
 
     public ServiceHearingValuesMapper(ServiceHearingValuesConfiguration defaults,
                                       PcsCaseService pcsCaseService,
                                       PcsCaseRepository pcsCaseRepository,
                                       CaseNameFormatter caseNameFormatter,
+                                      IndividualDetailsFlagMapper individualDetailsFlagMapper,
                                       @Value("${manage_case.url}") String manageCaseUrl) {
         this.defaults = defaults;
         this.pcsCaseService = pcsCaseService;
         this.pcsCaseRepository = pcsCaseRepository;
         this.caseNameFormatter = caseNameFormatter;
+        this.individualDetailsFlagMapper = individualDetailsFlagMapper;
         this.manageCaseUrl = manageCaseUrl;
     }
 
@@ -79,6 +85,10 @@ public class ServiceHearingValuesMapper {
         values.setCaseSlaStartDate(caseSlaStartDate(pcsCase));
         values.setNumberOfPhysicalAttendees(numberOfPhysicalAttendees(pcsCase));
         values.setListingComments(listingComments(pcsCase));
+        List<PartyDetails> parties = parties(pcsCase);
+        if (!parties.isEmpty()) {
+            values.setParties(parties);
+        }
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -125,6 +135,23 @@ public class ServiceHearingValuesMapper {
             .map(ClaimEntity::getClaimIssuedDate)
             .map(issued -> issued.atZone(ZoneOffset.UTC).withZoneSameInstant(UK_ZONE_ID).toLocalDate())
             .orElse(null);
+    }
+
+    private List<PartyDetails> parties(PcsCaseEntity pcsCase) {
+        return pcsCase.getParties().stream()
+            .filter(Objects::nonNull)
+            .filter(party -> !party.isRemoved())
+            .map(this::partyDetails)
+            .toList();
+    }
+
+    // defendantFlags is the historical name on PartyEntity for a person's flags, including claimants
+    private PartyDetails partyDetails(PartyEntity party) {
+        IndividualDetails details = individualDetailsFlagMapper.map(party.getDefendantFlags());
+        details.setPreferredHearingChannel(defaults.getPreferredHearingChannel());
+        return PartyDetails.builder()
+            .individualDetails(details)
+            .build();
     }
 
     private int numberOfPhysicalAttendees(PcsCaseEntity pcsCase) {
