@@ -25,16 +25,24 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.Set;
 import java.util.Objects;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
+
 @Service
 @Slf4j
 @AllArgsConstructor
 public class PcsCaseService {
+
+    private static final String SOCIAL_LANDLORD_RENT_ARREARS_KEY = "AAA3-RA-SL";
+    private static final String SOCIAL_LANDLORD_NON_RENT_ARREARS_KEY = "AAA3-RNA-SL";
 
     private final PcsCaseRepository pcsCaseRepository;
     private final ClaimService claimService;
@@ -48,6 +56,7 @@ public class PcsCaseService {
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
     private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
+    private final FeatureToggleService featureToggleService;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -79,6 +88,12 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+
+        if (featureToggleService.isEnabled(FeatureFlag.HMC_INTEGRATION)) {
+            String caseTypeKey = caseTypeKey(claimEntity);
+            pcsCaseEntity.setCaseTypeKey(caseTypeKey);
+            pcsCaseEntity.setCaseSubtypeKey(caseTypeKey);
+        }
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -222,5 +237,21 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = this.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private String caseTypeKey(ClaimEntity claimEntity) {
+        if (claimEntity.getClaimantType() != PROVIDER_OF_SOCIAL_HOUSING
+            && claimEntity.getClaimantType() != COMMUNITY_LANDLORD) {
+            return null;
+        }
+
+        return isRentArrearsClaim(claimEntity)
+            ? SOCIAL_LANDLORD_RENT_ARREARS_KEY
+            : SOCIAL_LANDLORD_NON_RENT_ARREARS_KEY;
+    }
+
+    private static boolean isRentArrearsClaim(ClaimEntity claim) {
+        return claim.getClaimGrounds() != null && claim.getClaimGrounds().stream()
+            .anyMatch(ground -> Boolean.TRUE.equals(ground.getIsRentArrears()));
     }
 }

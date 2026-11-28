@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -19,6 +21,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -26,6 +30,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.math.BigDecimal;
@@ -35,6 +41,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
@@ -66,6 +73,10 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private TestCaseSupportHelper testCaseSupportHelper;
     @Autowired
     private IdamHelper idamHelper;
+    @Autowired
+    private PcsCaseRepository pcsCaseRepository;
+    @Autowired
+    private EntityManager entityManager;
     @MockitoBean
     private FeeService feeService;
     @MockitoBean
@@ -74,6 +85,8 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private IdamClient idamClient;
     @MockitoBean
     private OrganisationService organisationService;
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
@@ -84,6 +97,7 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
         orgDetails.setOrganisationIdentifier(ORGANISATION_ID);
         orgDetails.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
         when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
+        givenHmcIntegrationEnabled(true);
     }
 
     @AfterEach
@@ -104,6 +118,43 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getState()).isEqualTo(PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    @Transactional
+    void shouldSaveCaseTypeKeysWhenMakeAClaimSubmitted() {
+        // Given
+        String label = selectLabelStartingWith(MAKE_A_CLAIM_CASE_GENERATOR);
+        EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
+
+        // When
+        underTest.submit(eventPayload);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Then
+        PcsCaseEntity savedCase = pcsCaseRepository.findByCaseReference(CASE_REFERENCE).orElseThrow();
+        assertThat(savedCase.getCaseTypeKey()).isEqualTo("AAA3-RNA-SL");
+        assertThat(savedCase.getCaseSubtypeKey()).isEqualTo("AAA3-RNA-SL");
+    }
+
+    @Test
+    @Transactional
+    void shouldNotSaveCaseTypeKeysWhenHmcIntegrationDisabled() {
+        // Given
+        givenHmcIntegrationEnabled(false);
+        String label = selectLabelStartingWith(MAKE_A_CLAIM_CASE_GENERATOR);
+        EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
+
+        // When
+        underTest.submit(eventPayload);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Then
+        PcsCaseEntity savedCase = pcsCaseRepository.findByCaseReference(CASE_REFERENCE).orElseThrow();
+        assertThat(savedCase.getCaseTypeKey()).isNull();
+        assertThat(savedCase.getCaseSubtypeKey()).isNull();
     }
 
     @Test
@@ -161,6 +212,10 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(
                 "No test-case-generation file found with prefix: " + prefix));
+    }
+
+    private void givenHmcIntegrationEnabled(boolean enabled) {
+        doReturn(enabled).when(featureToggleService).isEnabled(FeatureFlag.HMC_INTEGRATION);
     }
 
 }

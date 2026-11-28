@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.hearings.config.ServiceHearingValuesConfiguration;
+import uk.gov.hmcts.reform.pcs.hearings.model.CaseCategory;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceHearingValues;
 import uk.gov.hmcts.reform.pcs.hearings.model.ServiceLinkedCases;
 
@@ -79,6 +80,7 @@ public class ServiceHearingValuesMapper {
         values.setCaseSlaStartDate(caseSlaStartDate(pcsCase));
         values.setNumberOfPhysicalAttendees(numberOfPhysicalAttendees(pcsCase));
         values.setListingComments(listingComments(pcsCase));
+        values.setCaseCategories(caseCategories(pcsCase));
 
         log.info("Built service hearing values for case {}", caseReference);
         return values;
@@ -135,6 +137,33 @@ public class ServiceHearingValuesMapper {
         return Math.toIntExact(activeParties) + DUTY_SOLICITOR_ATTENDEES;
     }
 
+    private List<CaseCategory> caseCategories(PcsCaseEntity pcsCase) {
+        if (pcsCase.getCaseTypeKey() == null) {
+            log.warn("No case type key found for case {}", pcsCase.getCaseReference());
+            return List.of();
+        }
+
+        return List.of(
+            CaseCategory.builder()
+                .categoryType(defaults.getCaseTypeCategory())
+                .categoryValue(pcsCase.getCaseTypeKey())
+                .build(),
+            CaseCategory.builder()
+                .categoryType(defaults.getCaseSubTypeCategory())
+                .categoryValue(pcsCase.getCaseSubtypeKey())
+                .categoryParent(pcsCase.getCaseTypeKey())
+                .build());
+    }
+
+    /**
+     * Lists the case's active case-level flags for the listing officer, as
+     * {@code Case Flags: name, name (Comments: comment)}, within HMC's 2000-character limit.
+     *
+     * <p>With fewer than {@value #FULL_TEXT_MAX_COMMENTED_FLAGS} commented flags the full text is tried
+     * first and returned if it fits. Otherwise every flag name is kept in full and the comments are
+     * shortened to share the space that is left (see {@link #fitCommentsFairly}).
+     */
+
     private String listingComments(PcsCaseEntity pcsCase) {
         List<FlagText> flags = pcsCase.getCaseFlags().stream()
             .filter(flag -> ACTIVE_FLAG_STATUS.equals(flag.getDefaultStatus()))
@@ -152,7 +181,7 @@ public class ServiceHearingValuesMapper {
         }
 
         // text is over 2000 characters
-        log.info("listingComments has been truncated for case {} ({} characters, limit {})",
+        log.warn("listingComments has been truncated for case {} ({} characters, limit {})",
                  pcsCase.getCaseReference(), fullText.length(), MAX_LISTING_COMMENTS_LENGTH);
         String fittedText = render(fitCommentsFairly(flags));
         // Only reachable if the flag names alone use up the limit; cut rather than have HMC reject the request

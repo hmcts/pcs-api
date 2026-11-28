@@ -489,3 +489,6 @@ service-hearing-values:
       - "45"
   preferred-hearing-channel: INTER
   number-of-days-offset: 57
+  case-type-category: caseType
+  case-sub-type-category: caseSubType
+

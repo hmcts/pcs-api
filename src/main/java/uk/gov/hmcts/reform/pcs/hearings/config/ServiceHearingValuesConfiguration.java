@@ -29,6 +29,8 @@ public class ServiceHearingValuesConfiguration {
     private List<String> roleTypes;
     private String preferredHearingChannel;
     private int numberOfDaysOffset;
+    private String caseTypeCategory;
+    private String caseSubTypeCategory;
 
     public ServiceHearingValues getDefaultValues() {
         List<PartyDetails> parties = List.of(
