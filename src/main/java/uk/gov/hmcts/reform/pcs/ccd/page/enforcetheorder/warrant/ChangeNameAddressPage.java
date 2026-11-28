@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimantMakeAnApplication;
 
 /**
  * Error page shown when user indicates the name or address for eviction is incorrect.
@@ -52,11 +53,25 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                     permission to make this change.</p>
                 <p class="govuk-body govuk-!-font-weight-bold">If you want to proceed with changing the name or
                     address for the eviction</p>
+                """
+            )
+            // XUI fills ${[CASE_REFERENCE]} from the case it has loaded. The link has a label of its own because it is
+            // the only text that varies by case, so the other labels can match the Welsh dictionary exactly.
+            .label(
+                "changeNameAddress-makeAnApplicationLink",
+                """
                 <p class="govuk-body">
-                    <a id="changeNameAddress-link" class="govuk-link">
+                    <a id="changeNameAddress-link" class="govuk-link"
+                        href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                        target="_blank" rel="noopener noreferrer">
                         Ask the judge if you can change the name or address for the eviction
                         (GOV.UK, opens in a new tab)</a>.
                 </p>
+                """.formatted(claimantMakeAnApplication.name())
+            )
+            .label(
+                "changeNameAddress-keepExisting",
+                """
                 <p class="govuk-body govuk-!-font-weight-bold">If you want to keep the existing name or address</p>
                 <p class="govuk-body">If you are confident that the name or address is correct, you can go back to the
                     previous page and change your answer to the last question.</p>
